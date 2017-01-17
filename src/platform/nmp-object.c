@@ -30,7 +30,7 @@
 #include "nm-core-utils.h"
 #include "nm-platform-utils.h"
 
-/*********************************************************************************************/
+/*****************************************************************************/
 
 #define _NMLOG_DOMAIN LOGD_PLATFORM
 #define _NMLOG(level, obj, ...) \
@@ -52,7 +52,7 @@
  * Disabled by default. */
 #define _LOGr(...) G_STMT_START { if (FALSE) { _LOGt (__VA_ARGS__); } } G_STMT_END
 
-/*********************************************************************************************/
+/*****************************************************************************/
 
 struct _NMPCache {
 	/* the cache contains only one hash table for all object types, and similarly
@@ -75,7 +75,7 @@ struct _NMPCache {
 	gboolean use_udev;
 };
 
-/******************************************************************/
+/*****************************************************************************/
 
 static inline guint
 _id_hash_ip6_addr (const struct in6_addr *addr)
@@ -122,10 +122,10 @@ _vlan_xgress_qos_mappings_cpy (guint *dst_n_map,
 	}
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static const char *
-_link_get_driver (GUdevDevice *udev_device, const char *kind, const char *ifname)
+_link_get_driver (GUdevDevice *udev_device, const char *kind, int ifindex)
 {
 	const char *driver = NULL;
 
@@ -140,14 +140,12 @@ _link_get_driver (GUdevDevice *udev_device, const char *kind, const char *ifname
 	if (kind)
 		return kind;
 
-	if (ifname) {
-		char *d;
+	if (ifindex > 0) {
+		NMPUtilsEthtoolDriverInfo driver_info;
 
-		if (nmp_utils_ethtool_get_driver_info (ifname, &d, NULL, NULL)) {
-			driver = d && d[0] ? g_intern_string (d) : NULL;
-			g_free (d);
-			if (driver)
-				return driver;
+		if (nmp_utils_ethtool_get_driver_info (ifindex, &driver_info)) {
+			if (driver_info.driver[0])
+				return g_intern_string (driver_info.driver);
 		}
 	}
 
@@ -169,7 +167,7 @@ _nmp_object_fixup_link_udev_fields (NMPObject *obj, gboolean use_udev)
 	if (obj->_link.netlink.is_in_netlink) {
 		driver = _link_get_driver (obj->_link.udev.device,
 		                           obj->link.kind,
-		                           obj->link.name);
+		                           obj->link.ifindex);
 		if (obj->_link.udev.device)
 			initialized = TRUE;
 		else if (!use_udev) {
@@ -197,7 +195,7 @@ _nmp_object_fixup_link_master_connected (NMPObject *obj, const NMPCache *cache)
 		obj->link.connected = !obj->link.connected;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 const NMPClass *
 nmp_class_from_type (NMPObjectType obj_type)
@@ -207,7 +205,7 @@ nmp_class_from_type (NMPObjectType obj_type)
 	return &_nmp_classes[obj_type - 1];
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 NMPObject *
 nmp_object_ref (NMPObject *obj)
@@ -293,7 +291,7 @@ nmp_object_new_link (int ifindex)
 	return obj;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static const NMPObject *
 _nmp_object_stackinit_from_class (NMPObject *obj, const NMPClass *klass)
@@ -416,7 +414,7 @@ _vt_cmd_obj_stackinit_id_ip6_route (NMPObject *obj, const NMPObject *src)
 	nmp_object_stackinit_id_ip6_route (obj, src->ip_route.ifindex, &src->ip6_route.network, src->ip_route.plen, src->ip_route.metric);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 const char *
 nmp_object_to_string (const NMPObject *obj, NMPObjectToStringMode to_string_mode, char *buf, gsize buf_size)
@@ -955,23 +953,20 @@ _vt_cmd_obj_is_visible_link (const NMPObject *obj)
 	       && obj->link.name[0];
 }
 
-/******************************************************************/
-
-#define _STRUCT_SIZE(struct_type, field) \
-	(G_STRUCT_OFFSET (struct_type, field) + sizeof (((struct_type *) NULL)->field))
+/*****************************************************************************/
 
 _NM_UTILS_LOOKUP_DEFINE (static, _nmp_cache_id_size_by_type, NMPCacheIdType, guint,
-	NM_UTILS_LOOKUP_DEFAULT (({ nm_assert_not_reached (); sizeof (NMPCacheId); })),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_OBJECT_TYPE,                            _STRUCT_SIZE (NMPCacheId, object_type)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_OBJECT_TYPE_VISIBLE_ONLY,               _STRUCT_SIZE (NMPCacheId, object_type)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_NO_DEFAULT,              _STRUCT_SIZE (NMPCacheId, object_type)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_ONLY_DEFAULT,            _STRUCT_SIZE (NMPCacheId, object_type)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ADDRROUTE_VISIBLE_BY_IFINDEX,           _STRUCT_SIZE (NMPCacheId, object_type_by_ifindex)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_BY_IFINDEX_NO_DEFAULT,   _STRUCT_SIZE (NMPCacheId, object_type_by_ifindex)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_BY_IFINDEX_ONLY_DEFAULT, _STRUCT_SIZE (NMPCacheId, object_type_by_ifindex)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_LINK_BY_IFNAME,                         _STRUCT_SIZE (NMPCacheId, link_by_ifname)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_BY_DESTINATION_IP4,              _STRUCT_SIZE (NMPCacheId, routes_by_destination_ip4)),
-	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_BY_DESTINATION_IP6,              _STRUCT_SIZE (NMPCacheId, routes_by_destination_ip6)),
+	NM_UTILS_LOOKUP_DEFAULT (({ nm_assert_not_reached (); (guint) 0; })),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_OBJECT_TYPE,                            nm_offsetofend (NMPCacheId, object_type)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_OBJECT_TYPE_VISIBLE_ONLY,               nm_offsetofend (NMPCacheId, object_type)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_NO_DEFAULT,              nm_offsetofend (NMPCacheId, object_type)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_ONLY_DEFAULT,            nm_offsetofend (NMPCacheId, object_type)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ADDRROUTE_VISIBLE_BY_IFINDEX,           nm_offsetofend (NMPCacheId, object_type_by_ifindex)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_BY_IFINDEX_NO_DEFAULT,   nm_offsetofend (NMPCacheId, object_type_by_ifindex)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_BY_IFINDEX_ONLY_DEFAULT, nm_offsetofend (NMPCacheId, object_type_by_ifindex)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_LINK_BY_IFNAME,                         nm_offsetofend (NMPCacheId, link_by_ifname)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_BY_DESTINATION_IP4,              nm_offsetofend (NMPCacheId, routes_by_destination_ip4)),
+	NM_UTILS_LOOKUP_ITEM (NMP_CACHE_ID_TYPE_ROUTES_BY_DESTINATION_IP6,              nm_offsetofend (NMPCacheId, routes_by_destination_ip6)),
 	NM_UTILS_LOOKUP_ITEM_IGNORE (NMP_CACHE_ID_TYPE_NONE),
 	NM_UTILS_LOOKUP_ITEM_IGNORE (__NMP_CACHE_ID_TYPE_MAX),
 );
@@ -1022,26 +1017,23 @@ nmp_cache_id_destroy (NMPCacheId *id)
 	g_slice_free1 (n, id);
 }
 
-/******************************************************************/
-
-NMPCacheId _nmp_cache_id_static;
+/*****************************************************************************/
 
 static void
 _nmp_cache_id_init (NMPCacheId *id, NMPCacheIdType id_type)
 {
-	memset (id, 0, sizeof (NMPCacheId));
+	/* there is no need to set the entire @id to zero when
+	 * initializing the ID.
+	 *
+	 * First, depending on the @id_type only part of the
+	 * @id is actually used (_nmp_cache_id_size_by_type).
+	 *
+	 * Second, the nmp_cache_id_init_*() *MUST* anyway make sure
+	 * that all relevant fields are set. Since it happens that
+	 * all structs have the packed attribute, there are no holes
+	 * due to alignment, and it becomes simple for nmp_cache_id_init_*()
+	 * to ensure that all fields are set. */
 	id->_id_type = id_type;
-}
-
-NMPCacheId *
-nmp_cache_id_copy (NMPCacheId *id, const NMPCacheId *src)
-{
-	guint n;
-
-	memset (id, 0, sizeof (NMPCacheId));
-	n = _nmp_cache_id_size_by_type (src->_id_type);
-	memcpy (id, src, n);
-	return id;
 }
 
 NMPCacheId *
@@ -1081,15 +1073,14 @@ nmp_cache_id_init_routes_visible (NMPCacheId *id,
 {
 	g_return_val_if_fail (NM_IN_SET (obj_type, NMP_OBJECT_TYPE_IP4_ROUTE, NMP_OBJECT_TYPE_IP6_ROUTE), NULL);
 
-	if (with_default && with_non_default) {
-		if (ifindex <= 0)
-			return nmp_cache_id_init_object_type (id, obj_type, TRUE);
-		return nmp_cache_id_init_addrroute_visible_by_ifindex (id, obj_type, ifindex);
-	}
-
-	if (with_default)
+	if (with_default) {
+		if (with_non_default) {
+			if (ifindex <= 0)
+				return nmp_cache_id_init_object_type (id, obj_type, TRUE);
+			return nmp_cache_id_init_addrroute_visible_by_ifindex (id, obj_type, ifindex);
+		}
 		_nmp_cache_id_init (id, NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_BY_IFINDEX_ONLY_DEFAULT);
-	else if (with_non_default)
+	} else if (with_non_default)
 		_nmp_cache_id_init (id, NMP_CACHE_ID_TYPE_ROUTES_VISIBLE_BY_IFINDEX_NO_DEFAULT);
 	else
 		g_return_val_if_reached (NULL);
@@ -1105,12 +1096,13 @@ nmp_cache_id_init_link_by_ifname (NMPCacheId *id,
 {
 	gsize l;
 
-	_nmp_cache_id_init (id, NMP_CACHE_ID_TYPE_LINK_BY_IFNAME);
-
 	if (   !ifname
 	    || (l = strlen (ifname)) > sizeof (id->link_by_ifname.ifname_short))
 		g_return_val_if_reached (id);
 
+	_nmp_cache_id_init (id, NMP_CACHE_ID_TYPE_LINK_BY_IFNAME);
+
+	memset (id->link_by_ifname.ifname_short, 0, sizeof (id->link_by_ifname.ifname_short));
 	/* the trailing NUL is dropped!! */
 	memcpy (id->link_by_ifname.ifname_short, ifname, l);
 
@@ -1139,12 +1131,11 @@ nmp_cache_id_init_routes_by_destination_ip6 (NMPCacheId *id,
 	_nmp_cache_id_init (id, NMP_CACHE_ID_TYPE_ROUTES_BY_DESTINATION_IP6);
 	id->routes_by_destination_ip4.plen = plen;
 	memcpy (&id->routes_by_destination_ip6._misaligned_metric,  &metric, sizeof (guint32));
-	if (network)
-		memcpy (&id->routes_by_destination_ip6._misaligned_network, network, sizeof (struct in6_addr));
+	memcpy (&id->routes_by_destination_ip6._misaligned_network, network ?: &nm_ip_addr_zero.addr6, sizeof (struct in6_addr));
 	return id;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 _nmp_object_init_cache_id (const NMPObject *obj, NMPCacheIdType id_type, NMPCacheId *id, const NMPCacheId **out_id)
@@ -1302,7 +1293,7 @@ _vt_cmd_obj_init_cache_id_ipx_route (const NMPObject *obj, NMPCacheIdType id_typ
 	return TRUE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 gboolean
 nmp_cache_use_udev_get (const NMPCache *cache)
@@ -1312,7 +1303,7 @@ nmp_cache_use_udev_get (const NMPCache *cache)
 	return cache->use_udev;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 /**
  * nmp_cache_link_connected_needs_toggle:
@@ -1364,7 +1355,9 @@ nmp_cache_link_connected_needs_toggle (const NMPCache *cache, const NMPObject *m
 	    && potential_slave->link.connected) {
 		is_lower_up = TRUE;
 	} else {
-		links = (const NMPlatformLink *const *) nmp_cache_lookup_multi (cache, nmp_cache_id_init_object_type (NMP_CACHE_ID_STATIC, NMP_OBJECT_TYPE_LINK, FALSE), &len);
+		NMPCacheId cache_id;
+
+		links = (const NMPlatformLink *const *) nmp_cache_lookup_multi (cache, nmp_cache_id_init_object_type (&cache_id, NMP_OBJECT_TYPE_LINK, FALSE), &len);
 		for (i = 0; i < len; i++) {
 			const NMPlatformLink *link = links[i];
 			const NMPObject *obj = NMP_OBJECT_UP_CAST ((NMPlatformObject *) link);
@@ -1417,7 +1410,7 @@ nmp_cache_link_connected_needs_toggle_by_ifindex (const NMPCache *cache, int mas
 	return NULL;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 const NMPlatformObject *const *
 nmp_cache_lookup_multi (const NMPCache *cache, const NMPCacheId *cache_id, guint *out_len)
@@ -1582,7 +1575,7 @@ nmp_cache_lookup_all_to_hash (const NMPCache *cache,
 	return hash;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 _nmp_cache_update_cache (NMPCache *cache, NMPObject *obj, gboolean remove)
@@ -1994,7 +1987,7 @@ nmp_cache_update_link_master_connected (NMPCache *cache, int ifindex, NMPObject 
 	return NMP_CACHE_OPS_UPDATED;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 NMPCache *
 nmp_cache_new (gboolean use_udev)
@@ -2035,7 +2028,7 @@ nmp_cache_free (NMPCache *cache)
 	g_free (cache);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 void
 ASSERT_nmp_cache_is_consistent (const NMPCache *cache)
@@ -2093,7 +2086,7 @@ ASSERT_nmp_cache_is_consistent (const NMPCache *cache)
 	}
 #endif
 }
-/******************************************************************/
+/*****************************************************************************/
 
 const NMPClass _nmp_classes[NMP_OBJECT_TYPE_MAX] = {
 	[NMP_OBJECT_TYPE_LINK - 1] = {
@@ -2236,6 +2229,15 @@ const NMPClass _nmp_classes[NMP_OBJECT_TYPE_MAX] = {
 		.lnk_link_type                      = NM_LINK_TYPE_IPIP,
 		.cmd_plobj_to_string                = (const char *(*) (const NMPlatformObject *obj, char *buf, gsize len)) nm_platform_lnk_ipip_to_string,
 		.cmd_plobj_cmp                      = (int (*) (const NMPlatformObject *obj1, const NMPlatformObject *obj2)) nm_platform_lnk_ipip_cmp,
+	},
+	[NMP_OBJECT_TYPE_LNK_MACSEC - 1] = {
+		.obj_type                           = NMP_OBJECT_TYPE_LNK_MACSEC,
+		.sizeof_data                        = sizeof (NMPObjectLnkMacsec),
+		.sizeof_public                      = sizeof (NMPlatformLnkMacsec),
+		.obj_type_name                      = "macsec",
+		.lnk_link_type                      = NM_LINK_TYPE_MACSEC,
+		.cmd_plobj_to_string                = (const char *(*) (const NMPlatformObject *obj, char *buf, gsize len)) nm_platform_lnk_macsec_to_string,
+		.cmd_plobj_cmp                      = (int (*) (const NMPlatformObject *obj1, const NMPlatformObject *obj2)) nm_platform_lnk_macsec_cmp,
 	},
 	[NMP_OBJECT_TYPE_LNK_MACVLAN - 1] = {
 		.obj_type                           = NMP_OBJECT_TYPE_LNK_MACVLAN,

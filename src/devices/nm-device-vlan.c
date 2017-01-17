@@ -28,41 +28,46 @@
 #include "nm-utils.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
-#include "nm-enum-types.h"
-#include "nm-settings.h"
-#include "nm-activation-request.h"
+#include "settings/nm-settings.h"
+#include "nm-act-request.h"
 #include "nm-ip4-config.h"
-#include "nm-platform.h"
+#include "platform/nm-platform.h"
 #include "nm-device-factory.h"
 #include "nm-manager.h"
 #include "nm-core-internal.h"
-#include "nmp-object.h"
+#include "platform/nmp-object.h"
 
-#include "nmdbus-device-vlan.h"
+#include "introspection/org.freedesktop.NetworkManager.Device.Vlan.h"
 
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF(NMDeviceVlan);
 
-G_DEFINE_TYPE (NMDeviceVlan, nm_device_vlan, NM_TYPE_DEVICE)
+/*****************************************************************************/
 
-#define NM_DEVICE_VLAN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DEVICE_VLAN, NMDeviceVlanPrivate))
+NM_GOBJECT_PROPERTIES_DEFINE (NMDeviceVlan,
+	PROP_VLAN_ID,
+);
 
 typedef struct {
-	NMDevice *parent;
 	gulong parent_state_id;
 	gulong parent_hwaddr_id;
 	guint vlan_id;
 } NMDeviceVlanPrivate;
 
-enum {
-	PROP_0,
-	PROP_PARENT,
-	PROP_VLAN_ID,
-
-	LAST_PROP
+struct _NMDeviceVlan {
+	NMDevice parent;
+	NMDeviceVlanPrivate _priv;
 };
 
-/******************************************************************/
+struct _NMDeviceVlanClass {
+	NMDeviceClass parent;
+};
+
+G_DEFINE_TYPE (NMDeviceVlan, nm_device_vlan, NM_TYPE_DEVICE)
+
+#define NM_DEVICE_VLAN_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMDeviceVlan, NM_IS_DEVICE_VLAN)
+
+/*****************************************************************************/
 
 static void
 parent_state_changed (NMDevice *parent,
@@ -91,18 +96,18 @@ parent_hwaddr_maybe_changed (NMDevice *parent,
 	NMSettingIPConfig *s_ip6;
 
 	/* Never touch assumed devices */
-	if (nm_device_uses_assumed_connection (self))
+	if (nm_device_uses_assumed_connection ((NMDevice *) self))
 		return;
 
-	connection = nm_device_get_applied_connection (self);
+	connection = nm_device_get_applied_connection ((NMDevice *) self);
 	if (!connection)
 		return;
 
 	/* Update the VLAN MAC only if configuration does not specify one */
-	if (nm_device_hw_addr_is_explict (self))
+	if (nm_device_hw_addr_is_explict ((NMDevice *) self))
 		return;
 
-	old_mac = nm_device_get_hw_address (self);
+	old_mac = nm_device_get_hw_address ((NMDevice *) self);
 	new_mac = nm_device_get_hw_address (parent);
 	if (nm_streq0 (old_mac, new_mac))
 		return;
@@ -110,7 +115,7 @@ parent_hwaddr_maybe_changed (NMDevice *parent,
 	_LOGD (LOGD_VLAN, "parent hardware address changed to %s%s%s",
 	       NM_PRINT_FMT_QUOTE_STRING (new_mac));
 	if (new_mac) {
-		nm_device_hw_addr_set (self, new_mac, "vlan-parent");
+		nm_device_hw_addr_set ((NMDevice *) self, new_mac, "vlan-parent", TRUE);
 		/* When changing the hw address the interface is taken down,
 		 * removing the IPv6 configuration; reapply it.
 		 */
@@ -121,41 +126,46 @@ parent_hwaddr_maybe_changed (NMDevice *parent,
 }
 
 static void
-nm_device_vlan_set_parent (NMDeviceVlan *self, NMDevice *parent)
+parent_changed_notify (NMDevice *device,
+                       int old_ifindex,
+                       NMDevice *old_parent,
+                       int new_ifindex,
+                       NMDevice *new_parent)
 {
+	NMDeviceVlan *self = NM_DEVICE_VLAN (device);
 	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (self);
-	NMDevice *device = NM_DEVICE (self);
 
-	if (parent == priv->parent)
-		return;
+	NM_DEVICE_CLASS (nm_device_vlan_parent_class)->parent_changed_notify (device, old_ifindex, old_parent, new_ifindex, new_parent);
 
-	nm_clear_g_signal_handler (priv->parent, &priv->parent_state_id);
-	nm_clear_g_signal_handler (priv->parent, &priv->parent_hwaddr_id);
-	g_clear_object (&priv->parent);
+	/*  note that @self doesn't have to clear @parent_state_id on dispose,
+	 *  because NMDevice's dispose() will unset the parent, which in turn calls
+	 *  parent_changed_notify(). */
+	nm_clear_g_signal_handler (old_parent, &priv->parent_state_id);
+	nm_clear_g_signal_handler (old_parent, &priv->parent_hwaddr_id);
 
-	if (parent) {
-		priv->parent = g_object_ref (parent);
-		priv->parent_state_id = g_signal_connect (priv->parent,
+	if (new_parent) {
+		priv->parent_state_id = g_signal_connect (new_parent,
 		                                          NM_DEVICE_STATE_CHANGED,
 		                                          G_CALLBACK (parent_state_changed),
 		                                          device);
 
-		priv->parent_hwaddr_id = g_signal_connect (priv->parent, "notify::" NM_DEVICE_HW_ADDRESS,
+		priv->parent_hwaddr_id = g_signal_connect (new_parent, "notify::" NM_DEVICE_HW_ADDRESS,
 		                                           G_CALLBACK (parent_hwaddr_maybe_changed), device);
-		parent_hwaddr_maybe_changed (parent, NULL, self);
+		parent_hwaddr_maybe_changed (new_parent, NULL, self);
 
 		/* Set parent-dependent unmanaged flag */
 		nm_device_set_unmanaged_by_flags (device,
 		                                  NM_UNMANAGED_PARENT,
-		                                  !nm_device_get_managed (parent, FALSE),
+		                                  !nm_device_get_managed (new_parent, FALSE),
 		                                  NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED);
 	}
 
 	/* Recheck availability now that the parent has changed */
-	nm_device_queue_recheck_available (self,
-	                                   NM_DEVICE_STATE_REASON_PARENT_CHANGED,
-	                                   NM_DEVICE_STATE_REASON_PARENT_CHANGED);
-	g_object_notify (G_OBJECT (device), NM_DEVICE_VLAN_PARENT);
+	if (new_ifindex > 0) {
+		nm_device_queue_recheck_available (device,
+		                                   NM_DEVICE_STATE_REASON_PARENT_CHANGED,
+		                                   NM_DEVICE_STATE_REASON_PARENT_CHANGED);
+	}
 }
 
 static void
@@ -164,41 +174,41 @@ update_properties (NMDevice *device)
 	NMDeviceVlanPrivate *priv;
 	const NMPlatformLink *plink = NULL;
 	const NMPlatformLnkVlan *plnk = NULL;
-	NMDevice *parent = NULL;
 	int ifindex;
+	int parent_ifindex = 0;
 	guint vlan_id;
 
 	g_return_if_fail (NM_IS_DEVICE_VLAN (device));
 
-	priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
+	priv = NM_DEVICE_VLAN_GET_PRIVATE ((NMDeviceVlan *) device);
 
 	ifindex = nm_device_get_ifindex (device);
 
 	if (ifindex > 0)
 		plnk = nm_platform_link_get_lnk_vlan (NM_PLATFORM_GET, ifindex, &plink);
+
 	if (   plnk
-	    && plink->parent
-	    && plink->parent != NM_PLATFORM_LINK_OTHER_NETNS)
-		parent = nm_manager_get_device_by_ifindex (nm_manager_get (), plink->parent);
+	    && plink->parent > 0)
+		parent_ifindex = plink->parent;
 
 	g_object_freeze_notify ((GObject *) device);
 
-	nm_device_vlan_set_parent ((NMDeviceVlan *) device, parent);
+	nm_device_parent_set_ifindex (device, parent_ifindex);
 
 	vlan_id = plnk ? plnk->id : 0;
 	if (vlan_id != priv->vlan_id) {
 		priv->vlan_id = vlan_id;
-		g_object_notify ((GObject *) device, NM_DEVICE_VLAN_ID);
+		_notify ((NMDeviceVlan *) device, PROP_VLAN_ID);
 	}
 
 	g_object_thaw_notify ((GObject *) device);
 }
 
 static void
-realize_start_notify (NMDevice *device, const NMPlatformLink *plink)
+link_changed (NMDevice *device,
+              const NMPlatformLink *pllink)
 {
-	NM_DEVICE_CLASS (nm_device_vlan_parent_class)->realize_start_notify (device, plink);
-
+	NM_DEVICE_CLASS (nm_device_vlan_parent_class)->link_changed (device, pllink);
 	update_properties (device);
 }
 
@@ -209,7 +219,7 @@ create_and_realize (NMDevice *device,
                     const NMPlatformLink **out_plink,
                     GError **error)
 {
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE ((NMDeviceVlan *) device);
 	const char *iface = nm_device_get_iface (device);
 	NMSettingVlan *s_vlan;
 	int parent_ifindex;
@@ -253,11 +263,10 @@ create_and_realize (NMDevice *device,
 		return FALSE;
 	}
 
-	g_warn_if_fail (priv->parent == NULL);
-	nm_device_vlan_set_parent (NM_DEVICE_VLAN (device), parent);
+	nm_device_parent_set_ifindex (device, parent_ifindex);
 	if (vlan_id != priv->vlan_id) {
 		priv->vlan_id = vlan_id;
-		g_object_notify ((GObject *) device, NM_DEVICE_VLAN_ID);
+		_notify ((NMDeviceVlan *) device, PROP_VLAN_ID);
 	}
 
 	return TRUE;
@@ -266,82 +275,47 @@ create_and_realize (NMDevice *device,
 static void
 unrealize_notify (NMDevice *device)
 {
+	NMDeviceVlan *self = NM_DEVICE_VLAN (device);
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (self);
+
 	NM_DEVICE_CLASS (nm_device_vlan_parent_class)->unrealize_notify (device);
 
-	NM_DEVICE_VLAN_GET_PRIVATE (device)->vlan_id = 0;
-	g_object_notify (G_OBJECT (device), NM_DEVICE_VLAN_ID);
-	nm_device_vlan_set_parent (NM_DEVICE_VLAN (device), NULL);
+	if (priv->vlan_id != 0) {
+		priv->vlan_id = 0;
+		_notify (self, PROP_VLAN_ID);
+	}
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static NMDeviceCapabilities
-get_generic_capabilities (NMDevice *dev)
+get_generic_capabilities (NMDevice *device)
 {
 	/* We assume VLAN interfaces always support carrier detect */
 	return NM_DEVICE_CAP_CARRIER_DETECT | NM_DEVICE_CAP_IS_SOFTWARE;
 }
 
-static gboolean
-bring_up (NMDevice *dev, gboolean *no_firmware)
-{
-	gboolean success = FALSE;
-	guint i = 20;
-
-	while (i-- > 0 && !success) {
-		success = NM_DEVICE_CLASS (nm_device_vlan_parent_class)->bring_up (dev, no_firmware);
-		g_usleep (50);
-	}
-
-	return success;
-}
-
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 is_available (NMDevice *device, NMDeviceCheckDevAvailableFlags flags)
 {
-	if (!NM_DEVICE_VLAN_GET_PRIVATE (device)->parent)
+	if (!nm_device_parent_get_device (device))
 		return FALSE;
-
 	return NM_DEVICE_CLASS (nm_device_vlan_parent_class)->is_available (device, flags);
 }
 
-static void
-notify_new_device_added (NMDevice *device, NMDevice *new_device)
-{
-	NMDeviceVlan *self = NM_DEVICE_VLAN (device);
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (self);
-	const NMPlatformLink *plink;
-	const NMPlatformLnkVlan *plnk;
-
-	if (priv->parent)
-		return;
-
-	if (!nm_device_is_real (device))
-		return;
-
-	plnk = nm_platform_link_get_lnk_vlan (NM_PLATFORM_GET, nm_device_get_ifindex (device), &plink);
-	if (!plnk)
-		return;
-
-	if (   plink->parent <= 0
-	    || nm_device_get_ifindex (new_device) != plink->parent)
-		return;
-
-	nm_device_vlan_set_parent (self, new_device);
-}
-
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 match_parent (NMDeviceVlan *self, const char *parent)
 {
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (self);
+	NMDevice *parent_device;
 
 	g_return_val_if_fail (parent != NULL, FALSE);
 
-	if (!priv->parent)
+	parent_device = nm_device_parent_get_device (NM_DEVICE (self));
+	if (!parent_device)
 		return FALSE;
 
 	if (nm_utils_is_uuid (parent)) {
@@ -352,7 +326,7 @@ match_parent (NMDeviceVlan *self, const char *parent)
 		 * device has that connection activated.
 		 */
 
-		parent_req = nm_device_get_act_request (priv->parent);
+		parent_req = nm_device_get_act_request (parent_device);
 		if (!parent_req)
 			return FALSE;
 
@@ -364,7 +338,7 @@ match_parent (NMDeviceVlan *self, const char *parent)
 			return FALSE;
 	} else {
 		/* interface name */
-		if (g_strcmp0 (parent, nm_device_get_ip_iface (priv->parent)) != 0)
+		if (g_strcmp0 (parent, nm_device_get_ip_iface (parent_device)) != 0)
 			return FALSE;
 	}
 
@@ -374,8 +348,8 @@ match_parent (NMDeviceVlan *self, const char *parent)
 static gboolean
 match_hwaddr (NMDevice *device, NMConnection *connection, gboolean fail_if_no_hwaddr)
 {
-	NMDeviceVlanPrivate *priv;
 	NMSettingWired *s_wired;
+	NMDevice *parent_device;
 	const char *setting_mac;
 	const char *parent_mac;
 
@@ -387,18 +361,18 @@ match_hwaddr (NMDevice *device, NMConnection *connection, gboolean fail_if_no_hw
 	if (!setting_mac)
 		return !fail_if_no_hwaddr;
 
-	priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
-	if (!priv->parent)
+	parent_device = nm_device_parent_get_device (device);
+	if (!parent_device)
 		return !fail_if_no_hwaddr;
 
-	parent_mac = nm_device_get_permanent_hw_address (priv->parent);
+	parent_mac = nm_device_get_permanent_hw_address (parent_device);
 	return parent_mac && nm_utils_hwaddr_matches (setting_mac, -1, parent_mac, -1);
 }
 
 static gboolean
 check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE ((NMDeviceVlan *) device);
 	NMSettingVlan *s_vlan;
 	const char *parent = NULL;
 
@@ -482,12 +456,13 @@ complete_connection (NMDevice *device,
 static void
 update_connection (NMDevice *device, NMConnection *connection)
 {
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE ((NMDeviceVlan *) device);
 	NMSettingVlan *s_vlan = nm_connection_get_setting_vlan (connection);
 	int ifindex = nm_device_get_ifindex (device);
 	const char *setting_parent, *new_parent;
 	const NMPlatformLink *plink;
 	const NMPObject *polnk;
+	NMDevice *parent_device;
 	guint vlan_id;
 	guint vlan_flags;
 
@@ -506,18 +481,19 @@ update_connection (NMDevice *device, NMConnection *connection)
 		g_object_set (s_vlan, NM_SETTING_VLAN_ID, vlan_id, NULL);
 
 	/* Update parent in the connection; default to parent's interface name */
-	if (   priv->parent
+	parent_device = nm_device_parent_get_device (device);
+	if (   parent_device
 	    && polnk
 	    && plink->parent > 0
-	    && nm_device_get_ifindex (priv->parent) == plink->parent) {
-		new_parent = nm_device_get_iface (priv->parent);
+	    && nm_device_get_ifindex (parent_device) == plink->parent) {
+		new_parent = nm_device_get_iface (parent_device);
 		setting_parent = nm_setting_vlan_get_parent (s_vlan);
 		if (setting_parent && nm_utils_is_uuid (setting_parent)) {
 			NMConnection *parent_connection;
 
 			/* Don't change a parent specified by UUID if it's still valid */
 			parent_connection = (NMConnection *) nm_settings_get_connection_by_uuid (nm_device_get_settings (device), setting_parent);
-			if (parent_connection && nm_device_check_connection_compatible (priv->parent, parent_connection))
+			if (parent_connection && nm_device_check_connection_compatible (parent_device, parent_connection))
 				new_parent = NULL;
 		}
 		if (new_parent)
@@ -546,26 +522,27 @@ update_connection (NMDevice *device, NMConnection *connection)
 }
 
 static NMActStageReturn
-act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
+act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 {
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (dev);
+	NMDevice *parent_device;
 	NMSettingVlan *s_vlan;
 	NMActStageReturn ret;
 
 	g_return_val_if_fail (reason != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
-	ret = NM_DEVICE_CLASS (nm_device_vlan_parent_class)->act_stage1_prepare (dev, reason);
+	ret = NM_DEVICE_CLASS (nm_device_vlan_parent_class)->act_stage1_prepare (device, reason);
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	if (!nm_device_hw_addr_set_cloned (dev, nm_device_get_applied_connection (dev), FALSE))
+	if (!nm_device_hw_addr_set_cloned (device, nm_device_get_applied_connection (device), FALSE))
 		return NM_ACT_STAGE_RETURN_FAILURE;
 
 	/* Change MAC address to parent's one if needed */
-	if (priv->parent)
-		parent_hwaddr_maybe_changed (priv->parent, NULL, dev);
+	parent_device = nm_device_parent_get_device (device);
+	if (parent_device)
+		parent_hwaddr_maybe_changed (parent_device, NULL, device);
 
-	s_vlan = (NMSettingVlan *) nm_device_get_applied_setting (dev, NM_TYPE_SETTING_VLAN);
+	s_vlan = (NMSettingVlan *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_VLAN);
 	if (s_vlan) {
 		gs_free NMVlanQosMapping *ingress_map = NULL;
 		gs_free NMVlanQosMapping *egress_map = NULL;
@@ -581,7 +558,7 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 		                                 &n_egress_map);
 
 		nm_platform_link_vlan_change (NM_PLATFORM_GET,
-		                              nm_device_get_ifindex (dev),
+		                              nm_device_get_ifindex (device),
 		                              NM_VLAN_FLAGS_ALL,
 		                              nm_setting_vlan_get_flags (s_vlan),
 		                              TRUE,
@@ -595,41 +572,15 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 	return ret;
 }
 
-static void
-ip4_config_pre_commit (NMDevice *device, NMIP4Config *config)
-{
-	NMConnection *connection;
-	NMSettingWired *s_wired;
-	guint32 mtu;
-
-	connection = nm_device_get_applied_connection (device);
-	g_assert (connection);
-
-	s_wired = nm_connection_get_setting_wired (connection);
-	if (s_wired) {
-		mtu = nm_setting_wired_get_mtu (s_wired);
-		if (mtu)
-			nm_ip4_config_set_mtu (config, mtu, NM_IP_CONFIG_SOURCE_USER);
-	}
-}
-
-/******************************************************************/
-
-static void
-nm_device_vlan_init (NMDeviceVlan * self)
-{
-}
+/*****************************************************************************/
 
 static void
 get_property (GObject *object, guint prop_id,
               GValue *value, GParamSpec *pspec)
 {
-	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (object);
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE ((NMDeviceVlan *) object);
 
 	switch (prop_id) {
-	case PROP_PARENT:
-		nm_utils_g_value_set_object_path (value, priv->parent);
-		break;
 	case PROP_VLAN_ID:
 		g_value_set_uint (value, priv->vlan_id);
 		break;
@@ -639,19 +590,11 @@ get_property (GObject *object, guint prop_id,
 	}
 }
 
-static void
-set_property (GObject *object, guint prop_id,
-			  const GValue *value, GParamSpec *pspec)
-{
-	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-}
+/*****************************************************************************/
 
 static void
-dispose (GObject *object)
+nm_device_vlan_init (NMDeviceVlan * self)
 {
-	nm_device_vlan_set_parent (NM_DEVICE_VLAN (object), NULL);
-
-	G_OBJECT_CLASS (nm_device_vlan_parent_class)->dispose (object);
 }
 
 static void
@@ -662,50 +605,39 @@ nm_device_vlan_class_init (NMDeviceVlanClass *klass)
 
 	NM_DEVICE_CLASS_DECLARE_TYPES (klass, NM_SETTING_VLAN_SETTING_NAME, NM_LINK_TYPE_VLAN)
 
-	g_type_class_add_private (object_class, sizeof (NMDeviceVlanPrivate));
-
-	/* virtual methods */
 	object_class->get_property = get_property;
-	object_class->set_property = set_property;
-	object_class->dispose = dispose;
 
 	parent_class->create_and_realize = create_and_realize;
-	parent_class->realize_start_notify = realize_start_notify;
+	parent_class->link_changed = link_changed;
 	parent_class->unrealize_notify = unrealize_notify;
 	parent_class->get_generic_capabilities = get_generic_capabilities;
-	parent_class->bring_up = bring_up;
 	parent_class->act_stage1_prepare = act_stage1_prepare;
-	parent_class->ip4_config_pre_commit = ip4_config_pre_commit;
+	parent_class->get_configured_mtu = nm_device_get_configured_mtu_for_wired;
 	parent_class->is_available = is_available;
-	parent_class->notify_new_device_added = notify_new_device_added;
+	parent_class->parent_changed_notify = parent_changed_notify;
 
 	parent_class->check_connection_compatible = check_connection_compatible;
 	parent_class->check_connection_available = check_connection_available;
 	parent_class->complete_connection = complete_connection;
 	parent_class->update_connection = update_connection;
 
-	/* properties */
-	g_object_class_install_property
-		(object_class, PROP_PARENT,
-		 g_param_spec_string (NM_DEVICE_VLAN_PARENT, "", "",
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS));
-	g_object_class_install_property
-		(object_class, PROP_VLAN_ID,
-		 g_param_spec_uint (NM_DEVICE_VLAN_ID, "", "",
-		                    0, 4095, 0,
-		                    G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_VLAN_ID] =
+	     g_param_spec_uint (NM_DEVICE_VLAN_ID, "", "",
+	                        0, 4095, 0,
+	                        G_PARAM_READABLE
+	                        | G_PARAM_STATIC_STRINGS);
+
+	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
 	                                        NMDBUS_TYPE_DEVICE_VLAN_SKELETON,
 	                                        NULL);
 }
 
-/*************************************************************/
+/*****************************************************************************/
 
-#define NM_TYPE_VLAN_FACTORY (nm_vlan_factory_get_type ())
-#define NM_VLAN_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_VLAN_FACTORY, NMVlanFactory))
+#define NM_TYPE_VLAN_DEVICE_FACTORY (nm_vlan_device_factory_get_type ())
+#define NM_VLAN_DEVICE_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_VLAN_DEVICE_FACTORY, NMVlanDeviceFactory))
 
 static NMDevice *
 create_device (NMDeviceFactory *factory,
@@ -777,8 +709,7 @@ get_connection_iface (NMDeviceFactory *factory,
 NM_DEVICE_FACTORY_DEFINE_INTERNAL (VLAN, Vlan, vlan,
 	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES    (NM_LINK_TYPE_VLAN)
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_VLAN_SETTING_NAME),
-	factory_iface->create_device = create_device;
-	factory_iface->get_connection_parent = get_connection_parent;
-	factory_iface->get_connection_iface = get_connection_iface;
-	)
-
+	factory_class->create_device = create_device;
+	factory_class->get_connection_parent = get_connection_parent;
+	factory_class->get_connection_iface = get_connection_iface;
+);

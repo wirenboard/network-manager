@@ -1321,6 +1321,9 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_wireless_class)
 	 * variable: HWADDR
 	 * description: Hardware address of the device in traditional hex-digits-and-colons
 	 *    notation (e.g. 00:22:68:14:5A:05).
+	 *    Note that for initscripts this is the current MAC address of the device as found
+	 *    during ifup. For NetworkManager this is the permanent MAC address. Or in case no
+	 *    permanent MAC address exists, the MAC address initially configured on the device.
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1337,19 +1340,20 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_wireless_class)
 	/**
 	 * NMSettingWireless:cloned-mac-address:
 	 *
-	 * If specified, request that the device use this MAC address instead of its
-	 * permanent MAC address.  This is known as MAC cloning or spoofing.
+	 * If specified, request that the device use this MAC address instead.
+	 * This is known as MAC cloning or spoofing.
 	 *
 	 * Beside explicitly specifing a MAC address, the special values "preserve", "permanent",
 	 * "random" and "stable" are supported.
 	 * "preserve" means not to touch the MAC address on activation.
 	 * "permanent" means to use the permanent hardware address of the device.
 	 * "random" creates a random MAC address on each connect.
-	 * "stable" creates a hashed MAC address based on connection.stable-id (or
-	 * the connection's UUID) and a machine dependent key.
+	 * "stable" creates a hashed MAC address based on connection.stable-id and a
+	 * machine dependent key.
 	 *
 	 * If unspecified, the value can be overwritten via global defaults, see manual
-	 * of NetworkManager.conf. If still unspecified, it defaults to "permanent".
+	 * of NetworkManager.conf. If still unspecified, it defaults to "preserve"
+	 * (older versions of NetworkManager may use a different default value).
 	 *
 	 * On D-Bus, this field is expressed as "assigned-mac-address" or the deprecated
 	 * "cloned-mac-address".
@@ -1372,6 +1376,7 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_wireless_class)
 	 * format: byte array
 	 * description: This D-Bus field is deprecated in favor of "assigned-mac-address"
 	 *    which is more flexible and allows specifying special variants like "random".
+	 *    For libnm and nmcli, this field is called "cloned-mac-address".
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1394,7 +1399,9 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_wireless_class)
 	 *   a hardware address in ASCII representation, or one of the special values
 	 *   "preserve", "permanent", "random" or "stable".
 	 *   This field replaces the deprecated "cloned-mac-address" on D-Bus, which
-	 *   can only contain explict hardware addresses.
+	 *   can only contain explict hardware addresses. Note that this property
+	 *   only exists in D-Bus API. libnm and nmcli continue to call this property
+	 *   "cloned-mac-address".
 	 * ---end---
 	 */
 	_nm_setting_class_add_dbus_only_property (setting_class,
@@ -1437,7 +1444,7 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_wireless_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: generate-mac-address-mask
-	 * variable: GENERATE_MAC_ADDRESS_MASK
+	 * variable: GENERATE_MAC_ADDRESS_MASK(+)
 	 * description: the MAC address mask for generating randomized and stable
 	 *   cloned-mac-address.
 	 * ---end---
@@ -1578,7 +1585,8 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_wireless_class)
 	 * the user has set a global default to randomize and the supplicant
 	 * supports randomization),  %NM_SETTING_MAC_RANDOMIZATION_NEVER (never
 	 * randomize the MAC address), or %NM_SETTING_MAC_RANDOMIZATION_ALWAYS
-	 * (always randomize the MAC address).
+	 * (always randomize the MAC address). This property is deprecated for
+	 * 'cloned-mac-address'.
 	 *
 	 * Since: 1.2
 	 * Deprecated: 1.4: Deprecated by NMSettingWireless:cloned-mac-address property

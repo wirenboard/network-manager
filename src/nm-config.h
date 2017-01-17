@@ -59,6 +59,9 @@
 #define NM_CONFIG_KEYFILE_GROUP_IFUPDOWN                    "ifupdown"
 #define NM_CONFIG_KEYFILE_GROUP_IFNET                       "ifnet"
 
+#define NM_CONFIG_KEYFILE_KEY_MAIN_AUTH_POLKIT              "auth-polkit"
+#define NM_CONFIG_KEYFILE_KEY_MAIN_DHCP                     "dhcp"
+#define NM_CONFIG_KEYFILE_KEY_MAIN_DEBUG                    "debug"
 #define NM_CONFIG_KEYFILE_KEY_LOGGING_BACKEND               "backend"
 #define NM_CONFIG_KEYFILE_KEY_CONFIG_ENABLE                 "enable"
 #define NM_CONFIG_KEYFILE_KEY_ATOMIC_SECTION_WAS            ".was"
@@ -100,13 +103,7 @@ typedef struct {
 	bool dirty;
 } NMConfigState;
 
-struct _NMConfig {
-	GObject parent;
-};
-
-typedef struct {
-	GObjectClass parent;
-} NMConfigClass;
+typedef struct _NMConfigClass NMConfigClass;
 
 GType nm_config_get_type (void);
 
@@ -120,13 +117,9 @@ NMConfigData *nm_config_get_data_orig (NMConfig *config);
 #define NM_CONFIG_GET_DATA      (nm_config_get_data (nm_config_get ()))
 #define NM_CONFIG_GET_DATA_ORIG (nm_config_get_data_orig (nm_config_get ()))
 
-const char **nm_config_get_plugins (NMConfig *config);
 gboolean nm_config_get_monitor_connection_files (NMConfig *config);
-gboolean nm_config_get_auth_polkit (NMConfig *config);
-const char *nm_config_get_dhcp_client (NMConfig *config);
 const char *nm_config_get_log_level (NMConfig *config);
 const char *nm_config_get_log_domains (NMConfig *config);
-const char *nm_config_get_debug (NMConfig *config);
 gboolean nm_config_get_configure_and_quit (NMConfig *config);
 gboolean nm_config_get_is_debug (NMConfig *config);
 
@@ -160,11 +153,11 @@ void _nm_config_state_set (NMConfig *config,
 gint nm_config_parse_boolean (const char *str, gint default_value);
 
 GKeyFile *nm_config_create_keyfile (void);
-gint nm_config_keyfile_get_boolean (GKeyFile *keyfile,
+gint nm_config_keyfile_get_boolean (const GKeyFile *keyfile,
                                     const char *section,
                                     const char *key,
                                     gint default_value);
-char *nm_config_keyfile_get_value (GKeyFile *keyfile,
+char *nm_config_keyfile_get_value (const GKeyFile *keyfile,
                                    const char *section,
                                    const char *key,
                                    NMConfigGetValueFlags flags);
@@ -185,5 +178,39 @@ gboolean nm_config_set_global_dns (NMConfig *self, NMGlobalDnsConfig *global_dns
 extern guint _nm_config_match_nm_version;
 extern char *_nm_config_match_env;
 
-#endif /* __NETWORKMANAGER_CONFIG_H__ */
+/*****************************************************************************/
 
+#define NM_CONFIG_DEVICE_STATE_DIR ""NMRUNDIR"/devices"
+
+#define NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT_BOOL     (nm_streq (""NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT, "true"))
+#define NM_CONFIG_DEFAULT_LOGGING_AUDIT_BOOL        (nm_streq (""NM_CONFIG_DEFAULT_LOGGING_AUDIT, "true"))
+
+typedef enum {
+	NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNKNOWN   = -1,
+	NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNMANAGED = 0,
+	NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED   = 1,
+} NMConfigDeviceStateManagedType;
+
+struct _NMConfigDeviceStateData {
+	int ifindex;
+	NMConfigDeviceStateManagedType managed;
+
+	/* the UUID of the last settings-connection active
+	 * on the device. */
+	const char *connection_uuid;
+
+	const char *perm_hw_addr_fake;
+};
+
+NMConfigDeviceStateData *nm_config_device_state_load (NMConfig *self,
+                                                      int ifindex);
+gboolean nm_config_device_state_write (NMConfig *self,
+                                       int ifindex,
+                                       gboolean managed,
+                                       const char *perm_hw_addr_fake,
+                                       const char *connection_uuid);
+void nm_config_device_state_prune_unseen (NMConfig *self, GHashTable *seen_ifindexes);
+
+/*****************************************************************************/
+
+#endif /* __NETWORKMANAGER_CONFIG_H__ */

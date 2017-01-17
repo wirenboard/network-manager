@@ -20,8 +20,8 @@
 
 #include "nm-default.h"
 
-#include "nm-arping-manager.h"
-#include "test-common.h"
+#include "devices/nm-arping-manager.h"
+#include "platform/tests/test-common.h"
 
 #define IFACE_VETH0 "nm-test-veth0"
 #define IFACE_VETH1 "nm-test-veth1"
@@ -124,6 +124,8 @@ fixture_teardown (test_fixture *fixture, gconstpointer user_data)
 	nm_platform_link_delete (NM_PLATFORM_GET, fixture->ifindex0);
 	nm_platform_link_delete (NM_PLATFORM_GET, fixture->ifindex1);
 }
+
+NMTstpSetupFunc const _nmtstp_setup_platform_func = nm_linux_platform_setup;
 
 void
 _nmtstp_init_tests (int *argc, char ***argv)

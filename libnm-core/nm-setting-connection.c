@@ -72,6 +72,7 @@ typedef struct {
 	GSList *permissions; /* list of Permission structs */
 	gboolean autoconnect;
 	gint autoconnect_priority;
+	gint autoconnect_retries;
 	guint64 timestamp;
 	gboolean read_only;
 	char *zone;
@@ -90,6 +91,7 @@ enum {
 	PROP_PERMISSIONS,
 	PROP_AUTOCONNECT,
 	PROP_AUTOCONNECT_PRIORITY,
+	PROP_AUTOCONNECT_RETRIES,
 	PROP_TIMESTAMP,
 	PROP_READ_ONLY,
 	PROP_ZONE,
@@ -105,7 +107,7 @@ enum {
 	LAST_PROP
 };
 
-/***********************************************************************/
+/*****************************************************************************/
 
 #define PERM_USER_PREFIX  "user:"
 
@@ -186,7 +188,7 @@ permission_free (Permission *p)
 	g_slice_free (Permission, p);
 }
 
-/***********************************************************************/
+/*****************************************************************************/
 
 /**
  * nm_setting_connection_new:
@@ -532,6 +534,25 @@ nm_setting_connection_get_autoconnect_priority (NMSettingConnection *setting)
 }
 
 /**
+ * nm_setting_connection_get_autoconnect_retries:
+ * @setting: the #NMSettingConnection
+ *
+ * Returns the #NMSettingConnection:autoconnect-retries property of the connection.
+ * Zero means infinite, -1 means the global default value.
+ *
+ * Returns: the connection's autoconnect retries
+ *
+ * Since: 1.6
+ **/
+gint
+nm_setting_connection_get_autoconnect_retries (NMSettingConnection *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_CONNECTION (setting), -1);
+
+	return NM_SETTING_CONNECTION_GET_PRIVATE (setting)->autoconnect_retries;
+}
+
+/**
  * nm_setting_connection_get_timestamp:
  * @setting: the #NMSettingConnection
  *
@@ -647,9 +668,6 @@ nm_setting_connection_get_autoconnect_slaves (NMSettingConnection *setting)
 
 	return NM_SETTING_CONNECTION_GET_PRIVATE (setting)->autoconnect_slaves;
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_4, NMSettingConnectionAutoconnectSlaves, nm_setting_connection_get_autoconnect_slaves, (NMSettingConnection *setting), (setting));
-
-NM_BACKPORT_SYMBOL (libnm_1_0_4, GType, nm_setting_connection_autoconnect_slaves_get_type, (void), ());
 
 /**
  * nm_setting_connection_get_num_secondaries:
@@ -804,10 +822,6 @@ nm_setting_connection_get_metered (NMSettingConnection *setting)
 	return NM_SETTING_CONNECTION_GET_PRIVATE (setting)->metered;
 }
 
-NM_BACKPORT_SYMBOL (libnm_1_0_6, NMMetered, nm_setting_connection_get_metered, (NMSettingConnection *setting), (setting));
-
-NM_BACKPORT_SYMBOL (libnm_1_0_6, GType, nm_metered_get_type, (void), ());
-
 /**
  * nm_setting_connection_get_lldp:
  * @setting: the #NMSettingConnection
@@ -877,13 +891,15 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	}
 
 	if (priv->interface_name) {
-		if (!nm_utils_iface_valid_name (priv->interface_name)) {
+		GError *tmp_error = NULL;
+
+		if (!nm_utils_is_valid_iface_name (priv->interface_name, &tmp_error)) {
 			g_set_error (error,
 			             NM_CONNECTION_ERROR,
 			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			             _("'%s' is not a valid interface name"),
-			             priv->interface_name);
+			             "'%s': %s", priv->interface_name, tmp_error->message);
 			g_prefix_error (error, "%s.%s: ", NM_SETTING_CONNECTION_SETTING_NAME, NM_SETTING_CONNECTION_INTERFACE_NAME);
+			g_error_free (tmp_error);
 			return FALSE;
 		}
 	}
@@ -1090,7 +1106,7 @@ nm_setting_connection_set_interface_name (NMSetting *setting,
 	 * overridden by a valid connection.interface-name.
 	 */
 	interface_name = find_virtual_interface_name (connection_dict);
-	if (!interface_name || nm_utils_iface_valid_name (interface_name))
+	if (!interface_name || nm_utils_is_valid_iface_name (interface_name, NULL))
 		interface_name = g_variant_get_string (value, NULL);
 
 	g_object_set (G_OBJECT (setting),
@@ -1217,6 +1233,9 @@ set_property (GObject *object, guint prop_id,
 	case PROP_AUTOCONNECT_PRIORITY:
 		priv->autoconnect_priority = g_value_get_int (value);
 		break;
+	case PROP_AUTOCONNECT_RETRIES:
+		priv->autoconnect_retries = g_value_get_int (value);
+		break;
 	case PROP_TIMESTAMP:
 		priv->timestamp = g_value_get_uint64 (value);
 		break;
@@ -1302,6 +1321,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_AUTOCONNECT_PRIORITY:
 		g_value_set_int (value, nm_setting_connection_get_autoconnect_priority (setting));
+		break;
+	case PROP_AUTOCONNECT_RETRIES:
+		g_value_set_int (value, nm_setting_connection_get_autoconnect_retries (setting));
 		break;
 	case PROP_TIMESTAMP:
 		g_value_set_uint64 (value, nm_setting_connection_get_timestamp (setting));
@@ -1410,13 +1432,32 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	/**
 	 * NMSettingConnection:stable-id:
 	 *
-	 * This token to generate stable IDs for the connection. If unset,
-	 * the UUID will be used instead.
+	 * Token to generate stable IDs for the connection.
 	 *
-	 * The stable-id is used instead of the connection UUID for generating
-	 * IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy.
-	 * It is also used to seed the generated cloned MAC address for
-	 * ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable.
+	 * The stable-id is used for generating IPv6 stable private addresses
+	 * with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the
+	 * generated cloned MAC address for ethernet.cloned-mac-address=stable
+	 * and wifi.cloned-mac-address=stable. Note that also the interface name
+	 * of the activating connection and a per-host secret key is included
+	 * into the address generation so that the same stable-id on different
+	 * hosts/devices yields different addresses.
+	 *
+	 * If the value is unset, an ID unique for the connection is used.
+	 * Specifing a stable-id allows multiple connections to generate the
+	 * same addresses. Another use is to generate IDs at runtime via
+	 * dynamic substitutions.
+	 *
+	 * The '$' character is treated special to perform dynamic substitutions
+	 * at runtime. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}".
+	 * These effectively create unique IDs per-connection, per-boot, or every time.
+	 * Any unrecognized patterns following '$' are treated verbatim, however
+	 * are reserved for future use. You are thus advised to avoid '$' or
+	 * escape it as "$$".
+	 * For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for
+	 * this connection that changes with every reboot.
+	 *
+	 * Note that two connections only use the same effective id if
+	 * their stable-id is also identical before performing dynamic substitutions.
 	 *
 	 * Since: 1.4
 	 **/
@@ -1578,6 +1619,32 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	                       NM_SETTING_PARAM_FUZZY_IGNORE |
 	                       G_PARAM_STATIC_STRINGS));
 
+
+	/**
+	 * NMSettingConnection:autoconnect-retries:
+	 *
+	 * The number of times a connection should be tried when autoctivating before
+	 * giving up. Zero means forever, -1 means the global default (4 times if not
+	 * overridden).
+	 */
+	/* ---ifcfg-rh---
+	 * property: autoconnect-retries
+	 * variable: AUTOCONNECT_RETRIES(+)
+	 * description: The number of times a connection should be autoactivated
+	 * before giving up and switching to the next one.
+	 * values: -1 (use global default), 0 (forever) or a positive value
+	 * example: AUTOCONNECT_RETRIES=1
+	 * ---end---
+	 */
+	g_object_class_install_property
+	    (object_class, PROP_AUTOCONNECT_RETRIES,
+	     g_param_spec_int (NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES, "", "",
+	                       -1, G_MAXINT32, -1,
+	                       G_PARAM_READWRITE |
+	                       G_PARAM_CONSTRUCT |
+	                       NM_SETTING_PARAM_FUZZY_IGNORE |
+	                       G_PARAM_STATIC_STRINGS));
+
 	/**
 	 * NMSettingConnection:timestamp:
 	 *
@@ -1650,9 +1717,11 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: master
-	 * variable: MASTER, TEAM_MASTER, BRIDGE
+	 * variable: MASTER, MASTER_UUID, TEAM_MASTER, TEAM_MASTER_UUID, BRIDGE, BRIDGE_UUID
 	 * description: Reference to master connection. The variable used depends on
-	 *   the connection type.
+	 *   the connection type and the value. In general, if the *_UUID variant is present,
+	 *   the variant without *_UUID is ignored. NetworkManager attempts to write both
+	 *   for compatibility with legacy tooling.
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1673,10 +1742,12 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: slave-type
-	 * variable: MASTER, TEAM_MASTER, DEVICETYPE, BRIDGE
+	 * variable: MASTER, MASTER_UUID, TEAM_MASTER, TEAM_MASTER_UUID, DEVICETYPE,
+	 *   BRIDGE, BRIDGE_UUID
 	 * description: Slave type doesn't map directly to a variable, but it is
-	 *   recognized using different variables.  MASTER for bonding,
-	 *   TEAM_MASTER and DEVICETYPE for teaming, BRIDGE for bridging.
+	 *   recognized using different variables.  MASTER and MASTER_UUID for bonding,
+	 *   TEAM_MASTER, TEAM_MASTER_UUID and DEVICETYPE for teaming, BRIDGE
+	 *   and BRIDGE_UUID for bridging.
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1776,7 +1847,7 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: metered
-	 * variable: CONNECTION_METERED
+	 * variable: CONNECTION_METERED(+)
 	 * values: yes,no,unknown
 	 * description: Whether the device is metered
 	 * example: CONNECTION_METERED=yes
@@ -1800,7 +1871,7 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: lldp
-	 * variable: LLDP
+	 * variable: LLDP(+)
 	 * values: boolean value or 'rx'
 	 * default: missing variable means global default
 	 * description: whether LLDP is enabled for the connection

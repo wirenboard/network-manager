@@ -224,17 +224,17 @@
           <tbody>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_VPN_PLUGIN_FAILURE_LOGIN_FAILED</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>1</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>Login failed.</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_VPN_PLUGIN_FAILURE_CONNECT_FAILED</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>2</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>1</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>Connect failed.</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_VPN_PLUGIN_FAILURE_BAD_IP_CONFIG</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>3</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>2</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>Invalid IP configuration returned from the VPN plugin.</para><para></para></entry>
             </row>
           </tbody>

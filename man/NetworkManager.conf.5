@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 12/16/2016
+.\"      Date: 01/17/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.4.4
+.\"    Source: NetworkManager 1.5.90
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.4\&.4" "Configuration"
+.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.5\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,6 +33,7 @@ NetworkManager.conf \- NetworkManager configuration file
 .PP
 /etc/NetworkManager/NetworkManager\&.conf,
 /etc/NetworkManager/conf\&.d/\fIname\fR\&.conf,
+/run/NetworkManager/conf\&.d/\fIname\fR\&.conf,
 /usr/lib/NetworkManager/conf\&.d/\fIname\fR\&.conf,
 /var/lib/NetworkManager/NetworkManager\-intern\&.conf
 .SH "DESCRIPTION"
@@ -53,10 +54,17 @@ files to the
 /etc/NetworkManager/conf\&.d
 directory\&. These will be read in order, with later files overriding earlier ones\&. Packages might install further configuration snippets to
 /usr/lib/NetworkManager/conf\&.d\&. This directory is parsed first, even before
+NetworkManager\&.conf\&. Scripts can also put per\-boot configuration into
+/run/NetworkManager/conf\&.d\&. This directory is parsed second, also before
 NetworkManager\&.conf\&. The loading of a file
-/usr/lib/NetworkManager/conf\&.d/\fIname\fR\&.conf
+/run/NetworkManager/conf\&.d/\fIname\fR\&.conf
 can be prevented by adding a file
-/etc/NetworkManager/conf\&.d/\fIname\fR\&.conf\&. In this case, the file from the etc configuration shadows the file from the system configuration directory\&.
+/etc/NetworkManager/conf\&.d/\fIname\fR\&.conf\&. Likewise, a file
+/usr/lib/NetworkManager/conf\&.d/\fIname\fR\&.conf
+can be shadowed by putting a file of the same name to either
+/etc/NetworkManager/conf\&.d
+or
+/run/NetworkManager/conf\&.d\&.
 .PP
 NetworkManager can overwrite certain user configuration options via D\-Bus or other internal operations\&. In this case it writes those changes to
 /var/lib/NetworkManager/NetworkManager\-intern\&.conf\&. This file is not intended to be modified by the user, but it is read last and can shadow user configuration from
@@ -135,7 +143,8 @@ options require the indicated clients to be installed\&. The
 internal
 option uses a built\-in DHCP client which is not currently as featureful as the external clients\&.
 .sp
-If this key is missing, available DHCP clients are looked for in this order:
+If this key is missing, it defaults to
+dhclient\&. It the chosen plugin is not available, clients are looked for in this order:
 dhclient,
 dhcpcd,
 internal\&.
@@ -148,7 +157,7 @@ Specify devices for which NetworkManager shouldn\*(Aqt create default wired conn
 to apply to all devices\&.
 .sp
 When the default wired connection is deleted or saved to a new persistent connection by a plugin, the device is added to a list in the file
-/var/run/NetworkManager/no\-auto\-default\&.state
+/run/NetworkManager/no\-auto\-default\&.state
 to prevent creating the default connection for that device again\&.
 .sp
 See
@@ -176,7 +185,7 @@ no\-auto\-default=*
 This setting is deprecated for the per\-device setting
 ignore\-carrier
 which overwrites this setting if specified (See
-???)\&. Otherwise, it is a list of matches to specify for which device carrier should be ignored\&. See
+\fIignore\-carrier\fR)\&. Otherwise, it is a list of matches to specify for which device carrier should be ignored\&. See
 the section called \(lqDevice List Format\(rq
 for the syntax how to specify a device\&.
 .RE
@@ -198,19 +207,31 @@ true, network configuration for WiFi, WWAN, Bluetooth, ADSL, and PPPoE interface
 .PP
 \fIdns\fR
 .RS 4
-Set the DNS (resolv\&.conf) processing mode\&.
+Set the DNS (resolv\&.conf) processing mode\&. If the key is unspecified,
+default
+is used, unless
+/etc/resolv\&.conf
+is a symlink to
+/run/systemd/resolve/resolv\&.conf,
+/lib/systemd/resolv\&.conf
+or
+/usr/lib/systemd/resolv\&.conf\&. In that case,
+systemd\-resolved
+is chosen automatically\&.
 .sp
-default: The default if the key is not specified\&. NetworkManager will update
-resolv\&.conf
+default: NetworkManager will update
+/etc/resolv\&.conf
 to reflect the nameservers provided by currently active connections\&.
 .sp
 dnsmasq: NetworkManager will run dnsmasq as a local caching nameserver, using a "split DNS" configuration if you are connected to a VPN, and then update
 resolv\&.conf
-to point to the local nameserver\&.
+to point to the local nameserver\&. It is possible to pass custom options to the dnsmasq instance by adding them to files in the "${prefix}/etc/NetworkManager/dnsmasq\&.d/" directory\&. Note that when multiple upstream servers are available, dnsmasq will initially contact them in parallel and then use the fastest to respond, probing again other servers after some time\&. This behavior can be modified passing the \*(Aqall\-servers\*(Aq or \*(Aqstrict\-order\*(Aq options to dnsmasq (see the manual page for more details)\&.
 .sp
-unbound: NetworkManager will talk to unbound and dnssec\-triggerd, providing a "split DNS" configuration with DNSSEC support\&. The
+unbound: NetworkManager will talk to unbound and dnssec\-triggerd, providing a "split DNS" configuration with DNSSEC support\&.
 /etc/resolv\&.conf
 will be managed by dnssec\-trigger daemon\&.
+.sp
+systemd\-resolved: NetworkManager will push the DNS configuration to systemd\-resolved
 .sp
 none: NetworkManager will not modify resolv\&.conf\&. This implies
 rc\-manager\ \&unmanaged
@@ -254,6 +275,13 @@ RLIMIT_CORE: set ulimit \-c unlimited to write out core dumps\&. Beware, that a 
 .sp
 fatal\-warnings: set g_log_set_always_fatal() to core dump on warning messages from glib\&. This is equivalent to the \-\-g\-fatal\-warnings command line option\&.
 .RE
+.PP
+\fIautoconnect\-retries\-default\fR
+.RS 4
+The number of times a connection activation should be automatically tried before switching to another one\&. This value applies only to connections that can auto\-connect and have a
+connection\&.autoconnect\-retries
+property set to \-1\&. If not specified, connections will be retried 4 times\&.
+.RE
 .SH "KEYFILE SECTION"
 .PP
 This section contains keyfile\-plugin\-specific options, and is normally only used when you are not using any other distro\-specific plugin\&.
@@ -268,7 +296,7 @@ or other system configuration files according to build options\&.
 .PP
 \fIpath\fR
 .RS 4
-The location where keyfiles are read and stored\&. This defaults to "/etc/NetworkManager/conf\&.d"\&.
+The location where keyfiles are read and stored\&. This defaults to "${prefix}/etc/NetworkManager/conf\&.d"\&.
 .RE
 .PP
 \fIunmanaged\-devices\fR
@@ -537,17 +565,36 @@ for details)\&. A default value is only consulted if the corresponding per\-conn
 .RS 4
 .RE
 .PP
+\fIconnection\&.stable\-id\fR
+.RS 4
+.RE
+.PP
 \fIethernet\&.cloned\-mac\-address\fR
 .RS 4
-If left unspecified, it defaults to "permanent"\&.
+If left unspecified, it defaults to "preserve"\&.
 .RE
 .PP
 \fIethernet\&.generate\-mac\-address\-mask\fR
 .RS 4
 .RE
 .PP
+\fIethernet\&.mtu\fR
+.RS 4
+If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints\&. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500\&.
+.RE
+.PP
 \fIethernet\&.wake\-on\-lan\fR
 .RS 4
+.RE
+.PP
+\fIinfiniband\&.mtu\fR
+.RS 4
+If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints\&. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or the MTU is left unspecified on activation\&.
+.RE
+.PP
+\fIip\-tunnel\&.mtu\fR
+.RS 4
+If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints\&. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500\&.
 .RE
 .PP
 \fIipv4\&.dad\-timeout\fR
@@ -581,7 +628,7 @@ If left unspecified, default value of 60 seconds is used\&.
 .PP
 \fIwifi\&.cloned\-mac\-address\fR
 .RS 4
-If left unspecified, it defaults to "permanent"\&.
+If left unspecified, it defaults to "preserve"\&.
 .RE
 .PP
 \fIwifi\&.generate\-mac\-address\-mask\fR
@@ -592,6 +639,11 @@ If left unspecified, it defaults to "permanent"\&.
 .RS 4
 If left unspecified, MAC address randomization is disabled\&. This setting is deprecated for
 wifi\&.cloned\-mac\-address\&.
+.RE
+.PP
+\fIwifi\&.mtu\fR
+.RS 4
+If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints\&. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500\&.
 .RE
 .PP
 \fIwifi\&.powersave\fR
@@ -723,7 +775,7 @@ The
 section works the same as the
 [connection]
 section\&. That is, multiple sections that all start with the prefix "device" can be specified\&. The settings "match\-device" and "stop\-match" are available to match a device section on a device\&. The order of multiple sections is also top\-down within the file and later files overwrite previous settings\&. See
-the section called \(lqSections\(rq
+\(lqSections\(rq under the section called \(lqCONNECTION SECTION\(rq
 for details\&.
 .SH "CONNECTIVITY SECTION"
 .PP

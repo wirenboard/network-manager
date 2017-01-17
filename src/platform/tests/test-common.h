@@ -4,15 +4,15 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#include "nm-platform.h"
-#include "nm-fake-platform.h"
-#include "nm-linux-platform.h"
+#include "platform/nm-platform.h"
+#include "platform/nm-fake-platform.h"
+#include "platform/nm-linux-platform.h"
 
 #include "nm-test-utils-core.h"
 
 #define DEVICE_NAME "nm-test-device"
 
-/*********************************************************************************************/
+/*****************************************************************************/
 
 #define _NMLOG_PREFIX_NAME                "platform-test"
 #define _NMLOG_DOMAIN                     LOGD_PLATFORM
@@ -35,12 +35,12 @@
         } \
     } G_STMT_END
 
-/*********************************************************************************************/
+/*****************************************************************************/
 
 gboolean nmtstp_is_root_test (void);
 gboolean nmtstp_is_sysfs_writable (void);
 
-/******************************************************************************/
+/*****************************************************************************/
 
 typedef struct _NMTstpNamespaceHandle NMTstpNamespaceHandle;
 
@@ -51,7 +51,11 @@ pid_t nmtstp_namespace_handle_get_pid (NMTstpNamespaceHandle *handle);
 
 int nmtstp_namespace_get_fd_for_process (pid_t pid, const char *ns_name);
 
-/******************************************************************************/
+/*****************************************************************************/
+
+void nmtstp_netns_select_random (NMPlatform **platforms, gsize n_platforms, NMPNetns **netns);
+
+/*****************************************************************************/
 
 typedef struct {
 	gulong handler_id;
@@ -80,7 +84,7 @@ void _free_signal (const char *file, int line, const char *func, SignalData *dat
 #define ensure_no_signal(data) _ensure_no_signal(__FILE__, __LINE__, G_STRFUNC, data)
 #define free_signal(data) _free_signal(__FILE__, __LINE__, G_STRFUNC, data)
 
-void link_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, NMPlatformLink *received, NMPlatformSignalChangeType change_type, SignalData *data);
+void link_callback (NMPlatform *platform, int obj_type_i, int ifindex, NMPlatformLink *received, int change_type_i, SignalData *data);
 
 /*****************************************************************************/
 
@@ -207,8 +211,12 @@ void nmtstp_link_del (NMPlatform *platform,
                       int ifindex,
                       const char *name);
 
+typedef void (*NMTstpSetupFunc) (void);
+extern NMTstpSetupFunc const _nmtstp_setup_platform_func;
+
+void nmtstp_setup_platform (void);
+
 /*****************************************************************************/
 
 void _nmtstp_init_tests (int *argc, char ***argv);
 void _nmtstp_setup_tests (void);
-

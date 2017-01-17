@@ -20,34 +20,31 @@
 
 #include "nm-default.h"
 
-#include "nm-bluez-manager.h"
-
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
 #include <gmodule.h>
 
-#include "nm-device-factory.h"
+#include "devices/nm-device-factory.h"
 #include "nm-setting-bluetooth.h"
-#include "nm-settings.h"
+#include "settings/nm-settings.h"
 #include "nm-bluez4-manager.h"
 #include "nm-bluez5-manager.h"
 #include "nm-bluez-device.h"
 #include "nm-bluez-common.h"
 #include "nm-device-bt.h"
 #include "nm-core-internal.h"
-#include "nm-platform.h"
+#include "platform/nm-platform.h"
 #include "nm-dbus-compat.h"
 
-#define _NMLOG_DOMAIN        LOGD_BT
-#define _NMLOG_PREFIX_NAME   "bluez"
-#define _NMLOG(level, ...) \
-    G_STMT_START { \
-        nm_log ((level), _NMLOG_DOMAIN, \
-                "%s" _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
-                _NMLOG_PREFIX_NAME": " \
-                _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
-    } G_STMT_END
+/*****************************************************************************/
+
+#define NM_TYPE_BLUEZ_MANAGER            (nm_bluez_manager_get_type ())
+#define NM_BLUEZ_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_BLUEZ_MANAGER, NMBluezManager))
+#define NM_BLUEZ_MANAGER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  NM_TYPE_BLUEZ_MANAGER, NMBluezManagerClass))
+#define NM_IS_BLUEZ_MANAGER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_BLUEZ_MANAGER))
+#define NM_IS_BLUEZ_MANAGER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  NM_TYPE_BLUEZ_MANAGER))
+#define NM_BLUEZ_MANAGER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_BLUEZ_MANAGER, NMBluezManagerClass))
 
 typedef struct {
 	int bluez_version;
@@ -62,18 +59,27 @@ typedef struct {
 	GCancellable *async_cancellable;
 } NMBluezManagerPrivate;
 
-#define NM_BLUEZ_MANAGER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_BLUEZ_MANAGER, NMBluezManagerPrivate))
+typedef struct {
+	NMDeviceFactory parent;
+	NMBluezManagerPrivate _priv;
+} NMBluezManager;
+
+typedef struct {
+	NMDeviceFactoryClass parent;
+} NMBluezManagerClass;
 
 static GType nm_bluez_manager_get_type (void);
 
-static void device_factory_interface_init (NMDeviceFactoryInterface *factory_iface);
+G_DEFINE_TYPE (NMBluezManager, nm_bluez_manager, NM_TYPE_DEVICE_FACTORY);
 
-G_DEFINE_TYPE_EXTENDED (NMBluezManager, nm_bluez_manager, G_TYPE_OBJECT, 0,
-                        G_IMPLEMENT_INTERFACE (NM_TYPE_DEVICE_FACTORY, device_factory_interface_init))
+#define NM_BLUEZ_MANAGER_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMBluezManager, NM_IS_BLUEZ_MANAGER)
 
-static void check_bluez_and_try_setup (NMBluezManager *self);
+/*****************************************************************************/
 
-/**************************************************************************/
+NM_DEVICE_FACTORY_DECLARE_TYPES (
+	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES    (NM_LINK_TYPE_BNEP)
+	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_BLUETOOTH_SETTING_NAME)
+)
 
 G_MODULE_EXPORT NMDeviceFactory *
 nm_device_factory_create (GError **error)
@@ -81,7 +87,16 @@ nm_device_factory_create (GError **error)
 	return (NMDeviceFactory *) g_object_new (NM_TYPE_BLUEZ_MANAGER, NULL);
 }
 
-/************************************************************************/
+/*****************************************************************************/
+
+#define _NMLOG_DOMAIN      LOGD_BT
+#define _NMLOG(level, ...) __NMLOG_DEFAULT (level, _NMLOG_DOMAIN, "bluez", __VA_ARGS__)
+
+/*****************************************************************************/
+
+static void check_bluez_and_try_setup (NMBluezManager *self);
+
+/*****************************************************************************/
 
 struct AsyncData {
 	NMBluezManager *self;
@@ -382,12 +397,27 @@ start (NMDeviceFactory *factory)
 	check_bluez_and_try_setup (NM_BLUEZ_MANAGER (factory));
 }
 
-NM_DEVICE_FACTORY_DECLARE_TYPES (
-	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES    (NM_LINK_TYPE_BNEP)
-	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_BLUETOOTH_SETTING_NAME)
-)
+static NMDevice *
+create_device (NMDeviceFactory *factory,
+               const char *iface,
+               const NMPlatformLink *plink,
+               NMConnection *connection,
+               gboolean *out_ignore)
+{
+	g_warn_if_fail (plink->type == NM_LINK_TYPE_BNEP);
+	*out_ignore = TRUE;
+	return NULL;
+}
 
-/*********************************************************************/
+/*****************************************************************************/
+
+static void
+nm_bluez_manager_init (NMBluezManager *self)
+{
+	NMBluezManagerPrivate *priv = NM_BLUEZ_MANAGER_GET_PRIVATE (self);
+
+	priv->settings = g_object_ref (NM_SETTINGS_GET);
+}
 
 static void
 dispose (GObject *object)
@@ -414,41 +444,14 @@ dispose (GObject *object)
 }
 
 static void
-nm_bluez_manager_init (NMBluezManager *self)
-{
-	NMBluezManagerPrivate *priv = NM_BLUEZ_MANAGER_GET_PRIVATE (self);
-
-	priv->settings = g_object_ref (NM_SETTINGS_GET);
-}
-
-static NMDevice *
-create_device (NMDeviceFactory *factory,
-               const char *iface,
-               const NMPlatformLink *plink,
-               NMConnection *connection,
-               gboolean *out_ignore)
-{
-	g_warn_if_fail (plink->type == NM_LINK_TYPE_BNEP);
-	*out_ignore = TRUE;
-	return NULL;
-}
-
-static void
-device_factory_interface_init (NMDeviceFactoryInterface *factory_iface)
-{
-	factory_iface->get_supported_types = get_supported_types;
-	factory_iface->create_device = create_device;
-	factory_iface->start = start;
-}
-
-static void
 nm_bluez_manager_class_init (NMBluezManagerClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	NMDeviceFactoryClass *factory_class = NM_DEVICE_FACTORY_CLASS (klass);
 
-	g_type_class_add_private (klass, sizeof (NMBluezManagerPrivate));
-
-	/* virtual methods */
 	object_class->dispose = dispose;
-}
 
+	factory_class->get_supported_types = get_supported_types;
+	factory_class->create_device = create_device;
+	factory_class->start = start;
+}

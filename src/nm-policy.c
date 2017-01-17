@@ -21,45 +21,45 @@
 
 #include "nm-default.h"
 
+#include "nm-policy.h"
+
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <netdb.h>
 
-#include "nm-policy.h"
 #include "NetworkManagerUtils.h"
-#include "nm-activation-request.h"
-#include "nm-device.h"
+#include "nm-act-request.h"
+#include "devices/nm-device.h"
 #include "nm-default-route-manager.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-connection.h"
-#include "nm-platform.h"
-#include "nm-dns-manager.h"
-#include "nm-vpn-manager.h"
+#include "platform/nm-platform.h"
+#include "dns/nm-dns-manager.h"
+#include "vpn/nm-vpn-manager.h"
 #include "nm-auth-utils.h"
 #include "nm-firewall-manager.h"
 #include "nm-dispatcher.h"
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 #include "nm-manager.h"
-#include "nm-settings.h"
-#include "nm-settings-connection.h"
+#include "settings/nm-settings.h"
+#include "settings/nm-settings-connection.h"
 #include "nm-dhcp4-config.h"
 #include "nm-dhcp6-config.h"
 
-#define _NMLOG_PREFIX_NAME    "policy"
-#define _NMLOG(level, domain, ...) \
-    G_STMT_START { \
-        nm_log ((level), (domain), \
-                "%s" _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
-                _NMLOG_PREFIX_NAME": " \
-                _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
-    } G_STMT_END
+/*****************************************************************************/
 
-typedef struct _NMPolicyPrivate NMPolicyPrivate;
+NM_GOBJECT_PROPERTIES_DEFINE (NMPolicy,
+	PROP_MANAGER,
+	PROP_SETTINGS,
+	PROP_DEFAULT_IP4_DEVICE,
+	PROP_DEFAULT_IP6_DEVICE,
+	PROP_ACTIVATING_IP4_DEVICE,
+	PROP_ACTIVATING_IP6_DEVICE,
+);
 
-struct _NMPolicyPrivate {
-	NMPolicy *self;
+typedef struct {
 	NMManager *manager;
 	NMFirewallManager *firewall_manager;
 	GSList *pending_activation_checks;
@@ -88,28 +88,281 @@ struct _NMPolicyPrivate {
 	char *orig_hostname; /* hostname at NM start time */
 	char *cur_hostname;  /* hostname we want to assign */
 	gboolean hostname_changed;  /* TRUE if NM ever set the hostname */
+
+	GArray *ip6_prefix_delegations; /* pool of ip6 prefixes delegated to all devices */
+} NMPolicyPrivate;
+
+struct _NMPolicy {
+	GObject parent;
+	NMPolicyPrivate _priv;
 };
 
-static NMPolicyPrivate *
-NM_POLICY_GET_PRIVATE(NMPolicy *self)
-{
-	nm_assert (NM_IS_POLICY (self));
-	return self->priv;
-}
+struct _NMPolicyClass {
+	GObjectClass parent;
+};
 
 G_DEFINE_TYPE (NMPolicy, nm_policy, G_TYPE_OBJECT)
 
-NM_GOBJECT_PROPERTIES_DEFINE (NMPolicy,
-	PROP_MANAGER,
-	PROP_SETTINGS,
-	PROP_DEFAULT_IP4_DEVICE,
-	PROP_DEFAULT_IP6_DEVICE,
-	PROP_ACTIVATING_IP4_DEVICE,
-	PROP_ACTIVATING_IP6_DEVICE,
-);
+#define NM_POLICY_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMPolicy, NM_IS_POLICY)
+
+static NMPolicy *
+_PRIV_TO_SELF (NMPolicyPrivate *priv)
+{
+	NMPolicy *self;
+
+	nm_assert (priv);
+
+	self = (NMPolicy *) (((char *) priv) - G_STRUCT_OFFSET (NMPolicy, _priv));
+
+	nm_assert (NM_IS_POLICY (self));
+	return self;
+}
+
+/*****************************************************************************/
+
+#define _NMLOG_PREFIX_NAME    "policy"
+#define _NMLOG(level, domain, ...) \
+    G_STMT_START { \
+        nm_log ((level), (domain), \
+                "%s" _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
+                _NMLOG_PREFIX_NAME": " \
+                _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
+    } G_STMT_END
+
+/*****************************************************************************/
 
 static void schedule_activate_all (NMPolicy *self);
 
+/*****************************************************************************/
+
+typedef struct {
+	NMPlatformIP6Address prefix;
+	NMDevice *device;             /* The requesting ("uplink") device */
+	guint64 next_subnet;          /* Cache of the next subnet number to be
+	                               * assigned from this prefix */
+	GHashTable *subnets;          /* ifindex -> NMPlatformIP6Address */
+} IP6PrefixDelegation;
+
+static void
+_clear_ip6_subnet (gpointer key, gpointer value, gpointer user_data)
+{
+	NMPlatformIP6Address *subnet = value;
+	NMDevice *device = nm_manager_get_device_by_ifindex (nm_manager_get (),
+	                                                     GPOINTER_TO_INT (key));
+
+	if (device) {
+		/* We can not remove a subnet we already started announcing.
+		 * Just un-prefer it. */
+		subnet->preferred = 0;
+		nm_device_use_ip6_subnet (device, subnet);
+	}
+	g_slice_free (NMPlatformIP6Address, subnet);
+}
+
+static void
+clear_ip6_prefix_delegation (gpointer data)
+{
+	IP6PrefixDelegation *delegation = data;
+
+	_LOGD (LOGD_IP6, "ipv6-pd: undelegating prefix %s/%d",
+	       nm_utils_inet6_ntop (&delegation->prefix.address, NULL),
+	       delegation->prefix.plen);
+
+	g_hash_table_foreach (delegation->subnets, _clear_ip6_subnet, NULL);
+	g_hash_table_destroy (delegation->subnets);
+}
+
+static void
+expire_ip6_delegations (NMPolicy *self)
+{
+	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
+	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	IP6PrefixDelegation *delegation = NULL;
+	guint i;
+
+	for (i = 0; i < priv->ip6_prefix_delegations->len; i++) {
+		delegation = &g_array_index (priv->ip6_prefix_delegations,
+		                             IP6PrefixDelegation, i);
+		if (delegation->prefix.timestamp + delegation->prefix.lifetime < now)
+			g_array_remove_index_fast (priv->ip6_prefix_delegations, i);
+	}
+}
+
+/*
+ * Try to obtain a new subnet for a particular active connection from given
+ * delegated prefix, possibly reusing the existing subnet.
+ * Return value of FALSE indicates no more subnets are available from
+ * this prefix (and other prefix should be used -- and requested if necessary).
+ */
+static gboolean
+ip6_subnet_from_delegation (IP6PrefixDelegation *delegation, NMDevice *device)
+{
+	NMPlatformIP6Address *subnet;
+	int ifindex = nm_device_get_ifindex (device);
+
+	subnet = g_hash_table_lookup (delegation->subnets, GINT_TO_POINTER (ifindex));
+	if (!subnet) {
+		/* Check for out-of-prefixes condition. */
+		if (delegation->next_subnet >= (1 << (64 - delegation->prefix.plen))) {
+			_LOGD (LOGD_IP6, "ipv6-pd: no more prefixes in %s/%d",
+			       nm_utils_inet6_ntop (&delegation->prefix.address, NULL),
+			       delegation->prefix.plen);
+			return FALSE;
+		}
+
+		/* Allocate a new subnet. */
+		subnet = g_slice_new0 (NMPlatformIP6Address);
+		g_hash_table_insert (delegation->subnets, GINT_TO_POINTER (ifindex), subnet);
+
+		subnet->plen = 64;
+		subnet->address.s6_addr32[0] =   delegation->prefix.address.s6_addr32[0]
+		                               | htonl (delegation->next_subnet >> 32);
+		subnet->address.s6_addr32[1] =   delegation->prefix.address.s6_addr32[1]
+		                               | htonl (delegation->next_subnet);
+
+		/* Out subnet pool management is pretty unsophisticated. We only add
+		 * the subnets and index them by ifindex. That keeps the implementation
+		 * simple and the dead entries make it easy to reuse the same subnet on
+		 * subsequent activations. On the other hand they may waste the subnet
+		 * space. */
+		delegation->next_subnet++;
+	}
+
+	subnet->timestamp = delegation->prefix.timestamp;
+	subnet->lifetime = delegation->prefix.lifetime;
+	subnet->preferred = delegation->prefix.preferred;
+
+	_LOGD (LOGD_IP6, "ipv6-pd: %s allocated from a /%d prefix on %s",
+	       nm_utils_inet6_ntop (&subnet->address, NULL),
+	       delegation->prefix.plen,
+	       nm_device_get_iface (device));
+
+	nm_device_use_ip6_subnet (device, subnet);
+
+	return TRUE;
+}
+
+/*
+ * Try to obtain a subnet from each prefix delegated to given requesting
+ * ("uplink") device and assign it to the downlink device.
+ * Requests a new prefix if no subnet could be found.
+ */
+static void
+ip6_subnet_from_device (NMPolicy *self, NMDevice *from_device, NMDevice *device)
+{
+	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
+	IP6PrefixDelegation *delegation = NULL;
+	gboolean got_subnet = FALSE;
+	guint have_prefixes = 0;
+	guint i;
+
+	expire_ip6_delegations (self);
+
+	for (i = 0; i < priv->ip6_prefix_delegations->len; i++) {
+		delegation = &g_array_index (priv->ip6_prefix_delegations,
+		                             IP6PrefixDelegation, i);
+
+		if (delegation->device != from_device)
+			continue;
+
+		if (ip6_subnet_from_delegation (delegation, device))
+			got_subnet = TRUE;
+		have_prefixes++;
+	}
+
+	if (!got_subnet) {
+		_LOGI (LOGD_IP6, "ipv6-pd: none of %u prefixes of %s can be shared on %s",
+		       have_prefixes, nm_device_get_iface (from_device),
+		       nm_device_get_iface (device));
+		nm_device_request_ip6_prefixes (from_device, have_prefixes + 1);
+	}
+}
+
+static void
+ip6_remove_device_prefix_delegations (NMPolicy *self, NMDevice *device)
+{
+	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
+	IP6PrefixDelegation *delegation = NULL;
+	guint i;
+
+	for (i = 0; i < priv->ip6_prefix_delegations->len; i++) {
+		delegation = &g_array_index (priv->ip6_prefix_delegations,
+		                             IP6PrefixDelegation, i);
+		if (delegation->device == device)
+			g_array_remove_index_fast (priv->ip6_prefix_delegations, i);
+	}
+}
+
+static void
+device_ip6_prefix_delegated (NMDevice *device,
+                             NMPlatformIP6Address *prefix,
+                             gpointer user_data)
+{
+	NMPolicyPrivate *priv = user_data;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
+	IP6PrefixDelegation *delegation = NULL;
+	const GSList *connections, *iter;
+	guint i;
+
+	_LOGI (LOGD_IP6, "ipv6-pd: received a prefix %s/%d from %s",
+	       nm_utils_inet6_ntop (&prefix->address, NULL),
+	       prefix->plen,
+	       nm_device_get_iface (device));
+
+	expire_ip6_delegations (self);
+
+	for (i = 0; i < priv->ip6_prefix_delegations->len; i++) {
+		/* Look for an already known prefix to update. */
+		delegation = &g_array_index (priv->ip6_prefix_delegations, IP6PrefixDelegation, i);
+		if (IN6_ARE_ADDR_EQUAL (&delegation->prefix.address, &prefix->address))
+			break;
+	}
+
+	if (i == priv->ip6_prefix_delegations->len) {
+		/* Allocate a delegation delegation for new prefix. */
+		g_array_set_size (priv->ip6_prefix_delegations, i + 1);
+		delegation = &g_array_index (priv->ip6_prefix_delegations, IP6PrefixDelegation, i);
+		delegation->subnets = g_hash_table_new (NULL, NULL);
+		delegation->next_subnet = 0;
+	}
+
+	delegation->device = device;
+	delegation->prefix = *prefix;
+
+	/* The newly activated connections are added to the list beginning,
+	 * so traversing it from the beginning makes it likely for newly
+	 * activated connections that have no subnet assigned to be served
+	 * first. That is a simple yet fair policy, which is good. */
+	connections = nm_manager_get_active_connections (priv->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMDevice *to_device = nm_active_connection_get_device (iter->data);
+
+		if (nm_device_needs_ip6_subnet (to_device))
+			ip6_subnet_from_delegation (delegation, to_device);
+	}
+}
+
+static void
+device_ip6_subnet_needed (NMDevice *device,
+                          gpointer user_data)
+{
+	NMPolicyPrivate *priv = user_data;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
+
+	_LOGD (LOGD_IP6, "ipv6-pd: %s needs a subnet",
+	       nm_device_get_iface (device));
+
+	if (!priv->default_device6) {
+		/* We request the prefixes when the default IPv6 device is set. */
+		_LOGI (LOGD_IP6, "ipv6-pd: no device to obtain a subnet to share on %s from",
+		       nm_device_get_iface (device));
+		return;
+	}
+	ip6_subnet_from_device (self, priv->default_device6, device);
+	nm_device_copy_ip6_dns_config (device, priv->default_device6);
+}
+
+/*****************************************************************************/
 
 static NMDevice *
 get_best_ip4_device (NMPolicy *self, gboolean fully_activated)
@@ -523,6 +776,21 @@ get_best_ip6_config (NMPolicy *self,
 }
 
 static void
+update_ip6_dns_delegation (NMPolicy *self)
+{
+	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
+	const GSList *connections, *iter;
+
+	connections = nm_manager_get_active_connections (priv->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMDevice *device = nm_active_connection_get_device (iter->data);
+
+		if (device && nm_device_needs_ip6_subnet (device))
+			nm_device_copy_ip6_dns_config (device, priv->default_device6);
+	}
+}
+
+static void
 update_ip6_dns (NMPolicy *self, NMDnsManager *dns_mgr)
 {
 	NMIP6Config *ip6_config;
@@ -539,6 +807,24 @@ update_ip6_dns (NMPolicy *self, NMDnsManager *dns_mgr)
 		 * a different IP config type.
 		 */
 		nm_dns_manager_add_ip6_config (dns_mgr, ip_iface, ip6_config, dns_type);
+	}
+
+	update_ip6_dns_delegation (self);
+}
+
+static void
+update_ip6_prefix_delegation (NMPolicy *self)
+{
+	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
+	const GSList *connections, *iter;
+
+	/* There's new default IPv6 connection, try to get a prefix for everyone. */
+	connections = nm_manager_get_active_connections (priv->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMDevice *device = nm_active_connection_get_device (iter->data);
+
+		if (device && nm_device_needs_ip6_subnet (device))
+			ip6_subnet_from_device (self, priv->default_device6, device);
 	}
 }
 
@@ -593,8 +879,10 @@ update_ip6_routing (NMPolicy *self, gboolean force_update)
 
 	if (default_device6 == priv->default_device6)
 		return;
-
 	priv->default_device6 = default_device6;
+
+	update_ip6_prefix_delegation (self);
+
 	connection = nm_active_connection_get_applied_connection (best_ac);
 	_LOGI (LOGD_CORE, "set '%s' (%s) as default for IPv6 routing and DNS",
 	       nm_connection_get_id (connection), ip_iface);
@@ -665,34 +953,32 @@ activate_data_free (ActivateData *data)
 	g_slice_free (ActivateData, data);
 }
 
-static gboolean
-auto_activate_device (gpointer user_data)
+static void
+auto_activate_device (NMPolicy *self,
+                      NMDevice *device)
 {
-	ActivateData *data = (ActivateData *) user_data;
-	NMPolicy *self;
 	NMPolicyPrivate *priv;
 	NMSettingsConnection *best_connection;
-	char *specific_object = NULL;
+	gs_free char *specific_object = NULL;
 	GPtrArray *connections;
 	GSList *connection_list;
 	guint i;
 
-	g_assert (data);
-	self = data->policy;
-	priv = NM_POLICY_GET_PRIVATE (self);
+	nm_assert (NM_IS_POLICY (self));
+	nm_assert (NM_IS_DEVICE (device));
 
-	data->autoactivate_id = 0;
+	priv = NM_POLICY_GET_PRIVATE (self);
 
 	// FIXME: if a device is already activating (or activated) with a connection
 	// but another connection now overrides the current one for that device,
 	// deactivate the device and activate the new connection instead of just
 	// bailing if the device is already active
-	if (nm_device_get_act_request (data->device))
-		goto out;
+	if (nm_device_get_act_request (device))
+		return;
 
 	connection_list = nm_manager_get_activatable_connections (priv->manager);
 	if (!connection_list)
-		goto out;
+		return;
 
 	connections = _nm_utils_copy_slist_to_array (connection_list, NULL, NULL);
 	g_slist_free (connection_list);
@@ -708,7 +994,7 @@ auto_activate_device (gpointer user_data)
 
 		if (!nm_settings_connection_can_autoconnect (candidate))
 			continue;
-		if (nm_device_can_auto_connect (data->device, (NMConnection *) candidate, &specific_object)) {
+		if (nm_device_can_auto_connect (device, (NMConnection *) candidate, &specific_object)) {
 			best_connection = candidate;
 			break;
 		}
@@ -724,8 +1010,9 @@ auto_activate_device (gpointer user_data)
 		subject = nm_auth_subject_new_internal ();
 		if (!nm_manager_activate_connection (priv->manager,
 		                                     best_connection,
+		                                     NULL,
 		                                     specific_object,
-		                                     data->device,
+		                                     device,
 		                                     subject,
 		                                     &error)) {
 			_LOGI (LOGD_DEVICE, "connection '%s' auto-activation failed: (%d) %s",
@@ -736,8 +1023,19 @@ auto_activate_device (gpointer user_data)
 		}
 		g_object_unref (subject);
 	}
+}
 
- out:
+static gboolean
+auto_activate_device_cb (gpointer user_data)
+{
+	ActivateData *data = user_data;
+
+	g_assert (data);
+	g_assert (NM_IS_POLICY (data->policy));
+	g_assert (NM_IS_DEVICE (data->device));
+
+	data->autoactivate_id = 0;
+	auto_activate_device (data->policy, data->device);
 	activate_data_free (data);
 	return G_SOURCE_REMOVE;
 }
@@ -842,7 +1140,7 @@ static void
 hostname_changed (NMManager *manager, GParamSpec *pspec, gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	update_system_hostname (self, NULL, NULL);
 }
@@ -919,7 +1217,7 @@ static void
 sleeping_changed (NMManager *manager, GParamSpec *pspec, gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 	gboolean sleeping = FALSE, enabled = FALSE;
 
 	g_object_get (G_OBJECT (manager), NM_MANAGER_SLEEPING, &sleeping, NULL);
@@ -960,7 +1258,7 @@ schedule_activate_check (NMPolicy *self, NMDevice *device)
 	data = g_slice_new0 (ActivateData);
 	data->policy = self;
 	data->device = g_object_ref (device);
-	data->autoactivate_id = g_idle_add (auto_activate_device, data);
+	data->autoactivate_id = g_idle_add (auto_activate_device_cb, data);
 	priv->pending_activation_checks = g_slist_append (priv->pending_activation_checks, data);
 }
 
@@ -1117,6 +1415,7 @@ activate_secondary_connections (NMPolicy *self,
 		       nm_connection_get_id (connection), nm_connection_get_uuid (connection));
 		ac = nm_manager_activate_connection (priv->manager,
 		                                     settings_con,
+		                                     NULL,
 		                                     nm_exported_object_get_path (NM_EXPORTED_OBJECT (req)),
 		                                     device,
 		                                     nm_active_connection_get_subject (NM_ACTIVE_CONNECTION (req)),
@@ -1151,7 +1450,7 @@ device_state_changed (NMDevice *device,
                       gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	NMSettingsConnection *connection = nm_device_get_settings_connection (device);
 
@@ -1168,17 +1467,18 @@ device_state_changed (NMDevice *device,
 		if (   connection
 		    && old_state >= NM_DEVICE_STATE_PREPARE
 		    && old_state <= NM_DEVICE_STATE_ACTIVATED) {
-			guint32 tries = nm_settings_connection_get_autoconnect_retries (connection);
+			int tries = nm_settings_connection_get_autoconnect_retries (connection);
 
 			if (reason == NM_DEVICE_STATE_REASON_NO_SECRETS) {
 				_LOGD (LOGD_DEVICE, "connection '%s' now blocked from autoconnect due to no secrets",
 				       nm_settings_connection_get_id (connection));
 
 				nm_settings_connection_set_autoconnect_blocked_reason (connection, NM_DEVICE_STATE_REASON_NO_SECRETS);
-			} else if (tries > 0) {
+			} else if (tries != 0) {
 				_LOGD (LOGD_DEVICE, "connection '%s' failed to autoconnect; %d tries left",
 				       nm_settings_connection_get_id (connection), tries);
-				nm_settings_connection_set_autoconnect_retries (connection, tries - 1);
+				if (tries > 0)
+					nm_settings_connection_set_autoconnect_retries (connection, tries - 1);
 			}
 
 			if (nm_settings_connection_get_autoconnect_retries (connection) == 0) {
@@ -1242,6 +1542,7 @@ device_state_changed (NMDevice *device,
 				}
 			}
 		}
+		ip6_remove_device_prefix_delegations (self, device);
 		break;
 	case NM_DEVICE_STATE_DISCONNECTED:
 		/* Reset retry counts for a device's connections when carrier on; if cable
@@ -1297,7 +1598,7 @@ device_ip4_config_changed (NMDevice *device,
                            gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 	const char *ip_iface = nm_device_get_ip_iface (device);
 
 	nm_dns_manager_begin_updates (priv->dns_manager, __func__);
@@ -1306,7 +1607,7 @@ device_ip4_config_changed (NMDevice *device,
 	 * catch all the changes when the device moves to ACTIVATED state.
 	 * Prevents unecessary changes to DNS information.
 	 */
-	if (!nm_device_is_activating (device)) {
+	if (nm_device_get_state (device) == NM_DEVICE_STATE_ACTIVATED) {
 		if (old_config != new_config) {
 			if (old_config)
 				nm_dns_manager_remove_ip4_config (priv->dns_manager, old_config);
@@ -1332,7 +1633,7 @@ device_ip6_config_changed (NMDevice *device,
                            gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 	const char *ip_iface = nm_device_get_ip_iface (device);
 
 	nm_dns_manager_begin_updates (priv->dns_manager, __func__);
@@ -1360,13 +1661,15 @@ device_ip6_config_changed (NMDevice *device,
 	nm_dns_manager_end_updates (priv->dns_manager, __func__);
 }
 
+/*****************************************************************************/
+
 static void
 device_autoconnect_changed (NMDevice *device,
                             GParamSpec *pspec,
                             gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	if (nm_device_autoconnect_allowed (device))
 		schedule_activate_check (self, device);
@@ -1376,7 +1679,7 @@ static void
 device_recheck_auto_activate (NMDevice *device, gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	schedule_activate_check (self, device);
 }
@@ -1398,6 +1701,8 @@ devices_list_register (NMPolicy *self, NMDevice *device)
 	g_signal_connect_after (device, NM_DEVICE_STATE_CHANGED,          (GCallback) device_state_changed, priv);
 	g_signal_connect       (device, NM_DEVICE_IP4_CONFIG_CHANGED,     (GCallback) device_ip4_config_changed, priv);
 	g_signal_connect       (device, NM_DEVICE_IP6_CONFIG_CHANGED,     (GCallback) device_ip6_config_changed, priv);
+	g_signal_connect       (device, NM_DEVICE_IP6_PREFIX_DELEGATED,   (GCallback) device_ip6_prefix_delegated, priv);
+	g_signal_connect       (device, NM_DEVICE_IP6_SUBNET_NEEDED,      (GCallback) device_ip6_subnet_needed, priv);
 	g_signal_connect       (device, "notify::" NM_DEVICE_AUTOCONNECT, (GCallback) device_autoconnect_changed, priv);
 	g_signal_connect       (device, NM_DEVICE_RECHECK_AUTO_ACTIVATE,  (GCallback) device_recheck_auto_activate, priv);
 }
@@ -1406,7 +1711,7 @@ static void
 device_added (NMManager *manager, NMDevice *device, gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	g_return_if_fail (NM_IS_POLICY (self));
 
@@ -1422,7 +1727,11 @@ static void
 device_removed (NMManager *manager, NMDevice *device, gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
+
+	/* XXX is this needed? The delegations are cleaned up
+	 * on transition to deactivated too. */
+	ip6_remove_device_prefix_delegations (self, device);
 
 	/* Clear any idle callbacks for this device */
 	clear_pending_activate_check (self, device);
@@ -1435,7 +1744,7 @@ device_removed (NMManager *manager, NMDevice *device, gpointer user_data)
 	 */
 }
 
-/**************************************************************************/
+/*****************************************************************************/
 
 static void
 vpn_connection_activated (NMPolicy *self, NMVpnConnection *vpn)
@@ -1520,6 +1829,7 @@ vpn_connection_retry_after_failure (NMVpnConnection *vpn, NMPolicy *self)
 	                                     connection,
 	                                     NULL,
 	                                     NULL,
+	                                     NULL,
 	                                     nm_active_connection_get_subject (ac),
 	                                     &error)) {
 		_LOGW (LOGD_DEVICE, "VPN '%s' reconnect failed: %s",
@@ -1548,7 +1858,7 @@ active_connection_added (NMManager *manager,
                          gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	if (NM_IS_VPN_CONNECTION (active)) {
 		g_signal_connect (active, NM_VPN_CONNECTION_INTERNAL_STATE_CHANGED,
@@ -1570,7 +1880,7 @@ active_connection_removed (NMManager *manager,
                            gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	g_signal_handlers_disconnect_by_func (active,
 	                                      vpn_connection_state_changed,
@@ -1583,7 +1893,7 @@ active_connection_removed (NMManager *manager,
 	                                      self);
 }
 
-/**************************************************************************/
+/*****************************************************************************/
 
 static gboolean
 schedule_activate_all_cb (gpointer user_data)
@@ -1617,7 +1927,7 @@ connection_added (NMSettings *settings,
                   gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	schedule_activate_all (self);
 }
@@ -1675,7 +1985,7 @@ connection_updated (NMSettings *settings,
                     gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 	const GSList *iter;
 	NMDevice *device = NULL;
 
@@ -1743,7 +2053,7 @@ connection_visibility_changed (NMSettings *settings,
                                gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	if (nm_settings_connection_is_visible (connection))
 		schedule_activate_all (self);
@@ -1757,7 +2067,7 @@ secret_agent_registered (NMSettings *settings,
                          gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
-	NMPolicy *self = priv->self;
+	NMPolicy *self = _PRIV_TO_SELF (priv);
 
 	/* The registered secret agent may provide some missing secrets. Thus we
 	 * reset retries count here and schedule activation, so that the
@@ -1848,12 +2158,11 @@ set_property (GObject *object, guint prop_id,
 static void
 nm_policy_init (NMPolicy *self)
 {
-	NMPolicyPrivate *priv = G_TYPE_INSTANCE_GET_PRIVATE (self, NM_TYPE_POLICY, NMPolicyPrivate);
-
-	self->priv = priv;
-	priv->self = self;
+	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
 
 	priv->devices = g_hash_table_new (NULL, NULL);
+	priv->ip6_prefix_delegations = g_array_new (FALSE, FALSE, sizeof (IP6PrefixDelegation));
+	g_array_set_clear_func (priv->ip6_prefix_delegations, clear_ip6_prefix_delegation);
 }
 
 static void
@@ -1974,6 +2283,11 @@ dispose (GObject *object)
 		g_signal_handlers_disconnect_by_data (priv->manager, priv);
 	}
 
+	if (priv->ip6_prefix_delegations) {
+		g_array_free (priv->ip6_prefix_delegations, TRUE);
+		priv->ip6_prefix_delegations = NULL;
+	}
+
 	nm_assert (NM_IS_MANAGER (priv->manager));
 
 	G_OBJECT_CLASS (nm_policy_parent_class)->dispose (object);
@@ -1988,16 +2302,12 @@ finalize (GObject *object)
 	g_hash_table_unref (priv->devices);
 
 	G_OBJECT_CLASS (nm_policy_parent_class)->finalize (object);
-
-	priv->self = NULL;
 }
 
 static void
 nm_policy_class_init (NMPolicyClass *policy_class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (policy_class);
-
-	g_type_class_add_private (policy_class, sizeof (NMPolicyPrivate));
 
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
@@ -2037,5 +2347,6 @@ nm_policy_class_init (NMPolicyClass *policy_class)
 	                         NM_TYPE_DEVICE,
 	                         G_PARAM_READABLE |
 	                         G_PARAM_STATIC_STRINGS);
+
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 }

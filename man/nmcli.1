@@ -2,12 +2,12 @@
 .\"     Title: nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 12/16/2016
+.\"      Date: 01/17/2017
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.4.4
+.\"    Source: NetworkManager 1.5.90
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.4\&.4" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.5\&.90" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -270,7 +270,7 @@ Query NetworkManager networking status, enable and disable networking\&.
 .PP
 \fBon\fR, \fBoff\fR
 .RS 4
-Enable enable or disable networking control by NetworkManager\&. All interfaces managed by NetworkManager are deactivated when networking is disabled\&.
+Enable or disable networking control by NetworkManager\&. All interfaces managed by NetworkManager are deactivated when networking is disabled\&.
 .RE
 .PP
 \fBconnectivity\fR [check]
@@ -1290,9 +1290,7 @@ Apart from the property\-value pairs,
 \fBconnection modify\fR
 and
 \fBdevice modify\fR
-also accept short forms of some properties\&. They exist for convenience and compatiblity with older versions of
-\fBnmcli\fR
-that could not accept the raw properties\&.
+also accept short forms of some properties\&. They exist for convenience\&. Some aliases can affect multiple connection properties at once\&.
 .PP
 The overview of the aliases is below\&. An actual connection type is used to disambiguate these options from the options of the same name that are valid for multiple connection types (such as
 \fBmtu\fR)\&.
@@ -1778,18 +1776,22 @@ T}::
 .B Table\ \&12.\ \&Team options
 .TS
 allbox tab(:);
-lB lB.
+lB lB lB.
 T{
 Alias
 T}:T{
 Property
+T}:T{
+Note
 T}
 .T&
-l l.
+l l l.
 T{
 config
 T}:T{
 team\&.config
+T}:T{
+Either a filename or a team configuration in JSON format\&. To enforce one or the other, the value can be prefixed with "file://" or "json://"\&.
 T}
 .TE
 .sp 1
@@ -1801,18 +1803,22 @@ T}
 .B Table\ \&13.\ \&Team port options
 .TS
 allbox tab(:);
-lB lB.
+lB lB lB.
 T{
 Alias
 T}:T{
 Property
+T}:T{
+Note
 T}
 .T&
-l l.
+l l l.
 T{
 config
 T}:T{
 team\-port\&.config
+T}:T{
+Either a filename or a team configuration in JSON format\&. To enforce one or the other, the value can be prefixed with "file://" or "json://"\&.
 T}
 .TE
 .sp 1
@@ -2215,9 +2221,10 @@ T{
 ip4
 T}:T{
 ipv4\&.addresses
+                            ipv4\&.method
 T}:T{
 This option can be specified multiple times\&.
-It\*(Aqs equivalent of using +ipv4\&.addresses syntax\&.
+It\*(Aqs equivalent of using +ipv4\&.addresses syntax and setting ipv4\&.method to manual\&.
 T}
 T{
 gw4
@@ -2251,9 +2258,10 @@ T{
 ip6
 T}:T{
 ipv6\&.addresses
+                            ipv6\&.method
 T}:T{
 This option can be specified multiple times\&.
-It\*(Aqs equivalent of using +ipv6\&.addresses syntax\&.
+It\*(Aqs equivalent of using +ipv6\&.addresses syntax and setting ipv6\&.method to manual\&.
 T}
 T{
 gw6
@@ -2261,6 +2269,33 @@ T}:T{
 ipv6\&.gateway
 T}:T{
 \ \&
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&24.\ \&Proxy options
+.TS
+allbox tab(:);
+lB lB lB.
+T{
+Alias
+T}:T{
+Property
+T}:T{
+Note
+T}
+.T&
+l l lt.
+T{
+\ \&
+T}:T{
+proxy\&.pac\-script
+T}:T{
+Read the java script pac\-script from file or pass it directly on the command line\&. Prefix the value with "file://" or "js://" to force one or the other\&.
 T}
 .TE
 .sp 1

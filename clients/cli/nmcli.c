@@ -25,10 +25,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <pthread.h>
 #include <termios.h>
 #include <unistd.h>
 #include <locale.h>
+#include <glib-unix.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -61,7 +61,6 @@ typedef struct {
 
 /* --- Global variables --- */
 GMainLoop *loop = NULL;
-static sigset_t signal_set;
 struct termios termios_orig;
 
 static void
@@ -206,18 +205,18 @@ usage (void)
 }
 
 static const NMCCommand nmcli_cmds[] = {
-	{ "general",    do_general,     NULL },
-	{ "monitor",    do_monitor,     NULL },
-	{ "networking", do_networking,  NULL },
-	{ "radio",      do_radio,       NULL },
-	{ "connection", do_connections, NULL },
-	{ "device",     do_devices,     NULL },
-	{ "agent",      do_agent,       NULL },
-	{ NULL,         do_overview,    usage }
+	{ "general",     do_general,      NULL,   FALSE,  FALSE },
+	{ "monitor",     do_monitor,      NULL,   TRUE,   FALSE },
+	{ "networking",  do_networking,   NULL,   FALSE,  FALSE },
+	{ "radio",       do_radio,        NULL,   FALSE,  FALSE },
+	{ "connection",  do_connections,  NULL,   FALSE,  FALSE },
+	{ "device",      do_devices,      NULL,   FALSE,  FALSE },
+	{ "agent",       do_agent,        NULL,   FALSE,  FALSE },
+	{ NULL,          do_overview,     usage,  TRUE,   TRUE },
 };
 
-static NMCResultCode
-parse_command_line (NmCli *nmc, int argc, char **argv)
+static gboolean
+process_command_line (NmCli *nmc, int argc, char **argv)
 {
 	char *base;
 
@@ -258,12 +257,12 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 			if (nmc->print_output == NMC_PRINT_TERSE) {
 				g_string_printf (nmc->return_text, _("Error: Option '--terse' is specified the second time."));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			else if (nmc->print_output == NMC_PRINT_PRETTY) {
 				g_string_printf (nmc->return_text, _("Error: Option '--terse' is mutually exclusive with '--pretty'."));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			else
 				nmc->print_output = NMC_PRINT_TERSE;
@@ -271,21 +270,21 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 			if (nmc->print_output == NMC_PRINT_PRETTY) {
 				g_string_printf (nmc->return_text, _("Error: Option '--pretty' is specified the second time."));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			else if (nmc->print_output == NMC_PRINT_TERSE) {
 				g_string_printf (nmc->return_text, _("Error: Option '--pretty' is mutually exclusive with '--terse'."));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			else
 				nmc->print_output = NMC_PRINT_PRETTY;
 		} else if (matches (opt, "-mode") == 0) {
 			nmc->mode_specified = TRUE;
 			if (next_arg (&argc, &argv) != 0) {
-		 		g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
+				g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			if (argc == 1 && nmc->complete)
 				nmc_complete_strings (argv[0], "tabular", "multiline", NULL);
@@ -294,15 +293,15 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 			else if (matches (argv[0], "multiline") == 0)
 				nmc->multiline_output = TRUE;
 			else {
-		 		g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[0], opt);
+				g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[0], opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 		} else if (matches (opt, "-colors") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-		 		g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
+				g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			if (argc == 1 && nmc->complete)
 				nmc_complete_strings (argv[0], "yes", "no", "auto", NULL);
@@ -313,15 +312,15 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 			else if (matches (argv[0], "no") == 0)
 				nmc->use_colors = NMC_USE_COLOR_NO;
 			else {
-		 		g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[0], opt);
+				g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[0], opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 		} else if (matches (opt, "-escape") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-		 		g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
+				g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			if (argc == 1 && nmc->complete)
 				nmc_complete_strings (argv[0], "yes", "no", NULL);
@@ -330,15 +329,15 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 			else if (matches (argv[0], "no") == 0)
 				nmc->escape_values = FALSE;
 			else {
-		 		g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[0], opt);
+				g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[0], opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 		} else if (matches (opt, "-fields") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-		 		g_string_printf (nmc->return_text, _("Error: fields for '%s' options are missing."), opt);
+				g_string_printf (nmc->return_text, _("Error: fields for '%s' options are missing."), opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			if (argc == 1 && nmc->complete)
 				complete_fields (argv[0]);
@@ -352,15 +351,15 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 		} else if (matches (opt, "-wait") == 0) {
 			unsigned long timeout;
 			if (next_arg (&argc, &argv) != 0) {
-		 		g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
+				g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			if (!nmc_string_to_uint (argv[0], TRUE, 0, G_MAXINT, &timeout)) {
-		 		g_string_printf (nmc->return_text, _("Error: '%s' is not a valid timeout for '%s' option."),
-				                 argv[0], opt);
+				g_string_printf (nmc->return_text, _("Error: '%s' is not a valid timeout for '%s' option."),
+						 argv[0], opt);
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-				return nmc->return_value;
+				return FALSE;
 			}
 			nmc->timeout = (int) timeout;
 		} else if (matches (opt, "-version") == 0) {
@@ -374,135 +373,63 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 		} else {
 			g_string_printf (nmc->return_text, _("Error: Option '%s' is unknown, try 'nmcli -help'."), opt);
 			nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-			return nmc->return_value;
+			return FALSE;
 		}
 		argc--;
 		argv++;
 	}
 
 	/* Now run the requested command */
-	return nmc_do_cmd (nmc, nmcli_cmds, *argv, argc, argv);
+	nmc_do_cmd (nmc, nmcli_cmds, *argv, argc, argv);
+
+	return TRUE;
 }
 
 static gboolean nmcli_sigint = FALSE;
-static pthread_mutex_t sigint_mutex = PTHREAD_MUTEX_INITIALIZER;
-static gboolean nmcli_sigquit_internal = FALSE;
 
 gboolean
 nmc_seen_sigint (void)
 {
-	gboolean sigint;
-
-	pthread_mutex_lock (&sigint_mutex);
-	sigint = nmcli_sigint;
-	pthread_mutex_unlock (&sigint_mutex);
-	return sigint;
+	return nmcli_sigint;
 }
 
 void
 nmc_clear_sigint (void)
 {
-	pthread_mutex_lock (&sigint_mutex);
 	nmcli_sigint = FALSE;
-	pthread_mutex_unlock (&sigint_mutex);
 }
 
-void
-nmc_set_sigquit_internal (void)
+void nmc_exit (void)
 {
-	nmcli_sigquit_internal = TRUE;
+	tcsetattr (STDIN_FILENO, TCSADRAIN, &termios_orig);
+	nmc_cleanup_readline ();
+	exit (1);
 }
 
-static int
-event_hook_for_readline (void)
-{
-	/* Make readline() exit on SIGINT */
-	if (nmc_seen_sigint ()) {
-		rl_echo_signal_char (SIGINT);
-		rl_stuff_char ('\n');
-	}
-	return 0;
-}
-
-void *signal_handling_thread (void *arg);
-/*
- * Thread function waiting for signals and processing them.
- * Wait for signals in signal set. The semantics of sigwait() require that all
- * threads (including the thread calling sigwait()) have the signal masked, for
- * reliable operation. Otherwise, a signal that arrives while this thread is
- * not blocked in sigwait() might be delivered to another thread.
- */
-void *
-signal_handling_thread (void *arg) {
-	int signo;
-
-	while (1) {
-		sigwait (&signal_set, &signo);
-
-		switch (signo) {
-		case SIGINT:
-			if (nmc_get_in_readline ()) {
-				/* Don't quit when in readline, only signal we received SIGINT */
-				pthread_mutex_lock (&sigint_mutex);
-				nmcli_sigint = TRUE;
-				pthread_mutex_unlock (&sigint_mutex);
-			} else {
-				/* We can quit nmcli */
-				tcsetattr (STDIN_FILENO, TCSADRAIN, &termios_orig);
-				nmc_cleanup_readline ();
-				g_print (_("\nError: nmcli terminated by signal %s (%d)\n"),
-				         strsignal (signo), signo);
-				exit (1);
-			}
-			break;
-		case SIGQUIT:
-		case SIGTERM:
-			tcsetattr (STDIN_FILENO, TCSADRAIN, &termios_orig);
-			nmc_cleanup_readline ();
-			if (!nmcli_sigquit_internal)
-				g_print (_("\nError: nmcli terminated by signal %s (%d)\n"),
-				         strsignal (signo), signo);
-			exit (1);
-			break;
-		default:
-			break;
-		}
-	}
-	return NULL;
-}
-
-/*
- * Mask the signals we are interested in and create a signal handling thread.
- * Because all threads inherit the signal mask from their creator, all threads
- * in the process will have the signals masked. That's why setup_signals() has
- * to be called before creating other threads.
- */
 static gboolean
-setup_signals (void)
+signal_handler (gpointer user_data)
 {
-	pthread_t signal_thread_id;
-	int status;
+	int signo = GPOINTER_TO_INT (user_data);
 
-	sigemptyset (&signal_set);
-	sigaddset (&signal_set, SIGINT);
-	sigaddset (&signal_set, SIGQUIT);
-	sigaddset (&signal_set, SIGTERM);
-
-	/* Block all signals of interest. */
-	status = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
-	if (status != 0) {
-		g_printerr (_("Failed to set signal mask: %d\n"), status);
-		return FALSE;
+	switch (signo) {
+	case SIGINT:
+		if (nmc_get_in_readline ()) {
+			nmcli_sigint = TRUE;
+		} else {
+			g_print (_("Error: nmcli terminated by signal %s (%d)\n"),
+			         strsignal (signo),
+			         signo);
+			g_main_loop_quit (loop);
+		}
+		break;
+	case SIGTERM:
+		g_print (_("Error: nmcli terminated by signal %s (%d)\n"),
+		         strsignal (signo), signo);
+		nmc_exit ();
+		break;
 	}
 
-	/* Create the signal handling thread. */
-	status = pthread_create (&signal_thread_id, NULL, signal_handling_thread, NULL);
-	if (status != 0) {
-		g_printerr (_("Failed to create signal handling thread: %d\n"), status);
-		return FALSE;
-	}
-
-	return TRUE;
+	return G_SOURCE_CONTINUE;
 }
 
 static void
@@ -587,36 +514,16 @@ nmc_value_transforms_register (void)
 	                                 nmc_convert_bytes_to_string);
 }
 
-static NMClient *
-nmc_get_client (NmCli *nmc)
-{
-	GError *error = NULL;
-
-	if (!nmc->client) {
-		nmc->client = nm_client_new (NULL, &error);
-		if (!nmc->client) {
-			g_printerr ("%s\n", error->message);
-			g_clear_error (&error);
-			exit (NMC_RESULT_ERROR_UNKNOWN);
-		}
-	}
-
-	return nmc->client;
-}
-
 /* Initialize NmCli structure - set default values */
 static void
 nmc_init (NmCli *nmc)
 {
 	nmc->client = NULL;
-	nmc->get_client = &nmc_get_client;
 
 	nmc->return_value = NMC_RESULT_SUCCESS;
 	nmc->return_text = g_string_new (_("Success"));
 
 	nmc->timeout = -1;
-
-	nmc->connections = NULL;
 
 	nmc->secret_agent = NULL;
 	nmc->pwds_hash = NULL;
@@ -664,28 +571,9 @@ nmc_cleanup (NmCli *nmc)
 	nmc_polkit_agent_fini (nmc);
 }
 
-static gboolean
-start (gpointer data)
-{
-	ArgsInfo *info = (ArgsInfo *) data;
-	info->nmc->return_value = parse_command_line (info->nmc, info->argc, info->argv);
-
-	if (!info->nmc->should_wait)
-		g_main_loop_quit (loop);
-
-	return FALSE;
-}
-
-
 int
 main (int argc, char *argv[])
 {
-	ArgsInfo args_info = { &nm_cli, argc, argv };
-
-	/* Set up unix signal handling */
-	if (!setup_signals ())
-		exit (NMC_RESULT_ERROR_UNKNOWN);
-
 	/* Set locale to use environment variables */
 	setlocale (LC_ALL, "");
 
@@ -701,20 +589,15 @@ main (int argc, char *argv[])
 	/* Save terminal settings */
 	tcgetattr (STDIN_FILENO, &termios_orig);
 
-	/* readline init */
-	rl_event_hook = event_hook_for_readline;
-	/* Set 0.01s timeout to mitigate slowness in readline when a broken version is used.
-	 * See https://bugzilla.redhat.com/show_bug.cgi?id=1109946
-	 */
-	rl_set_keyboard_input_timeout (10000);
+	g_unix_signal_add (SIGTERM, signal_handler, GINT_TO_POINTER (SIGTERM));
+	g_unix_signal_add (SIGINT, signal_handler, GINT_TO_POINTER (SIGINT));
 
 	nmc_value_transforms_register ();
 
 	nmc_init (&nm_cli);
-	g_idle_add (start, &args_info);
-
-	loop = g_main_loop_new (NULL, FALSE);  /* create main loop */
-	g_main_loop_run (loop);                /* run main loop */
+	loop = g_main_loop_new (NULL, FALSE);
+	if (process_command_line (&nm_cli, argc, argv))
+		g_main_loop_run (loop);
 
 	if (nm_cli.complete) {
 		/* Remove error statuses from command completion runs. */

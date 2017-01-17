@@ -172,34 +172,38 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	} else if (   !strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE)
 	           || !strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL)
 	           || !strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_SHARED)) {
-		if (nm_setting_ip_config_get_num_dns (s_ip) > 0) {
-			g_set_error (error,
-			             NM_CONNECTION_ERROR,
-			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			             _("this property is not allowed for '%s=%s'"),
-			             NM_SETTING_IP_CONFIG_METHOD, method);
-			g_prefix_error (error, "%s.%s: ", NM_SETTING_IP6_CONFIG_SETTING_NAME, NM_SETTING_IP_CONFIG_DNS);
-			return FALSE;
-		}
 
-		if (nm_setting_ip_config_get_num_dns_searches (s_ip) > 0) {
-			g_set_error (error,
-			             NM_CONNECTION_ERROR,
-			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			             _("this property is not allowed for '%s=%s'"),
-			             NM_SETTING_IP_CONFIG_METHOD, method);
-			g_prefix_error (error, "%s.%s: ", NM_SETTING_IP6_CONFIG_SETTING_NAME, NM_SETTING_IP_CONFIG_DNS_SEARCH);
-			return FALSE;
-		}
+		/* Shared allows IP addresses and DNS; link-local and disabled do not */
+		if (strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_SHARED) != 0) {
+			if (nm_setting_ip_config_get_num_dns (s_ip) > 0) {
+				g_set_error (error,
+				             NM_CONNECTION_ERROR,
+				             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+				             _("this property is not allowed for '%s=%s'"),
+				             NM_SETTING_IP_CONFIG_METHOD, method);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_IP6_CONFIG_SETTING_NAME, NM_SETTING_IP_CONFIG_DNS);
+				return FALSE;
+			}
 
-		if (nm_setting_ip_config_get_num_addresses (s_ip) > 0) {
-			g_set_error (error,
-			             NM_CONNECTION_ERROR,
-			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			             _("this property is not allowed for '%s=%s'"),
-			             NM_SETTING_IP_CONFIG_METHOD, method);
-			g_prefix_error (error, "%s.%s: ", NM_SETTING_IP6_CONFIG_SETTING_NAME, NM_SETTING_IP_CONFIG_ADDRESSES);
-			return FALSE;
+			if (nm_setting_ip_config_get_num_dns_searches (s_ip) > 0) {
+				g_set_error (error,
+				             NM_CONNECTION_ERROR,
+				             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+				             _("this property is not allowed for '%s=%s'"),
+				             NM_SETTING_IP_CONFIG_METHOD, method);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_IP6_CONFIG_SETTING_NAME, NM_SETTING_IP_CONFIG_DNS_SEARCH);
+				return FALSE;
+			}
+
+			if (nm_setting_ip_config_get_num_addresses (s_ip) > 0) {
+				g_set_error (error,
+				             NM_CONNECTION_ERROR,
+				             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+				             _("this property is not allowed for '%s=%s'"),
+				             NM_SETTING_IP_CONFIG_METHOD, method);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_IP6_CONFIG_SETTING_NAME, NM_SETTING_IP_CONFIG_ADDRESSES);
+				return FALSE;
+			}
 		}
 	} else if (   !strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_AUTO)
 	           || !strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_DHCP)) {
@@ -713,8 +717,8 @@ nm_setting_ip6_config_class_init (NMSettingIP6ConfigClass *ip6_class)
 	 * when the interface hardware is replaced.
 	 *
 	 * The value of "stable-privacy" enables use of cryptographically
-	 * secure hash of a secret host-specific key along with the connection
-	 * identification and the network address as specified by RFC7217.
+	 * secure hash of a secret host-specific key along with the connection's
+	 * stable-id and the network address as specified by RFC7217.
 	 * This makes it impossible to use the address track host's presence,
 	 * and makes the address stable when the network interface hardware is
 	 * replaced.

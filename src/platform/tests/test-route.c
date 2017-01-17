@@ -23,15 +23,19 @@
 #include <linux/rtnetlink.h>
 
 #include "nm-core-utils.h"
-#include "nm-platform-utils.h"
+#include "platform/nm-platform-utils.h"
 
 #include "test-common.h"
 
 #define DEVICE_NAME "nm-test-device"
 
 static void
-ip4_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, const NMPlatformIP4Route *received, NMPlatformSignalChangeType change_type, SignalData *data)
+ip4_route_callback (NMPlatform *platform, int obj_type_i, int ifindex, const NMPlatformIP4Route *received, int change_type_i, SignalData *data)
 {
+	const NMPObjectType obj_type = obj_type_i;
+	const NMPlatformSignalChangeType change_type = change_type_i;
+
+	g_assert_cmpint (obj_type, ==, NMP_OBJECT_TYPE_IP4_ROUTE);
 	g_assert (received);
 	g_assert_cmpint (received->ifindex, ==, ifindex);
 	g_assert (data && data->name);
@@ -50,8 +54,12 @@ ip4_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, c
 }
 
 static void
-ip6_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, const NMPlatformIP6Route *received, NMPlatformSignalChangeType change_type, SignalData *data)
+ip6_route_callback (NMPlatform *platform, int obj_type_i, int ifindex, const NMPlatformIP6Route *received, int change_type_i, SignalData *data)
 {
+	const NMPObjectType obj_type = obj_type_i;
+	const NMPlatformSignalChangeType change_type = change_type_i;
+
+	g_assert_cmpint (obj_type, ==, NMP_OBJECT_TYPE_IP6_ROUTE);
 	g_assert (received);
 	g_assert_cmpint (received->ifindex, ==, ifindex);
 	g_assert (data && data->name);
@@ -327,6 +335,8 @@ test_ip4_zero_gateway (void)
 }
 
 /*****************************************************************************/
+
+NMTstpSetupFunc const _nmtstp_setup_platform_func = SETUP;
 
 void
 _nmtstp_init_tests (int *argc, char ***argv)

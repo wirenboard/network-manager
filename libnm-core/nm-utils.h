@@ -90,6 +90,9 @@ gboolean nm_utils_ap_mode_security_valid (NMUtilsSecurityType type,
 gboolean nm_utils_wep_key_valid (const char *key, NMWepKeyType wep_type);
 gboolean nm_utils_wpa_psk_valid (const char *psk);
 
+NM_AVAILABLE_IN_1_6
+gboolean nm_utils_is_json_object (const char *str, GError **error);
+
 GVariant  *nm_utils_ip4_dns_to_variant (char **dns);
 char     **nm_utils_ip4_dns_from_variant (GVariant *value);
 GVariant  *nm_utils_ip4_addresses_to_variant (GPtrArray *addresses,
@@ -174,7 +177,10 @@ gboolean    nm_utils_hwaddr_matches   (gconstpointer hwaddr1,
 char *nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len);
 GBytes *nm_utils_hexstr2bin (const char *hex);
 
-gboolean    nm_utils_iface_valid_name(const char *name);
+NM_DEPRECATED_IN_1_6_FOR(nm_utils_is_valid_iface_name)
+gboolean    nm_utils_iface_valid_name (const char *name);
+NM_AVAILABLE_IN_1_6
+gboolean    nm_utils_is_valid_iface_name (const char *name, GError **error);
 
 gboolean nm_utils_is_uuid (const char *str);
 
@@ -205,6 +211,9 @@ gboolean nm_utils_enum_from_str (GType type, const char *str, int *out_value, ch
 
 NM_AVAILABLE_IN_1_2
 const char **nm_utils_enum_get_values (GType type, gint from, gint to);
+
+NM_AVAILABLE_IN_1_6
+guint nm_utils_version (void);
 
 G_END_DECLS
 

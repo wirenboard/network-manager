@@ -50,17 +50,18 @@ NmcOutputField nmc_fields_setting_connection[] = {
 	SETTING_FIELD (NM_SETTING_CONNECTION_TYPE),                  /* 5 */
 	SETTING_FIELD (NM_SETTING_CONNECTION_AUTOCONNECT),           /* 6 */
 	SETTING_FIELD (NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY),  /* 7 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_TIMESTAMP),             /* 8 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_READ_ONLY),             /* 9 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_PERMISSIONS),           /* 10 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_ZONE),                  /* 11 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_MASTER),                /* 12 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_SLAVE_TYPE),            /* 13 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES),    /* 14 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_SECONDARIES),           /* 15 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT),  /* 16 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_METERED),               /* 17 */
-	SETTING_FIELD (NM_SETTING_CONNECTION_LLDP),                  /* 18 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES),   /* 8 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_TIMESTAMP),             /* 9 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_READ_ONLY),             /* 10 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_PERMISSIONS),           /* 11 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_ZONE),                  /* 12 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_MASTER),                /* 13 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_SLAVE_TYPE),            /* 14 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES),    /* 15 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_SECONDARIES),           /* 16 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT),  /* 17 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_METERED),               /* 18 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_LLDP),                  /* 19 */
 	{NULL, NULL, 0, NULL, FALSE, FALSE, 0}
 };
 #define NMC_FIELDS_SETTING_CONNECTION_ALL     "name"","\
@@ -71,6 +72,7 @@ NmcOutputField nmc_fields_setting_connection[] = {
                                               NM_SETTING_CONNECTION_TYPE","\
                                               NM_SETTING_CONNECTION_AUTOCONNECT","\
                                               NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY","\
+                                              NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES","\
                                               NM_SETTING_CONNECTION_TIMESTAMP","\
                                               NM_SETTING_CONNECTION_READ_ONLY","\
                                               NM_SETTING_CONNECTION_PERMISSIONS","\
@@ -741,6 +743,29 @@ NmcOutputField nmc_fields_setting_ip_tunnel[] = {
                                               NM_SETTING_IP_TUNNEL_FLOW_LABEL","\
                                               NM_SETTING_IP_TUNNEL_MTU
 
+/* Available fields for NM_SETTING_MACSEC_SETTING_NAME */
+NmcOutputField nmc_fields_setting_macsec[] = {
+	SETTING_FIELD ("name"),                                 /* 0 */
+	SETTING_FIELD (NM_SETTING_MACSEC_PARENT),               /* 1 */
+	SETTING_FIELD (NM_SETTING_MACSEC_MODE),                 /* 2 */
+	SETTING_FIELD (NM_SETTING_MACSEC_ENCRYPT),              /* 3 */
+	SETTING_FIELD (NM_SETTING_MACSEC_MKA_CAK),              /* 4 */
+	SETTING_FIELD (NM_SETTING_MACSEC_MKA_CAK_FLAGS),        /* 5 */
+	SETTING_FIELD (NM_SETTING_MACSEC_MKA_CKN),              /* 6 */
+	SETTING_FIELD (NM_SETTING_MACSEC_PORT),                 /* 7 */
+	SETTING_FIELD (NM_SETTING_MACSEC_VALIDATION),           /* 8 */
+	{NULL, NULL, 0, NULL, FALSE, FALSE, 0}
+};
+#define NMC_FIELDS_SETTING_MACSEC_ALL     "name"","\
+                                           NM_SETTING_MACSEC_PARENT","\
+                                           NM_SETTING_MACSEC_MODE","\
+                                           NM_SETTING_MACSEC_ENCRYPT","\
+                                           NM_SETTING_MACSEC_MKA_CAK","\
+                                           NM_SETTING_MACSEC_MKA_CAK_FLAGS","\
+                                           NM_SETTING_MACSEC_MKA_CKN","\
+                                           NM_SETTING_MACSEC_PORT","\
+                                           NM_SETTING_MACSEC_VALIDATION
+
 /* Available fields for NM_SETTING_MACVLAN_SETTING_NAME */
 NmcOutputField nmc_fields_setting_macvlan[] = {
 	SETTING_FIELD ("name"),                                 /* 0 */
@@ -795,6 +820,20 @@ NmcOutputField nmc_fields_setting_vxlan[] = {
                                              NM_SETTING_VXLAN_L2_MISS","\
                                              NM_SETTING_VXLAN_L3_MISS
 
+/* Available fields for NM_SETTING_PROXY_SETTING_NAME */
+NmcOutputField nmc_fields_setting_proxy[] = {
+	SETTING_FIELD ("name"),                            /* 0 */
+	SETTING_FIELD (NM_SETTING_PROXY_METHOD),           /* 1 */
+	SETTING_FIELD (NM_SETTING_PROXY_BROWSER_ONLY),     /* 2 */
+	SETTING_FIELD (NM_SETTING_PROXY_PAC_URL),          /* 3 */
+	SETTING_FIELD (NM_SETTING_PROXY_PAC_SCRIPT),       /* 4 */
+	{NULL, NULL, 0, NULL, FALSE, FALSE, 0}
+};
+#define NMC_FIELDS_SETTING_PROXY_ALL         "name"","\
+                                             NM_SETTING_PROXY_METHOD","\
+                                             NM_SETTING_PROXY_BROWSER_ONLY","\
+                                             NM_SETTING_PROXY_PAC_URL","\
+                                             NM_SETTING_PROXY_PAC_SCRIPT
 /*----------------------------------------------------------------------------*/
 static char *
 wep_key_type_to_string (NMWepKeyType type)
@@ -1042,14 +1081,21 @@ static char *
 nmc_property_802_1X_get_ca_cert (NMSetting *setting, NmcPropertyGetType get_type)
 {
 	NMSetting8021x *s_8021X = NM_SETTING_802_1X (setting);
-	NMSetting8021xCKScheme scheme;
 	char *ca_cert_str = NULL;
 
-	scheme = nm_setting_802_1x_get_ca_cert_scheme (s_8021X);
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
+	switch (nm_setting_802_1x_get_ca_cert_scheme (s_8021X)) {
+	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
 		ca_cert_str = bytes_to_string (nm_setting_802_1x_get_ca_cert_blob (s_8021X));
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PATH:
 		ca_cert_str = g_strdup (nm_setting_802_1x_get_ca_cert_path (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PKCS11:
+		ca_cert_str = g_strdup (nm_setting_802_1x_get_ca_cert_uri (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_UNKNOWN:
+		break;
+	}
 
 	return ca_cert_str;
 }
@@ -1060,17 +1106,24 @@ nmc_property_802_1X_get_client_cert (NMSetting *setting,
                                      gboolean show_secrets)
 {
 	NMSetting8021x *s_8021X = NM_SETTING_802_1X (setting);
-	NMSetting8021xCKScheme scheme;
 	char *cert_str = NULL;
 
-	scheme = nm_setting_802_1x_get_client_cert_scheme (s_8021X);
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
+	switch (nm_setting_802_1x_get_client_cert_scheme (s_8021X)) {
+	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
 		if (show_secrets)
 			cert_str = bytes_to_string (nm_setting_802_1x_get_client_cert_blob (s_8021X));
 		else
 			cert_str = g_strdup (_("<hidden>"));
-	} else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PATH:
 		cert_str = g_strdup (nm_setting_802_1x_get_client_cert_path (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PKCS11:
+		cert_str = g_strdup (nm_setting_802_1x_get_client_cert_uri (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_UNKNOWN:
+		break;
+	}
 
 	return cert_str;
 }
@@ -1085,14 +1138,21 @@ static char *
 nmc_property_802_1X_get_phase2_ca_cert (NMSetting *setting, NmcPropertyGetType get_type)
 {
 	NMSetting8021x *s_8021X = NM_SETTING_802_1X (setting);
-	NMSetting8021xCKScheme scheme;
 	char *phase2_ca_cert_str = NULL;
 
-	scheme = nm_setting_802_1x_get_phase2_ca_cert_scheme (s_8021X);
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
+	switch (nm_setting_802_1x_get_phase2_ca_cert_scheme (s_8021X)) {
+	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
 		phase2_ca_cert_str = bytes_to_string (nm_setting_802_1x_get_phase2_ca_cert_blob (s_8021X));
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PATH:
 		phase2_ca_cert_str = g_strdup (nm_setting_802_1x_get_phase2_ca_cert_path (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PKCS11:
+		phase2_ca_cert_str = g_strdup (nm_setting_802_1x_get_phase2_ca_cert_uri (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_UNKNOWN:
+		break;
+	}
 
 	return phase2_ca_cert_str;
 }
@@ -1103,17 +1163,24 @@ nmc_property_802_1X_get_phase2_client_cert (NMSetting *setting,
                                             gboolean show_secrets)
 {
 	NMSetting8021x *s_8021X = NM_SETTING_802_1X (setting);
-	NMSetting8021xCKScheme scheme;
 	char *cert_str = NULL;
 
-	scheme = nm_setting_802_1x_get_phase2_client_cert_scheme (s_8021X);
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
+	switch (nm_setting_802_1x_get_phase2_client_cert_scheme (s_8021X)) {
+	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
 		if (show_secrets)
 			cert_str = bytes_to_string (nm_setting_802_1x_get_phase2_client_cert_blob (s_8021X));
 		else
 			cert_str = g_strdup (_("<hidden>"));
-	} else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PATH:
 		cert_str = g_strdup (nm_setting_802_1x_get_phase2_client_cert_path (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PKCS11:
+		cert_str = g_strdup (nm_setting_802_1x_get_phase2_client_cert_uri (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_UNKNOWN:
+		break;
+	}
 
 	return cert_str;
 }
@@ -1137,17 +1204,24 @@ nmc_property_802_1X_get_private_key (NMSetting *setting,
                                      gboolean show_secrets)
 {
 	NMSetting8021x *s_8021X = NM_SETTING_802_1X (setting);
-	NMSetting8021xCKScheme scheme;
 	char *key_str = NULL;
 
-	scheme = nm_setting_802_1x_get_private_key_scheme (s_8021X);
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
+	switch (nm_setting_802_1x_get_private_key_scheme (s_8021X)) {
+	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
 		if (show_secrets)
 			key_str = bytes_to_string (nm_setting_802_1x_get_private_key_blob (s_8021X));
 		else
 			key_str = g_strdup (_("<hidden>"));
-	} else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PATH:
 		key_str = g_strdup (nm_setting_802_1x_get_private_key_path (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PKCS11:
+		key_str = g_strdup (nm_setting_802_1x_get_private_key_uri (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_UNKNOWN:
+		break;
+	}
 
 	return key_str;
 }
@@ -1164,17 +1238,24 @@ nmc_property_802_1X_get_phase2_private_key (NMSetting *setting,
                                             gboolean show_secrets)
 {
 	NMSetting8021x *s_8021X = NM_SETTING_802_1X (setting);
-	NMSetting8021xCKScheme scheme;
 	char *key_str = NULL;
 
-	scheme = nm_setting_802_1x_get_phase2_private_key_scheme (s_8021X);
-	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
+	switch (nm_setting_802_1x_get_phase2_private_key_scheme (s_8021X)) {
+	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
 		if (show_secrets)
 			key_str = bytes_to_string (nm_setting_802_1x_get_phase2_private_key_blob (s_8021X));
 		else
 			key_str = g_strdup (_("<hidden>"));
-	} else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PATH:
 		key_str = g_strdup (nm_setting_802_1x_get_phase2_private_key_path (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_PKCS11:
+		key_str = g_strdup (nm_setting_802_1x_get_phase2_private_key_uri (s_8021X));
+		break;
+	case NM_SETTING_802_1X_CK_SCHEME_UNKNOWN:
+		break;
+	}
 
 	return key_str;
 }
@@ -1266,6 +1347,26 @@ DEFINE_GETTER (nmc_property_connection_get_autoconnect, NM_SETTING_CONNECTION_AU
 DEFINE_GETTER (nmc_property_connection_get_autoconnect_priority, NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY)
 DEFINE_GETTER (nmc_property_connection_get_timestamp, NM_SETTING_CONNECTION_TIMESTAMP)
 DEFINE_GETTER (nmc_property_connection_get_read_only, NM_SETTING_CONNECTION_READ_ONLY)
+
+static char *
+nmc_property_connection_get_autoconnect_retries (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingConnection *s_con = NM_SETTING_CONNECTION (setting);
+	gint retries;
+
+	retries = nm_setting_connection_get_autoconnect_retries (s_con);
+	if (get_type == NMC_PROPERTY_GET_PARSABLE)
+		return g_strdup_printf ("%d", retries);
+
+	switch (retries) {
+	case -1:
+		return g_strdup_printf (_("%d (default)"), retries);
+	case 0:
+		return g_strdup_printf (_("%d (forever)"), retries);
+	default:
+		return g_strdup_printf ("%d", retries);
+	}
+}
 
 static char *
 nmc_property_connection_get_permissions (NMSetting *setting, NmcPropertyGetType get_type)
@@ -1764,8 +1865,6 @@ DEFINE_GETTER (nmc_property_wimax_get_mac_address, NM_SETTING_WIMAX_MAC_ADDRESS)
 
 /* --- NM_SETTING_WIRED_SETTING_NAME property get functions --- */
 DEFINE_GETTER (nmc_property_wired_get_port, NM_SETTING_WIRED_PORT)
-DEFINE_GETTER (nmc_property_wired_get_speed, NM_SETTING_WIRED_SPEED)
-DEFINE_GETTER (nmc_property_wired_get_duplex, NM_SETTING_WIRED_DUPLEX)
 DEFINE_GETTER (nmc_property_wired_get_auto_negotiate, NM_SETTING_WIRED_AUTO_NEGOTIATE)
 DEFINE_GETTER (nmc_property_wired_get_mac_address, NM_SETTING_WIRED_MAC_ADDRESS)
 DEFINE_GETTER (nmc_property_wired_get_cloned_mac_address, NM_SETTING_WIRED_CLONED_MAC_ADDRESS)
@@ -1775,6 +1874,30 @@ DEFINE_GETTER (nmc_property_wired_get_s390_subchannels, NM_SETTING_WIRED_S390_SU
 DEFINE_GETTER (nmc_property_wired_get_s390_nettype, NM_SETTING_WIRED_S390_NETTYPE)
 DEFINE_GETTER (nmc_property_wired_get_s390_options, NM_SETTING_WIRED_S390_OPTIONS)
 DEFINE_GETTER (nmc_property_wired_get_wake_on_lan_password, NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD)
+
+static char *
+nmc_property_wired_get_speed (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingWired *s_wired = NM_SETTING_WIRED (setting);
+	guint32 speed;
+
+	speed = nm_setting_wired_get_speed (s_wired);
+	return g_strdup_printf ("%d", speed);
+}
+
+static char *
+nmc_property_wired_get_duplex (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingWired *s_wired = NM_SETTING_WIRED (setting);
+	const char *str;
+
+	str = nm_setting_wired_get_duplex (s_wired);
+	if (!str)
+		return NULL;
+	else
+		return g_strdup (str);
+
+}
 
 static char *
 nmc_property_wired_get_mtu (NMSetting *setting, NmcPropertyGetType get_type)
@@ -2015,6 +2138,94 @@ nmc_property_wifi_sec_get_wep_key_type (NMSetting *setting, NmcPropertyGetType g
 	return wep_key_type_to_string (nm_setting_wireless_security_get_wep_key_type (s_wireless_sec));
 }
 
+/* --- NM_SETTING_MACSEC_SETTING_NAME property get functions --- */
+DEFINE_GETTER (nmc_property_macsec_get_parent, NM_SETTING_MACSEC_PARENT)
+DEFINE_GETTER (nmc_property_macsec_get_encrypt, NM_SETTING_MACSEC_ENCRYPT)
+DEFINE_GETTER (nmc_property_macsec_get_mka_cak, NM_SETTING_MACSEC_MKA_CAK)
+DEFINE_SECRET_FLAGS_GETTER (nmc_property_macsec_get_mka_cak_flags, NM_SETTING_MACSEC_MKA_CAK_FLAGS)
+DEFINE_GETTER (nmc_property_macsec_get_mka_ckn, NM_SETTING_MACSEC_MKA_CKN)
+DEFINE_GETTER (nmc_property_macsec_get_port, NM_SETTING_MACSEC_PORT)
+
+/* 'mode' */
+static char *
+nmc_property_macsec_get_mode (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingMacsec *s_macsec = NM_SETTING_MACSEC (setting);
+	NMSettingMacsecMode mode;
+
+	mode = nm_setting_macsec_get_mode (s_macsec);
+	return nm_utils_enum_to_str (nm_setting_macsec_mode_get_type (), mode);
+}
+
+
+static gboolean
+nmc_property_macsec_set_mode (NMSetting *setting, const char *prop,
+                              const char *val, GError **error)
+{
+	NMSettingMacsecMode mode;
+	gs_free char *options = NULL;
+
+	if (!nm_utils_enum_from_str (nm_setting_macsec_mode_get_type (), val,
+	                             (int *) &mode, NULL)) {
+		options = g_strjoinv (",",
+		                      (char **) nm_utils_enum_get_values (nm_setting_macsec_mode_get_type (),
+		                                                          G_MININT,
+		                                                          G_MAXINT));
+		g_set_error (error, 1, 0, _("invalid option '%s', use one of [%s]"),
+		             val, options);
+			return FALSE;
+	}
+
+	g_object_set (setting, prop, mode, NULL);
+	return TRUE;
+}
+
+/* 'mode' */
+static char *
+nmc_property_macsec_get_validation (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingMacsec *s_macsec = NM_SETTING_MACSEC (setting);
+	NMSettingMacsecValidation validation;
+
+	validation = nm_setting_macsec_get_validation (s_macsec);
+	return nm_utils_enum_to_str (nm_setting_macsec_validation_get_type (), validation);
+}
+
+
+static gboolean
+nmc_property_macsec_set_validation (NMSetting *setting, const char *prop,
+                                    const char *val, GError **error)
+{
+	NMSettingMacsecMode validation;
+	gs_free char *options = NULL;
+
+	if (!nm_utils_enum_from_str (nm_setting_macsec_validation_get_type (), val,
+	                             (int *) &validation, NULL)) {
+		options = g_strjoinv (",",
+		                      (char **) nm_utils_enum_get_values (nm_setting_macsec_validation_get_type (),
+		                                                          G_MININT,
+		                                                          G_MAXINT));
+		g_set_error (error, 1, 0, _("invalid option '%s', use one of [%s]"),
+		             val, options);
+			return FALSE;
+	}
+
+	g_object_set (setting, prop, validation, NULL);
+	return TRUE;
+}
+
+static const char **
+nmc_property_macsec_allowed_validation (NMSetting *setting, const char *prop)
+{
+	static const char **words = NULL;
+
+	if (!words)
+		words = nm_utils_enum_get_values (nm_setting_macsec_validation_get_type(),
+		                                  G_MININT,
+		                                  G_MAXINT);
+	return words;
+}
+
 /* --- NM_SETTING_MACVLAN_SETTING_NAME property get functions --- */
 DEFINE_GETTER (nmc_property_macvlan_get_parent, NM_SETTING_MACVLAN_PARENT)
 DEFINE_GETTER (nmc_property_macvlan_get_promiscuous, NM_SETTING_MACVLAN_PROMISCUOUS)
@@ -2099,6 +2310,77 @@ DEFINE_GETTER (nmc_property_vxlan_get_proxy, NM_SETTING_VXLAN_PROXY)
 DEFINE_GETTER (nmc_property_vxlan_get_rsc, NM_SETTING_VXLAN_RSC)
 DEFINE_GETTER (nmc_property_vxlan_get_l2_miss, NM_SETTING_VXLAN_L2_MISS)
 DEFINE_GETTER (nmc_property_vxlan_get_l3_miss, NM_SETTING_VXLAN_L3_MISS)
+
+/* --- NM_SETTING_PROXY_SETTING_NAME property get functions --- */
+DEFINE_GETTER (nmc_property_proxy_get_browser_only, NM_SETTING_PROXY_BROWSER_ONLY)
+DEFINE_GETTER (nmc_property_proxy_get_pac_url, NM_SETTING_PROXY_PAC_URL)
+DEFINE_GETTER (nmc_property_proxy_get_pac_script, NM_SETTING_PROXY_PAC_SCRIPT)
+
+static char *
+nmc_property_proxy_get_method (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingProxy *s_proxy = NM_SETTING_PROXY (setting);
+	NMSettingProxyMethod method;
+
+	method = nm_setting_proxy_get_method (s_proxy);
+	return nm_utils_enum_to_str (nm_setting_proxy_method_get_type (), method);
+}
+
+static gboolean
+nmc_property_proxy_set_method (NMSetting *setting, const char *prop,
+                               const char *val, GError **error)
+{
+	int method;
+	gboolean ret;
+
+	ret = nm_utils_enum_from_str (nm_setting_proxy_method_get_type(), val,
+	                              &method, NULL);
+
+	if (!ret) {
+		gs_free const char **values = NULL;
+		gs_free char *values_str = NULL;
+
+		values = nm_utils_enum_get_values (nm_setting_proxy_method_get_type (),
+		                                   NM_SETTING_PROXY_METHOD_NONE,
+		                                   G_MAXINT);
+		values_str = g_strjoinv (",", (char **) values);
+		g_set_error (error, 1, 0, _("invalid method '%s', use one of %s"),
+		             val, values_str);
+
+		return FALSE;
+	}
+
+	g_object_set (setting, prop, method, NULL);
+	return TRUE;
+}
+
+static const char **
+nmc_property_proxy_allowed_method (NMSetting *setting, const char *prop)
+{
+	static const char **words = NULL;
+
+	if (!words)
+		words = nm_utils_enum_get_values (nm_setting_proxy_method_get_type(),
+		                                  NM_SETTING_PROXY_METHOD_NONE,
+		                                  G_MAXINT);
+	return words;
+}
+
+static gboolean
+nmc_property_proxy_set_pac_script (NMSetting *setting, const char *prop,
+                                   const char *val, GError **error)
+{
+	char *script = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!nmc_proxy_check_script (val, &script, error)) {
+		return FALSE;
+	}
+	g_object_set (setting, prop, script, NULL);
+	g_free (script);
+	return TRUE;
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -2311,6 +2593,21 @@ ipv6_method_changed_cb (GObject *object, GParamSpec *pspec, gpointer user_data)
 }
 
 static void
+proxy_method_changed_cb (GObject *object, GParamSpec *pspec, gpointer user_data)
+{
+	NMSettingProxyMethod method;
+
+	method = nm_setting_proxy_get_method (NM_SETTING_PROXY (object));
+
+	if (method == NM_SETTING_PROXY_METHOD_NONE) {
+		g_object_set (object,
+		              NM_SETTING_PROXY_PAC_URL, NULL,
+		              NM_SETTING_PROXY_PAC_SCRIPT, NULL,
+		              NULL);
+	}
+}
+
+static void
 wireless_band_channel_changed_cb (GObject *object, GParamSpec *pspec, gpointer user_data)
 {
 	const char *value = NULL, *mode;
@@ -2388,6 +2685,15 @@ nmc_setting_ip6_connect_handlers (NMSettingIPConfig *setting)
 }
 
 void
+nmc_setting_proxy_connect_handlers (NMSettingProxy *setting)
+{
+	g_return_if_fail (NM_IS_SETTING_PROXY (setting));
+
+	g_signal_connect (setting, "notify::" NM_SETTING_PROXY_METHOD,
+	                  G_CALLBACK (proxy_method_changed_cb), NULL);
+}
+
+void
 nmc_setting_wireless_connect_handlers (NMSettingWireless *setting)
 {
 	g_return_if_fail (NM_IS_SETTING_WIRELESS (setting));
@@ -2459,6 +2765,10 @@ nmc_setting_custom_init (NMSetting *setting)
 	} else if (NM_IS_SETTING_IP6_CONFIG (setting)) {
 		g_object_set (NM_SETTING_IP_CONFIG (setting),
 		              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_AUTO,
+		              NULL);
+	} else if (NM_IS_SETTING_PROXY (setting)) {
+		g_object_set (NM_SETTING_PROXY (setting),
+		              NM_SETTING_PROXY_METHOD, (int) NM_SETTING_PROXY_METHOD_NONE,
 		              NULL);
 	} else if (NM_IS_SETTING_TUN (setting)) {
 		g_object_set (NM_SETTING_TUN (setting),
@@ -2935,10 +3245,8 @@ nmc_property_set_ifname (NMSetting *setting, const char *prop, const char *val, 
 {
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	if (!nm_utils_iface_valid_name (val)) {
-		g_set_error (error, 1, 0, _("'%s' is not a valid interface name"), val);
+	if (!nm_utils_is_valid_iface_name (val, error))
 		return FALSE;
-	}
 	g_object_set (setting, prop, val, NULL);
 	return TRUE;
 }
@@ -3200,7 +3508,7 @@ nmc_property_con_set_master (NMSetting *setting, const char *prop, const char *v
 		;
 	else if (!*val)
 		val = NULL;
-	else if (   !nm_utils_iface_valid_name (val)
+	else if (   !nm_utils_is_valid_iface_name (val, NULL)
 	         && !nm_utils_is_uuid (val)) {
 		g_set_error (error, 1, 0,
 		             _("'%s' is not valid master; use ifname or connection UUID"),
@@ -3232,19 +3540,21 @@ DEFINE_ALLOWED_VAL_FUNC (nmc_property_con_allowed_slave_type, con_valid_slave_ty
 static gboolean
 nmc_property_connection_set_secondaries (NMSetting *setting, const char *prop, const char *val, GError **error)
 {
+	const GPtrArray *connections;
 	NMConnection *con;
 	char **strv = NULL, **iter;
 	guint i = 0;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
+	connections = nm_client_get_connections (nm_cli.client);
 	strv = nmc_strsplit_set (val, " \t,", 0);
 	for (iter = strv; iter && *iter; iter++) {
 		if (**iter == '\0')
 			continue;
 
 		if (nm_utils_is_uuid (*iter)) {
-			con = nmc_find_connection (nm_cli.connections, "uuid", *iter, NULL, FALSE);
+			con = nmc_find_connection (connections, "uuid", *iter, NULL, FALSE);
 			if (!con)
 				g_print (_("Warning: %s is not an UUID of any existing connection profile\n"), *iter);
 			else {
@@ -3256,7 +3566,7 @@ nmc_property_connection_set_secondaries (NMSetting *setting, const char *prop, c
 				}
 			}
 		} else {
-			con = nmc_find_connection (nm_cli.connections, "id", *iter, NULL, FALSE);
+			con = nmc_find_connection (connections, "id", *iter, NULL, FALSE);
 			if (!con) {
 				g_set_error (error, 1, 0, _("'%s' is not a name of any exiting profile"), *iter);
 				g_strfreev (strv);
@@ -3385,6 +3695,10 @@ nmc_property_connection_describe_metered (NMSetting *setting, const char *prop)
 	         "'unknown' to let NetworkManager choose a value using some heuristics\n");
 }
 
+
+static const char *metered_valid_values[] = { "yes", "no", "unknown", NULL };
+DEFINE_ALLOWED_VAL_FUNC (nmc_property_connection_allowed_metered, metered_valid_values)
+
 /* 'lldp' */
 static char *
 nmc_property_connection_get_lldp (NMSetting *setting, NmcPropertyGetType get_type)
@@ -3435,6 +3749,9 @@ nmc_property_connection_set_lldp (NMSetting *setting, const char *prop,
 	return TRUE;
 }
 
+static const char *lldp_valid_values[] = { "default", "disable", "enable-rx", NULL };
+DEFINE_ALLOWED_VAL_FUNC (nmc_property_connection_allowed_lldp, lldp_valid_values)
+
 /* --- NM_SETTING_802_1X_SETTING_NAME property setter functions --- */
 #define DEFINE_SETTER_STR_LIST(def_func, set_func) \
 	static gboolean \
@@ -3458,16 +3775,15 @@ nmc_property_connection_set_lldp (NMSetting *setting, const char *prop,
 	{ \
 		char *val_strip = g_strstrip (g_strdup (val)); \
 		char *p = val_strip; \
+		NMSetting8021xCKScheme scheme = NM_SETTING_802_1X_CK_SCHEME_PATH; \
 		gboolean success; \
 		\
-		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
+		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11)) == 0) \
+			scheme = NM_SETTING_802_1X_CK_SCHEME_PKCS11; \
+		else if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
 			p += NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH); \
 		\
-		success = set_func (NM_SETTING_802_1X (setting), \
-		                    p, \
-		                    NM_SETTING_802_1X_CK_SCHEME_PATH, \
-		                    NULL, \
-		                    error); \
+		success = set_func (NM_SETTING_802_1X (setting), p, scheme, NULL, error); \
 		g_free (val_strip); \
 		return success; \
 	}
@@ -3480,9 +3796,12 @@ nmc_property_connection_set_lldp (NMSetting *setting, const char *prop,
 		char *val_strip = g_strstrip (g_strdup (val)); \
 		char *p = val_strip; \
 		const char *path, *password; \
+		NMSetting8021xCKScheme scheme = NM_SETTING_802_1X_CK_SCHEME_PATH; \
 		gboolean success; \
 		\
-		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
+		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11)) == 0) \
+			scheme = NM_SETTING_802_1X_CK_SCHEME_PKCS11; \
+		else if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
 			p += NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH); \
 		\
 		strv = nmc_strsplit_set (p, " \t,", 2); \
@@ -3491,19 +3810,7 @@ nmc_property_connection_set_lldp (NMSetting *setting, const char *prop,
 			password = strv[1]; \
 		else \
 			password = pwd_func (NM_SETTING_802_1X (setting)); \
-		if (password) { \
-			char *tmp_pwd = g_strdup (password); \
-			success = set_func (NM_SETTING_802_1X (setting), \
-			                    path, \
-			                    tmp_pwd, \
-			                    NM_SETTING_802_1X_CK_SCHEME_PATH, \
-			                    NULL, \
-			                    error); \
-			g_free (tmp_pwd); \
-		} else { \
-			success = FALSE; \
-			g_set_error_literal  (error, 1, 0, _("private key password not provided")); \
-		} \
+		success = set_func (NM_SETTING_802_1X (setting), path, password, scheme, NULL, error); \
 		g_free (val_strip); \
 		g_strfreev (strv); \
 		return success; \
@@ -4871,10 +5178,10 @@ DEFINE_REMOVER_OPTION (nmc_property_vpn_remove_option_secret,
 
 /* --- NM_SETTING_WIRED_SETTING_NAME property setter functions --- */
 #if 0
-/*
- * Do not allow setting 'port' and 'duplex' for now. They are not implemented in
- * NM core, nor in ifcfg-rh plugin. Enable this when it gets done.
- */
+-/*
+- * Do not allow setting 'port' for now. It is not implemented in
+- * NM core, nor in ifcfg-rh plugin. Enable this when it gets done.
+- */
 /* 'port' */
 static const char *wired_valid_ports[] = { "tp", "aui", "bnc", "mii", NULL };
 
@@ -4885,6 +5192,7 @@ nmc_property_wired_set_port (NMSetting *setting, const char *prop, const char *v
 }
 
 DEFINE_ALLOWED_VAL_FUNC (nmc_property_wired_allowed_port, wired_valid_ports)
+#endif
 
 /* 'duplex' */
 static const char *wired_valid_duplexes[] = { "half", "full", NULL };
@@ -4896,7 +5204,7 @@ nmc_property_wired_set_duplex (NMSetting *setting, const char *prop, const char 
 }
 
 DEFINE_ALLOWED_VAL_FUNC (nmc_property_wired_allowed_duplex, wired_valid_duplexes)
-#endif
+
 
 /* 'mac-address-blacklist' */
 DEFINE_SETTER_MAC_BLACKLIST (nmc_property_wired_set_mac_address_blacklist,
@@ -6270,6 +6578,13 @@ nmc_properties_init (void)
 	                    NULL,
 	                    NULL,
 	                    NULL);
+	nmc_add_prop_funcs (GLUE (CONNECTION, AUTOCONNECT_RETRIES),
+	                    nmc_property_connection_get_autoconnect_retries,
+	                    nmc_property_set_int,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
 	nmc_add_prop_funcs (GLUE (CONNECTION, TIMESTAMP),
 	                    nmc_property_connection_get_timestamp,
 	                    NULL, /* read-only */
@@ -6338,14 +6653,14 @@ nmc_properties_init (void)
 	                    nmc_property_connection_set_metered,
 	                    NULL,
 	                    nmc_property_connection_describe_metered,
-	                    NULL,
+	                    nmc_property_connection_allowed_metered,
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (CONNECTION, LLDP),
 	                    nmc_property_connection_get_lldp,
 	                    nmc_property_connection_set_lldp,
 	                    NULL,
 	                    NULL,
-	                    NULL,
+	                    nmc_property_connection_allowed_lldp,
 	                    NULL);
 
 	/* Add editable properties for NM_SETTING_DCB_SETTING_NAME */
@@ -7178,28 +7493,28 @@ nmc_properties_init (void)
 	/* Add editable properties for NM_SETTING_WIRED_SETTING_NAME */
 	nmc_add_prop_funcs (GLUE (WIRED, PORT),
 	                    nmc_property_wired_get_port,
-	                    NULL, /*nmc_property_wired_set_port,*/
+	                    NULL, /* nmc_property_wired_set_port, */
 	                    NULL,
 	                    NULL,
-	                    NULL, /*nmc_property_wired_allowed_port,*/
+	                    NULL, /* nmc_property_wired_allowed_port, */
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (WIRED, SPEED),
 	                    nmc_property_wired_get_speed,
-	                    NULL,
+	                    nmc_property_set_uint,
 	                    NULL,
 	                    NULL,
 	                    NULL,
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (WIRED, DUPLEX),
 	                    nmc_property_wired_get_duplex,
-	                    NULL, /*nmc_property_wired_set_duplex,*/
+	                    nmc_property_wired_set_duplex,
 	                    NULL,
 	                    NULL,
-	                    NULL,
-	                    NULL); /*nmc_property_wired_allowed_duplex);*/
+	                    nmc_property_wired_allowed_duplex,
+	                    NULL);
 	nmc_add_prop_funcs (GLUE (WIRED, AUTO_NEGOTIATE),
 	                    nmc_property_wired_get_auto_negotiate,
-	                    NULL,
+	                    nmc_property_set_bool,
 	                    NULL,
 	                    NULL,
 	                    NULL,
@@ -7644,6 +7959,64 @@ nmc_properties_init (void)
 	                    NULL,
 	                    NULL);
 
+	/* Add editable properties for NM_SETTING_MACSEC_SETTING_NAME */
+	nmc_add_prop_funcs (GLUE (MACSEC, PARENT),
+	                    nmc_property_macsec_get_parent,
+	                    nmc_property_set_string,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, MODE),
+	                    nmc_property_macsec_get_mode,
+	                    nmc_property_macsec_set_mode,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, ENCRYPT),
+	                    nmc_property_macsec_get_encrypt,
+	                    nmc_property_set_bool,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, MKA_CAK),
+	                    nmc_property_macsec_get_mka_cak,
+	                    nmc_property_set_string,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, MKA_CAK_FLAGS),
+	                    nmc_property_macsec_get_mka_cak_flags,
+	                    nmc_property_set_secret_flags,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, MKA_CKN),
+	                    nmc_property_macsec_get_mka_ckn,
+	                    nmc_property_set_string,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, PORT),
+	                    nmc_property_macsec_get_port,
+	                    nmc_property_set_int,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (MACSEC, VALIDATION),
+	                    nmc_property_macsec_get_validation,
+	                    nmc_property_macsec_set_validation,
+	                    NULL,
+	                    NULL,
+	                    nmc_property_macsec_allowed_validation,
+	                    NULL);
+
 	/* Add editable properties for NM_SETTING_MACVLAN_SETTING_NAME */
 	nmc_add_prop_funcs (GLUE (MACVLAN, PARENT),
 	                    nmc_property_macvlan_get_parent,
@@ -7783,6 +8156,36 @@ nmc_properties_init (void)
 	nmc_add_prop_funcs (GLUE (VXLAN, L3_MISS),
 	                    nmc_property_vxlan_get_l3_miss,
 	                    nmc_property_set_bool,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+
+	/* Add editable properties for NM_SETTING_PROXY_SETTING_NAME */
+	nmc_add_prop_funcs (GLUE (PROXY, METHOD),
+	                    nmc_property_proxy_get_method,
+	                    nmc_property_proxy_set_method,
+	                    NULL,
+	                    NULL,
+	                    nmc_property_proxy_allowed_method,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (PROXY, BROWSER_ONLY),
+	                    nmc_property_proxy_get_browser_only,
+	                    nmc_property_set_bool,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (PROXY, PAC_URL),
+	                    nmc_property_proxy_get_pac_url,
+	                    nmc_property_set_string,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (PROXY, PAC_SCRIPT),
+	                    nmc_property_proxy_get_pac_script,
+	                    nmc_property_proxy_set_pac_script,
 	                    NULL,
 	                    NULL,
 	                    NULL,
@@ -7998,11 +8401,7 @@ nmc_setting_get_property_allowed_values (NMSetting *setting, const char *prop)
 	return NULL;
 }
 
-#if defined (BUILD_SETTING_DOCS) || defined (HAVE_SETTING_DOCS)
 #include "settings-docs.c"
-#else
-#define nmc_setting_get_property_doc(setting, prop) _("(not available)")
-#endif
 
 /*
  * Create a description string for a property.
@@ -8107,17 +8506,18 @@ setting_connection_details (NMSetting *setting, NmCli *nmc,  const char *one_pro
 	set_val_str (arr, 5, nmc_property_connection_get_type (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 6, nmc_property_connection_get_autoconnect (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 7, nmc_property_connection_get_autoconnect_priority (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 8, nmc_property_connection_get_timestamp (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 9, nmc_property_connection_get_read_only (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 10, nmc_property_connection_get_permissions (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 11, nmc_property_connection_get_zone (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 12, nmc_property_connection_get_master (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 13, nmc_property_connection_get_slave_type (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 14, nmc_property_connection_get_autoconnect_slaves (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 15, nmc_property_connection_get_secondaries (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 16, nmc_property_connection_get_gateway_ping_timeout (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 17, nmc_property_connection_get_metered (setting, NMC_PROPERTY_GET_PRETTY));
-	set_val_str (arr, 18, nmc_property_connection_get_lldp (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 8, nmc_property_connection_get_autoconnect_retries (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 9, nmc_property_connection_get_timestamp (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 10, nmc_property_connection_get_read_only (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 11, nmc_property_connection_get_permissions (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 12, nmc_property_connection_get_zone (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 13, nmc_property_connection_get_master (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 14, nmc_property_connection_get_slave_type (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 15, nmc_property_connection_get_autoconnect_slaves (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 16, nmc_property_connection_get_secondaries (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 17, nmc_property_connection_get_gateway_ping_timeout (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 18, nmc_property_connection_get_metered (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 19, nmc_property_connection_get_lldp (setting, NMC_PROPERTY_GET_PRETTY));
 	g_ptr_array_add (nmc->output_data, arr);
 
 	print_data (nmc);  /* Print all data */
@@ -9014,6 +9414,39 @@ setting_ip_tunnel_details (NMSetting *setting, NmCli *nmc,  const char *one_prop
 }
 
 static gboolean
+setting_macsec_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, gboolean secrets)
+{
+	NMSettingMacsec *s_macsec = NM_SETTING_MACSEC (setting);
+	NmcOutputField *tmpl, *arr;
+	size_t tmpl_len;
+
+	g_return_val_if_fail (NM_IS_SETTING_MACSEC (s_macsec), FALSE);
+
+	tmpl = nmc_fields_setting_macsec;
+	tmpl_len = sizeof (nmc_fields_setting_macsec);
+	nmc->print_fields.indices = parse_output_fields (one_prop ? one_prop : NMC_FIELDS_SETTING_MACSEC_ALL,
+	                                                 tmpl, FALSE, NULL, NULL);
+	arr = nmc_dup_fields_array (tmpl, tmpl_len, NMC_OF_FLAG_FIELD_NAMES);
+	g_ptr_array_add (nmc->output_data, arr);
+
+	arr = nmc_dup_fields_array (tmpl, tmpl_len, NMC_OF_FLAG_SECTION_PREFIX);
+	set_val_str (arr, 0, g_strdup (nm_setting_get_name (setting)));
+	set_val_str (arr, 1, nmc_property_macsec_get_parent (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 2, nmc_property_macsec_get_mode (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 3, nmc_property_macsec_get_encrypt (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 4, GET_SECRET (secrets, setting, nmc_property_macsec_get_mka_cak));
+	set_val_str (arr, 5, nmc_property_macsec_get_mka_cak_flags (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 6, nmc_property_macsec_get_mka_ckn (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 7, nmc_property_macsec_get_port (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 8, nmc_property_macsec_get_validation (setting, NMC_PROPERTY_GET_PRETTY));
+	g_ptr_array_add (nmc->output_data, arr);
+
+	print_data (nmc);  /* Print all data */
+
+	return TRUE;
+}
+
+static gboolean
 setting_macvlan_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, gboolean secrets)
 {
 	NMSettingMacvlan *s_macvlan = NM_SETTING_MACVLAN (setting);
@@ -9042,7 +9475,7 @@ setting_macvlan_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, 
 	return TRUE;
 }
 
- static gboolean
+static gboolean
 setting_vxlan_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, gboolean secrets)
 {
 	NMSettingVxlan *s_vxlan = NM_SETTING_VXLAN (setting);
@@ -9083,6 +9516,35 @@ setting_vxlan_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, gb
 	return TRUE;
 }
 
+static gboolean
+setting_proxy_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, gboolean secrets)
+{
+	NMSettingProxy *s_proxy = NM_SETTING_PROXY (setting);
+	NmcOutputField *tmpl, *arr;
+	size_t tmpl_len;
+
+	g_return_val_if_fail (NM_IS_SETTING_PROXY (s_proxy), FALSE);
+
+	tmpl = nmc_fields_setting_proxy;
+	tmpl_len = sizeof (nmc_fields_setting_proxy);
+	nmc->print_fields.indices = parse_output_fields (one_prop ? one_prop : NMC_FIELDS_SETTING_PROXY_ALL,
+	                                                 tmpl, FALSE, NULL, NULL);
+	arr = nmc_dup_fields_array (tmpl, tmpl_len, NMC_OF_FLAG_FIELD_NAMES);
+	g_ptr_array_add (nmc->output_data, arr);
+
+	arr = nmc_dup_fields_array (tmpl, tmpl_len, NMC_OF_FLAG_SECTION_PREFIX);
+	set_val_str (arr, 0, g_strdup (nm_setting_get_name (setting)));
+	set_val_str (arr, 1, nmc_property_proxy_get_method (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 2, nmc_property_proxy_get_browser_only (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 3, nmc_property_proxy_get_pac_url (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 4, nmc_property_proxy_get_pac_script (setting, NMC_PROPERTY_GET_PRETTY));
+	g_ptr_array_add (nmc->output_data, arr);
+
+	print_data (nmc);  /* Print all data */
+
+	return TRUE;
+}
+
 typedef struct {
 	const char *sname;
 	gboolean (*func) (NMSetting *setting, NmCli *nmc,  const char *one_prop, gboolean secrets);
@@ -9116,8 +9578,10 @@ static const SettingDetails detail_printers[] = {
 	{ NM_SETTING_DCB_SETTING_NAME,               setting_dcb_details },
 	{ NM_SETTING_TUN_SETTING_NAME,               setting_tun_details },
 	{ NM_SETTING_IP_TUNNEL_SETTING_NAME,         setting_ip_tunnel_details },
+	{ NM_SETTING_MACSEC_SETTING_NAME,            setting_macsec_details },
 	{ NM_SETTING_MACVLAN_SETTING_NAME,           setting_macvlan_details },
 	{ NM_SETTING_VXLAN_SETTING_NAME,             setting_vxlan_details },
+	{ NM_SETTING_PROXY_SETTING_NAME,             setting_proxy_details },
 	{ NULL },
 };
 

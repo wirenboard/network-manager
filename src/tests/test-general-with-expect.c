@@ -37,7 +37,7 @@
 #define CLOCK_BOOTTIME 7
 #endif
 
-/*******************************************/
+/*****************************************************************************/
 
 static void
 test_nm_utils_monotonic_timestamp_as_boottime (void)
@@ -63,7 +63,7 @@ test_nm_utils_monotonic_timestamp_as_boottime (void)
 		now_boottime_2 = nm_utils_monotonic_timestamp_as_boottime (now, 1);
 		g_assert_cmpint (now_boottime_2, >=, 0);
 		g_assert_cmpint (now_boottime_2, >=, now_boottime);
-		g_assert_cmpint (now_boottime_2 - now_boottime, <=, NM_UTILS_NS_PER_SECOND / 1000);
+		g_assert_cmpint (now_boottime_2 - now_boottime, <=, NM_UTILS_NS_PER_SECOND / 10);
 
 		for (timestamp_ns_per_tick = 1; timestamp_ns_per_tick <= NM_UTILS_NS_PER_SECOND; timestamp_ns_per_tick *= 10) {
 			now_boottime_3 = nm_utils_monotonic_timestamp_as_boottime (now / timestamp_ns_per_tick, timestamp_ns_per_tick);
@@ -73,7 +73,7 @@ test_nm_utils_monotonic_timestamp_as_boottime (void)
 	}
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 struct test_nm_utils_kill_child_async_data
 {
@@ -371,7 +371,7 @@ test_nm_utils_kill_child (void)
 	g_test_assert_expected_messages ();
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 static void
 _remove_at_indexes_init_random_idx (GArray *idx, guint array_len, guint idx_len)
@@ -470,7 +470,7 @@ test_nm_utils_array_remove_at_indexes (void)
 	}
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 static void
 test_nm_ethernet_address_is_valid (void)
@@ -497,7 +497,7 @@ test_nm_ethernet_address_is_valid (void)
 	g_assert ( nm_ethernet_address_is_valid (((guint8[8]) { 0x02,0x30,0xb4,0x00,0x00,0x01 }), ETH_ALEN));
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 typedef struct {
 	union {
@@ -853,7 +853,7 @@ test_nm_multi_index (void)
 	_mi_test_run (50, 18);
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 static void
 test_nm_utils_new_vlan_name (void)
@@ -896,7 +896,7 @@ test_nm_utils_new_vlan_name (void)
 	}
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 NMTST_DEFINE ();
 

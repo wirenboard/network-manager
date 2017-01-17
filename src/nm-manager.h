@@ -23,7 +23,7 @@
 #define __NETWORKMANAGER_MANAGER_H__
 
 #include "nm-exported-object.h"
-#include "nm-settings-connection.h"
+#include "settings/nm-settings-connection.h"
 
 #define NM_TYPE_MANAGER            (nm_manager_get_type ())
 #define NM_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MANAGER, NMManager))
@@ -33,6 +33,7 @@
 #define NM_MANAGER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_MANAGER, NMManagerClass))
 
 #define NM_MANAGER_VERSION "version"
+#define NM_MANAGER_CAPABILITIES "capabilities"
 #define NM_MANAGER_STATE "state"
 #define NM_MANAGER_STARTUP "startup"
 #define NM_MANAGER_NETWORKING_ENABLED "networking-enabled"
@@ -85,9 +86,12 @@ NMState       nm_manager_get_state                     (NMManager *manager);
 const GSList *nm_manager_get_active_connections        (NMManager *manager);
 GSList *      nm_manager_get_activatable_connections   (NMManager *manager);
 
+void          nm_manager_write_device_state (NMManager *manager);
+
 /* Device handling */
 
 const GSList *      nm_manager_get_devices             (NMManager *manager);
+const char **       nm_manager_get_device_paths        (NMManager *self);
 
 NMDevice *          nm_manager_get_device_by_ifindex   (NMManager *manager,
                                                         int ifindex);
@@ -99,8 +103,12 @@ char *              nm_manager_get_connection_iface (NMManager *self,
                                                      NMDevice **out_parent,
                                                      GError **error);
 
+const char *        nm_manager_iface_for_uuid          (NMManager *self,
+                                                        const char *uuid);
+
 NMActiveConnection *nm_manager_activate_connection     (NMManager *manager,
                                                         NMSettingsConnection *connection,
+                                                        NMConnection *applied_connection,
                                                         const char *specific_object,
                                                         NMDevice *device,
                                                         NMAuthSubject *subject,
@@ -111,5 +119,6 @@ gboolean            nm_manager_deactivate_connection   (NMManager *manager,
                                                         NMDeviceStateReason reason,
                                                         GError **error);
 
+void                nm_manager_set_capability   (NMManager *self, NMCapability cap);
 
 #endif /* __NETWORKMANAGER_MANAGER_H__ */

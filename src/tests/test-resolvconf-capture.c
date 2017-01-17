@@ -26,7 +26,7 @@
 #include "NetworkManagerUtils.h"
 #include "nm-ip4-config.h"
 #include "nm-ip6-config.h"
-#include "nm-platform.h"
+#include "platform/nm-platform.h"
 
 #include "nm-test-utils-core.h"
 
@@ -287,7 +287,7 @@ test_capture_dns_options_valid6 (void)
 	g_array_free (ns6, TRUE);
 	g_ptr_array_free (dns_options, TRUE);
 }
-/*******************************************/
+/*****************************************************************************/
 
 NMTST_DEFINE ();
 

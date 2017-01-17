@@ -594,8 +594,6 @@ nm_setting_wired_get_wake_on_lan (NMSettingWired *setting)
 
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->wol;
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_6, NMSettingWiredWakeOnLan, nm_setting_wired_get_wake_on_lan,
-                    (NMSettingWired *setting), (setting));
 
 /**
  * nm_setting_wired_get_wake_on_lan_password:
@@ -615,24 +613,17 @@ nm_setting_wired_get_wake_on_lan_password (NMSettingWired *setting)
 
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->wol_password;
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_6, const char *, nm_setting_wired_get_wake_on_lan_password,
-                    (NMSettingWired *setting), (setting));
-
-NM_BACKPORT_SYMBOL (libnm_1_0_6, GType, nm_setting_wired_wake_on_lan_get_type, (void), ());
 
 static gboolean
 verify (NMSetting *setting, NMConnection *connection, GError **error)
 {
 	NMSettingWiredPrivate *priv = NM_SETTING_WIRED_GET_PRIVATE (setting);
-	const char *valid_ports[] = { "tp", "aui", "bnc", "mii", NULL };
-	const char *valid_duplex[] = { "half", "full", NULL };
-	const char *valid_nettype[] = { "qeth", "lcs", "ctc", NULL };
 	GHashTableIter iter;
 	const char *key, *value;
 	int i;
 	GError *local = NULL;
 
-	if (priv->port && !g_strv_contains (valid_ports, priv->port)) {
+	if (!NM_IN_STRSET (priv->port, NULL, "tp", "aui", "bnc", "mii")) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
 		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
@@ -642,7 +633,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		return FALSE;
 	}
 
-	if (priv->duplex && !g_strv_contains (valid_duplex, priv->duplex)) {
+	if (!NM_IN_STRSET (priv->duplex, NULL, "half", "full")) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
 		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
@@ -688,7 +679,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		}
 	}
 
-	if (priv->s390_nettype && !g_strv_contains (valid_nettype, priv->s390_nettype)) {
+	if (!NM_IN_STRSET (priv->s390_nettype, NULL, "qeth", "lcs", "ctc")) {
 		g_set_error_literal (error,
 		                     NM_CONNECTION_ERROR,
 		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
@@ -765,6 +756,38 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		return FALSE;
 	}
 
+	/* Normalizable properties - just return NM_SETTING_VERIFY_NORMALIZABLE for compatibility
+	 * with legacy nm-connection-editor which used to save "full" duplex connection as default
+	 */
+
+	if (priv->auto_negotiate) {
+		if (priv->duplex) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("when link autonegotiation is enabled no duplex value is accepted"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_WIRED_SETTING_NAME, NM_SETTING_WIRED_DUPLEX);
+			return NM_SETTING_VERIFY_NORMALIZABLE;
+		}
+		if (priv->speed) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("when link autonegotiation is enabled speed should be 0"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_WIRED_SETTING_NAME, NM_SETTING_WIRED_SPEED);
+			return NM_SETTING_VERIFY_NORMALIZABLE;
+		}
+	} else {
+		if (   ((priv->speed) && (!priv->duplex))
+		    || ((!priv->speed) && (priv->duplex))) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("both speed and duplex are required for static link configuration"));
+			return NM_SETTING_VERIFY_NORMALIZABLE;
+		}
+	}
+
 	return TRUE;
 }
 
@@ -783,6 +806,12 @@ compare_property (NMSetting *setting,
 
 	parent_class = NM_SETTING_CLASS (nm_setting_wired_parent_class);
 	return parent_class->compare_property (setting, other, prop_spec, flags);
+}
+
+static GVariant *
+_override_autoneg_get (NMSetting *setting, const char *property)
+{
+	return g_variant_new_boolean (nm_setting_wired_get_auto_negotiate ((NMSettingWired *) setting));
 }
 
 /*****************************************************************************/
@@ -1002,13 +1031,17 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	/**
 	 * NMSettingWired:speed:
 	 *
-	 * If non-zero, request that the device use only the specified speed.  In
-	 * Mbit/s, ie 100 == 100Mbit/s.
+	 * Can be set to a value grater than zero only when "auto-negotiate" is "off".
+	 * In that case, statically configures the device to use that specified speed.
+	 * In Mbit/s, ie 100 == 100Mbit/s.
+	 * Must be set together with the "duplex" property when non-zero.
+	 * Before specifying a speed value be sure your device supports it.
 	 **/
 	/* ---ifcfg-rh---
 	 * property: speed
-	 * variable: (none)
-	 * description: The property is not saved by the plugin.
+	 * variable: ETHTOOL_OPTS
+	 * description: Fixed speed for the ethernet link. It is added as "speed"
+	 *    parameter in the ETHTOOL_OPTS variable.
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1022,13 +1055,16 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	/**
 	 * NMSettingWired:duplex:
 	 *
-	 * If specified, request that the device only use the specified duplex mode.
-	 * Either "half" or "full".
+	 * Can be specified only when "auto-negotiate" is "off". In that case, statically
+	 * configures the device to use that specified duplex mode, either "half" or "full".
+	 * Must be set together with the "speed" property if specified.
+	 * Before specifying a duplex mode be sure your device supports it.
 	 **/
 	/* ---ifcfg-rh---
 	 * property: duplex
-	 * variable: (none)
-	 * description: The property is not saved by the plugin.
+	 * variable: ETHTOOL_OPTS
+	 * description: Fixed duplex mode for the ethernet link. It is added as
+	 *    "duplex" parameter in the ETHOOL_OPTS variable.
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1041,23 +1077,31 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	/**
 	 * NMSettingWired:auto-negotiate:
 	 *
-	 * If %TRUE, allow auto-negotiation of port speed and duplex mode.  If
-	 * %FALSE, do not allow auto-negotiation, in which case the "speed" and
-	 * "duplex" properties should be set.
+	 * If %TRUE, enforce auto-negotiation of port speed and duplex mode.  If
+	 * %FALSE, "speed" and "duplex" properties should be both set or link configuration
+	 * will be skipped.
 	 **/
 	/* ---ifcfg-rh---
 	 * property: auto-negotiate
-	 * variable: (none)
-	 * description: The property is not saved by the plugin.
+	 * variable: ETHTOOL_OPTS
+	 * description: Whether link speed and duplex autonegotiation is enabled.
+	 *    It is not saved only if disabled and no values are provided for the
+	 *    "speed" and "duplex" parameters (skips link configuration).
 	 * ---end---
 	 */
 	g_object_class_install_property
 		(object_class, PROP_AUTO_NEGOTIATE,
 		 g_param_spec_boolean (NM_SETTING_WIRED_AUTO_NEGOTIATE, "", "",
-		                       TRUE,
+		                       FALSE,
 		                       G_PARAM_READWRITE |
 		                       G_PARAM_CONSTRUCT |
 		                       G_PARAM_STATIC_STRINGS));
+	_nm_setting_class_override_property (setting_class,
+	                                     NM_SETTING_WIRED_AUTO_NEGOTIATE,
+	                                     G_VARIANT_TYPE_BOOLEAN,
+	                                     _override_autoneg_get,
+	                                     NULL,
+	                                     NULL);
 
 	/**
 	 * NMSettingWired:mac-address:
@@ -1078,6 +1122,9 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	 * variable: HWADDR
 	 * description: Hardware address of the device in traditional hex-digits-and-colons
 	 *    notation (e.g. 00:22:68:14:5A:05).
+	 *    Note that for initscripts this is the current MAC address of the device as found
+	 *    during ifup. For NetworkManager this is the permanent MAC address. Or in case no
+	 *    permanent MAC address exists, the MAC address initially configured on the device.
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1095,19 +1142,20 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	/**
 	 * NMSettingWired:cloned-mac-address:
 	 *
-	 * If specified, request that the device use this MAC address instead of its
-	 * permanent MAC address.  This is known as MAC cloning or spoofing.
+	 * If specified, request that the device use this MAC address instead.
+	 * This is known as MAC cloning or spoofing.
 	 *
 	 * Beside explicitly specifing a MAC address, the special values "preserve", "permanent",
 	 * "random" and "stable" are supported.
 	 * "preserve" means not to touch the MAC address on activation.
 	 * "permanent" means to use the permanent hardware address of the device.
 	 * "random" creates a random MAC address on each connect.
-	 * "stable" creates a hashed MAC address based on connection.stable-id (or
-	 * the connection's UUID) and a machine dependent key.
+	 * "stable" creates a hashed MAC address based on connection.stable-id and a
+	 * machine dependent key.
 	 *
 	 * If unspecified, the value can be overwritten via global defaults, see manual
-	 * of NetworkManager.conf. If still unspecified, it defaults to "permanent".
+	 * of NetworkManager.conf. If still unspecified, it defaults to "preserve"
+	 * (older versions of NetworkManager may use a different default value).
 	 *
 	 * On D-Bus, this field is expressed as "assigned-mac-address" or the deprecated
 	 * "cloned-mac-address".
@@ -1130,6 +1178,7 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	 * format: byte array
 	 * description: This D-Bus field is deprecated in favor of "assigned-mac-address"
 	 *    which is more flexible and allows specifying special variants like "random".
+	 *    For libnm and nmcli, this field is called "cloned-mac-address".
 	 * ---end---
 	 */
 	g_object_class_install_property
@@ -1153,7 +1202,9 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	 *   a hardware address in ASCII representation, or one of the special values
 	 *   "preserve", "permanent", "random" or "stable".
 	 *   This field replaces the deprecated "cloned-mac-address" on D-Bus, which
-	 *   can only contain explict hardware addresses.
+	 *   can only contain explict hardware addresses. Note that this property
+	 *   only exists in D-Bus API. libnm and nmcli continue to call this property
+	 *   "cloned-mac-address".
 	 * ---end---
 	 */
 	_nm_setting_class_add_dbus_only_property (setting_class,
@@ -1196,7 +1247,7 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: generate-mac-address-mask
-	 * variable: GENERATE_MAC_ADDRESS_MASK
+	 * variable: GENERATE_MAC_ADDRESS_MASK(+)
 	 * description: the MAC address mask for generating randomized and stable
 	 *   cloned-mac-address.
 	 * ---end---

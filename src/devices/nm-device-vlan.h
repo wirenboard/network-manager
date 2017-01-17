@@ -37,11 +37,13 @@ typedef enum {
 } NMVlanError;
 
 /* D-Bus exported properties */
-#define NM_DEVICE_VLAN_PARENT     "parent"
 #define NM_DEVICE_VLAN_ID         "vlan-id"
 
-typedef NMDevice NMDeviceVlan;
-typedef NMDeviceClass NMDeviceVlanClass;
+/* defined in the parent class, but exposed on D-Bus by the subclass. */
+#define NM_DEVICE_VLAN_PARENT     NM_DEVICE_PARENT
+
+typedef struct _NMDeviceVlan NMDeviceVlan;
+typedef struct _NMDeviceVlanClass NMDeviceVlanClass;
 
 GType nm_device_vlan_get_type (void);
 

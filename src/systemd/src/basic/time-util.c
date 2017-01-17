@@ -42,8 +42,6 @@
 #include "strv.h"
 #include "time-util.h"
 
-static nsec_t timespec_load_nsec(const struct timespec *ts);
-
 static clockid_t map_clock_id(clockid_t c) {
 
         /* Some more exotic archs (s390, ppc, …) lack the "ALARM" flavour of the clocks. Thus, clock_gettime() will
@@ -200,7 +198,7 @@ usec_t timespec_load(const struct timespec *ts) {
                 (usec_t) ts->tv_nsec / NSEC_PER_USEC;
 }
 
-static nsec_t timespec_load_nsec(const struct timespec *ts) {
+nsec_t timespec_load_nsec(const struct timespec *ts) {
         assert(ts);
 
         if (ts->tv_sec == (time_t) -1 && ts->tv_nsec == (long) -1)
@@ -314,7 +312,7 @@ static char *format_timestamp_internal(
                 if (n + 8 > l)
                         return NULL; /* Microseconds part doesn't fit. */
 
-                sprintf(buf + n, ".%06llu", (unsigned long long) (t % USEC_PER_SEC));
+                sprintf(buf + n, ".%06"PRI_USEC, t % USEC_PER_SEC);
         }
 
         /* Append the timezone */
@@ -505,11 +503,11 @@ char *format_timespan(char *buf, size_t l, usec_t t, usec_t accuracy) {
 
                         if (j > 0) {
                                 k = snprintf(p, l,
-                                             "%s"USEC_FMT".%0*llu%s",
+                                             "%s"USEC_FMT".%0*"PRI_USEC"%s",
                                              p > buf ? " " : "",
                                              a,
                                              j,
-                                             (unsigned long long) b,
+                                             b,
                                              table[i].suffix);
 
                                 t = 0;
@@ -890,6 +888,7 @@ static char* extract_multiplier(char *p, usec_t *multiplier) {
                 { "y",       USEC_PER_YEAR   },
                 { "usec",    1ULL            },
                 { "us",      1ULL            },
+                { "µs",      1ULL            },
         };
         unsigned i;
 
@@ -1023,6 +1022,7 @@ int parse_nsec(const char *t, nsec_t *nsec) {
                 { "y", NSEC_PER_YEAR },
                 { "usec", NSEC_PER_USEC },
                 { "us", NSEC_PER_USEC },
+                { "µs", NSEC_PER_USEC },
                 { "nsec", 1ULL },
                 { "ns", 1ULL },
                 { "", 1ULL }, /* default is nsec */
@@ -1329,7 +1329,7 @@ unsigned long usec_to_jiffies(usec_t u) {
                 r = sysconf(_SC_CLK_TCK);
 
                 assert(r > 0);
-                hz = (unsigned long) r;
+                hz = r;
         }
 
         return DIV_ROUND_UP(u , USEC_PER_SEC / hz);

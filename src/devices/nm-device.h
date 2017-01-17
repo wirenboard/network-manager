@@ -66,6 +66,9 @@
 #define NM_DEVICE_LLDP_NEIGHBORS  "lldp-neighbors"
 #define NM_DEVICE_REAL             "real"
 
+/* "parent" is exposed on D-Bus by subclasses like NMDeviceIPTunnel */
+#define NM_DEVICE_PARENT           "parent"
+
 /* the "slaves" property is internal in the parent class, but exposed
  * by the derived classes NMDeviceBond, NMDeviceBridge and NMDeviceTeam.
  * It is thus important that the property name matches. */
@@ -82,11 +85,14 @@
 #define NM_DEVICE_AUTH_REQUEST          "auth-request"
 #define NM_DEVICE_IP4_CONFIG_CHANGED    "ip4-config-changed"
 #define NM_DEVICE_IP6_CONFIG_CHANGED    "ip6-config-changed"
+#define NM_DEVICE_IP6_PREFIX_DELEGATED  "ip6-prefix-delegated"
+#define NM_DEVICE_IP6_SUBNET_NEEDED     "ip6-subnet-needed"
 #define NM_DEVICE_REMOVED               "removed"
 #define NM_DEVICE_RECHECK_AUTO_ACTIVATE "recheck-auto-activate"
 #define NM_DEVICE_RECHECK_ASSUME        "recheck-assume"
 #define NM_DEVICE_STATE_CHANGED         "state-changed"
 #define NM_DEVICE_LINK_INITIALIZED      "link-initialized"
+#define NM_DEVICE_AUTOCONNECT_ALLOWED   "autoconnect-allowed"
 
 #define NM_DEVICE_STATISTICS_REFRESH_RATE_MS "refresh-rate-ms"
 #define NM_DEVICE_STATISTICS_TX_BYTES        "tx-bytes"
@@ -150,7 +156,8 @@ typedef struct {
 	                       NMDeviceState old_state,
 	                       NMDeviceStateReason reason);
 
-	void            (* link_changed) (NMDevice *self, NMPlatformLink *info);
+	void            (* link_changed) (NMDevice *self,
+	                                  const NMPlatformLink *pllink);
 
 	/**
 	 * create_and_realize():
@@ -178,12 +185,15 @@ typedef struct {
 	/**
 	 * realize_start_notify():
 	 * @self: the #NMDevice
-	 * @plink: the #NMPlatformLink if backed by a kernel netdevice
+	 * @pllink: the #NMPlatformLink if backed by a kernel netdevice
 	 *
 	 * Hook for derived classes to be notfied during realize_start_setup()
 	 * and perform additional setup.
+	 *
+	 * The default implemention of NMDevice calls link_changed().
 	 */
-	void        (*realize_start_notify) (NMDevice *self, const NMPlatformLink *plink);
+	void        (*realize_start_notify) (NMDevice *self,
+	                                     const NMPlatformLink *pllink);
 
 	/**
 	 * unrealize():
@@ -204,9 +214,6 @@ typedef struct {
 
 	/* Hardware state (IFF_UP) */
 	gboolean        (*can_unmanaged_external_down)  (NMDevice *self);
-	gboolean        (*is_up)                        (NMDevice *self);
-	gboolean        (*bring_up)                     (NMDevice *self, gboolean *no_firmware);
-	gboolean        (*take_down)                    (NMDevice *self);
 
 	/* Carrier state (IFF_LOWER_UP) */
 	void            (*carrier_changed) (NMDevice *, gboolean carrier);
@@ -224,6 +231,8 @@ typedef struct {
 	gboolean    (* can_auto_connect) (NMDevice *self,
 	                                  NMConnection *connection,
 	                                  char **specific_object);
+
+	guint32     (*get_configured_mtu) (NMDevice *self, gboolean *out_is_user_config);
 
 	/* Checks whether the connection is compatible with the device using
 	 * only the devices type and characteristics.  Does not use any live
@@ -268,9 +277,7 @@ typedef struct {
 	NMActStageReturn    (* act_stage4_ip6_config_timeout)   (NMDevice *self,
 	                                                         NMDeviceStateReason *reason);
 
-	/* Called right before IP config is set; use for setting MTU etc */
 	void                (* ip4_config_pre_commit) (NMDevice *self, NMIP4Config *config);
-	void                (* ip6_config_pre_commit) (NMDevice *self, NMIP6Config *config);
 
 	/* Async deactivating (in the DEACTIVATING phase) */
 	void            (* deactivate_async)        (NMDevice *self,
@@ -310,7 +317,11 @@ typedef struct {
 	gboolean        (* have_any_ready_slaves) (NMDevice *self,
 	                                           const GSList *slaves);
 
-	void            (* notify_new_device_added) (NMDevice *self, NMDevice *new_device);
+	void            (* parent_changed_notify) (NMDevice *self,
+	                                           int old_ifindex,
+	                                           NMDevice *old_parent,
+	                                           int new_ifindex,
+	                                           NMDevice *new_parent);
 
 	/**
 	 * component_added:
@@ -370,9 +381,10 @@ const char *    nm_device_get_permanent_hw_address_full (NMDevice *self,
                                                          gboolean *out_is_fake);
 const char *    nm_device_get_initial_hw_address (NMDevice *dev);
 
+NMProxyConfig * nm_device_get_proxy_config      (NMDevice *dev);
+
 NMDhcp4Config * nm_device_get_dhcp4_config      (NMDevice *dev);
 NMDhcp6Config * nm_device_get_dhcp6_config      (NMDevice *dev);
-
 NMIP4Config *   nm_device_get_ip4_config        (NMDevice *dev);
 void            nm_device_replace_vpn4_config   (NMDevice *dev,
                                                  NMIP4Config *old,
@@ -384,6 +396,14 @@ void            nm_device_replace_vpn6_config   (NMDevice *dev,
                                                  NMIP6Config *config);
 
 void            nm_device_capture_initial_config (NMDevice *dev);
+
+int             nm_device_parent_get_ifindex    (NMDevice *dev);
+NMDevice       *nm_device_parent_get_device     (NMDevice *dev);
+void            nm_device_parent_set_ifindex    (NMDevice *self,
+                                                 int parent_ifindex);
+gboolean        nm_device_parent_notify_changed (NMDevice *self,
+                                                 NMDevice *change_candidate,
+                                                 gboolean device_removed);
 
 /* Master */
 gboolean        nm_device_is_master             (NMDevice *dev);
@@ -439,6 +459,16 @@ gboolean nm_device_get_enabled (NMDevice *device);
 void nm_device_set_enabled (NMDevice *device, gboolean enabled);
 
 RfKillType nm_device_get_rfkill_type (NMDevice *device);
+
+/* IPv6 prefix delegation */
+
+void nm_device_request_ip6_prefixes (NMDevice *self, int needed_prefixes);
+
+gboolean nm_device_needs_ip6_subnet (NMDevice *self);
+
+void nm_device_use_ip6_subnet (NMDevice *self, const NMPlatformIP6Address *subnet);
+
+void nm_device_copy_ip6_dns_config (NMDevice *self, NMDevice *from_device);
 
 /**
  * NMUnmanagedFlags:
@@ -544,9 +574,6 @@ void nm_device_queue_state   (NMDevice *self,
                               NMDeviceStateReason reason);
 
 gboolean nm_device_get_firmware_missing (NMDevice *self);
-gboolean nm_device_get_nm_plugin_missing (NMDevice *self);
-void     nm_device_set_nm_plugin_missing (NMDevice *self,
-                                          gboolean missing);
 
 void nm_device_steal_connection (NMDevice *device, NMSettingsConnection *connection);
 
@@ -567,7 +594,6 @@ gboolean   nm_device_check_connection_available (NMDevice *device,
                                                  NMDeviceCheckConAvailableFlags flags,
                                                  const char *specific_object);
 
-void     nm_device_notify_new_device_added (NMDevice *self, NMDevice *new_device);
 gboolean nm_device_notify_component_added (NMDevice *device, GObject *component);
 
 gboolean nm_device_owns_iface (NMDevice *device, const char *iface);

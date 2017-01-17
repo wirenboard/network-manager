@@ -13,6 +13,31 @@
     <refpurpose></refpurpose>
   </refnamediv>
 
+  <refsect2 id="NMCapability" role="enum">
+    <title>enum NMCapability</title>
+    <indexterm zone="NMCapability">
+      <primary>NMCapability</primary>
+    </indexterm>
+    <para><para><link linkend="NMCapability">NMCapability</link> names the numbers in the Capabilities property. Capabilities are positive numbers. They are part of stable API and a certain capability number is guaranteed not to change.</para><para>The range 0x7000 - 0x7FFF of capabilities is guaranteed not to be used by upstream NetworkManager. It could thus be used for downstream extensions.</para><para></para></para>
+    <refsect3 role="enum_members">
+      <title>Values</title>
+      <informaltable role="enum_members_table" pgwide="1" frame="none">
+        <tgroup cols="4">
+          <colspec colname="enum_members_name" colwidth="300px" />
+          <colspec colname="enum_members_value" colwidth="100px"/>
+          <colspec colname="enum_members_description" />
+          <tbody>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_CAPABILITY_TEAM</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>1</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>Teams can be managed</para><para></para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </refsect3>
+  </refsect2>
+
   <refsect2 id="NMState" role="enum">
     <title>enum NMState</title>
     <indexterm zone="NMState">
@@ -89,27 +114,27 @@
           <tbody>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CONNECTIVITY_UNKNOWN</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>1</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>Network connectivity is unknown.</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CONNECTIVITY_NONE</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>2</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>1</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>The host is not connected to any network.</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CONNECTIVITY_PORTAL</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>3</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>2</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>The host is behind a captive portal and cannot reach the full Internet.</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CONNECTIVITY_LIMITED</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>4</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>3</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>The host is connected to a network, but does not appear to be able to reach the full Internet.</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CONNECTIVITY_FULL</para><para></para></entry>
-              <entry role="enum_member_value"><para>= <literal>5</literal></para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>4</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>The host is connected to a network, and appears to be able to reach the full Internet.</para><para></para></entry>
             </row>
           </tbody>
@@ -236,6 +261,11 @@
               <entry role="enum_member_name"><para>NM_DEVICE_TYPE_VETH</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>20</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>a VETH interface</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_DEVICE_TYPE_MACSEC</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>21</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>a MACsec interface</para><para></para></entry>
             </row>
           </tbody>
         </tgroup>
@@ -1311,6 +1341,16 @@
               <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_DESTROY_ALL</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>0x01</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>when creating a new checkpoint, destroy all existing ones.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_DELETE_NEW_CONNECTIONS</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x02</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>upon rollback, delete any new connection added after the checkpoint.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_DISCONNECT_NEW_DEVICES</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x04</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>upon rollback, disconnect any new device appeared after the checkpoint.</para><para></para></entry>
             </row>
           </tbody>
         </tgroup>

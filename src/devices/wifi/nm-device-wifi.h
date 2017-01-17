@@ -22,7 +22,7 @@
 #ifndef __NETWORKMANAGER_DEVICE_WIFI_H__
 #define __NETWORKMANAGER_DEVICE_WIFI_H__
 
-#include "nm-device.h"
+#include "devices/nm-device.h"
 #include "nm-wifi-ap.h"
 
 #define NM_TYPE_DEVICE_WIFI             (nm_device_wifi_get_type ())
@@ -38,6 +38,13 @@
 #define NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT "active-access-point"
 #define NM_DEVICE_WIFI_CAPABILITIES        "wireless-capabilities"
 #define NM_DEVICE_WIFI_SCANNING            "scanning"
+
+/* signals */
+#define NM_DEVICE_WIFI_ACCESS_POINT_ADDED  "access-point-added"
+#define NM_DEVICE_WIFI_ACCESS_POINT_REMOVED "access-point-removed"
+
+/* internal signals */
+#define NM_DEVICE_WIFI_SCANNING_ALLOWED    "scanning-allowed"
 
 typedef struct _NMDeviceWifi NMDeviceWifi;
 typedef struct _NMDeviceWifiClass NMDeviceWifiClass;

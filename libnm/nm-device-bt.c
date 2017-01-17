@@ -28,7 +28,6 @@
 #include "nm-utils.h"
 
 #include "nm-device-bt.h"
-#include "nm-device-private.h"
 #include "nm-object-private.h"
 #include "nm-enum-types.h"
 
@@ -65,7 +64,7 @@ nm_device_bt_get_hw_address (NMDeviceBt *device)
 {
 	g_return_val_if_fail (NM_IS_DEVICE_BT (device), NULL);
 
-	return NM_DEVICE_BT_GET_PRIVATE (device)->hw_address;
+	return nm_str_not_empty (NM_DEVICE_BT_GET_PRIVATE (device)->hw_address);
 }
 
 /**
@@ -178,12 +177,11 @@ get_hw_address (NMDevice *device)
 	return nm_device_bt_get_hw_address (NM_DEVICE_BT (device));
 }
 
-/************************************************************/
+/*****************************************************************************/
 
 static void
 nm_device_bt_init (NMDeviceBt *device)
 {
-	_nm_device_set_device_type (NM_DEVICE (device), NM_DEVICE_TYPE_BT);
 }
 
 static void
@@ -247,8 +245,6 @@ nm_device_bt_class_init (NMDeviceBtClass *bt_class)
 	NMDeviceClass *device_class = NM_DEVICE_CLASS (bt_class);
 
 	g_type_class_add_private (bt_class, sizeof (NMDeviceBtPrivate));
-
-	_nm_object_class_add_interface (nm_object_class, NM_DBUS_INTERFACE_DEVICE_BLUETOOTH);
 
 	/* virtual methods */
 	object_class->finalize = finalize;

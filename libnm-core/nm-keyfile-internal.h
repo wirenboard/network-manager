@@ -27,10 +27,11 @@
 #include "nm-connection.h"
 #include "nm-setting-8021x.h"
 
-/*********************************************************/
+/*****************************************************************************/
 
-#define NM_KEYFILE_CERT_SCHEME_PREFIX_BLOB "data:;base64,"
 #define NM_KEYFILE_CERT_SCHEME_PREFIX_PATH "file://"
+#define NM_KEYFILE_CERT_SCHEME_PREFIX_PKCS11 "pkcs11:"
+#define NM_KEYFILE_CERT_SCHEME_PREFIX_BLOB "data:;base64,"
 
 char *nm_keyfile_detect_unqualified_path_scheme (const char *base_dir,
                                                  gconstpointer pdata,
@@ -94,7 +95,7 @@ NMConnection *nm_keyfile_read (GKeyFile *keyfile,
                                void *user_data,
                                GError **error);
 
-/*********************************************************/
+/*****************************************************************************/
 
 typedef enum {
 	NM_KEYFILE_WRITE_TYPE_CERT              = 1,
@@ -147,6 +148,7 @@ typedef struct {
 	NMSetting8021xCKFormat (*format_func) (NMSetting8021x *setting);
 	const char *           (*path_func)   (NMSetting8021x *setting);
 	GBytes *               (*blob_func)   (NMSetting8021x *setting);
+	const char *           (*uri_func)    (NMSetting8021x *setting);
 } NMKeyfileWriteTypeDataCert;
 
 
@@ -155,7 +157,7 @@ GKeyFile *nm_keyfile_write (NMConnection *connection,
                             void *user_data,
                             GError **error);
 
-/*********************************************************/
+/*****************************************************************************/
 
 char *nm_keyfile_plugin_kf_get_string (GKeyFile *kf, const char *group, const char *key, GError **error);
 void nm_keyfile_plugin_kf_set_string (GKeyFile *kf, const char *group, const char *key, const char *value);

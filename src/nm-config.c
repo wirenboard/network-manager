@@ -27,9 +27,8 @@
 #include <stdio.h>
 
 #include "nm-utils.h"
-#include "nm-device.h"
+#include "devices/nm-device.h"
 #include "NetworkManagerUtils.h"
-#include "nm-enum-types.h"
 #include "nm-core-internal.h"
 #include "nm-keyfile-internal.h"
 
@@ -37,20 +36,10 @@
 #define DEFAULT_CONFIG_DIR              NMCONFDIR "/conf.d"
 #define DEFAULT_CONFIG_MAIN_FILE_OLD    NMCONFDIR "/nm-system-settings.conf"
 #define DEFAULT_SYSTEM_CONFIG_DIR       NMLIBDIR  "/conf.d"
+#define RUN_CONFIG_DIR                  NMRUNDIR  "/conf.d"
 #define DEFAULT_NO_AUTO_DEFAULT_FILE    NMSTATEDIR "/no-auto-default.state"
 #define DEFAULT_INTERN_CONFIG_FILE      NMSTATEDIR "/NetworkManager-intern.conf"
 #define DEFAULT_STATE_FILE              NMSTATEDIR "/NetworkManager.state"
-
-/*****************************************************************************/
-
-#define _NMLOG_PREFIX_NAME                "config"
-#define _NMLOG_DOMAIN                     LOGD_CORE
-
-#define _NMLOG(level, ...) \
-	nm_log (level, _NMLOG_DOMAIN, \
-	        "%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
-	        _NMLOG_PREFIX_NAME \
-	        _NM_UTILS_MACRO_REST(__VA_ARGS__))
 
 /*****************************************************************************/
 
@@ -77,6 +66,20 @@ typedef struct {
 	NMConfigState p;
 } State;
 
+/*****************************************************************************/
+
+NM_GOBJECT_PROPERTIES_DEFINE_BASE (
+	PROP_CMD_LINE_OPTIONS,
+	PROP_ATOMIC_SECTION_PREFIXES,
+);
+
+enum {
+	SIGNAL_CONFIG_CHANGED,
+	LAST_SIGNAL,
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
 typedef struct {
 	NMConfigCmdLineOptions cli;
 
@@ -88,15 +91,10 @@ typedef struct {
 	char *no_auto_default_file;
 	char *intern_config_file;
 
-	char **plugins;
 	gboolean monitor_connection_files;
-	gboolean auth_polkit;
-	char *dhcp_client;
 
 	char *log_level;
 	char *log_domains;
-
-	char *debug;
 
 	gboolean configure_and_quit;
 
@@ -116,20 +114,14 @@ typedef struct {
 	State *state;
 } NMConfigPrivate;
 
-enum {
-	PROP_0,
-	PROP_CMD_LINE_OPTIONS,
-	PROP_ATOMIC_SECTION_PREFIXES,
-	LAST_PROP,
+struct _NMConfig {
+	GObject parent;
+	NMConfigPrivate _priv;
 };
 
-enum {
-	SIGNAL_CONFIG_CHANGED,
-
-	LAST_SIGNAL
+struct _NMConfigClass {
+	GObjectClass parent;
 };
-
-static guint signals[LAST_SIGNAL] = { 0 };
 
 static void nm_config_initable_iface_init (GInitableIface *iface);
 
@@ -137,14 +129,18 @@ G_DEFINE_TYPE_WITH_CODE (NMConfig, nm_config, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE, nm_config_initable_iface_init);
                          )
 
+#define NM_CONFIG_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMConfig, NM_IS_CONFIG)
 
-#define NM_CONFIG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_CONFIG, NMConfigPrivate))
+/*****************************************************************************/
 
-/************************************************************************/
+#define _NMLOG_DOMAIN      LOGD_CORE
+#define _NMLOG(level, ...) __NMLOG_DEFAULT (level, _NMLOG_DOMAIN, "config", __VA_ARGS__)
+
+/*****************************************************************************/
 
 static void _set_config_data (NMConfig *self, NMConfigData *new_data, NMConfigChangeFlags reload_flags);
 
-/************************************************************************/
+/*****************************************************************************/
 
 #define _HAS_PREFIX(str, prefix) \
 	({ \
@@ -152,7 +148,7 @@ static void _set_config_data (NMConfig *self, NMConfigData *new_data, NMConfigCh
 		g_str_has_prefix ( _str, ""prefix"") && _str[NM_STRLEN(prefix)] != '\0'; \
 	})
 
-/************************************************************************/
+/*****************************************************************************/
 
 gint
 nm_config_parse_boolean (const char *str,
@@ -162,7 +158,7 @@ nm_config_parse_boolean (const char *str,
 }
 
 gint
-nm_config_keyfile_get_boolean (GKeyFile *keyfile,
+nm_config_keyfile_get_boolean (const GKeyFile *keyfile,
                                const char *section,
                                const char *key,
                                gint default_value)
@@ -173,12 +169,12 @@ nm_config_keyfile_get_boolean (GKeyFile *keyfile,
 	g_return_val_if_fail (section != NULL, default_value);
 	g_return_val_if_fail (key != NULL, default_value);
 
-	str = g_key_file_get_value (keyfile, section, key, NULL);
+	str = g_key_file_get_value ((GKeyFile *) keyfile, section, key, NULL);
 	return nm_config_parse_boolean (str, default_value);
 }
 
 char *
-nm_config_keyfile_get_value (GKeyFile *keyfile,
+nm_config_keyfile_get_value (const GKeyFile *keyfile,
                              const char *section,
                              const char *key,
                              NMConfigGetValueFlags flags)
@@ -186,9 +182,9 @@ nm_config_keyfile_get_value (GKeyFile *keyfile,
 	char *value;
 
 	if (NM_FLAGS_HAS (flags, NM_CONFIG_GET_VALUE_RAW))
-		value = g_key_file_get_value (keyfile, section, key, NULL);
+		value = g_key_file_get_value ((GKeyFile *) keyfile, section, key, NULL);
 	else
-		value = g_key_file_get_string (keyfile, section, key, NULL);
+		value = g_key_file_get_string ((GKeyFile *) keyfile, section, key, NULL);
 
 	if (!value)
 		return NULL;
@@ -238,7 +234,7 @@ nm_config_keyfile_set_string_list (GKeyFile *keyfile,
 	g_free (new_value);
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 NMConfigData *
 nm_config_get_data (NMConfig *config)
@@ -259,36 +255,12 @@ nm_config_get_data_orig (NMConfig *config)
 	return NM_CONFIG_GET_PRIVATE (config)->config_data_orig;
 }
 
-const char **
-nm_config_get_plugins (NMConfig *config)
-{
-	g_return_val_if_fail (config != NULL, NULL);
-
-	return (const char **) NM_CONFIG_GET_PRIVATE (config)->plugins;
-}
-
 gboolean
 nm_config_get_monitor_connection_files (NMConfig *config)
 {
 	g_return_val_if_fail (config != NULL, FALSE);
 
 	return NM_CONFIG_GET_PRIVATE (config)->monitor_connection_files;
-}
-
-gboolean
-nm_config_get_auth_polkit (NMConfig *config)
-{
-	g_return_val_if_fail (NM_IS_CONFIG (config), NM_CONFIG_DEFAULT_AUTH_POLKIT);
-
-	return NM_CONFIG_GET_PRIVATE (config)->auth_polkit;
-}
-
-const char *
-nm_config_get_dhcp_client (NMConfig *config)
-{
-	g_return_val_if_fail (config != NULL, NULL);
-
-	return NM_CONFIG_GET_PRIVATE (config)->dhcp_client;
 }
 
 const char *
@@ -307,14 +279,6 @@ nm_config_get_log_domains (NMConfig *config)
 	return NM_CONFIG_GET_PRIVATE (config)->log_domains;
 }
 
-const char *
-nm_config_get_debug (NMConfig *config)
-{
-	g_return_val_if_fail (config != NULL, NULL);
-
-	return NM_CONFIG_GET_PRIVATE (config)->debug;
-}
-
 gboolean
 nm_config_get_configure_and_quit (NMConfig *config)
 {
@@ -327,7 +291,7 @@ nm_config_get_is_debug (NMConfig *config)
 	return NM_CONFIG_GET_PRIVATE (config)->cli.is_debug;
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 static char **
 no_auto_default_from_file (const char *no_auto_default_file)
@@ -418,8 +382,8 @@ nm_config_set_no_auto_default_for_device (NMConfig *self, NMDevice *device)
 	g_ptr_array_add (no_auto_default_new, NULL);
 
 	if (!no_auto_default_to_file (priv->no_auto_default_file, (const char *const*) no_auto_default_new->pdata, &error)) {
-		nm_log_warn (LOGD_SETTINGS, "Could not update no-auto-default.state file: %s",
-		             error->message);
+		_LOGW ("Could not update no-auto-default.state file: %s",
+		       error->message);
 		g_error_free (error);
 	}
 
@@ -431,7 +395,7 @@ nm_config_set_no_auto_default_for_device (NMConfig *self, NMDevice *device)
 	_set_config_data (self, new_data, NM_CONFIG_CHANGE_CAUSE_NO_AUTO_DEFAULT);
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 static void
 _nm_config_cmd_line_options_clear (NMConfigCmdLineOptions *cli)
@@ -505,7 +469,7 @@ nm_config_cmd_line_options_add_to_entries (NMConfigCmdLineOptions *cli,
 			{ "intern-config", 0, 0, G_OPTION_ARG_FILENAME, &cli->intern_config_file, N_("Internal config file location"), N_(DEFAULT_INTERN_CONFIG_FILE) },
 			{ "state-file", 0, 0, G_OPTION_ARG_FILENAME, &cli->state_file, N_("State file location"), N_(DEFAULT_STATE_FILE) },
 			{ "no-auto-default", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &cli->no_auto_default_file, N_("State file for no-auto-default devices"), N_(DEFAULT_NO_AUTO_DEFAULT_FILE) },
-			{ "plugins", 0, 0, G_OPTION_ARG_STRING, &cli->plugins, N_("List of plugins separated by ','"), N_(CONFIG_PLUGINS_DEFAULT) },
+			{ "plugins", 0, 0, G_OPTION_ARG_STRING, &cli->plugins, N_("List of plugins separated by ','"), N_(NM_CONFIG_DEFAULT_MAIN_PLUGINS) },
 			{ "configure-and-quit", 0, 0, G_OPTION_ARG_NONE, &cli->configure_and_quit, N_("Quit after initial configuration"), NULL },
 			{ "debug", 'd', 0, G_OPTION_ARG_NONE, &cli->is_debug, N_("Don't become a daemon, and log to stderr"), NULL },
 
@@ -520,7 +484,7 @@ nm_config_cmd_line_options_add_to_entries (NMConfigCmdLineOptions *cli,
 	}
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 GKeyFile *
 nm_config_create_keyfile ()
@@ -651,7 +615,7 @@ static gboolean
 _setting_is_string_list (const char *group, const char *key)
 {
 	return    _IS (NM_CONFIG_KEYFILE_GROUP_MAIN, "plugins")
-	       || _IS (NM_CONFIG_KEYFILE_GROUP_MAIN, "debug")
+	       || _IS (NM_CONFIG_KEYFILE_GROUP_MAIN, NM_CONFIG_KEYFILE_KEY_MAIN_DEBUG)
 	       || _IS (NM_CONFIG_KEYFILE_GROUP_LOGGING, "domains")
 	       || g_str_has_prefix (group, NM_CONFIG_KEYFILE_GROUPPREFIX_TEST_APPEND_STRINGLIST);
 #undef _IS
@@ -680,7 +644,7 @@ read_config (GKeyFile *keyfile, gboolean is_base_config, const char *dirname, co
 		return FALSE;
 	}
 
-	nm_log_dbg (LOGD_SETTINGS, "Reading config file '%s'", path);
+	_LOGD ("Reading config file '%s'", path);
 
 	kf = nm_config_create_keyfile ();
 	if (!g_key_file_load_from_file (kf, path, G_KEY_FILE_NONE, error)) {
@@ -763,6 +727,13 @@ read_config (GKeyFile *keyfile, gboolean is_base_config, const char *dirname, co
 					if (is_string_list) {
 						old_val = g_key_file_get_string_list (keyfile, group, base_key, NULL, NULL);
 						new_val = g_key_file_get_string_list (kf, group, key, NULL, NULL);
+						if (!old_val && !g_key_file_has_key (keyfile, group, base_key, NULL)) {
+							/* we must fill the unspecified value with the compile-time default. */
+							if (nm_streq (group, NM_CONFIG_KEYFILE_GROUP_MAIN) && nm_streq (base_key, "plugins")) {
+								g_key_file_set_value (keyfile, group, base_key, NM_CONFIG_DEFAULT_MAIN_PLUGINS);
+								old_val = g_key_file_get_string_list (keyfile, group, base_key, NULL, NULL);
+							}
+						}
 					} else {
 						gs_free char *old_sval = nm_config_keyfile_get_value (keyfile, group, base_key, NM_CONFIG_GET_VALUE_TYPE_SPEC);
 						gs_free char *new_sval = nm_config_keyfile_get_value (kf, group, key, NM_CONFIG_GET_VALUE_TYPE_SPEC);
@@ -866,8 +837,8 @@ read_base_config (GKeyFile *keyfile,
 	}
 
 	if (!g_error_matches (my_error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_NOT_FOUND)) {
-		nm_log_warn (LOGD_CORE, "Old default config file invalid: %s\n",
-		             my_error->message);
+		_LOGW ("Old default config file invalid: %s\n",
+		       my_error->message);
 	}
 	g_clear_error (&my_error);
 
@@ -878,8 +849,8 @@ read_base_config (GKeyFile *keyfile,
 	}
 
 	if (!g_error_matches (my_error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_NOT_FOUND)) {
-		nm_log_warn (LOGD_CORE, "Default config file invalid: %s\n",
-		             my_error->message);
+		_LOGW ("Default config file invalid: %s\n",
+		       my_error->message);
 		g_propagate_error (error, my_error);
 		return FALSE;
 	}
@@ -889,8 +860,8 @@ read_base_config (GKeyFile *keyfile,
 	 * config file path.
 	 */
 	*out_config_main_file = g_strdup (DEFAULT_CONFIG_MAIN_FILE);
-	nm_log_info (LOGD_CORE, "No config file found or given; using %s\n",
-	             DEFAULT_CONFIG_MAIN_FILE);
+	_LOGI ("No config file found or given; using %s\n",
+	       DEFAULT_CONFIG_MAIN_FILE);
 	return TRUE;
 }
 
@@ -926,6 +897,24 @@ _get_config_dir_files (const char *config_dir)
 	return confs;
 }
 
+static void
+_confs_to_description (GString *str, const GPtrArray *confs, const char *name)
+{
+	guint i;
+
+	if (!confs->len)
+		return;
+
+	for (i = 0; i < confs->len; i++) {
+		if (i == 0)
+			g_string_append_printf (str, " (%s: ", name);
+		else
+			g_string_append (str, ", ");
+		g_string_append (str, confs->pdata[i]);
+	}
+	g_string_append (str, ")");
+}
+
 static GKeyFile *
 read_entire_config (const NMConfigCmdLineOptions *cli,
                     const char *config_dir,
@@ -934,13 +923,13 @@ read_entire_config (const NMConfigCmdLineOptions *cli,
                     char **out_config_description,
                     GError **error)
 {
-	GKeyFile *keyfile;
+	gs_unref_keyfile GKeyFile *keyfile = NULL;
 	gs_unref_ptrarray GPtrArray *system_confs = NULL;
 	gs_unref_ptrarray GPtrArray *confs = NULL;
+	gs_unref_ptrarray GPtrArray *run_confs = NULL;
 	guint i;
 	gs_free char *o_config_main_file = NULL;
-	GString *str;
-	char **plugins_default;
+	const char *run_config_dir = "";
 
 	g_return_val_if_fail (config_dir, NULL);
 	g_return_val_if_fail (system_config_dir, NULL);
@@ -948,46 +937,56 @@ read_entire_config (const NMConfigCmdLineOptions *cli,
 	g_return_val_if_fail (!out_config_description || !*out_config_description, NULL);
 	g_return_val_if_fail (!error || !*error, FALSE);
 
+	if (   (""RUN_CONFIG_DIR)[0] == '/'
+	    && !nm_streq (RUN_CONFIG_DIR, system_config_dir)
+	    && !nm_streq (RUN_CONFIG_DIR, config_dir))
+		run_config_dir = RUN_CONFIG_DIR;
+
 	/* create a default configuration file. */
 	keyfile = nm_config_create_keyfile ();
 
-	plugins_default = g_strsplit (CONFIG_PLUGINS_DEFAULT, ",", -1);
-	if (plugins_default && plugins_default[0])
-		nm_config_keyfile_set_string_list (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "plugins", (const char *const*) plugins_default, -1);
-	g_strfreev (plugins_default);
-
 	system_confs = _get_config_dir_files (system_config_dir);
 	confs = _get_config_dir_files (config_dir);
+	run_confs = _get_config_dir_files (run_config_dir);
 
 	for (i = 0; i < system_confs->len; ) {
 		const char *filename = system_confs->pdata[i];
 
-		/* if a same named file exists in config_dir, skip it. */
-		if (_nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0) {
+		/* if a same named file exists in config_dir or run_config_dir, skip it. */
+		if (_nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0 ||
+		    _nm_utils_strv_find_first ((char **) run_confs->pdata, run_confs->len, filename) >= 0) {
 			g_ptr_array_remove_index (system_confs, i);
 			continue;
 		}
 
-		if (!read_config (keyfile, FALSE, system_config_dir, filename, error)) {
-			g_key_file_free (keyfile);
+		if (!read_config (keyfile, FALSE, system_config_dir, filename, error))
 			return NULL;
+		i++;
+	}
+
+	for (i = 0; i < run_confs->len; ) {
+		const char *filename = run_confs->pdata[i];
+
+		/* if a same named file exists in config_dir, skip it. */
+		if (_nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0) {
+			g_ptr_array_remove_index (run_confs, i);
+			continue;
 		}
+
+		if (!read_config (keyfile, FALSE, run_config_dir, filename, error))
+			return NULL;
 		i++;
 	}
 
 	/* First read the base config file */
-	if (!read_base_config (keyfile, cli ? cli->config_main_file : NULL, &o_config_main_file, error)) {
-		g_key_file_free (keyfile);
+	if (!read_base_config (keyfile, cli ? cli->config_main_file : NULL, &o_config_main_file, error))
 		return NULL;
-	}
 
 	g_assert (o_config_main_file);
 
 	for (i = 0; i < confs->len; i++) {
-		if (!read_config (keyfile, FALSE, config_dir, confs->pdata[i], error)) {
-			g_key_file_free (keyfile);
+		if (!read_config (keyfile, FALSE, config_dir, confs->pdata[i], error))
 			return NULL;
-		}
 	}
 
 	/* Merge settings from command line. They overwrite everything read from
@@ -1006,39 +1005,17 @@ read_entire_config (const NMConfigCmdLineOptions *cli,
 	if (cli && cli->connectivity_response && cli->connectivity_response[0])
 		g_key_file_set_string (keyfile, NM_CONFIG_KEYFILE_GROUP_CONNECTIVITY, "response", cli->connectivity_response);
 
-	str = g_string_new (o_config_main_file);
-	if (system_confs->len > 0) {
-		for (i = 0; i < system_confs->len; i++) {
-			if (i == 0)
-				g_string_append (str, " (lib: ");
-			else
-				g_string_append (str, ", ");
-			g_string_append (str, system_confs->pdata[i]);
-		}
-		g_string_append (str, ")");
-	}
-	if (confs->len > 0) {
-		for (i = 0; i < confs->len; i++) {
-			if (i == 0)
-				g_string_append (str, " (etc: ");
-			else
-				g_string_append (str, ", ");
-			g_string_append (str, confs->pdata[i]);
-		}
-		g_string_append (str, ")");
-	}
+	if (out_config_description) {
+		GString *str;
 
-	if (out_config_main_file)
-		*out_config_main_file = o_config_main_file;
-	else
-		g_free (o_config_main_file);
-	if (out_config_description)
+		str = g_string_new (o_config_main_file);
+		_confs_to_description (str, system_confs, "lib");
+		_confs_to_description (str, run_confs, "run");
+		_confs_to_description (str, confs, "etc");
 		*out_config_description = g_string_free (str, FALSE);
-	else
-		g_string_free (str, TRUE);
-
-	o_config_main_file = NULL;
-	return keyfile;
+	}
+	NM_SET_OUT (out_config_main_file, g_steal_pointer (&o_config_main_file));
+	return g_steal_pointer (&keyfile);
 }
 
 static gboolean
@@ -1303,7 +1280,7 @@ out:
 	if (out_needs_rewrite)
 		*out_needs_rewrite = needs_rewrite;
 
-	nm_log_dbg (LOGD_CORE, "intern config file \"%s\"", filename);
+	_LOGD ("intern config file \"%s\"", filename);
 
 	if (!has_intern) {
 		g_key_file_unref (keyfile_intern);
@@ -1502,14 +1479,14 @@ intern_config_write (const char *filename,
 
 	success = g_key_file_save_to_file (keyfile, filename, &local);
 
-	nm_log_dbg (LOGD_CORE, "write intern config file \"%s\"%s%s", filename, success ? "" : ": ", success ? "" : local->message);
+	_LOGD ("write intern config file \"%s\"%s%s", filename, success ? "" : ": ", success ? "" : local->message);
 	g_key_file_unref (keyfile);
 	if (!success)
 		g_propagate_error (error, local);
 	return success;
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 GSList *
 nm_config_get_match_spec (const GKeyFile *keyfile, const char *group, const char *key, gboolean *out_has_key)
@@ -1525,7 +1502,7 @@ nm_config_get_match_spec (const GKeyFile *keyfile, const char *group, const char
 	return nm_match_spec_split (value);
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 gboolean
 nm_config_set_global_dns (NMConfig *self, NMGlobalDnsConfig *global_dns, GError **error)
@@ -1658,7 +1635,7 @@ nm_config_set_values (NMConfig *self,
 	if (!_nm_keyfile_equals (keyfile_intern_current, keyfile_new, TRUE))
 		new_data = nm_config_data_new_update_keyfile_intern (priv->config_data, keyfile_new);
 
-	nm_log_dbg (LOGD_CORE, "set values(): %s", new_data ? "has changes" : "no changes");
+	_LOGD ("set values(): %s", new_data ? "has changes" : "no changes");
 
 	if (allow_write
 	    && (new_data || force_rewrite)) {
@@ -1673,11 +1650,11 @@ nm_config_set_values (NMConfig *self,
 			keyfile_user = _nm_config_data_get_keyfile_user (priv->config_data);
 			if (!intern_config_write (priv->intern_config_file, keyfile_new, keyfile_user,
 			                          (const char *const*) priv->atomic_section_prefixes, &local)) {
-				nm_log_warn (LOGD_CORE, "error saving internal configuration \"%s\": %s", priv->intern_config_file, local->message);
+				_LOGW ("error saving internal configuration \"%s\": %s", priv->intern_config_file, local->message);
 				g_clear_error (&local);
 			}
 		} else
-			nm_log_dbg (LOGD_CORE, "don't persistate internal configuration (no file set, use --intern-config?)");
+			_LOGD ("don't persist internal configuration (no file set, use --intern-config?)");
 	}
 	if (new_data)
 		_set_config_data (self, new_data, NM_CONFIG_CHANGE_CAUSE_SET_VALUES);
@@ -1870,6 +1847,219 @@ _nm_config_state_set (NMConfig *self,
 
 /*****************************************************************************/
 
+#define DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE                   "device"
+#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED             "managed"
+#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_PERM_HW_ADDR_FAKE   "perm-hw-addr-fake"
+#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_CONNECTION_UUID     "connection-uuid"
+
+static NMConfigDeviceStateData *
+_config_device_state_data_new (int ifindex, GKeyFile *kf)
+{
+	NMConfigDeviceStateData *device_state;
+	NMConfigDeviceStateManagedType managed_type = NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNKNOWN;
+	gs_free char *connection_uuid = NULL;
+	gs_free char *perm_hw_addr_fake = NULL;
+	gsize connection_uuid_len;
+	gsize perm_hw_addr_fake_len;
+	char *p;
+
+	nm_assert (ifindex > 0);
+
+	if (kf) {
+		gboolean managed;
+
+		managed = nm_config_keyfile_get_boolean (kf,
+		                                         DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+		                                         DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED,
+		                                         FALSE);
+		managed_type = managed
+		               ? NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED
+		               : NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNMANAGED;
+
+		if (managed) {
+			connection_uuid = nm_config_keyfile_get_value (kf,
+			                                               DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+			                                               DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_CONNECTION_UUID,
+			                                               NM_CONFIG_GET_VALUE_STRIP | NM_CONFIG_GET_VALUE_NO_EMPTY);
+		}
+
+		perm_hw_addr_fake = nm_config_keyfile_get_value (kf,
+		                                                 DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+		                                                 DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_PERM_HW_ADDR_FAKE,
+		                                                 NM_CONFIG_GET_VALUE_STRIP | NM_CONFIG_GET_VALUE_NO_EMPTY);
+		if (perm_hw_addr_fake) {
+			char *normalized;
+
+			normalized = nm_utils_hwaddr_canonical (perm_hw_addr_fake, -1);
+			g_free (perm_hw_addr_fake);
+			perm_hw_addr_fake = normalized;
+		}
+	}
+
+	connection_uuid_len = connection_uuid ? strlen (connection_uuid) + 1 : 0;
+	perm_hw_addr_fake_len = perm_hw_addr_fake ? strlen (perm_hw_addr_fake) + 1 : 0;
+
+	device_state = g_malloc (sizeof (NMConfigDeviceStateData) +
+	                         connection_uuid_len +
+	                         perm_hw_addr_fake_len);
+
+	device_state->ifindex = ifindex;
+	device_state->managed = managed_type;
+	device_state->connection_uuid = NULL;
+	device_state->perm_hw_addr_fake = NULL;
+
+	p = (char *) (&device_state[1]);
+	if (connection_uuid) {
+		memcpy (p, connection_uuid, connection_uuid_len);
+		device_state->connection_uuid = p;
+		p += connection_uuid_len;
+	}
+	if (perm_hw_addr_fake) {
+		memcpy (p, perm_hw_addr_fake, perm_hw_addr_fake_len);
+		device_state->perm_hw_addr_fake = p;
+		p += perm_hw_addr_fake_len;
+	}
+
+	return device_state;
+}
+
+/**
+ * nm_config_device_state_load:
+ * @self: the NMConfig instance
+ * @ifindex: the ifindex for which the state is to load
+ *
+ * Returns: (transfer full): a run state object.
+ *   Must be freed with g_free().
+ */
+NMConfigDeviceStateData *
+nm_config_device_state_load (NMConfig *self,
+                             int ifindex)
+{
+	NMConfigDeviceStateData *device_state;
+	char path[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR) + 60];
+	gs_unref_keyfile GKeyFile *kf = NULL;
+
+	g_return_val_if_fail (ifindex > 0, NULL);
+
+	nm_sprintf_buf (path, "%s/%d", NM_CONFIG_DEVICE_STATE_DIR, ifindex);
+
+	kf = nm_config_create_keyfile ();
+	if (!g_key_file_load_from_file (kf, path, G_KEY_FILE_NONE, NULL))
+		g_clear_pointer (&kf, g_key_file_unref);
+
+	device_state = _config_device_state_data_new (ifindex, kf);
+
+	if (kf) {
+		_LOGT ("device-state: read #%d (%s); managed=%d%s%s%s%s%s%s",
+		       ifindex, path,
+		       device_state->managed,
+		       NM_PRINT_FMT_QUOTED (device_state->connection_uuid, ", connection-uuid=", device_state->connection_uuid, "", ""),
+		       NM_PRINT_FMT_QUOTED (device_state->perm_hw_addr_fake, ", perm-hw-addr-fake=", device_state->perm_hw_addr_fake, "", ""));
+	} else {
+		_LOGT ("device-state: read #%d (%s); no persistent state",
+		       ifindex, path);
+	}
+
+	return device_state;
+}
+
+gboolean
+nm_config_device_state_write (NMConfig *self,
+                              int ifindex,
+                              gboolean managed,
+                              const char *perm_hw_addr_fake,
+                              const char *connection_uuid)
+{
+	char path[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR) + 60];
+	GError *local = NULL;
+	gs_unref_keyfile GKeyFile *kf = NULL;
+
+	g_return_val_if_fail (NM_IS_CONFIG (self), FALSE);
+	g_return_val_if_fail (ifindex > 0, FALSE);
+	g_return_val_if_fail (!connection_uuid || *connection_uuid, FALSE);
+	g_return_val_if_fail (managed || !connection_uuid, FALSE);
+
+	nm_assert (!perm_hw_addr_fake || nm_utils_hwaddr_valid (perm_hw_addr_fake, -1));
+
+	nm_sprintf_buf (path, "%s/%d", NM_CONFIG_DEVICE_STATE_DIR, ifindex);
+
+	kf = nm_config_create_keyfile ();
+	g_key_file_set_boolean (kf,
+	                        DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+	                        DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED,
+	                        !!managed);
+	if (perm_hw_addr_fake) {
+		g_key_file_set_string (kf,
+		                       DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+		                       DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_PERM_HW_ADDR_FAKE,
+		                       perm_hw_addr_fake);
+	}
+	if (connection_uuid) {
+		g_key_file_set_string (kf,
+		                       DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+		                       DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_CONNECTION_UUID,
+		                       connection_uuid);
+	}
+
+	if (!g_key_file_save_to_file (kf, path, &local)) {
+		_LOGW ("device-state: write #%d (%s) failed: %s", ifindex, path, local->message);
+		g_error_free (local);
+		return FALSE;
+	}
+	_LOGT ("device-state: write #%d (%s); managed=%d%s%s%s%s%s%s",
+	       ifindex, path,
+	       (bool) managed,
+	       NM_PRINT_FMT_QUOTED (connection_uuid, ", connection-uuid=", connection_uuid, "", ""),
+	       NM_PRINT_FMT_QUOTED (perm_hw_addr_fake, ", perm-hw-addr-fake=", perm_hw_addr_fake, "", ""));
+	return TRUE;
+}
+
+void
+nm_config_device_state_prune_unseen (NMConfig *self,
+                                     GHashTable *seen_ifindexes)
+{
+	GDir *dir;
+	const char *fn;
+	int ifindex;
+	gsize fn_len;
+	gsize i;
+	char buf[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR"/") + 30 + 3] = NM_CONFIG_DEVICE_STATE_DIR"/";
+	char *buf_p = &buf[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR"/")];
+
+	g_return_if_fail (seen_ifindexes);
+
+	dir = g_dir_open (NM_CONFIG_DEVICE_STATE_DIR, 0, NULL);
+	if (!dir)
+		return;
+
+	while ((fn = g_dir_read_name (dir))) {
+		fn_len = strlen (fn);
+
+		/* skip over file names that are not plain integers. */
+		for (i = 0; i < fn_len; i++) {
+			if (!g_ascii_isdigit (fn[i]))
+				break;
+		}
+		if (fn_len == 0 || i != fn_len)
+			continue;
+
+		ifindex = _nm_utils_ascii_str_to_int64 (fn, 10, 1, G_MAXINT, 0);
+		if (!ifindex)
+			continue;
+
+		if (g_hash_table_contains (seen_ifindexes, GINT_TO_POINTER (ifindex)))
+			continue;
+
+		memcpy (buf_p, fn, fn_len + 1);
+		_LOGT ("device-state: prune #%d (%s)", ifindex, buf);
+		(void) unlink (buf);
+	}
+
+	g_dir_close (dir);
+}
+
+/*****************************************************************************/
+
 void
 nm_config_reload (NMConfig *self, NMConfigChangeFlags reload_flags)
 {
@@ -1907,7 +2097,7 @@ nm_config_reload (NMConfig *self, NMConfigChangeFlags reload_flags)
 	                              &config_description,
 	                              &error);
 	if (!keyfile) {
-		nm_log_err (LOGD_CORE, "Failed to reload the configuration: %s", error->message);
+		_LOGE ("Failed to reload the configuration: %s", error->message);
 		g_clear_error (&error);
 		_set_config_data (self, NULL, reload_flags);
 		return;
@@ -1989,15 +2179,15 @@ _set_config_data (NMConfig *self, NMConfigData *new_data, NMConfigChangeFlags re
 	}
 
 	if (new_data) {
-		nm_log_info (LOGD_CORE, "config: signal %s (%s)",
-		             nm_config_change_flags_to_string (changes, NULL, 0),
-		             nm_config_data_get_config_description (new_data));
+		_LOGI ("config: signal %s (%s)",
+		       nm_config_change_flags_to_string (changes, NULL, 0),
+		       nm_config_data_get_config_description (new_data));
 		nm_config_data_log (new_data, "CONFIG: ", "  ", NULL);
 		priv->config_data = new_data;
 	} else if (had_new_data)
-		nm_log_info (LOGD_CORE, "config: signal %s (no changes from disk)", nm_config_change_flags_to_string (changes, NULL, 0));
+		_LOGI ("config: signal %s (no changes from disk)", nm_config_change_flags_to_string (changes, NULL, 0));
 	else
-		nm_log_info (LOGD_CORE, "config: signal %s", nm_config_change_flags_to_string (changes, NULL, 0));
+		_LOGI ("config: signal %s", nm_config_change_flags_to_string (changes, NULL, 0));
 	g_signal_emit (self, signals[SIGNAL_CONFIG_CHANGED], 0,
 	               new_data ? new_data : old_data,
 	               changes, old_data);
@@ -2030,6 +2220,37 @@ nm_config_setup (const NMConfigCmdLineOptions *cli, char **atomic_section_prefix
 	return singleton_instance;
 }
 
+/*****************************************************************************/
+
+static void
+set_property (GObject *object, guint prop_id,
+              const GValue *value, GParamSpec *pspec)
+{
+	NMConfig *self = NM_CONFIG (object);
+	NMConfigPrivate *priv = NM_CONFIG_GET_PRIVATE (self);
+	NMConfigCmdLineOptions *cli;
+
+	switch (prop_id) {
+	case PROP_CMD_LINE_OPTIONS:
+		/* construct-only */
+		cli = g_value_get_pointer (value);
+		if (!cli)
+			_nm_config_cmd_line_options_clear (&priv->cli);
+		else
+			_nm_config_cmd_line_options_copy (cli, &priv->cli);
+		break;
+	case PROP_ATOMIC_SECTION_PREFIXES:
+		/* construct-only */
+		priv->atomic_section_prefixes = g_strdupv (g_value_get_boxed (value));
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/*****************************************************************************/
+
 static gboolean
 init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
 {
@@ -2040,31 +2261,24 @@ init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
 	char *config_description = NULL;
 	gs_strfreev char **no_auto_default = NULL;
 	gboolean intern_config_needs_rewrite;
+	const char *s;
 
 	if (priv->config_dir) {
 		/* Object is already initialized. */
 		if (priv->config_data)
 			return TRUE;
 		g_set_error (error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_NOT_FOUND, "unspecified error");
-		return FALSE;
+		g_return_val_if_reached (FALSE);
 	}
 
-	if (priv->cli.config_dir)
-		priv->config_dir = g_strdup (priv->cli.config_dir);
-	else
-		priv->config_dir = g_strdup (DEFAULT_CONFIG_DIR);
+	s = priv->cli.config_dir ?: ""DEFAULT_CONFIG_DIR;
+	priv->config_dir = g_strdup (s[0] == '/' ? s : "");
 
-	if (priv->cli.system_config_dir)
-		priv->system_config_dir = g_strdup (priv->cli.system_config_dir);
-	else
-		priv->system_config_dir = g_strdup (DEFAULT_SYSTEM_CONFIG_DIR);
-
-	if (strcmp (priv->config_dir, priv->system_config_dir) == 0) {
-		/* having the same directory twice makes no sense. In that case, clear
-		 * @system_config_dir. */
-		g_free (priv->system_config_dir);
-		priv->system_config_dir = g_strdup ("");
-	}
+	s = priv->cli.system_config_dir ?: ""DEFAULT_SYSTEM_CONFIG_DIR;
+	if (   s[0] != '/'
+	    || nm_streq (s, priv->config_dir))
+		s = "";
+	priv->system_config_dir = g_strdup (s);
 
 	if (priv->cli.intern_config_file)
 		priv->intern_config_file = g_strdup (priv->cli.intern_config_file);
@@ -2087,21 +2301,10 @@ init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
 	else
 		priv->no_auto_default_file = g_strdup (DEFAULT_NO_AUTO_DEFAULT_FILE);
 
-	priv->plugins = _nm_utils_strv_cleanup (g_key_file_get_string_list (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "plugins", NULL, NULL),
-	                                        TRUE, TRUE, TRUE);
-	if (!priv->plugins)
-		priv->plugins = g_new0 (char *, 1);
-
 	priv->monitor_connection_files = nm_config_keyfile_get_boolean (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "monitor-connection-files", FALSE);
-
-	priv->auth_polkit = nm_config_keyfile_get_boolean (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "auth-polkit", NM_CONFIG_DEFAULT_AUTH_POLKIT);
-
-	priv->dhcp_client = nm_strstrip (g_key_file_get_string (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "dhcp", NULL));
 
 	priv->log_level = nm_strstrip (g_key_file_get_string (keyfile, NM_CONFIG_KEYFILE_GROUP_LOGGING, "level", NULL));
 	priv->log_domains = nm_strstrip (g_key_file_get_string (keyfile, NM_CONFIG_KEYFILE_GROUP_LOGGING, "domains", NULL));
-
-	priv->debug = g_key_file_get_string (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "debug", NULL);
 
 	priv->configure_and_quit = nm_config_keyfile_get_boolean (keyfile, NM_CONFIG_KEYFILE_GROUP_MAIN, "configure-and-quit", FALSE);
 
@@ -2128,6 +2331,13 @@ init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
 	return TRUE;
 }
 
+/*****************************************************************************/
+
+static void
+nm_config_init (NMConfig *config)
+{
+}
+
 NMConfig *
 nm_config_new (const NMConfigCmdLineOptions *cli, char **atomic_section_prefixes, GError **error)
 {
@@ -2140,17 +2350,9 @@ nm_config_new (const NMConfigCmdLineOptions *cli, char **atomic_section_prefixes
 }
 
 static void
-nm_config_init (NMConfig *config)
-{
-	NMConfigPrivate *priv = NM_CONFIG_GET_PRIVATE (config);
-
-	priv->auth_polkit = NM_CONFIG_DEFAULT_AUTH_POLKIT;
-}
-
-static void
 finalize (GObject *gobject)
 {
-	NMConfigPrivate *priv = NM_CONFIG_GET_PRIVATE (gobject);
+	NMConfigPrivate *priv = NM_CONFIG_GET_PRIVATE ((NMConfig *) gobject);
 
 	state_free (priv->state);
 
@@ -2158,11 +2360,8 @@ finalize (GObject *gobject)
 	g_free (priv->system_config_dir);
 	g_free (priv->no_auto_default_file);
 	g_free (priv->intern_config_file);
-	g_strfreev (priv->plugins);
-	g_free (priv->dhcp_client);
 	g_free (priv->log_level);
 	g_free (priv->log_domains);
-	g_free (priv->debug);
 	g_strfreev (priv->atomic_section_prefixes);
 
 	_nm_config_cmd_line_options_clear (&priv->cli);
@@ -2174,55 +2373,27 @@ finalize (GObject *gobject)
 }
 
 static void
-set_property (GObject *object, guint prop_id,
-              const GValue *value, GParamSpec *pspec)
-{
-	NMConfig *self = NM_CONFIG (object);
-	NMConfigPrivate *priv = NM_CONFIG_GET_PRIVATE (self);
-	NMConfigCmdLineOptions *cli;
-
-	switch (prop_id) {
-	case PROP_CMD_LINE_OPTIONS:
-		/* construct only */
-		cli = g_value_get_pointer (value);
-		if (!cli)
-			_nm_config_cmd_line_options_clear (&priv->cli);
-		else
-			_nm_config_cmd_line_options_copy (cli, &priv->cli);
-		break;
-	case PROP_ATOMIC_SECTION_PREFIXES:
-		/* construct only */
-		priv->atomic_section_prefixes = g_strdupv (g_value_get_boxed (value));
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static void
 nm_config_class_init (NMConfigClass *config_class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (config_class);
 
-	g_type_class_add_private (config_class, sizeof (NMConfigPrivate));
 	object_class->finalize = finalize;
 	object_class->set_property = set_property;
 
-	g_object_class_install_property
-	    (object_class, PROP_CMD_LINE_OPTIONS,
+	obj_properties[PROP_CMD_LINE_OPTIONS] =
 	     g_param_spec_pointer (NM_CONFIG_CMD_LINE_OPTIONS, "", "",
 	                           G_PARAM_WRITABLE |
 	                           G_PARAM_CONSTRUCT_ONLY |
-	                           G_PARAM_STATIC_STRINGS));
+	                           G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_ATOMIC_SECTION_PREFIXES,
+	obj_properties[PROP_ATOMIC_SECTION_PREFIXES] =
 	     g_param_spec_boxed (NM_CONFIG_ATOMIC_SECTION_PREFIXES, "", "",
 	                         G_TYPE_STRV,
 	                         G_PARAM_WRITABLE |
 	                         G_PARAM_CONSTRUCT_ONLY |
-	                         G_PARAM_STATIC_STRINGS));
+	                         G_PARAM_STATIC_STRINGS);
+
+	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
 	signals[SIGNAL_CONFIG_CHANGED] =
 	    g_signal_new (NM_CONFIG_SIGNAL_CONFIG_CHANGED,
@@ -2248,4 +2419,3 @@ nm_config_initable_iface_init (GInitableIface *iface)
 {
 	iface->init = init_sync;
 }
-

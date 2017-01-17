@@ -73,19 +73,25 @@ write_array_of_uint (GKeyFile *file,
                      const GValue *value)
 {
 	GArray *array;
-	int i;
-	int *tmp_array;
+	guint i;
+	gs_free int *tmp_array = NULL;
 
 	array = (GArray *) g_value_get_boxed (value);
 	if (!array || !array->len)
 		return;
 
+	g_return_if_fail (g_array_get_element_size (array) == sizeof (guint));
+
 	tmp_array = g_new (gint, array->len);
-	for (i = 0; i < array->len; i++)
-		tmp_array[i] = g_array_index (array, int, i);
+	for (i = 0; i < array->len; i++) {
+		guint v = g_array_index (array, guint, i);
+
+		if (v > G_MAXINT)
+			g_return_if_reached ();
+		tmp_array[i] = (int) v;
+	}
 
 	nm_keyfile_plugin_kf_set_integer_list (file, nm_setting_get_name (setting), key, tmp_array, array->len);
-	g_free (tmp_array);
 }
 
 static void
@@ -294,9 +300,8 @@ ssid_writer (KeyfileWriterInfo *info,
 	gsize ssid_len;
 	const char *setting_name = nm_setting_get_name (setting);
 	gboolean new_format = TRUE;
-	unsigned int semicolons = 0;
-	int i, *tmp_array;
-	char *ssid;
+	gsize semicolons = 0;
+	gsize i;
 
 	g_return_if_fail (G_VALUE_HOLDS (value, G_TYPE_BYTES));
 
@@ -304,14 +309,17 @@ ssid_writer (KeyfileWriterInfo *info,
 	if (!bytes)
 		return;
 	ssid_data = g_bytes_get_data (bytes, &ssid_len);
-	if (ssid_len == 0)
+	if (!ssid_data || !ssid_len) {
+		nm_keyfile_plugin_kf_set_string (info->keyfile, setting_name, key, "");
 		return;
+	}
 
 	/* Check whether each byte is printable.  If not, we have to use an
 	 * integer list, otherwise we can just use a string.
 	 */
 	for (i = 0; i < ssid_len; i++) {
-		char c = ssid_data[i] & 0xFF;
+		const char c = ssid_data[i];
+
 		if (!g_ascii_isprint (c)) {
 			new_format = FALSE;
 			break;
@@ -321,28 +329,26 @@ ssid_writer (KeyfileWriterInfo *info,
 	}
 
 	if (new_format) {
-		ssid = g_malloc0 (ssid_len + semicolons + 1);
+		gs_free char *ssid = NULL;
+
 		if (semicolons == 0)
-			memcpy (ssid, ssid_data, ssid_len);
+			ssid = g_strndup ((char *) ssid_data, ssid_len);
 		else {
 			/* Escape semicolons with backslashes to make strings
 			 * containing ';', such as '16;17;' unambiguous */
-			int j = 0;
+			gsize j = 0;
+
+			ssid = g_malloc (ssid_len + semicolons + 1);
 			for (i = 0; i < ssid_len; i++) {
 				if (ssid_data[i] == ';')
 					ssid[j++] = '\\';
 				ssid[j++] = ssid_data[i];
 			}
+			ssid[j] = '\0';
 		}
 		nm_keyfile_plugin_kf_set_string (info->keyfile, setting_name, key, ssid);
-		g_free (ssid);
-	} else {
-		tmp_array = g_new (gint, ssid_len);
-		for (i = 0; i < ssid_len; i++)
-			tmp_array[i] = (int) ssid_data[i];
-		nm_keyfile_plugin_kf_set_integer_list (info->keyfile, setting_name, key, tmp_array, ssid_len);
-		g_free (tmp_array);
-	}
+	} else
+		nm_keyfile_plugin_kf_set_integer_list_uint8 (info->keyfile, setting_name, key, ssid_data, ssid_len);
 }
 
 static void
@@ -353,9 +359,8 @@ password_raw_writer (KeyfileWriterInfo *info,
 {
 	const char *setting_name = nm_setting_get_name (setting);
 	GBytes *array;
-	int *tmp_array;
-	gsize i, len;
-	const char *data;
+	gsize len;
+	const guint8 *data;
 
 	g_return_if_fail (G_VALUE_HOLDS (value, G_TYPE_BYTES));
 
@@ -363,14 +368,9 @@ password_raw_writer (KeyfileWriterInfo *info,
 	if (!array)
 		return;
 	data = g_bytes_get_data (array, &len);
-	if (!data || !len)
-		return;
-
-	tmp_array = g_new (gint, len);
-	for (i = 0; i < len; i++)
-		tmp_array[i] = (int) data[i];
-	nm_keyfile_plugin_kf_set_integer_list (info->keyfile, setting_name, key, tmp_array, len);
-	g_free (tmp_array);
+	if (!data)
+		len = 0;
+	nm_keyfile_plugin_kf_set_integer_list_uint8 (info->keyfile, setting_name, key, data, len);
 }
 
 typedef struct ObjectType {
@@ -380,6 +380,7 @@ typedef struct ObjectType {
 	NMSetting8021xCKFormat (*format_func) (NMSetting8021x *setting);
 	const char *           (*path_func)   (NMSetting8021x *setting);
 	GBytes *               (*blob_func)   (NMSetting8021x *setting);
+	const char *           (*uri_func)    (NMSetting8021x *setting);
 } ObjectType;
 
 static const ObjectType objtypes[10] = {
@@ -388,47 +389,53 @@ static const ObjectType objtypes[10] = {
 	  nm_setting_802_1x_get_ca_cert_scheme,
 	  NULL,
 	  nm_setting_802_1x_get_ca_cert_path,
-	  nm_setting_802_1x_get_ca_cert_blob },
+	  nm_setting_802_1x_get_ca_cert_blob,
+	  nm_setting_802_1x_get_ca_cert_uri },
 
 	{ NM_SETTING_802_1X_PHASE2_CA_CERT,
 	  "inner-ca-cert",
 	  nm_setting_802_1x_get_phase2_ca_cert_scheme,
 	  NULL,
 	  nm_setting_802_1x_get_phase2_ca_cert_path,
-	  nm_setting_802_1x_get_phase2_ca_cert_blob },
+	  nm_setting_802_1x_get_phase2_ca_cert_blob,
+	  nm_setting_802_1x_get_phase2_ca_cert_uri },
 
 	{ NM_SETTING_802_1X_CLIENT_CERT,
 	  "client-cert",
 	  nm_setting_802_1x_get_client_cert_scheme,
 	  NULL,
 	  nm_setting_802_1x_get_client_cert_path,
-	  nm_setting_802_1x_get_client_cert_blob },
+	  nm_setting_802_1x_get_client_cert_blob,
+	  nm_setting_802_1x_get_client_cert_uri },
 
 	{ NM_SETTING_802_1X_PHASE2_CLIENT_CERT,
 	  "inner-client-cert",
 	  nm_setting_802_1x_get_phase2_client_cert_scheme,
 	  NULL,
 	  nm_setting_802_1x_get_phase2_client_cert_path,
-	  nm_setting_802_1x_get_phase2_client_cert_blob },
+	  nm_setting_802_1x_get_phase2_client_cert_blob,
+	  nm_setting_802_1x_get_phase2_client_cert_uri },
 
 	{ NM_SETTING_802_1X_PRIVATE_KEY,
 	  "private-key",
 	  nm_setting_802_1x_get_private_key_scheme,
 	  nm_setting_802_1x_get_private_key_format,
 	  nm_setting_802_1x_get_private_key_path,
-	  nm_setting_802_1x_get_private_key_blob },
+	  nm_setting_802_1x_get_private_key_blob,
+	  nm_setting_802_1x_get_private_key_uri },
 
 	{ NM_SETTING_802_1X_PHASE2_PRIVATE_KEY,
 	  "inner-private-key",
 	  nm_setting_802_1x_get_phase2_private_key_scheme,
 	  nm_setting_802_1x_get_phase2_private_key_format,
 	  nm_setting_802_1x_get_phase2_private_key_path,
-	  nm_setting_802_1x_get_phase2_private_key_blob },
+	  nm_setting_802_1x_get_phase2_private_key_blob,
+	  nm_setting_802_1x_get_phase2_private_key_uri },
 
 	{ NULL },
 };
 
-/**************************************************************************/
+/*****************************************************************************/
 
 static void
 cert_writer_default (NMConnection *connection,
@@ -487,6 +494,9 @@ cert_writer_default (NMConnection *connection,
 		nm_keyfile_plugin_kf_set_string (file, setting_name, cert_data->property_name, val);
 		g_free (val);
 		g_free (blob_base64);
+	} else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11) {
+		nm_keyfile_plugin_kf_set_string (file, setting_name, cert_data->property_name,
+		                                 cert_data->uri_func (cert_data->setting));
 	} else {
 		/* scheme_func() returns UNKNOWN in all other cases. The only valid case
 		 * where a scheme is allowed to be UNKNOWN, is unsetting the value. In this
@@ -524,6 +534,7 @@ cert_writer (KeyfileWriterInfo *info,
 	type_data.format_func = objtype->format_func;
 	type_data.path_func = objtype->path_func;
 	type_data.blob_func = objtype->blob_func;
+	type_data.uri_func = objtype->uri_func;
 
 	if (info->handler) {
 		if (info->handler (info->connection,
@@ -540,7 +551,7 @@ cert_writer (KeyfileWriterInfo *info,
 	cert_writer_default (info->connection, info->keyfile, &type_data);
 }
 
-/**************************************************************************/
+/*****************************************************************************/
 
 typedef struct {
 	const char *setting_name;
@@ -626,9 +637,6 @@ can_omit_default_value (NMSetting *setting, const char *property)
 			return FALSE;
 	} else if (NM_IS_SETTING_IP6_CONFIG (setting)) {
 		if (!strcmp (property, NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE))
-			return FALSE;
-	} else if (NM_IS_SETTING_WIRELESS (setting)) {
-		if (!strcmp (property, NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION))
 			return FALSE;
 	}
 
@@ -729,17 +737,8 @@ write_setting_value (NMSetting *setting,
 		bytes = g_value_get_boxed (value);
 		data = bytes ? g_bytes_get_data (bytes, &len) : NULL;
 
-		if (data != NULL && len > 0) {
-			int *tmp_array;
-			int i;
-
-			tmp_array = g_new (gint, len);
-			for (i = 0; i < len; i++)
-				tmp_array[i] = (int) data[i];
-
-			nm_keyfile_plugin_kf_set_integer_list (info->keyfile, setting_name, key, tmp_array, len);
-			g_free (tmp_array);
-		}
+		if (data != NULL && len > 0)
+			nm_keyfile_plugin_kf_set_integer_list_uint8 (info->keyfile, setting_name, key, data, len);
 	} else if (type == G_TYPE_STRV) {
 		char **array;
 

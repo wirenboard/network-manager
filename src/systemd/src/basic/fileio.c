@@ -39,6 +39,7 @@
 #include "hexdecoct.h"
 #include "log.h"
 #include "macro.h"
+#include "missing.h"
 #include "parse-util.h"
 #include "path-util.h"
 #include "random-util.h"
@@ -677,7 +678,7 @@ static int load_env_file_push(
                 return -EINVAL;
         }
 
-        p = strjoin(key, "=", strempty(value), NULL);
+        p = strjoin(key, "=", strempty(value));
         if (!p)
                 return -ENOMEM;
 
@@ -965,9 +966,9 @@ static int search_and_fopen_internal(const char *path, const char *mode, const c
                 FILE *f;
 
                 if (root)
-                        p = strjoin(root, *i, "/", path, NULL);
+                        p = strjoin(root, *i, "/", path);
                 else
-                        p = strjoin(*i, "/", path, NULL);
+                        p = strjoin(*i, "/", path);
                 if (!p)
                         return -ENOMEM;
 
@@ -1046,7 +1047,7 @@ int fopen_temporary(const char *path, FILE **_f, char **_temp_path) {
         if (r < 0)
                 return r;
 
-        fd = mkostemp_safe(t, O_WRONLY|O_CLOEXEC);
+        fd = mkostemp_safe(t);
         if (fd < 0) {
                 free(t);
                 return -errno;
@@ -1079,7 +1080,7 @@ int fflush_and_check(FILE *f) {
 }
 
 /* This is much like mkostemp() but is subject to umask(). */
-int mkostemp_safe(char *pattern, int flags) {
+int mkostemp_safe(char *pattern) {
         _cleanup_umask_ mode_t u = 0;
         int fd;
 
@@ -1087,7 +1088,7 @@ int mkostemp_safe(char *pattern, int flags) {
 
         u = umask(077);
 
-        fd = mkostemp(pattern, flags);
+        fd = mkostemp(pattern, O_CLOEXEC);
         if (fd < 0)
                 return -errno;
 
@@ -1287,17 +1288,15 @@ int open_tmpfile_unlinkable(const char *directory, int flags) {
 
         /* Returns an unlinked temporary file that cannot be linked into the file system anymore */
 
-#ifdef O_TMPFILE
         /* Try O_TMPFILE first, if it is supported */
         fd = open(directory, flags|O_TMPFILE|O_EXCL, S_IRUSR|S_IWUSR);
         if (fd >= 0)
                 return fd;
-#endif
 
         /* Fall back to unguessable name + unlinking */
         p = strjoina(directory, "/systemd-tmp-XXXXXX");
 
-        fd = mkostemp_safe(p, flags);
+        fd = mkostemp_safe(p);
         if (fd < 0)
                 return fd;
 
@@ -1320,7 +1319,6 @@ int open_tmpfile_linkable(const char *target, int flags, char **ret_path) {
          * which case "ret_path" will be returned as NULL. If not possible a the tempoary path name used is returned in
          * "ret_path". Use link_tmpfile() below to rename the result after writing the file in full. */
 
-#ifdef O_TMPFILE
         {
                 _cleanup_free_ char *dn = NULL;
 
@@ -1336,7 +1334,6 @@ int open_tmpfile_linkable(const char *target, int flags, char **ret_path) {
 
                 log_debug_errno(errno, "Failed to use O_TMPFILE on %s: %m", dn);
         }
-#endif
 
         r = tempfn_random(target, NULL, &tmp);
         if (r < 0)
@@ -1417,6 +1414,25 @@ int read_nul_string(FILE *f, char **ret) {
         *ret = x;
         x = NULL;
 
+        return 0;
+}
+
+int mkdtemp_malloc(const char *template, char **ret) {
+        char *p;
+
+        assert(template);
+        assert(ret);
+
+        p = strdup(template);
+        if (!p)
+                return -ENOMEM;
+
+        if (!mkdtemp(p)) {
+                free(p);
+                return -errno;
+        }
+
+        *ret = p;
         return 0;
 }
 #endif /* NM_IGNORED */

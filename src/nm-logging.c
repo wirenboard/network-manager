@@ -40,6 +40,17 @@
 #include "nm-errors.h"
 #include "nm-core-utils.h"
 
+/* often we have some static string where we need to know the maximum length.
+ * _MAX_LEN() returns @max but adds a debugging assertion that @str is indeed
+ * shorter then @mac. */
+#define _MAX_LEN(max, str) \
+	({ \
+		const char *const _str = (str); \
+		\
+		nm_assert (_str && strlen (str) < (max)); \
+		(max); \
+	})
+
 void (*_nm_logging_clear_platform_logging_cache) (void);
 
 static void
@@ -79,9 +90,12 @@ NMLogDomain _nm_logging_enabled_state[_LOGL_N_REAL] = {
 	[LOGL_ERR]  = LOGD_DEFAULT,
 };
 
-static struct {
+static struct Global {
 	NMLogLevel log_level;
 	bool uses_syslog:1;
+	bool syslog_identifier_initialized:1;
+	const char *prefix;
+	const char *syslog_identifier;
 	enum {
 		LOG_BACKEND_GLIB,
 		LOG_BACKEND_SYSLOG,
@@ -90,7 +104,7 @@ static struct {
 	char *logging_domains_to_string;
 	const LogLevelDesc level_desc[_LOGL_N];
 
-#define _DOMAIN_DESC_LEN 38
+#define _DOMAIN_DESC_LEN 39
 	/* Would be nice to use C99 flexible array member here,
 	 * but that feature doesn't seem well supported. */
 	const LogDesc domain_desc[_DOMAIN_DESC_LEN];
@@ -98,6 +112,8 @@ static struct {
 	/* nm_logging_setup ("INFO", LOGD_DEFAULT_STRING, NULL, NULL); */
 	.log_level = LOGL_INFO,
 	.log_backend = LOG_BACKEND_GLIB,
+	.syslog_identifier = "SYSLOG_IDENTIFIER="G_LOG_DOMAIN,
+	.prefix = "",
 	.level_desc = {
 		[LOGL_TRACE] = { "TRACE", "<trace>", LOG_DEBUG,   G_LOG_LEVEL_DEBUG,   },
 		[LOGL_DEBUG] = { "DEBUG", "<debug>", LOG_DEBUG,   G_LOG_LEVEL_DEBUG,   },
@@ -145,6 +161,7 @@ static struct {
 		{ LOGD_AUDIT,     "AUDIT" },
 		{ LOGD_SYSTEMD,   "SYSTEMD" },
 		{ LOGD_VPN_PLUGIN,"VPN_PLUGIN" },
+		{ LOGD_PROXY,     "PROXY" },
 		{ 0, NULL }
 		/* keep _DOMAIN_DESC_LEN in sync */
 	},
@@ -159,11 +176,77 @@ G_STATIC_ASSERT (sizeof (NMLogDomain) >= sizeof (guint64));
 #define LOGD_DHCP_STRING    "DHCP"
 #define LOGD_IP_STRING      "IP"
 
-/************************************************************************/
+/*****************************************************************************/
 
 static char *_domains_to_string (gboolean include_level_override);
 
-/************************************************************************/
+/*****************************************************************************/
+
+static gboolean
+_syslog_identifier_valid_domain (const char *domain)
+{
+	char c;
+
+	if (!domain || !domain[0])
+		return FALSE;
+
+	/* we pass the syslog identifier as format string. No funny stuff. */
+
+	for (; (c = domain[0]); domain++) {
+		if (   (c >= 'a' && c <= 'z')
+		    || (c >= 'A' && c <= 'Z')
+		    || (c >= '0' && c <= '9')
+		    || NM_IN_SET (c, '-', '_'))
+			continue;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static gboolean
+_syslog_identifier_assert (const struct Global *gl)
+{
+	g_assert (gl);
+	g_assert (gl->syslog_identifier);
+	g_assert (g_str_has_prefix (gl->syslog_identifier, "SYSLOG_IDENTIFIER="));
+	g_assert (_syslog_identifier_valid_domain (&gl->syslog_identifier[NM_STRLEN ("SYSLOG_IDENTIFIER=")]));
+	return TRUE;
+}
+
+static const char *
+syslog_identifier_domain (const struct Global *gl)
+{
+	nm_assert (_syslog_identifier_assert (gl));
+	return &gl->syslog_identifier[NM_STRLEN ("SYSLOG_IDENTIFIER=")];
+}
+
+#if SYSTEMD_JOURNAL
+static const char *
+syslog_identifier_full (const struct Global *gl)
+{
+	nm_assert (_syslog_identifier_assert (gl));
+	return &gl->syslog_identifier[0];
+}
+#endif
+
+void
+nm_logging_set_syslog_identifier (const char *domain)
+{
+	if (global.log_backend != LOG_BACKEND_GLIB)
+		g_return_if_reached ();
+
+	if (!_syslog_identifier_valid_domain (domain))
+		g_return_if_reached ();
+
+	if (global.syslog_identifier_initialized)
+		g_return_if_reached ();
+
+	global.syslog_identifier_initialized = TRUE;
+	global.syslog_identifier = g_strdup_printf ("SYSLOG_IDENTIFIER=%s", domain);
+	nm_assert (_syslog_identifier_assert (&global));
+}
+
+/*****************************************************************************/
 
 static gboolean
 match_log_level (const char  *level,
@@ -246,6 +329,13 @@ nm_logging_setup (const char  *level,
 
 		bits = 0;
 
+		if (domains_free) {
+			/* The caller didn't provide any domains to set (`nmcli general logging level DEBUG`).
+			 * We reset all domains that were previously set, but we still want to protect
+			 * VPN_PLUGIN domain. */
+			protect = LOGD_VPN_PLUGIN;
+		}
+
 		/* Check for combined domains */
 		if (!g_ascii_strcasecmp (*iter, LOGD_ALL_STRING)) {
 			bits = LOGD_ALL;
@@ -297,7 +387,7 @@ nm_logging_setup (const char  *level,
 					new_logging[i] &= ~bits;
 				else {
 					new_logging[i] |= bits;
-					if (   protect
+					if (   (protect & bits)
 					    && i < LOGL_INFO)
 						new_logging[i] &= ~protect;
 				}
@@ -452,9 +542,22 @@ nm_logging_get_level (NMLogDomain domain)
 }
 
 #if SYSTEMD_JOURNAL
-_nm_printf (4, 5)
 static void
-_iovec_set_format (struct iovec *iov, gboolean *iov_free, int i, const char *format, ...)
+_iovec_set (struct iovec *iov, const void *str, gsize len)
+{
+	iov->iov_base = (void *) str;
+	iov->iov_len = len;
+}
+
+static void
+_iovec_set_string (struct iovec *iov, const char *str)
+{
+	_iovec_set (iov, str, strlen (str));
+}
+
+_nm_printf (3, 4)
+static void
+_iovec_set_format (struct iovec *iov, gpointer *iov_free, const char *format, ...)
 {
 	va_list ap;
 	char *str;
@@ -463,19 +566,24 @@ _iovec_set_format (struct iovec *iov, gboolean *iov_free, int i, const char *for
 	str = g_strdup_vprintf (format, ap);
 	va_end (ap);
 
-	iov[i].iov_base = str;
-	iov[i].iov_len = strlen (str);
-	iov_free[i] = TRUE;
+	_iovec_set_string (iov, str);
+	*iov_free = str;
 }
 
-static void
-_iovec_set_string (struct iovec *iov, gboolean *iov_free, int i, const char *str, gsize len)
-{
-	iov[i].iov_base = (char *) str;
-	iov[i].iov_len = len;
-	iov_free[i] = FALSE;
-}
-#define _iovec_set_literal_string(iov, iov_free, i, str) _iovec_set_string ((iov), (iov_free), (i), (""str""), NM_STRLEN (str))
+#define _iovec_set_format_a(iov, reserve_extra, format, ...) \
+	G_STMT_START { \
+		const gsize _size = (reserve_extra) + (NM_STRLEN (format) + 3); \
+		char *const _buf = g_alloca (_size); \
+		int _len; \
+		\
+		_len = g_snprintf (_buf, _size, ""format"", ##__VA_ARGS__);\
+		\
+		nm_assert (_len >= 0); \
+		nm_assert (_len <= _size); \
+		nm_assert (_len == strlen (_buf)); \
+		\
+		_iovec_set ((iov), _buf, _len); \
+	} G_STMT_END
 #endif
 
 void
@@ -490,15 +598,16 @@ _nm_log_impl (const char *file,
 {
 	va_list args;
 	char *msg;
-	char *fullmsg;
-	char s_buf_timestamp[64];
 	GTimeVal tv;
+	int errno_saved;
 
 	if ((guint) level >= G_N_ELEMENTS (_nm_logging_enabled_state))
 		g_return_if_reached ();
 
 	if (!(_nm_logging_enabled_state[level] & domain))
 		return;
+
+	errno_saved = errno;
 
 	/* Make sure that %m maps to the specified error */
 	if (error != 0) {
@@ -511,8 +620,15 @@ _nm_log_impl (const char *file,
 	msg = g_strdup_vprintf (fmt, args);
 	va_end (args);
 
+#define MESSAGE_FMT "%s%-7s [%ld.%04ld] %s"
+#define MESSAGE_ARG(global, tv, msg) \
+    (global).prefix, \
+    (global).level_desc[level].level_str, \
+    (tv).tv_sec, \
+    ((tv).tv_usec / 100), \
+    (msg)
+
 	g_get_current_time (&tv);
-	nm_sprintf_buf (s_buf_timestamp, " [%ld.%04ld]", tv.tv_sec, tv.tv_usec / 100);
 
 	switch (global.log_backend) {
 #if SYSTEMD_JOURNAL
@@ -520,27 +636,23 @@ _nm_log_impl (const char *file,
 		{
 			gint64 now, boottime;
 #define _NUM_MAX_FIELDS_SYSLOG_FACILITY 10
-#define _NUM_FIELDS (10 + _NUM_MAX_FIELDS_SYSLOG_FACILITY)
-			int i_field = 0;
-			struct iovec iov[_NUM_FIELDS];
-			gboolean iov_free[_NUM_FIELDS];
+			struct iovec iov_data[12 + _NUM_MAX_FIELDS_SYSLOG_FACILITY];
+			struct iovec *iov = iov_data;
+			gpointer iov_free_data[3];
+			gpointer *iov_free = iov_free_data;
+			nm_auto_free_gstring GString *s_domain_all = NULL;
 
 			now = nm_utils_get_monotonic_timestamp_ns ();
 			boottime = nm_utils_monotonic_timestamp_as_boottime (now, 1);
 
-			_iovec_set_format (iov, iov_free, i_field++, "PRIORITY=%d", global.level_desc[level].syslog_level);
-			_iovec_set_format (iov, iov_free, i_field++, "MESSAGE="
-			                   "%-7s%s %s",
-			                   global.level_desc[level].level_str,
-			                   s_buf_timestamp,
-			                   msg);
-			_iovec_set_literal_string (iov, iov_free, i_field++, "SYSLOG_IDENTIFIER=" G_LOG_DOMAIN);
-			_iovec_set_format (iov, iov_free, i_field++, "SYSLOG_PID=%ld", (long) getpid ());
+			_iovec_set_format_a (iov++, 30, "PRIORITY=%d", global.level_desc[level].syslog_level);
+			_iovec_set_format (iov++, iov_free++, "MESSAGE="MESSAGE_FMT, MESSAGE_ARG (global, tv, msg));
+			_iovec_set_string (iov++, syslog_identifier_full (&global));
+			_iovec_set_format_a (iov++, 30, "SYSLOG_PID=%ld", (long) getpid ());
 			{
 				const LogDesc *diter;
 				int i_domain = _NUM_MAX_FIELDS_SYSLOG_FACILITY;
 				const char *s_domain_1 = NULL;
-				GString *s_domain_all = NULL;
 				NMLogDomain dom_all = domain;
 				NMLogDomain dom = dom_all & _nm_logging_enabled_state[level];
 
@@ -555,8 +667,10 @@ _nm_log_impl (const char *file,
 					if (!s_domain_1)
 						s_domain_1 = diter->name;
 					else {
-						if (!s_domain_all)
-							s_domain_all = g_string_new (s_domain_1);
+						if (!s_domain_all) {
+							s_domain_all = g_string_new ("NM_LOG_DOMAINS=");
+							g_string_append (s_domain_all, s_domain_1);
+						}
 						g_string_append_c (s_domain_all, ',');
 						g_string_append (s_domain_all, diter->name);
 					}
@@ -564,7 +678,7 @@ _nm_log_impl (const char *file,
 					if (NM_FLAGS_HAS (dom, diter->num)) {
 						if (i_domain > 0) {
 							/* SYSLOG_FACILITY is specified multiple times for each domain that is actually enabled. */
-							_iovec_set_format (iov, iov_free, i_field++, "SYSLOG_FACILITY=%s", diter->name);
+							_iovec_set_format_a (iov++, _MAX_LEN (30, diter->name), "SYSLOG_FACILITY=%s", diter->name);
 							i_domain--;
 						}
 						dom &= ~diter->num;
@@ -572,52 +686,47 @@ _nm_log_impl (const char *file,
 					if (!dom && !dom_all)
 						break;
 				}
-				if (s_domain_all) {
-					_iovec_set_format (iov, iov_free, i_field++, "NM_LOG_DOMAINS=%s", s_domain_all->str);
-					g_string_free (s_domain_all, TRUE);
-				} else
-					_iovec_set_format (iov, iov_free, i_field++, "NM_LOG_DOMAINS=%s", s_domain_1);
+				if (s_domain_all)
+					_iovec_set (iov++, s_domain_all->str, s_domain_all->len);
+				else
+					_iovec_set_format_a (iov++, _MAX_LEN (30, s_domain_1), "NM_LOG_DOMAINS=%s", s_domain_1);
 			}
-			_iovec_set_format (iov, iov_free, i_field++, "NM_LOG_LEVEL=%s", global.level_desc[level].name);
+			_iovec_set_format_a (iov++, _MAX_LEN (15, global.level_desc[level].name), "NM_LOG_LEVEL=%s", global.level_desc[level].name);
 			if (func)
-				_iovec_set_format (iov, iov_free, i_field++, "CODE_FUNC=%s", func);
-			_iovec_set_format (iov, iov_free, i_field++, "CODE_FILE=%s", file ?: "");
-			_iovec_set_format (iov, iov_free, i_field++, "CODE_LINE=%u", line);
-			_iovec_set_format (iov, iov_free, i_field++, "TIMESTAMP_MONOTONIC=%lld.%06lld", (long long) (now / NM_UTILS_NS_PER_SECOND), (long long) ((now % NM_UTILS_NS_PER_SECOND) / 1000));
-			_iovec_set_format (iov, iov_free, i_field++, "TIMESTAMP_BOOTTIME=%lld.%06lld", (long long) (boottime / NM_UTILS_NS_PER_SECOND), (long long) ((boottime % NM_UTILS_NS_PER_SECOND) / 1000));
+				_iovec_set_format (iov++, iov_free++, "CODE_FUNC=%s", func);
+			_iovec_set_format (iov++, iov_free++, "CODE_FILE=%s", file ?: "");
+			_iovec_set_format_a (iov++, 20, "CODE_LINE=%u", line);
+			_iovec_set_format_a (iov++, 60, "TIMESTAMP_MONOTONIC=%lld.%06lld", (long long) (now / NM_UTILS_NS_PER_SECOND), (long long) ((now % NM_UTILS_NS_PER_SECOND) / 1000));
+			_iovec_set_format_a (iov++, 60, "TIMESTAMP_BOOTTIME=%lld.%06lld", (long long) (boottime / NM_UTILS_NS_PER_SECOND), (long long) ((boottime % NM_UTILS_NS_PER_SECOND) / 1000));
 			if (error != 0)
-				_iovec_set_format (iov, iov_free, i_field++, "ERRNO=%d", error);
+				_iovec_set_format_a (iov++, 30, "ERRNO=%d", error);
 
-			nm_assert (i_field <= G_N_ELEMENTS (iov));
+			nm_assert (iov <= &iov_data[G_N_ELEMENTS (iov_data)]);
+			nm_assert (iov_free <= &iov_free_data[G_N_ELEMENTS (iov_free_data)]);
 
-			sd_journal_sendv (iov, i_field);
+			sd_journal_sendv (iov_data, iov - iov_data);
 
-			for (; i_field > 0; ) {
-				i_field--;
-				if (iov_free[i_field])
-					g_free (iov[i_field].iov_base);
-			}
+			for (; --iov_free >= iov_free_data; )
+				g_free (*iov_free);
 		}
 		break;
 #endif
+	case LOG_BACKEND_SYSLOG:
+		syslog (global.level_desc[level].syslog_level,
+		        MESSAGE_FMT, MESSAGE_ARG (global, tv, msg));
+		break;
 	default:
-		fullmsg = g_strdup_printf ("%-7s%s %s",
-		                           global.level_desc[level].level_str,
-		                           s_buf_timestamp,
-		                           msg);
-
-		if (global.log_backend == LOG_BACKEND_SYSLOG)
-			syslog (global.level_desc[level].syslog_level, "%s", fullmsg);
-		else
-			g_log (G_LOG_DOMAIN, global.level_desc[level].g_log_level, "%s", fullmsg);
-		g_free (fullmsg);
+		g_log (syslog_identifier_domain (&global), global.level_desc[level].g_log_level,
+		       MESSAGE_FMT, MESSAGE_ARG (global, tv, msg));
 		break;
 	}
 
 	g_free (msg);
+
+	errno = errno_saved;
 }
 
-/************************************************************************/
+/*****************************************************************************/
 
 static void
 nm_log_handler (const gchar *log_domain,
@@ -659,8 +768,8 @@ nm_log_handler (const gchar *log_domain,
 			boottime = nm_utils_monotonic_timestamp_as_boottime (now, 1);
 
 			sd_journal_send ("PRIORITY=%d", syslog_priority,
-			                 "MESSAGE=%s", message ?: "",
-			                 "SYSLOG_IDENTIFIER=%s", G_LOG_DOMAIN,
+			                 "MESSAGE=%s%s", global.prefix, message ?: "",
+			                 syslog_identifier_full (&global),
 			                 "SYSLOG_PID=%ld", (long) getpid (),
 			                 "SYSLOG_FACILITY=GLIB",
 			                 "GLIB_DOMAIN=%s", log_domain ?: "",
@@ -672,7 +781,7 @@ nm_log_handler (const gchar *log_domain,
 		break;
 #endif
 	default:
-		syslog (syslog_priority, "%s", message ?: "");
+		syslog (syslog_priority, "%s%s", global.prefix, message ?: "");
 		break;
 	}
 }
@@ -684,17 +793,41 @@ nm_logging_syslog_enabled (void)
 }
 
 void
+nm_logging_set_prefix (const char *format, ...)
+{
+	char *prefix;
+	va_list ap;
+
+	/* prefix can only be set once, to a non-empty string. Also, after
+	 * nm_logging_syslog_openlog() the prefix cannot be set either. */
+	if (global.log_backend != LOG_BACKEND_GLIB)
+		g_return_if_reached ();
+	if (global.prefix[0])
+		g_return_if_reached ();
+
+	va_start (ap, format);
+	prefix = g_strdup_vprintf (format, ap);
+	va_end (ap);
+
+	if (!prefix || !prefix[0])
+		g_return_if_reached ();
+
+	/* we pass the allocated string on and never free it. */
+	global.prefix = prefix;
+}
+
+void
 nm_logging_syslog_openlog (const char *logging_backend)
 {
 	if (global.log_backend != LOG_BACKEND_GLIB)
 		g_return_if_reached ();
 
 	if (!logging_backend)
-		logging_backend = ""NM_CONFIG_LOGGING_BACKEND_DEFAULT;
+		logging_backend = ""NM_CONFIG_DEFAULT_LOGGING_BACKEND;
 
 	if (strcmp (logging_backend, "debug") == 0) {
 		global.log_backend = LOG_BACKEND_SYSLOG;
-		openlog (G_LOG_DOMAIN, LOG_CONS | LOG_PERROR | LOG_PID, LOG_USER);
+		openlog (syslog_identifier_domain (&global), LOG_CONS | LOG_PERROR | LOG_PID, LOG_USER);
 #if SYSTEMD_JOURNAL
 	} else if (strcmp (logging_backend, "syslog") != 0) {
 		global.log_backend = LOG_BACKEND_JOURNAL;
@@ -707,10 +840,10 @@ nm_logging_syslog_openlog (const char *logging_backend)
 	} else {
 		global.log_backend = LOG_BACKEND_SYSLOG;
 		global.uses_syslog = TRUE;
-		openlog (G_LOG_DOMAIN, LOG_PID, LOG_DAEMON);
+		openlog (syslog_identifier_domain (&global), LOG_PID, LOG_DAEMON);
 	}
 
-	g_log_set_handler (G_LOG_DOMAIN,
+	g_log_set_handler (syslog_identifier_domain (&global),
 	                   G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
 	                   nm_log_handler,
 	                   NULL);

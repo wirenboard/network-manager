@@ -32,19 +32,16 @@
 #include <sys/stat.h>
 #include <signal.h>
 
-/* Cannot include <net/if.h> due to conflict with <linux/if.h>.
- * Forward declare if_nametoindex. */
-extern unsigned int if_nametoindex (const char *__ifname);
-
 #include "main-utils.h"
 #include "NetworkManagerUtils.h"
-#include "nm-linux-platform.h"
-#include "nm-dhcp-manager.h"
-#include "nm-rdisc.h"
-#include "nm-lndp-rdisc.h"
+#include "platform/nm-linux-platform.h"
+#include "platform/nm-platform-utils.h"
+#include "dhcp/nm-dhcp-manager.h"
+#include "ndisc/nm-ndisc.h"
+#include "ndisc/nm-lndp-ndisc.h"
 #include "nm-utils.h"
 #include "nm-setting-ip6-config.h"
-#include "nm-sd.h"
+#include "systemd/nm-sd.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -52,8 +49,14 @@ extern unsigned int if_nametoindex (const char *__ifname);
 
 #define NMIH_PID_FILE_FMT NMRUNDIR "/nm-iface-helper-%d.pid"
 
-static GMainLoop *main_loop = NULL;
-static int ifindex = -1;
+/*****************************************************************************/
+
+static struct {
+	GMainLoop *main_loop;
+	int ifindex;
+} gl/*obal*/ = {
+	.ifindex = -1,
+};
 
 static struct {
 	gboolean slaac;
@@ -84,6 +87,16 @@ static struct {
 	.priority_v6 = NM_PLATFORM_ROUTE_METRIC_DEFAULT_IP6,
 };
 
+/*****************************************************************************/
+
+#define _NMLOG_PREFIX_NAME      "nm-iface-helper"
+#define _NMLOG(level, domain, ...) \
+    nm_log ((level), (domain), \
+            "iface-helper: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__) \
+            _NM_UTILS_MACRO_REST (__VA_ARGS__))
+
+/*****************************************************************************/
+
 static void
 dhcp4_state_changed (NMDhcpClient *client,
                      NMDhcpState state,
@@ -97,18 +110,18 @@ dhcp4_state_changed (NMDhcpClient *client,
 
 	g_return_if_fail (!ip4_config || NM_IS_IP4_CONFIG (ip4_config));
 
-	nm_log_dbg (LOGD_DHCP4, "(%s): new DHCPv4 client state %d", global_opt.ifname, state);
+	_LOGD (LOGD_DHCP4, "new DHCPv4 client state %d", state);
 
 	switch (state) {
 	case NM_DHCP_STATE_BOUND:
 		g_assert (ip4_config);
-		existing = nm_ip4_config_capture (ifindex, FALSE);
+		existing = nm_ip4_config_capture (gl.ifindex, FALSE);
 		if (last_config)
 			nm_ip4_config_subtract (existing, last_config);
 
 		nm_ip4_config_merge (existing, ip4_config, NM_IP_CONFIG_MERGE_DEFAULT);
-		if (!nm_ip4_config_commit (existing, ifindex, TRUE, global_opt.priority_v4))
-			nm_log_warn (LOGD_DHCP4, "(%s): failed to apply DHCPv4 config", global_opt.ifname);
+		if (!nm_ip4_config_commit (existing, gl.ifindex, TRUE, global_opt.priority_v4))
+			_LOGW (LOGD_DHCP4, "failed to apply DHCPv4 config");
 
 		if (last_config)
 			g_object_unref (last_config);
@@ -119,10 +132,10 @@ dhcp4_state_changed (NMDhcpClient *client,
 	case NM_DHCP_STATE_DONE:
 	case NM_DHCP_STATE_FAIL:
 		if (global_opt.dhcp4_required) {
-			nm_log_warn (LOGD_DHCP4, "(%s): DHCPv4 timed out or failed, quitting...", global_opt.ifname);
-			g_main_loop_quit (main_loop);
+			_LOGW (LOGD_DHCP4, "DHCPv4 timed out or failed, quitting...");
+			g_main_loop_quit (gl.main_loop);
 		} else
-			nm_log_warn (LOGD_DHCP4, "(%s): DHCPv4 timed out or failed", global_opt.ifname);
+			_LOGW (LOGD_DHCP4, "DHCPv4 timed out or failed");
 		break;
 	default:
 		break;
@@ -130,25 +143,23 @@ dhcp4_state_changed (NMDhcpClient *client,
 }
 
 static void
-rdisc_config_changed (NMRDisc *rdisc, const NMRDiscData *rdata, guint changed_int, gpointer user_data)
+ndisc_config_changed (NMNDisc *ndisc, const NMNDiscData *rdata, guint changed_int, gpointer user_data)
 {
-	NMRDiscConfigMap changed = changed_int;
-	static NMIP6Config *rdisc_config = NULL;
+	NMNDiscConfigMap changed = changed_int;
+	static NMIP6Config *ndisc_config = NULL;
 	NMIP6Config *existing;
-	static int system_support = -1;
+	int system_support;
 	guint32 ifa_flags = 0x00;
 	int i;
 
-	if (system_support == -1) {
-		/*
-		 * Check, whether kernel is recent enough, to help user space handling RA.
-		 * If it's not supported, we have no ipv6-privacy and must add autoconf
-		 * addresses as /128.
-		 * The reason for the /128 is to prevent the kernel
-		 * from adding a prefix route for this address.
-		 **/
-		system_support = nm_platform_check_support_kernel_extended_ifa_flags (NM_PLATFORM_GET);
-	}
+	/*
+	 * Check, whether kernel is recent enough, to help user space handling RA.
+	 * If it's not supported, we have no ipv6-privacy and must add autoconf
+	 * addresses as /128.
+	 * The reason for the /128 is to prevent the kernel
+	 * from adding a prefix route for this address.
+	 **/
+	system_support = nm_platform_check_support_kernel_extended_ifa_flags (NM_PLATFORM_GET);
 
 	if (system_support)
 		ifa_flags = IFA_F_NOPREFIXROUTE;
@@ -159,31 +170,31 @@ rdisc_config_changed (NMRDisc *rdisc, const NMRDiscData *rdata, guint changed_in
 		ifa_flags |= IFA_F_MANAGETEMPADDR;
 	}
 
-	existing = nm_ip6_config_capture (ifindex, FALSE, global_opt.tempaddr);
-	if (rdisc_config)
-		nm_ip6_config_subtract (existing, rdisc_config);
+	existing = nm_ip6_config_capture (gl.ifindex, FALSE, global_opt.tempaddr);
+	if (ndisc_config)
+		nm_ip6_config_subtract (existing, ndisc_config);
 	else
-		rdisc_config = nm_ip6_config_new (ifindex);
+		ndisc_config = nm_ip6_config_new (gl.ifindex);
 
-	if (changed & NM_RDISC_CONFIG_GATEWAYS) {
-		/* Use the first gateway as ordered in router discovery cache. */
+	if (changed & NM_NDISC_CONFIG_GATEWAYS) {
+		/* Use the first gateway as ordered in neighbor discovery cache. */
 		if (rdata->gateways_n)
-			nm_ip6_config_set_gateway (rdisc_config, &rdata->gateways[0].address);
+			nm_ip6_config_set_gateway (ndisc_config, &rdata->gateways[0].address);
 		else
-			nm_ip6_config_set_gateway (rdisc_config, NULL);
+			nm_ip6_config_set_gateway (ndisc_config, NULL);
 	}
 
-	if (changed & NM_RDISC_CONFIG_ADDRESSES) {
-		/* Rebuild address list from router discovery cache. */
-		nm_ip6_config_reset_addresses (rdisc_config);
+	if (changed & NM_NDISC_CONFIG_ADDRESSES) {
+		/* Rebuild address list from neighbor discovery cache. */
+		nm_ip6_config_reset_addresses (ndisc_config);
 
-		/* rdisc->addresses contains at most max_addresses entries.
+		/* ndisc->addresses contains at most max_addresses entries.
 		 * This is different from what the kernel does, which
 		 * also counts static and temporary addresses when checking
 		 * max_addresses.
 		 **/
 		for (i = 0; i < rdata->addresses_n; i++) {
-			const NMRDiscAddress *discovered_address = &rdata->addresses[i];
+			const NMNDiscAddress *discovered_address = &rdata->addresses[i];
 			NMPlatformIP6Address address;
 
 			memset (&address, 0, sizeof (address));
@@ -194,64 +205,64 @@ rdisc_config_changed (NMRDisc *rdisc, const NMRDiscData *rdata, guint changed_in
 			address.preferred = discovered_address->preferred;
 			if (address.preferred > address.lifetime)
 				address.preferred = address.lifetime;
-			address.addr_source = NM_IP_CONFIG_SOURCE_RDISC;
+			address.addr_source = NM_IP_CONFIG_SOURCE_NDISC;
 			address.n_ifa_flags = ifa_flags;
 
-			nm_ip6_config_add_address (rdisc_config, &address);
+			nm_ip6_config_add_address (ndisc_config, &address);
 		}
 	}
 
-	if (changed & NM_RDISC_CONFIG_ROUTES) {
-		/* Rebuild route list from router discovery cache. */
-		nm_ip6_config_reset_routes (rdisc_config);
+	if (changed & NM_NDISC_CONFIG_ROUTES) {
+		/* Rebuild route list from neighbor discovery cache. */
+		nm_ip6_config_reset_routes (ndisc_config);
 
 		for (i = 0; i < rdata->routes_n; i++) {
-			const NMRDiscRoute *discovered_route = &rdata->routes[i];
+			const NMNDiscRoute *discovered_route = &rdata->routes[i];
 			const NMPlatformIP6Route route = {
 				.network    = discovered_route->network,
 				.plen       = discovered_route->plen,
 				.gateway    = discovered_route->gateway,
-				.rt_source  = NM_IP_CONFIG_SOURCE_RDISC,
+				.rt_source  = NM_IP_CONFIG_SOURCE_NDISC,
 				.metric     = global_opt.priority_v6,
 			};
 
-			nm_ip6_config_add_route (rdisc_config, &route);
+			nm_ip6_config_add_route (ndisc_config, &route);
 		}
 	}
 
-	if (changed & NM_RDISC_CONFIG_DHCP_LEVEL) {
+	if (changed & NM_NDISC_CONFIG_DHCP_LEVEL) {
 		/* Unsupported until systemd DHCPv6 is ready */
 	}
 
-	if (changed & NM_RDISC_CONFIG_HOP_LIMIT)
+	if (changed & NM_NDISC_CONFIG_HOP_LIMIT)
 		nm_platform_sysctl_set_ip6_hop_limit_safe (NM_PLATFORM_GET, global_opt.ifname, rdata->hop_limit);
 
-	if (changed & NM_RDISC_CONFIG_MTU) {
+	if (changed & NM_NDISC_CONFIG_MTU) {
 		char val[16];
 
 		g_snprintf (val, sizeof (val), "%d", rdata->mtu);
-		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "mtu"), val);
+		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_ip6_property_path (global_opt.ifname, "mtu")), val);
 	}
 
-	nm_ip6_config_merge (existing, rdisc_config, NM_IP_CONFIG_MERGE_DEFAULT);
-	if (!nm_ip6_config_commit (existing, ifindex, TRUE))
-		nm_log_warn (LOGD_IP6, "(%s): failed to apply IPv6 config", global_opt.ifname);
+	nm_ip6_config_merge (existing, ndisc_config, NM_IP_CONFIG_MERGE_DEFAULT);
+	if (!nm_ip6_config_commit (existing, gl.ifindex, TRUE))
+		_LOGW (LOGD_IP6, "failed to apply IPv6 config");
 }
 
 static void
-rdisc_ra_timeout (NMRDisc *rdisc, gpointer user_data)
+ndisc_ra_timeout (NMNDisc *ndisc, gpointer user_data)
 {
 	if (global_opt.slaac_required) {
-		nm_log_warn (LOGD_IP6, "(%s): IPv6 timed out or failed, quitting...", global_opt.ifname);
-		g_main_loop_quit (main_loop);
+		_LOGW (LOGD_IP6, "IPv6 timed out or failed, quitting...");
+		g_main_loop_quit (gl.main_loop);
 	} else
-		nm_log_warn (LOGD_IP6, "(%s): IPv6 timed out or failed", global_opt.ifname);
+		_LOGW (LOGD_IP6, "IPv6 timed out or failed");
 }
 
 static gboolean
 quit_handler (gpointer user_data)
 {
-	g_main_loop_quit (main_loop);
+	g_main_loop_quit (gl.main_loop);
 	return G_SOURCE_REMOVE;
 }
 
@@ -263,7 +274,7 @@ setup_signals (void)
 	g_unix_signal_add (SIGTERM, quit_handler, NULL);
 }
 
-static void
+static gboolean
 do_early_setup (int *argc, char **argv[])
 {
 	gint64 priority64_v4 = -1;
@@ -306,25 +317,28 @@ do_early_setup (int *argc, char **argv[])
 	                                NULL,
 	                                NULL,
 	                                _("nm-iface-helper is a small, standalone process that manages a single network interface.")))
-		exit (1);
+		return FALSE;
 
 	if (priority64_v4 >= 0 && priority64_v4 <= G_MAXUINT32)
 		global_opt.priority_v4 = (guint32) priority64_v4;
 	if (priority64_v6 >= 0 && priority64_v6 <= G_MAXUINT32)
 		global_opt.priority_v6 = (guint32) priority64_v6;
+	return TRUE;
 }
 
 static void
 ip6_address_changed (NMPlatform *platform,
-                     NMPObjectType obj_type,
+                     int obj_type_i,
                      int iface,
                      NMPlatformIP6Address *addr,
-                     NMPlatformSignalChangeType change_type,
-                     NMRDisc *rdisc)
+                     int change_type_i,
+                     NMNDisc *ndisc)
 {
+	const NMPlatformSignalChangeType change_type = change_type_i;
+
 	if (   (change_type == NM_PLATFORM_SIGNAL_CHANGED && addr->n_ifa_flags & IFA_F_DADFAILED)
 	    || (change_type == NM_PLATFORM_SIGNAL_REMOVED && addr->n_ifa_flags & IFA_F_TENTATIVE))
-		nm_rdisc_dad_failed (rdisc, &addr->address);
+		nm_ndisc_dad_failed (ndisc, &addr->address);
 }
 
 int
@@ -335,7 +349,7 @@ main (int argc, char *argv[])
 	gboolean wrote_pidfile = FALSE;
 	gs_free char *pidfile = NULL;
 	gs_unref_object NMDhcpClient *dhcp4_client = NULL;
-	gs_unref_object NMRDisc *rdisc = NULL;
+	gs_unref_object NMNDisc *ndisc = NULL;
 	GByteArray *hwaddr = NULL;
 	size_t hwaddr_len = 0;
 	gconstpointer tmp;
@@ -346,7 +360,14 @@ main (int argc, char *argv[])
 
 	setpgid (getpid (), getpid ());
 
-	do_early_setup (&argc, &argv);
+	if (!do_early_setup (&argc, &argv))
+		return 1;
+
+	nm_logging_set_syslog_identifier ("nm-iface-helper");
+	nm_logging_set_prefix ("%s[%ld] (%s): ",
+	                       _NMLOG_PREFIX_NAME,
+	                       (long) getpid (),
+	                       global_opt.ifname ?: "???");
 
 	if (global_opt.g_fatal_warnings) {
 		GLogLevelFlags fatal_mask;
@@ -358,22 +379,22 @@ main (int argc, char *argv[])
 
 	if (global_opt.show_version) {
 		fprintf (stdout, NM_DIST_VERSION "\n");
-		exit (0);
+		return 0;
 	}
 
 	nm_main_utils_ensure_root ();
 
 	if (!global_opt.ifname || !global_opt.uuid) {
 		fprintf (stderr, _("An interface name and UUID are required\n"));
-		exit (1);
+		return 1;
 	}
 
-	ifindex = if_nametoindex (global_opt.ifname);
-	if (ifindex <= 0) {
+	gl.ifindex = nmp_utils_if_nametoindex (global_opt.ifname);
+	if (gl.ifindex <= 0) {
 		fprintf (stderr, _("Failed to find interface index for %s (%s)\n"), global_opt.ifname, strerror (errno));
-		exit (1);
+		return 1;
 	}
-	pidfile = g_strdup_printf (NMIH_PID_FILE_FMT, ifindex);
+	pidfile = g_strdup_printf (NMIH_PID_FILE_FMT, gl.ifindex);
 	nm_main_utils_ensure_not_running_pidfile (pidfile);
 
 	nm_main_utils_ensure_rundir ();
@@ -385,7 +406,7 @@ main (int argc, char *argv[])
 		fprintf (stderr,
 		         _("%s.  Please use --help to see a list of valid options.\n"),
 		         error->message);
-		exit (1);
+		return 1;
 	} else if (bad_domains) {
 		fprintf (stderr,
 		         _("Ignoring unrecognized log domain(s) '%s' passed on command line.\n"),
@@ -401,26 +422,26 @@ main (int argc, char *argv[])
 			fprintf (stderr, _("Could not daemonize: %s [error %u]\n"),
 			         g_strerror (saved_errno),
 			         saved_errno);
-			exit (1);
+			return 1;
 		}
 		if (nm_main_utils_write_pidfile (pidfile))
 			wrote_pidfile = TRUE;
 	}
 
 	/* Set up unix signal handling - before creating threads, but after daemonizing! */
-	main_loop = g_main_loop_new (NULL, FALSE);
+	gl.main_loop = g_main_loop_new (NULL, FALSE);
 	setup_signals ();
 
 	nm_logging_syslog_openlog (global_opt.logging_backend
 	                           ? global_opt.logging_backend
 	                           : (global_opt.debug ? "debug" : NULL));
 
-	nm_log_info (LOGD_CORE, "nm-iface-helper (version " NM_DIST_VERSION ") is starting...");
+	_LOGI (LOGD_CORE, "nm-iface-helper (version " NM_DIST_VERSION ") is starting...");
 
 	/* Set up platform interaction layer */
 	nm_linux_platform_setup ();
 
-	tmp = nm_platform_link_get_address (NM_PLATFORM_GET, ifindex, &hwaddr_len);
+	tmp = nm_platform_link_get_address (NM_PLATFORM_GET, gl.ifindex, &hwaddr_len);
 	if (tmp) {
 		hwaddr = g_byte_array_sized_new (hwaddr_len);
 		g_byte_array_append (hwaddr, tmp, hwaddr_len);
@@ -433,17 +454,17 @@ main (int argc, char *argv[])
 		bytes = nm_utils_hexstr2bin (global_opt.iid_str);
 		if (!bytes || g_bytes_get_size (bytes) != sizeof (*iid)) {
 			fprintf (stderr, _("(%s): Invalid IID %s\n"), global_opt.ifname, global_opt.iid_str);
-			exit (1);
+			return 1;
 		}
 		iid = g_bytes_unref_to_data (bytes, &ignored);
 	}
 
 	if (global_opt.dhcp4_address) {
-		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip4_property_path (global_opt.ifname, "promote_secondaries"), "1");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_ip4_property_path (global_opt.ifname, "promote_secondaries")), "1");
 
 		dhcp4_client = nm_dhcp_manager_start_ip4 (nm_dhcp_manager_get (),
 		                                          global_opt.ifname,
-		                                          ifindex,
+		                                          gl.ifindex,
 		                                          hwaddr,
 		                                          global_opt.uuid,
 		                                          global_opt.priority_v4,
@@ -465,7 +486,7 @@ main (int argc, char *argv[])
 		NMUtilsStableType stable_type = NM_UTILS_STABLE_TYPE_UUID;
 		const char *stable_id = global_opt.uuid;
 
-		nm_platform_link_set_user_ipv6ll_enabled (NM_PLATFORM_GET, ifindex, TRUE);
+		nm_platform_link_set_user_ipv6ll_enabled (NM_PLATFORM_GET, gl.ifindex, TRUE);
 
 		if (   global_opt.stable_id
 		    && (global_opt.stable_id[0] >= '0' && global_opt.stable_id[0] <= '9')
@@ -476,98 +497,111 @@ main (int argc, char *argv[])
 			stable_type = (global_opt.stable_id[0] - '0');
 			stable_id = &global_opt.stable_id[2];
 		}
-		rdisc = nm_lndp_rdisc_new (NM_PLATFORM_GET, ifindex, global_opt.ifname,
+		ndisc = nm_lndp_ndisc_new (NM_PLATFORM_GET, gl.ifindex, global_opt.ifname,
 		                           stable_type, stable_id,
-		                           global_opt.addr_gen_mode, NULL);
-		g_assert (rdisc);
+		                           global_opt.addr_gen_mode,
+		                           NM_NDISC_NODE_TYPE_HOST,
+		                           NULL);
+		g_assert (ndisc);
 
 		if (iid)
-			nm_rdisc_set_iid (rdisc, *iid);
+			nm_ndisc_set_iid (ndisc, *iid);
 
-		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra"), "1");
-		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_defrtr"), "0");
-		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_pinfo"), "0");
-		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_rtr_pref"), "0");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra")), "1");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_defrtr")), "0");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_pinfo")), "0");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_rtr_pref")), "0");
 
 		g_signal_connect (NM_PLATFORM_GET,
 		                  NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED,
 		                  G_CALLBACK (ip6_address_changed),
-		                  rdisc);
-		g_signal_connect (rdisc,
-		                  NM_RDISC_CONFIG_CHANGED,
-		                  G_CALLBACK (rdisc_config_changed),
+		                  ndisc);
+		g_signal_connect (ndisc,
+		                  NM_NDISC_CONFIG_RECEIVED,
+		                  G_CALLBACK (ndisc_config_changed),
 		                  NULL);
-		g_signal_connect (rdisc,
-		                  NM_RDISC_RA_TIMEOUT,
-		                  G_CALLBACK (rdisc_ra_timeout),
+		g_signal_connect (ndisc,
+		                  NM_NDISC_RA_TIMEOUT,
+		                  G_CALLBACK (ndisc_ra_timeout),
 		                  NULL);
-		nm_rdisc_start (rdisc);
+		nm_ndisc_start (ndisc);
 	}
 
 	sd_id = nm_sd_event_attach_default ();
 
-	g_main_loop_run (main_loop);
+	g_main_loop_run (gl.main_loop);
 
 	g_clear_pointer (&hwaddr, g_byte_array_unref);
 
 	if (pidfile && wrote_pidfile)
 		unlink (pidfile);
 
-	nm_log_info (LOGD_CORE, "exiting");
+	_LOGI (LOGD_CORE, "exiting");
 
 	nm_clear_g_source (&sd_id);
-	exit (0);
+	g_clear_pointer (&gl.main_loop, g_main_loop_unref);
+	return 0;
 }
 
-/*******************************************************/
+/*****************************************************************************/
+
+const NMDhcpClientFactory *const _nm_dhcp_manager_factories[3] = {
+	&_nm_dhcp_client_factory_internal,
+};
+
+/*****************************************************************************/
 /* Stub functions */
+
+#include "nm-config.h"
+#include "devices/nm-device.h"
+#include "nm-active-connection.h"
+#include "nm-bus-manager.h"
 
 void
 nm_main_config_reload (int signal)
 {
-	nm_log_info (LOGD_CORE, "reloading configuration not supported");
+	_LOGI (LOGD_CORE, "reloading configuration not supported");
 }
 
-gconstpointer nm_config_get (void);
-const char *nm_config_get_dhcp_client (gpointer unused);
-gboolean nm_config_get_configure_and_quit (gpointer unused);
-gconstpointer nm_bus_manager_get (void);
-void nm_bus_manager_register_object (gpointer unused, gpointer object);
-void nm_bus_manager_unregister_object (gpointer unused, gpointer object);
-GType nm_device_get_type (void);
-GType nm_active_connection_get_type (void);
-
-gconstpointer
+NMConfig *
 nm_config_get (void)
 {
 	return GUINT_TO_POINTER (1);
 }
 
-const char *
-nm_config_get_dhcp_client (gpointer unused)
+NMConfigData *
+nm_config_get_data_orig (NMConfig *config)
 {
-	return "internal";
+	return GUINT_TO_POINTER (1);
+}
+
+char *
+nm_config_data_get_value (const NMConfigData *config_data, const char *group, const char *key, NMConfigGetValueFlags flags)
+{
+	return NULL;
 }
 
 gboolean
-nm_config_get_configure_and_quit (gpointer unused)
+nm_config_get_configure_and_quit (NMConfig *config)
 {
 	return TRUE;
 }
 
-gconstpointer
+NMBusManager *
 nm_bus_manager_get (void)
 {
 	return GUINT_TO_POINTER (1);
 }
 
 void
-nm_bus_manager_register_object (gpointer unused, gpointer object)
+nm_bus_manager_register_object (NMBusManager *bus_manager,
+                                GDBusObjectSkeleton *object)
 {
 }
 
 void
-nm_bus_manager_unregister_object (gpointer unused, gpointer object)
+nm_bus_manager_unregister_object (NMBusManager *bus_manager,
+                                  GDBusObjectSkeleton *object)
 {
 }
 

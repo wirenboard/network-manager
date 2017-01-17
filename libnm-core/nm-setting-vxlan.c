@@ -340,7 +340,7 @@ nm_setting_vxlan_get_l3_miss (NMSettingVxlan *setting)
 	return NM_SETTING_VXLAN_GET_PRIVATE (setting)->l3_miss;
 }
 
-/*********************************************************************/
+/*****************************************************************************/
 
 static void
 nm_setting_vxlan_init (NMSettingVxlan *setting)
@@ -395,7 +395,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	}
 
 	if (   priv->parent
-	    && !nm_utils_iface_valid_name (priv->parent)
+	    && !nm_utils_is_valid_iface_name (priv->parent, NULL)
 	    && !nm_utils_is_uuid (priv->parent)) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,

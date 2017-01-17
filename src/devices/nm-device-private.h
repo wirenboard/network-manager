@@ -27,12 +27,15 @@
 /* This file should only be used by subclasses of NMDevice */
 
 enum NMActStageReturn {
-	NM_ACT_STAGE_RETURN_FAILURE = 0,
+	NM_ACT_STAGE_RETURN_FAILURE = 0, /* Hard failure of activation */
 	NM_ACT_STAGE_RETURN_SUCCESS,     /* Activation stage done */
 	NM_ACT_STAGE_RETURN_POSTPONE,    /* Long-running operation in progress */
-	NM_ACT_STAGE_RETURN_WAIT,        /* Not ready to start stage; wait */
-	NM_ACT_STAGE_RETURN_STOP,        /* Activation not wanted */
-	NM_ACT_STAGE_RETURN_FINISH       /* Activation stage done; nothing to do */
+	NM_ACT_STAGE_RETURN_IP_WAIT,     /* IP config stage is waiting (state IP_WAIT) */
+	NM_ACT_STAGE_RETURN_IP_DONE,     /* IP config stage is done (state IP_DONE),
+	                                    For the ip-config stage, this is similar to
+	                                    NM_ACT_STAGE_RETURN_SUCCESS, except that no
+	                                    IP config should be commited. */
+	NM_ACT_STAGE_RETURN_IP_FAIL,     /* IP config stage failed (state IP_FAIL), activation may proceed */
 };
 
 #define NM_DEVICE_CAP_NONSTANDARD_CARRIER 0x80000000
@@ -42,7 +45,7 @@ enum NMActStageReturn {
 
 NMSettings *nm_device_get_settings (NMDevice *self);
 
-void nm_device_set_ip_iface (NMDevice *self, const char *iface);
+gboolean nm_device_set_ip_iface (NMDevice *self, const char *iface);
 
 void nm_device_activate_schedule_stage3_ip_config_start (NMDevice *device);
 
@@ -54,7 +57,10 @@ gboolean nm_device_bring_up (NMDevice *self, gboolean wait, gboolean *no_firmwar
 
 void nm_device_take_down (NMDevice *self, gboolean block);
 
-gboolean nm_device_hw_addr_set (NMDevice *device, const char *addr, const char *detail);
+gboolean nm_device_hw_addr_set (NMDevice *device,
+                                const char *addr,
+                                const char *detail,
+                                gboolean set_permanent);
 gboolean nm_device_hw_addr_set_cloned (NMDevice *device, NMConnection *connection, gboolean is_wifi);
 gboolean nm_device_hw_addr_reset (NMDevice *device, const char *detail);
 
@@ -111,6 +117,19 @@ gboolean nm_device_hw_addr_is_explict (NMDevice *device);
 void nm_device_ip_method_failed (NMDevice *self, int family, NMDeviceStateReason reason);
 
 gboolean nm_device_ipv6_sysctl_set (NMDevice *self, const char *property, const char *value);
+
+/*****************************************************************************/
+
+#define NM_DEVICE_DEFAULT_MTU_WIRED          ((guint32) 1500)
+#define NM_DEVICE_DEFAULT_MTU_WIRELESS       ((guint32) 1500)
+#define NM_DEVICE_DEFAULT_MTU_INFINIBAND     ((guint32) 0)
+
+gint64 nm_device_get_configured_mtu_from_connection_default (NMDevice *self,
+                                                             const char *property_name);
+
+guint32 nm_device_get_configured_mtu_for_wired (NMDevice *self, gboolean *out_is_user_config);
+
+/*****************************************************************************/
 
 #define NM_DEVICE_CLASS_DECLARE_TYPES(klass, conn_type, ...) \
 	NM_DEVICE_CLASS (klass)->connection_type = conn_type; \

@@ -2,8 +2,8 @@ AC_PREREQ([2.63])
 
 dnl The NM version number
 m4_define([nm_major_version], [1])
-m4_define([nm_minor_version], [4])
-m4_define([nm_micro_version], [4])
+m4_define([nm_minor_version], [5])
+m4_define([nm_micro_version], [90])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -134,7 +134,7 @@ test "$enable_ifupdown" = "yes"           && distro_plugins="$distro_plugins,ifu
 test "$enable_ifnet" = "yes"              && distro_plugins="$distro_plugins,ifnet"
 distro_plugins="${distro_plugins#,}"
 
-AC_DEFINE_UNQUOTED(CONFIG_PLUGINS_DEFAULT, "$config_plugins_default", [Default configuration option for main.plugins setting])
+AC_DEFINE_UNQUOTED(NM_CONFIG_DEFAULT_MAIN_PLUGINS, "$config_plugins_default", [Default configuration option for main.plugins setting])
 if test "${enable_config_plugin_ibft}" = yes; then
 	AC_DEFINE(WITH_SETTINGS_PLUGIN_IBFT, 1, [Whether compilation of ibft setting plugin is enabled])
 else
@@ -417,9 +417,9 @@ if test "$nm_config_logging_backend_default" = ""; then
 		nm_config_logging_backend_default='syslog'
 	fi
 fi
-AC_DEFINE_UNQUOTED(NM_CONFIG_LOGGING_BACKEND_DEFAULT, "$nm_config_logging_backend_default", [Default configuration option for logging.backend])
-NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT="$nm_config_logging_backend_default"
-AC_SUBST(NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT)
+AC_DEFINE_UNQUOTED(NM_CONFIG_DEFAULT_LOGGING_BACKEND, "$nm_config_logging_backend_default", [Default configuration option for logging.backend])
+NM_CONFIG_DEFAULT_LOGGING_BACKEND_TEXT="$nm_config_logging_backend_default"
+AC_SUBST(NM_CONFIG_DEFAULT_LOGGING_BACKEND_TEXT)
 
 # Session tracking support
 AC_ARG_WITH(systemd-logind, AS_HELP_STRING([--with-systemd-logind=yes|no],
@@ -524,16 +524,16 @@ else
 fi
 if test "$have_libaudit" = "yes"; then
     AC_DEFINE(HAVE_LIBAUDIT, 1, [Define if you have libaudit support])
-	if test "$with_libaudit" = "yes-disabled-by-default"; then
-		AC_DEFINE(NM_CONFIG_DEFAULT_LOGGING_AUDIT, FALSE, [The default value of the logging.audit configuration option])
-		NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT='false'
-	else
-		AC_DEFINE(NM_CONFIG_DEFAULT_LOGGING_AUDIT, TRUE,  [The default value of the logging.audit configuration option])
-		NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT='true'
-	fi
+    if test "$with_libaudit" = "yes-disabled-by-default"; then
+        AC_DEFINE(NM_CONFIG_DEFAULT_LOGGING_AUDIT, "false", [The default value of the logging.audit configuration option])
+        NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT='false'
+    else
+        AC_DEFINE(NM_CONFIG_DEFAULT_LOGGING_AUDIT, "true",  [The default value of the logging.audit configuration option])
+        NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT='true'
+    fi
 else
     AC_DEFINE(HAVE_LIBAUDIT, 0, [Define if you have libaudit support])
-	AC_DEFINE(NM_CONFIG_DEFAULT_LOGGING_AUDIT, FALSE, [The default value of the logging.audit configuration option])
+    AC_DEFINE(NM_CONFIG_DEFAULT_LOGGING_AUDIT, "false", [The default value of the logging.audit configuration option])
     NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT='false'
 fi
 AC_SUBST(NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT)
@@ -560,16 +560,14 @@ else
 fi
 AM_CONDITIONAL(WITH_TEAMDCTL, test "${enable_teamdctl}" = "yes")
 
-PKG_CHECK_MODULES(JANSSON, jansson, [have_jansson=yes], [have_jansson=no])
-AC_ARG_ENABLE(json-validation, AS_HELP_STRING([--enable-json-validation], [Enable JSON validation in libnm]),
-		[enable_json_validation=${enableval}], [enable_json_validation=${have_jansson}])
-if (test "${enable_json_validation}" = "yes"); then
-	if test x"$have_jansson" = x"no"; then
-		AC_MSG_ERROR(Jansson is required for JSON validation)
-	fi
-	AC_DEFINE(WITH_JANSSON, 1, [Define if JANSSON is enabled])
+# Jansson for team configuration validation
+AC_ARG_ENABLE(json-validation, AS_HELP_STRING([--enable-json-validation], [Enable JSON validation in libnm]))
+if (test "${enable_json_validation}" == "no"); then
+    AC_DEFINE(WITH_JANSSON, 0, [Define if JANSSON is enabled])
 else
-	AC_DEFINE(WITH_JANSSON, 0, [Define if JANSSON is enabled])
+    PKG_CHECK_MODULES(JANSSON, jansson,,
+                      AC_MSG_ERROR([jansson is needed for team configuration validation. Use --disable-json-validation to build without it.]))
+    AC_DEFINE(WITH_JANSSON, 1, [Define if JANSSON is enabled])
 fi
 
 # we usually compile with polkit support. --enable-polkit=yes|no only sets the
@@ -581,18 +579,17 @@ AC_ARG_ENABLE(polkit, AS_HELP_STRING([--enable-polkit=yes|no|disabled], [set def
                      [enable_polkit=${enableval}], [enable_polkit=yes])
 if (test "${enable_polkit}" != "no" -a "${enable_polkit}" != "disabled"); then
 	enable_polkit=yes
-	AC_DEFINE(NM_CONFIG_DEFAULT_AUTH_POLKIT, TRUE, [The default value of the auth-polkit configuration option])
-	NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT='true'
+	AC_DEFINE(NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT, "true", [The default value of the auth-polkit configuration option])
+	AC_SUBST(NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT_TEXT, true)
 else
-	AC_DEFINE(NM_CONFIG_DEFAULT_AUTH_POLKIT, FALSE, [The default value of the auth-polkit configuration option])
-	NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT='false'
+	AC_DEFINE(NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT, "false", [The default value of the auth-polkit configuration option])
+	AC_SUBST(NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT_TEXT, false)
 fi
 if (test "${enable_polkit}" != "disabled"); then
 	AC_DEFINE(WITH_POLKIT, 1, [whether to compile polkit support])
 else
 	AC_DEFINE(WITH_POLKIT, 0, [whether to compile polkit support])
 fi
-AC_SUBST(NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT)
 
 PKG_CHECK_MODULES(POLKIT, [polkit-agent-1 >= 0.97], [have_pk_agent=yes],[have_pk_agent=no])
 AC_ARG_ENABLE(polkit-agent, AS_HELP_STRING([--enable-polkit-agent], [enable polkit agent for clients]),
@@ -744,49 +741,82 @@ AM_CONDITIONAL(WITH_OFONO, test "${with_ofono}" = "yes")
 
 # DHCP client support
 AC_ARG_WITH([dhclient], AS_HELP_STRING([--with-dhclient=yes|no|path], [Enable dhclient 4.x support]))
-AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
-# Default to "yes"
-AS_IF([test -z "$with_dhclient"], with_dhclient=yes)
-AS_IF([test -z "$with_dhcpcd"], with_dhcpcd=yes)
-# Search and check the executables
-if test "$with_dhclient" = "yes"; then
-	AC_PATH_PROGS(with_dhclient, dhclient, no, /sbin:/usr/sbin:/usr/local/sbin)
-	if test "$with_dhclient" != "no"; then
-		if ! $with_dhclient --version 2>&1 | grep -q "^isc-dhclient-4\."; then
-			AC_MSG_WARN([Cannot use dhclient, version 4.x is required])
-			with_dhclient=no
-		fi
-	fi
-fi
-if test "$with_dhcpcd" = "yes"; then
-	AC_PATH_PROGS(with_dhcpcd, dhcpcd, no, /sbin:/usr/sbin:/usr/local/sbin)
-	if test "$with_dhcpcd" != "no"; then
-		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[456789]]\."; then
-			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or higher is required])
-			with_dhcpcd=no
-		elif $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[6789]]\."; then
-			AC_DEFINE(DHCPCD_SUPPORTS_IPV6, 1, [Define if dhcpcd supports IPv6 (6.x+)])
-		fi
-	fi
-fi
-# Fallback
-if test "$with_dhclient" = "no" -a "$with_dhcpcd" = "no"; then
-	AC_MSG_WARN([Could not find a suitable DHCP client, falling back to dhclient])
-	with_dhclient=/sbin/dhclient
-fi
-# Add substitutions
 if test "$with_dhclient" != "no"; then
-	AC_DEFINE(WITH_DHCLIENT, TRUE, [Define if you have dhclient])
+	with_dhclient_="$with_dhclient"
+	AC_PATH_PROGS(with_dhclient, dhclient, no, /sbin:/usr/sbin:/usr/local/sbin)
+	if test "$with_dhclient" == "no"; then
+		if test "$with_dhclient_" == yes; then
+			AC_MSG_WARN([dhclient not found, assume path /usr/sbin/dhclient])
+			with_dhclient=/usr/sbin/dhclient
+		fi
+	else
+		if ! $with_dhclient --version 2>&1 | grep -q "^isc-dhclient-4\."; then
+			AC_MSG_WARN([Seems version of dhclient $with_dhclient is too old, version 4.x or newer is required.])
+		fi
+	fi
+fi
+if test "$with_dhclient" != "no"; then
+	AC_DEFINE(WITH_DHCLIENT, 1, [Define if you have dhclient])
 	AC_SUBST(DHCLIENT_PATH, $with_dhclient)
 else
-	AC_DEFINE(WITH_DHCLIENT, FALSE, [Define if you have dhclient])
+	AC_DEFINE(WITH_DHCLIENT, 0, [Define if you have dhclient])
+fi
+
+AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
+AC_ARG_WITH([dhcpcd-supports-ipv6], AS_HELP_STRING([--with-dhcpcd-supports-ipv6=yes|no|auto], [Whether using dhcpcd >= 6.x which has IPv6 support]), [with_dhcpcd_supports_ipv6=$withval], [with_dhcpcd_supports_ipv6=auto])
+if test "$with_dhcpcd" != "no"; then
+	with_dhcpcd_="$with_dhcpcd"
+	AC_PATH_PROGS(with_dhcpcd, dhcpcd, no, /sbin:/usr/sbin:/usr/local/sbin)
+	if test "$with_dhcpcd" == "no"; then
+		if test "$with_dhcpcd_" == yes; then
+			AC_MSG_WARN([dhcpcd not found, assume path /usr/sbin/dhcpcd])
+			with_dhcpcd=/usr/sbin/dhcpcd
+			if test "$with_dhcpcd_supports_ipv6" == auto; then
+				with_dhcpcd_supports_ipv6=yes
+			fi
+		fi
+	else
+		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[456789]]\."; then
+			AC_MSG_WARN([Seems version of dhcpcd $with_dhcpcd is too old, version 4.x or newer is required])
+		fi
+	fi
 fi
 if test "$with_dhcpcd" != "no"; then
-	AC_DEFINE(WITH_DHCPCD, TRUE, [Define if you have dhcpcd])
+	if $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[6789]]\."; then
+		if test "$with_dhcpcd_supports_ipv6" == no; then
+			AC_MSG_WARN([Seems version of dhcpcd $with_dhcpcd supports IPv6, but compiling --with-dhcpcd-supports-ipv6=no])
+		else
+			with_dhcpcd_supports_ipv6=yes
+		fi
+	else
+		if test "$with_dhcpcd_supports_ipv6" == yes; then
+			AC_MSG_WARN([Seems version of dhcpcd $with_dhcpcd does not support IPv6, but compiling --with-dhcpcd-supports-ipv6=yes])
+		else
+			with_dhcpcd_supports_ipv6=no
+		fi
+	fi
+	if test "$with_dhcpcd_supports_ipv6" != no; then
+		AC_DEFINE(DHCPCD_SUPPORTS_IPV6, 1, [Define if dhcpcd supports IPv6 (6.x+)])
+	fi
+else
+	with_dhcpcd_supports_ipv6=no
+fi
+if test "$with_dhcpcd" != "no"; then
+	AC_DEFINE(WITH_DHCPCD, 1, [Define if you have dhcpcd])
 	AC_SUBST(DHCPCD_PATH, $with_dhcpcd)
 else
-	AC_DEFINE(WITH_DHCPCD, FALSE, [Define if you have dhcpcd])
+	AC_DEFINE(WITH_DHCPCD, 0, [Define if you have dhcpcd])
 fi
+
+AC_ARG_WITH(config-dhcp-default, AS_HELP_STRING([--with-config-dhcp-default=dhclient|dhcpcd|internal], [Default configuration option for main.dhcp setting, used as fallback if the configuration option is unset]), [config_dhcp_default="$withval"], [config_dhcp_default=""])
+if test "$config_dhcp_default" = yes -o "$config_dhcp_default" = no; then
+	config_dhcp_default=''
+fi
+test -z "$config_dhcp_default" -a "$with_dhclient" != "no" && config_dhcp_default='dhclient'
+test -z "$config_dhcp_default" -a "$with_dhcpcd"   != "no" && config_dhcp_default='dhcpcd'
+test -z "$config_dhcp_default"                             && config_dhcp_default='internal'
+AC_DEFINE_UNQUOTED(NM_CONFIG_DEFAULT_MAIN_DHCP, "$config_dhcp_default", [Default configuration option for main.dhcp setting])
+AC_SUBST(NM_CONFIG_DEFAULT_MAIN_DHCP, $config_dhcp_default)
 
 # resolvconf and netconfig support
 AC_ARG_WITH(resolvconf, AS_HELP_STRING([--with-resolvconf=yes|no|path], [Enable resolvconf support]))
@@ -794,6 +824,7 @@ AC_ARG_WITH(netconfig, AS_HELP_STRING([--with-netconfig=yes|no], [Enable SUSE ne
 AC_ARG_WITH(config-dns-rc-manager-default, AS_HELP_STRING([--with-config-dns-rc-manager-default=symlink|file|netconfig|resolvconf], [Configure default value for main.rc-manager setting]), [config_dns_rc_manager_default=$withval])
 if test "$config_dns_rc_manager_default" != symlink -a \
         "$config_dns_rc_manager_default" != file -a \
+        "$config_dns_rc_manager_default" != "" -a \
         "$config_dns_rc_manager_default" != netconfig -a \
         "$config_dns_rc_manager_default" != resolvconf; then
 	AC_MSG_WARN([Unknown --with-config-dns-rc-manager-default=$config_dns_rc_manager_default setting.])
@@ -825,8 +856,8 @@ fi
 if test "$with_netconfig" != "no"; then
 	AC_DEFINE_UNQUOTED(NETCONFIG_PATH, "$with_netconfig", [Path to netconfig])
 fi
-AC_DEFINE_UNQUOTED(NM_CONFIG_DEFAULT_DNS_RC_MANAGER, "$config_dns_rc_manager_default", [Default value for main.rc-manager setting (--with-config-dns-rc-manager-default)])
-AC_SUBST(NM_CONFIG_DEFAULT_DNS_RC_MANAGER, $config_dns_rc_manager_default)
+AC_DEFINE_UNQUOTED(NM_CONFIG_DEFAULT_MAIN_RC_MANAGER, "$config_dns_rc_manager_default", [Default value for main.rc-manager setting (--with-config-dns-rc-manager-default)])
+AC_SUBST(NM_CONFIG_DEFAULT_MAIN_RC_MANAGER, $config_dns_rc_manager_default)
 
 # iptables path
 AC_ARG_WITH(iptables, AS_HELP_STRING([--with-iptables=/path/to/iptables], [path to iptables]))
@@ -1022,6 +1053,7 @@ dnl Vala bindings
 dnl -------------------------
 
 VAPIGEN_CHECK(0.17.1.24)
+AC_CONFIG_COMMANDS([vapi], [$MKDIR_P vapi])
 
 # Tests, utilities and documentation
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests=root|yes|no], [Build NetworkManager tests (default: yes)]))
@@ -1048,10 +1080,7 @@ else
 		with_valgrind_suppressions='$(top_srcdir)/valgrind.suppressions'
 	fi
 fi
-AS_IF([test "$with_valgrind" != "no"],
-	AC_SUBST(VALGRIND_RULES, 'LOG_COMPILER = "$(top_srcdir)/tools/run-test-valgrind.sh" --called-from-make "$(LIBTOOL)" "$(with_valgrind)" '"$with_valgrind_suppressions"),
-	AC_SUBST(VALGRIND_RULES, []))
-AM_CONDITIONAL(WITH_VALGRIND, test "${with_valgrind}" != "no")
+AC_SUBST(NM_LOG_COMPILER, 'LOG_COMPILER = "$(top_srcdir)/tools/run-nm-test.sh" --called-from-make "$(LIBTOOL)" "$(with_valgrind)" "'"$with_valgrind_suppressions"'" --launch-dbus=auto')
 
 GTK_DOC_CHECK(1.0)
 
@@ -1071,32 +1100,32 @@ if test "$enable_gtk_doc" != "yes" \
 fi
 AM_CONDITIONAL(INSTALL_PREGEN_MANPAGES, test "x${install_pregen_manpages}" = "xyes")
 
+AM_PATH_PYTHON([], [], [PYTHON=python])
+AC_SUBST(PYTHON, [$PYTHON])
+AC_DEFINE_UNQUOTED(TEST_NM_PYTHON, "$PYTHON", [Define python path for test binary])
+
 # check if we can build setting property documentation
-if test -n "$INTROSPECTION_MAKEFILE" -a "$enable_gtk_doc" = "yes"; then
+build_setting_docs=no
+if test -n "$INTROSPECTION_MAKEFILE"; then
     # If g-i is installed we know we have python, but we might not have pygobject
-    if python -c 'from gi.repository import GObject' >& /dev/null; then
-        have_pyobject=yes
+    if ! "$PYTHON" -c 'from gi.repository import GObject' >& /dev/null; then
+        AC_MSG_ERROR(["--enable-introspection aims to build the settings documentation. This requires GObject introspection for python (pygobject)])
     fi
 
-    # gtk-doc depends on perl, but we can check for it anyway
     AC_PATH_PROG(PERL, perl, no)
-    # check for needed perl modules (use YAML; YAML::XS is better, but may not be so widespread)
-    required_perl_modules="YAML"
-    for module in $required_perl_modules; do
-      AC_MSG_CHECKING([checking for perl module '$module'])
-      if ${PERL} -e 'use '$module 2>/dev/null ; then
-          AC_MSG_RESULT([Ok])
-          have_perl_modules=yes
-      else
-          AC_MSG_RESULT([Failed])
-          AC_MSG_ERROR([You must have Perl modules to build settings plugin docs: $required_perl_modules.])
-      fi
-    done
+    AC_PATH_PROG(XSLTPROC, xsltproc, no)
 
-    if test "$have_pyobject" = "yes" -a "$have_perl_modules" = "yes"; then
-        AC_DEFINE(BUILD_SETTING_DOCS, [1], [Define if you we can build nm-setting-docs.xml, nm-keyfile-docs.xml and nm-ifcfg-rh-docs.xml])
+    have_introspection=yes
+    if test "$enable_gtk_doc" = "yes"; then
         build_setting_docs=yes
     fi
+else
+    if test "$enable_gtk_doc" = "yes"; then
+        # large parts of the documentation require introspection/pygobject to extract
+        # the documentation out of the source files. You cannot enable gtk-doc without alone.
+        AC_MSG_ERROR(["--with-gtk-doc requires --enable-introspection"])
+    fi
+    have_introspection=no
 fi
 
 # check for pre-built setting docs
@@ -1104,9 +1133,7 @@ if test "$build_setting_docs" != "yes" \
 	-a -f man/nm-settings.xml \
 	-a -f man/nm-settings-keyfile.xml \
 	-a -f man/nm-settings-ifcfg-rh.xml \
-	-a -f docs/api/settings-spec.xml \
-	-a -f clients/cli/settings-docs.c; then
-    AC_DEFINE(HAVE_SETTING_DOCS, [1], [Define if you have pre-built settings docs])
+	-a -f docs/api/settings-spec.xml; then
     have_setting_docs=yes
 fi
 
@@ -1115,69 +1142,14 @@ AM_CONDITIONAL(SETTING_DOCS_AVAILABLE, test "$build_setting_docs" = "yes" -o "$h
 
 AC_CONFIG_FILES([
 Makefile
-shared/Makefile
 shared/nm-version-macros.h
-src/Makefile
-src/tests/Makefile
-src/tests/config/Makefile
-src/dhcp-manager/Makefile
-src/dhcp-manager/tests/Makefile
-src/dnsmasq-manager/tests/Makefile
-src/supplicant-manager/tests/Makefile
-src/supplicant-manager/tests/certs/Makefile
-src/ppp-manager/Makefile
-src/settings/plugins/Makefile
-src/settings/plugins/ifupdown/Makefile
-src/settings/plugins/ifupdown/tests/Makefile
-src/settings/plugins/ifnet/Makefile
-src/settings/plugins/ifnet/tests/Makefile
-src/settings/plugins/ifcfg-rh/Makefile
-src/settings/plugins/ifcfg-rh/tests/Makefile
-src/settings/plugins/ifcfg-rh/tests/network-scripts/Makefile
-src/settings/plugins/ibft/Makefile
-src/settings/plugins/ibft/tests/Makefile
-src/settings/plugins/keyfile/Makefile
-src/settings/plugins/keyfile/tests/Makefile
-src/settings/plugins/keyfile/tests/keyfiles/Makefile
-src/platform/Makefile
-src/platform/tests/Makefile
-src/rdisc/Makefile
-src/rdisc/tests/Makefile
-src/devices/Makefile
-src/devices/tests/Makefile
-src/devices/adsl/Makefile
-src/devices/bluetooth/Makefile
-src/devices/team/Makefile
-src/devices/wifi/Makefile
-src/devices/wifi/tests/Makefile
-src/devices/wwan/Makefile
-libnm-core/Makefile
-libnm-core/tests/Makefile
 libnm/libnm.pc
-libnm/Makefile
-libnm/tests/Makefile
 libnm-util/libnm-util.pc
-libnm-util/Makefile
-libnm-util/tests/Makefile
 libnm-glib/libnm-glib.pc
 libnm-glib/libnm-glib-vpn.pc
-libnm-glib/Makefile
-libnm-glib/tests/Makefile
-callouts/Makefile
-callouts/tests/Makefile
-tools/Makefile
-clients/Makefile
-clients/cli/Makefile
-clients/tui/Makefile
-clients/tui/newt/Makefile
-introspection/Makefile
-man/Makefile
 man/common.ent
 po/Makefile.in
-policy/Makefile
-policy/org.freedesktop.NetworkManager.policy.in
-data/Makefile
-docs/Makefile
+data/org.freedesktop.NetworkManager.policy.in
 docs/api/Makefile
 docs/api/version.xml
 docs/libnm-glib/Makefile
@@ -1187,22 +1159,7 @@ docs/libnm-util/version.xml
 docs/libnm/Makefile
 docs/libnm/version.xml
 NetworkManager.pc
-examples/Makefile
-examples/shell/Makefile
-examples/python/Makefile
-examples/python/dbus/Makefile
-examples/python/gi/Makefile
-examples/python/python-networkmanager/Makefile
-examples/ruby/Makefile
-examples/lua/Makefile
-examples/lua/lgi/Makefile
-examples/C/Makefile
-examples/C/glib/Makefile
-examples/C/qt/Makefile
-examples/dispatcher/Makefile
-vapi/Makefile
 ])
-AC_CONFIG_SUBDIRS([libndp])
 AC_OUTPUT
 
 # Print build configuration
@@ -1264,13 +1221,16 @@ echo "  netconfig: ${with_netconfig}"
 echo "  config-dns-rc-manager-default: ${config_dns_rc_manager_default}"
 echo
 
-echo "DHCP clients:"
+echo "DHCP clients (default $config_dhcp_default):"
 echo "  dhclient: $with_dhclient"
 echo "  dhcpcd: $with_dhcpcd"
+echo "  dhcpcd-supports-ipv6: $with_dhcpcd_supports_ipv6"
 echo
 
 echo "Miscellaneous:"
 echo "  documentation: $enable_gtk_doc"
+echo "  documentation-settings: $build_setting_docs"
+echo "  introspection: $have_introspection"
 echo "  tests: $enable_tests"
 echo "  more-asserts: $more_asserts"
 echo "  valgrind: $with_valgrind   $with_valgrind_suppressions"

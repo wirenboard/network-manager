@@ -25,10 +25,10 @@
 #include <net/ethernet.h>
 #include <errno.h>
 
-#include "nm-platform.h"
+#include "platform/nm-platform.h"
 #include "nm-utils.h"
 
-#include "sd-lldp.h"
+#include "systemd/nm-sd.h"
 
 #define MAX_NEIGHBORS         4096
 #define MIN_UPDATE_INTERVAL_NS (2 * NM_UTILS_NS_PER_SECOND)
@@ -66,6 +66,12 @@ typedef struct {
 	};
 } LldpAttrData;
 
+/*****************************************************************************/
+
+NM_GOBJECT_PROPERTIES_DEFINE (NMLldpListener,
+	PROP_NEIGHBORS,
+);
+
 typedef struct {
 	char         *iface;
 	int           ifindex;
@@ -79,13 +85,20 @@ typedef struct {
 	GVariant     *variant;
 } NMLldpListenerPrivate;
 
-NM_GOBJECT_PROPERTIES_DEFINE (NMLldpListener,
-	PROP_NEIGHBORS,
-);
+struct _NMLldpListener {
+	GObject parent;
+	NMLldpListenerPrivate _priv;
+};
+
+struct _NMLldpListenerClass {
+	GObjectClass parent;
+};
 
 G_DEFINE_TYPE (NMLldpListener, nm_lldp_listener, G_TYPE_OBJECT)
 
-#define NM_LLDP_LISTENER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_LLDP_LISTENER, NMLldpListenerPrivate))
+#define NM_LLDP_LISTENER_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMLldpListener, NM_IS_LLDP_LISTENER)
+
+/*****************************************************************************/
 
 typedef struct {
 	guint8 chassis_id_type;
@@ -902,8 +915,6 @@ static void
 nm_lldp_listener_class_init (NMLldpListenerClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-	g_type_class_add_private (klass, sizeof (NMLldpListenerPrivate));
 
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;

@@ -32,7 +32,6 @@
 #define NM_DEVICE_IP_TUNNEL_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_DEVICE_IP_TUNNEL, NMDeviceIPTunnelClass))
 
 #define NM_DEVICE_IP_TUNNEL_MODE                "mode"
-#define NM_DEVICE_IP_TUNNEL_PARENT              "parent"
 #define NM_DEVICE_IP_TUNNEL_LOCAL               "local"
 #define NM_DEVICE_IP_TUNNEL_REMOTE              "remote"
 #define NM_DEVICE_IP_TUNNEL_TTL                 "ttl"
@@ -43,13 +42,11 @@
 #define NM_DEVICE_IP_TUNNEL_ENCAPSULATION_LIMIT "encapsulation-limit"
 #define NM_DEVICE_IP_TUNNEL_FLOW_LABEL          "flow-label"
 
-typedef struct {
-	NMDevice parent;
-} NMDeviceIPTunnel;
+/* defined in the parent class, but exposed on D-Bus by the subclass. */
+#define NM_DEVICE_IP_TUNNEL_PARENT              NM_DEVICE_PARENT
 
-typedef struct {
-	NMDeviceClass parent;
-} NMDeviceIPTunnelClass;
+typedef struct _NMDeviceIPTunnel NMDeviceIPTunnel;
+typedef struct _NMDeviceIPTunnelClass NMDeviceIPTunnelClass;
 
 GType nm_device_ip_tunnel_get_type (void);
 

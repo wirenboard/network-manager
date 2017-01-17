@@ -1922,6 +1922,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_CONNECTION_TIMESTAMP,            NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_AUTOCONNECT,          NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY, NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES,  NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_READ_ONLY,            NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_PERMISSIONS,          NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_ZONE,                 NM_SETTING_DIFF_RESULT_IN_A },
@@ -3318,7 +3319,7 @@ test_setting_old_uuid (void)
 	nmtst_assert_setting_verifies (NM_SETTING (setting));
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 test_connection_normalize_uuid (void)
@@ -3335,7 +3336,7 @@ test_connection_normalize_uuid (void)
 	nmtst_assert_connection_verifies_after_normalization (con, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_MISSING_PROPERTY);
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 /*
  * Test normalization of interface-name
@@ -3900,6 +3901,7 @@ test_connection_normalize_gateway_never_default (void)
 
 	nm_connection_add_setting (con, (NMSetting *) s_ip4);
 	nm_connection_add_setting (con, (NMSetting *) s_ip6);
+	nm_connection_add_setting (con, nm_setting_proxy_new ());
 
 	nmtst_assert_connection_verifies_without_normalization (con);
 	g_assert_cmpstr ("1.1.1.254", ==, nm_setting_ip_config_get_gateway (s_ip4));
@@ -3942,7 +3944,7 @@ test_connection_normalize_may_fail (void)
 	nm_connection_add_setting (con, (NMSetting *) s_ip4);
 	nm_connection_add_setting (con, (NMSetting *) s_ip6);
 
-	nmtst_assert_connection_verifies_without_normalization (con);
+	nmtst_assert_connection_verifies_and_normalizable (con);
 
 	/* Now set method=disabled/ignore and check that may-fail becomes TRUE
 	 * after normalization
@@ -3958,6 +3960,59 @@ test_connection_normalize_may_fail (void)
 	nmtst_connection_normalize (con);
 	g_assert_cmpint (nm_setting_ip_config_get_may_fail (s_ip4), ==, TRUE);
 	g_assert_cmpint (nm_setting_ip_config_get_may_fail (s_ip6), ==, TRUE);
+}
+
+static void
+test_connection_normalize_shared_addresses (void)
+{
+	gs_unref_object NMConnection *con = NULL;
+	NMSettingIPConfig *s_ip4, *s_ip6;
+	NMIPAddress *addr;
+	gs_free_error GError *error = NULL;
+
+	con = nmtst_create_minimal_connection ("test1", NULL, NM_SETTING_WIRED_SETTING_NAME, NULL);
+	nmtst_assert_connection_verifies_and_normalizable (con);
+
+	s_ip4 = (NMSettingIPConfig *) nm_setting_ip4_config_new ();
+	g_object_set (G_OBJECT (s_ip4),
+	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_SHARED,
+	              NULL);
+
+	addr = nm_ip_address_new (AF_INET, "1.1.1.1", 24, &error);
+	g_assert_no_error (error);
+	nm_setting_ip_config_add_address (s_ip4, addr);
+	nm_ip_address_unref (addr);
+
+	s_ip6 = (NMSettingIPConfig *) nm_setting_ip6_config_new ();
+	g_object_set (s_ip6,
+	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_AUTO,
+	              NULL);
+
+	nm_connection_add_setting (con, (NMSetting *) s_ip4);
+	nm_connection_add_setting (con, (NMSetting *) s_ip6);
+
+	nmtst_assert_connection_verifies_and_normalizable (con);
+
+	/* Now we add other addresses and check that they are
+	 * removed during normalization
+	 * */
+	addr = nm_ip_address_new (AF_INET, "2.2.2.2", 24, &error);
+	g_assert_no_error (error);
+	nm_setting_ip_config_add_address (s_ip4, addr);
+	nm_ip_address_unref (addr);
+
+	addr = nm_ip_address_new (AF_INET, "3.3.3.3", 24, &error);
+	g_assert_no_error (error);
+	nm_setting_ip_config_add_address (s_ip4, addr);
+	nm_ip_address_unref (addr);
+
+	nmtst_assert_connection_verifies_after_normalization (con,
+	                                                      NM_CONNECTION_ERROR,
+	                                                      NM_CONNECTION_ERROR_INVALID_PROPERTY);
+	nmtst_connection_normalize (con);
+	g_assert_cmpuint (nm_setting_ip_config_get_num_addresses (s_ip4), ==, 1);
+	addr = nm_setting_ip_config_get_address (s_ip4, 0);
+	g_assert_cmpstr (nm_ip_address_get_address (addr), ==, "1.1.1.1");
 }
 
 static void
@@ -4239,6 +4294,10 @@ test_hexstr2bin (void)
 		{ "0xccddeeff",           { 0xcc, 0xdd, 0xee, 0xff },                         4 },
 		{ "1:2:66:77:80",         { 0x01, 0x02, 0x66, 0x77, 0x80 },                   5 },
 		{ "e",                    { 0x0e },                                           1 },
+		{ "ef",                   { 0xef },                                           1 },
+		{ "efa" },
+		{ "efad",                 { 0xef, 0xad },                                     2 },
+		{ "ef:a",                 { 0xef, 0x0a },                                     2 },
 		{ "aabb1199:" },
 		{ ":aabb1199" },
 		{ "aabb$$dd" },
@@ -4260,7 +4319,7 @@ test_hexstr2bin (void)
 	}
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 #define UUID_NIL        "00000000-0000-0000-0000-000000000000"
 #define UUID_NS_DNS     "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
@@ -4314,7 +4373,7 @@ test_nm_utils_uuid_generate_from_string (void)
 	_test_uuid (NM_UTILS_UUID_TYPE_VARIANT3, "002a0ada-f547-375a-bab5-896a11d1927e", "a\0b", 3, UUID_NS_DNS);
 }
 
-/*******************************************/
+/*****************************************************************************/
 
 static void
 __test_uuid (const char *expected_uuid, const char *str, gssize slen, char *uuid_test)
@@ -4361,7 +4420,7 @@ test_nm_utils_uuid_generate_from_strings (void)
 	_test_uuid ("dd265bf7-c05a-3037-9939-b9629858a477", "a\0b\0",   4, "a",  "b");
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 test_nm_utils_ascii_str_to_int64_check (const char *str, guint base, gint64 min,
@@ -4492,7 +4551,7 @@ test_nm_utils_ascii_str_to_int64 (void)
 	test_nm_utils_ascii_str_to_int64_do ("0x70",  0, G_MININT64, G_MAXINT64, -1, 0, 0x70);
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 test_nm_utils_strstrdictkey (void)
@@ -4540,7 +4599,7 @@ test_nm_utils_strstrdictkey (void)
 	}
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 test_nm_utils_dns_option_validate_do (char *option, gboolean ipv6, const NMUtilsDNSOptionDesc *descs,
@@ -4624,7 +4683,7 @@ test_nm_utils_dns_option_find_idx (void)
 	g_ptr_array_free (options, TRUE);
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 _json_config_check_valid (const char *conf, gboolean expected)
@@ -4632,7 +4691,7 @@ _json_config_check_valid (const char *conf, gboolean expected)
 	gs_free_error GError *error = NULL;
 	gboolean res;
 
-	res = _nm_utils_check_valid_json (conf, &error);
+	res = nm_utils_is_json_object (conf, &error);
 	g_assert_cmpint (res, ==, expected);
 	g_assert (res || error);
 }
@@ -4728,7 +4787,7 @@ test_nm_utils_team_config_equal (void)
 #endif
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED {
 	_DUMMY_1 = -1,
@@ -4825,7 +4884,7 @@ again:
 	}
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 test_g_ptr_array_insert (void)
@@ -4850,7 +4909,7 @@ test_g_ptr_array_insert (void)
 #endif
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static void
 test_g_hash_table_get_keys_as_array (void)
@@ -4885,7 +4944,7 @@ test_g_hash_table_get_keys_as_array (void)
 	g_hash_table_unref (table);
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static int
 _test_find_binary_search_cmp (gconstpointer a, gconstpointer b, gpointer dummy)
@@ -4907,9 +4966,9 @@ _test_find_binary_search_do (const int *array, gsize len)
 {
 	gsize i;
 	gssize idx;
-	gs_free gpointer *parray = g_new (gpointer, len);
-	const int needle = 0;
-	gpointer pneedle = GINT_TO_POINTER (needle);
+	gs_free gconstpointer *parray = g_new (gconstpointer, len);
+	const int NEEDLE = 0;
+	gconstpointer pneedle = GINT_TO_POINTER (NEEDLE);
 	gssize expected_result;
 
 	for (i = 0; i < len; i++)
@@ -4953,16 +5012,56 @@ _test_find_binary_search_do (const int *array, gsize len)
 		}
 	}
 }
+
+static void
+_test_find_binary_search_do_uint32 (const int *int_array, gsize len)
+{
+	gssize idx;
+	const int OFFSET = 100;
+	const int NEEDLE = 0 + OFFSET;
+	gssize expected_result = -1;
+	guint32 array[len];
+
+	/* the test data has negative values. Shift them... */
+	for (idx = 0; idx < len; idx++) {
+		int v = int_array[idx];
+
+		g_assert (v > -OFFSET);
+		g_assert (v < OFFSET);
+		g_assert (idx == 0 || v > int_array[idx - 1]);
+		array[idx] = (guint32) (int_array[idx] + OFFSET);
+		if (array[idx] == NEEDLE)
+			expected_result = idx;
+	}
+
+	idx = _nm_utils_array_find_binary_search (array,
+	                                          sizeof (guint32),
+	                                          len,
+	                                          &NEEDLE,
+	                                          nm_cmp_uint32_p_with_data,
+	                                          NULL);
+	if (expected_result >= 0)
+		g_assert_cmpint (expected_result, ==, idx);
+	else {
+		gssize idx2 = ~idx;
+		g_assert_cmpint (idx, <, 0);
+
+		g_assert (idx2 >= 0);
+		g_assert (idx2 <= len);
+		g_assert (idx2 - 1 < 0 || array[idx2 - 1] < NEEDLE);
+		g_assert (idx2 >= len || array[idx2] > NEEDLE);
+	}
+}
 #define test_find_binary_search_do(...) \
 	G_STMT_START { \
-		const int _array[] = { __VA_ARGS__ } ; \
+		const int _array[] = { __VA_ARGS__ }; \
 		_test_find_binary_search_do (_array, G_N_ELEMENTS (_array)); \
+		_test_find_binary_search_do_uint32 (_array, G_N_ELEMENTS (_array)); \
 	} G_STMT_END
 
 static void
 test_nm_utils_ptrarray_find_binary_search (void)
 {
-#define _NOT(idx) (~ ((gssize) (idx)))
 	test_find_binary_search_do (            0);
 	test_find_binary_search_do (        -1, 0);
 	test_find_binary_search_do (    -2, -1, 0);
@@ -4989,7 +5088,7 @@ test_nm_utils_ptrarray_find_binary_search (void)
 	test_find_binary_search_do (-3, -2, -1, 1, 2, 3, 4);
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 static void
 test_nm_utils_enum_from_str_do (GType type, const char *str,
                                 gboolean exp_result, int exp_flags,
@@ -5084,7 +5183,7 @@ static void test_nm_utils_enum (void)
 	test_nm_utils_enum_get_values_do (color_flags, 0, G_MAXINT, "blue,red,green");
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static int
 _test_nm_in_set_get (int *call_counter, gboolean allow_called, int value)
@@ -5176,7 +5275,7 @@ test_nm_in_set (void)
 #undef _ASSERT
 }
 
-/******************************************************************************/
+/*****************************************************************************/
 
 static const char *
 _test_nm_in_set_getstr (int *call_counter, gboolean allow_called, const char *value)
@@ -5304,7 +5403,46 @@ test_nm_in_strset (void)
 #undef _ASSERT
 }
 
-/******************************************************************************/
+/*****************************************************************************/
+
+static gboolean
+do_test_nm_set_out_called (gint *call_count)
+{
+	(*call_count)++;
+	return TRUE;
+}
+
+static void
+test_nm_set_out (void)
+{
+	gboolean val;
+	gboolean *p_val;
+	int call_count;
+
+	/* NM_SET_OUT() has an unexpected non-function like behavior
+	 * wrt. side-effects of the value argument. Test it */
+
+	p_val = &val;
+	call_count = 0;
+	NM_SET_OUT (p_val, do_test_nm_set_out_called (&call_count));
+	g_assert_cmpint (call_count, ==, 1);
+
+	p_val = NULL;
+	call_count = 0;
+	NM_SET_OUT (p_val, do_test_nm_set_out_called (&call_count));
+	g_assert_cmpint (call_count, ==, 0);
+
+	/* test that we successfully re-defined _G_BOOLEAN_EXPR() */
+#define _T1(a) \
+	({ \
+		g_assert (a > 2); \
+		a; \
+	})
+	g_assert (_T1 (3) > 1);
+#undef _T1
+}
+
+/*****************************************************************************/
 
 NMTST_DEFINE ();
 
@@ -5368,6 +5506,7 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_connection_normalize_infiniband_mtu", test_connection_normalize_infiniband_mtu);
 	g_test_add_func ("/core/general/test_connection_normalize_gateway_never_default", test_connection_normalize_gateway_never_default);
 	g_test_add_func ("/core/general/test_connection_normalize_may_fail", test_connection_normalize_may_fail);
+	g_test_add_func ("/core/general/test_connection_normalize_shared_addresses", test_connection_normalize_shared_addresses);
 
 	g_test_add_func ("/core/general/test_setting_connection_permissions_helpers", test_setting_connection_permissions_helpers);
 	g_test_add_func ("/core/general/test_setting_connection_permissions_property", test_setting_connection_permissions_property);
@@ -5427,6 +5566,7 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/_nm_utils_validate_json", test_nm_utils_check_valid_json);
 	g_test_add_func ("/core/general/_nm_utils_team_config_equal", test_nm_utils_team_config_equal);
 	g_test_add_func ("/core/general/test_nm_utils_enum", test_nm_utils_enum);
+	g_test_add_func ("/core/general/nm-set-out", test_nm_set_out);
 
 	return g_test_run ();
 }

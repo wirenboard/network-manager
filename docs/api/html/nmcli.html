@@ -251,7 +251,7 @@
 <tbody>
 <tr>
 <td><p><span class="term"><span class="command"><strong>on</strong></span>, </span><span class="term"><span class="command"><strong>off</strong></span></span></p></td>
-<td><p>Enable enable or disable networking control by NetworkManager.
+<td><p>Enable or disable networking control by NetworkManager.
           All interfaces managed by NetworkManager are deactivated when networking
           is disabled.</p></td>
 </tr>
@@ -1195,9 +1195,8 @@
 <a name="property_aliases"></a><h2>Property Aliases</h2>
 <p>Apart from the property-value pairs, <span class="command"><strong>connection add</strong></span>,
     <span class="command"><strong>connection modify</strong></span> and <span class="command"><strong>device modify</strong></span> also
-    accept short forms of some properties. They exist for convenience and compatiblity
-    with older versions of <span class="command"><strong>nmcli</strong></span> that could not accept the raw
-    properties.</p>
+    accept short forms of some properties. They exist for convenience. Some aliases can
+    affect multiple connection properties at once.</p>
 <p>The overview of the aliases is below. An actual connection type is used to
    disambiguate these options from the options of the same name that are valid for
    multiple connection types (such as <code class="option">mtu</code>).</p>
@@ -1555,14 +1554,17 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 <colgroup>
 <col>
 <col>
+<col>
 </colgroup>
 <thead><tr>
 <th>Alias</th>
 <th>Property</th>
+<th>Note</th>
 </tr></thead>
 <tbody><tr>
 <td align="left">config</td>
 <td align="left"><a class="link" href="nm-settings.html#nm-settings.property.team.config">team.config</a></td>
+<td align="left">Either a filename or a team configuration in JSON format. To enforce one or the other, the value can be prefixed with "file://" or "json://".</td>
 </tr></tbody>
 </table></div>
 </div>
@@ -1572,14 +1574,17 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 <colgroup>
 <col>
 <col>
+<col>
 </colgroup>
 <thead><tr>
 <th>Alias</th>
 <th>Property</th>
+<th>Note</th>
 </tr></thead>
 <tbody><tr>
 <td align="left">config</td>
 <td align="left"><a class="link" href="nm-settings.html#nm-settings.property.team-port.config">team-port.config</a></td>
+<td align="left">Either a filename or a team configuration in JSON format. To enforce one or the other, the value can be prefixed with "file://" or "json://".</td>
 </tr></tbody>
 </table></div>
 </div>
@@ -1879,9 +1884,12 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 <tbody>
 <tr>
 <td align="left">ip4</td>
-<td align="left"><a class="link" href="nm-settings.html#nm-settings.property.ipv4.addresses">ipv4.addresses</a></td>
+<td align="left">
+<a class="link" href="nm-settings.html#nm-settings.property.ipv4.addresses">ipv4.addresses</a>
+                            <a class="link" href="nm-settings.html#nm-settings.property.ipv4.method">ipv4.method</a>
+</td>
 <td align="left" valign="top">This option can be specified multiple times.
-It's equivalent of using <code class="literal">+ipv4.addresses</code> syntax.</td>
+It's equivalent of using <code class="literal">+ipv4.addresses</code> syntax and setting <code class="literal">ipv4.method</code> to <code class="literal">manual</code>.</td>
 </tr>
 <tr>
 <td align="left">gw4</td>
@@ -1907,9 +1915,12 @@ It's equivalent of using <code class="literal">+ipv4.addresses</code> syntax.</t
 <tbody>
 <tr>
 <td align="left">ip6</td>
-<td align="left"><a class="link" href="nm-settings.html#nm-settings.property.ipv6.addresses">ipv6.addresses</a></td>
+<td align="left">
+<a class="link" href="nm-settings.html#nm-settings.property.ipv6.addresses">ipv6.addresses</a>
+                            <a class="link" href="nm-settings.html#nm-settings.property.ipv6.method">ipv6.method</a>
+</td>
 <td align="left" valign="top">This option can be specified multiple times.
-It's equivalent of using <code class="literal">+ipv6.addresses</code> syntax.</td>
+It's equivalent of using <code class="literal">+ipv6.addresses</code> syntax and setting <code class="literal">ipv6.method</code> to <code class="literal">manual</code>.</td>
 </tr>
 <tr>
 <td align="left">gw6</td>
@@ -1917,6 +1928,26 @@ It's equivalent of using <code class="literal">+ipv6.addresses</code> syntax.</t
 <td align="left"> </td>
 </tr>
 </tbody>
+</table></div>
+</div>
+<br class="table-break"><div class="table">
+<a name="id-1.2.2.14.27"></a><p class="title"><b>Table 24. Proxy options</b></p>
+<div class="table-contents"><table class="table" summary="Proxy options" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Alias</th>
+<th>Property</th>
+<th>Note</th>
+</tr></thead>
+<tbody><tr>
+<td align="left"> </td>
+<td align="left"><a class="link" href="nm-settings.html#nm-settings.property.proxy.pac-script">proxy.pac-script</a></td>
+<td align="left" valign="top">Read the java script pac-script from file or pass it directly on the command line. Prefix the value with "file://" or "js://" to force one or the other.</td>
+</tr></tbody>
 </table></div>
 </div>
 <br class="table-break">

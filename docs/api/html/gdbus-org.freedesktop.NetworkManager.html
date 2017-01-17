@@ -98,6 +98,7 @@
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.ActivatingConnection" title='The "ActivatingConnection" property'>ActivatingConnection</a>     readable   o
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.Startup" title='The "Startup" property'>Startup</a>                  readable   b
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.Version" title='The "Version" property'>Version</a>                  readable   s
+<a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.Capabilities" title='The "Capabilities" property'>Capabilities</a>             readable   au
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.State" title='The "State" property'>State</a>                    readable   u
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.Connectivity" title='The "Connectivity" property'>Connectivity</a>             readable   u
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.GlobalDnsConfiguration" title='The "GlobalDnsConfiguration" property'>GlobalDnsConfiguration</a>   readwrite  a{sv}
@@ -477,7 +478,7 @@ CheckpointCreate (IN  ao devices,
                   IN  u  flags,
                   OUT o  checkpoint);
 </pre>
-<p>        <em class="parameter"><code>devices</code></em>: a list of device paths for which a checkpoint should be created. An empty list means all managed devices.
+<p>        <em class="parameter"><code>devices</code></em>: a list of device paths for which a checkpoint should be created. An empty list means all devices.
         <em class="parameter"><code>rollback_timeout</code></em>: the time in seconds until NetworkManager will automatically rollback to the checkpoint. Set to zero for infinite.
         <em class="parameter"><code>flags</code></em>: optional flags that influence the creation.
         <em class="parameter"><code>checkpoint</code></em>: on success, returns the path of the checkpoint.
@@ -809,6 +810,17 @@ Startup  readable   b
 Version  readable   s
 </pre>
 <p>        NetworkManager version.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gdbus-property-org-freedesktop-NetworkManager.Capabilities"></a><h3>The "Capabilities" property</h3>
+<pre class="programlisting">
+Capabilities  readable   au
+</pre>
+<p>        The current set of capabilities. See <a class="link" href="nm-dbus-types.html#NMCapability" title="enum NMCapability">NMCapability</a> for currently
+        defined capability numbers. The array is guaranteed to
+        be sorted in ascending order without duplicates.
 </p>
 </div>
 <hr>

@@ -28,13 +28,15 @@
 
 #include "nm-glib.h"
 
-/********************************************************/
+/*****************************************************************************/
 
 #define _nm_packed __attribute__ ((packed))
 #define _nm_unused __attribute__ ((unused))
 #define _nm_pure   __attribute__ ((pure))
 #define _nm_const  __attribute__ ((const))
 #define _nm_printf(a,b) __attribute__ ((__format__ (__printf__, a, b)))
+
+#define nm_offsetofend(t,m) (G_STRUCT_OFFSET (t,m) + sizeof (((t *) NULL)->m))
 
 #define nm_auto(fcn) __attribute__ ((cleanup(fcn)))
 
@@ -85,6 +87,13 @@ _nm_auto_fclose_impl (FILE **pfd)
 }
 #define nm_auto_fclose nm_auto(_nm_auto_fclose_impl)
 
+static inline void
+_nm_auto_protect_errno (int *p_saved_errno)
+{
+	errno = *p_saved_errno;
+}
+#define NM_AUTO_PROTECT_ERRNO(errsv_saved) nm_auto(_nm_auto_protect_errno) _nm_unused const int errsv_saved = (errno)
+
 /*****************************************************************************/
 
 /* http://stackoverflow.com/a/11172679 */
@@ -104,7 +113,7 @@ _nm_auto_fclose_impl (FILE **pfd)
                 TWOORMORE, TWOORMORE, TWOORMORE, ONE, throwaway)
 #define __NM_UTILS_MACRO_REST_SELECT_20TH(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, ...) a20
 
-/********************************************************/
+/*****************************************************************************/
 
 /* http://stackoverflow.com/a/2124385/354393 */
 
@@ -129,7 +138,7 @@ _nm_auto_fclose_impl (FILE **pfd)
          19,18,17,16,15,14,13,12,11,10, \
          9,8,7,6,5,4,3,2,1,0
 
-/********************************************************/
+/*****************************************************************************/
 
 #if defined (__GNUC__)
 #define _NM_PRAGMA_WARNING_DO(warning)       G_STRINGIFY(GCC diagnostic ignored warning)
@@ -165,7 +174,7 @@ _nm_auto_fclose_impl (FILE **pfd)
 #define NM_PRAGMA_WARNING_REENABLE
 #endif
 
-/********************************************************/
+/*****************************************************************************/
 
 /**
  * NM_G_ERROR_MSG:
@@ -185,11 +194,16 @@ NM_G_ERROR_MSG (GError *error)
 	return error ? (error->message ? : "(null)") : "(no-error)"; \
 }
 
-/********************************************************/
+/*****************************************************************************/
 
 /* macro to return strlen() of a compile time string. */
 #define NM_STRLEN(str)     ( sizeof ("" str) - 1 )
 
+/* Note: @value is only evaluated when *out_val is present.
+ * Thus,
+ *    NM_SET_OUT (out_str, g_strdup ("hallo"));
+ * does the right thing.
+ */
 #define NM_SET_OUT(out_val, value) \
 	G_STMT_START { \
 		typeof(*(out_val)) *_out_val = (out_val); \
@@ -199,7 +213,7 @@ NM_G_ERROR_MSG (GError *error)
 		} \
 	} G_STMT_END
 
-/********************************************************/
+/*****************************************************************************/
 
 #define _NM_IN_SET_EVAL_1( op, _x, y)           (_x == (y))
 #define _NM_IN_SET_EVAL_2( op, _x, y, ...)      (_x == (y)) op _NM_IN_SET_EVAL_1  (op, _x, __VA_ARGS__)
@@ -235,7 +249,7 @@ NM_G_ERROR_MSG (GError *error)
  * side-effects. */
 #define NM_IN_SET_SE(x, ...)            _NM_IN_SET_EVAL_N(|, x, NM_NARG (__VA_ARGS__), __VA_ARGS__)
 
-/********************************************************/
+/*****************************************************************************/
 
 static inline gboolean
 _NM_IN_STRSET_streq (const char *x, const char *s)
@@ -279,6 +293,52 @@ _NM_IN_STRSET_streq (const char *x, const char *s)
  * side-effects. */
 #define NM_IN_STRSET_SE(x, ...)            _NM_IN_STRSET_EVAL_N(|, x, NM_NARG (__VA_ARGS__), __VA_ARGS__)
 
+#define NM_STRCHAR_ALL(str, ch_iter, predicate) \
+	({ \
+		gboolean _val = TRUE; \
+		const char *_str = (str); \
+		\
+		if (_str) { \
+			for (;;) { \
+				const char ch_iter = _str[0]; \
+				\
+				if (ch_iter != '\0') { \
+					if (predicate) {\
+						_str++; \
+						continue; \
+					} \
+					_val = FALSE; \
+				} \
+				break; \
+			} \
+		} \
+		_val; \
+	})
+
+#define NM_STRCHAR_ANY(str, ch_iter, predicate) \
+	({ \
+		gboolean _val = FALSE; \
+		const char *_str = (str); \
+		\
+		if (_str) { \
+			for (;;) { \
+				const char ch_iter = _str[0]; \
+				\
+				if (ch_iter != '\0') { \
+					if (predicate) { \
+						; \
+					} else { \
+						_str++; \
+						continue; \
+					} \
+					_val = TRUE; \
+				} \
+				break; \
+			} \
+		} \
+		_val; \
+	})
+
 /*****************************************************************************/
 
 #define nm_streq(s1, s2)  (strcmp (s1, s2) == 0)
@@ -296,6 +356,25 @@ static inline char *
 nm_strdup_not_empty (const char *str)
 {
 	return str && str[0] ? g_strdup (str) : NULL;
+}
+
+static inline char *
+nm_str_realloc (char *str)
+{
+	gs_free char *s = str;
+
+	/* Returns a new clone of @str and frees @str. The point is that @str
+	 * possibly points to a larger chunck of memory. We want to freshly allocate
+	 * a buffer.
+	 *
+	 * We could use realloc(), but that might not do anything or leave
+	 * @str in its memory pool for chunks of a different size (bad for
+	 * fragmentation).
+	 *
+	 * This is only useful when we want to keep the buffer around for a long
+	 * time and want to re-allocate a more optimal buffer. */
+
+	return g_strdup (s);
 }
 
 /*****************************************************************************/
@@ -526,6 +605,18 @@ _NM_BACKPORT_SYMBOL_IMPL(VERSION, RETURN_TYPE, FUNC, _##FUNC##_##VERSION, ARGS_T
 
 /*****************************************************************************/
 
+#define nm_str_skip_leading_spaces(str) \
+	({ \
+		typeof (*(str)) *_str = (str); \
+		_nm_unused const char *_str_type_check = _str; \
+		\
+		if (_str) { \
+			while (g_ascii_isspace (_str[0])) \
+				_str++; \
+		} \
+		_str; \
+	})
+
 static inline char *
 nm_strstrip (char *str)
 {
@@ -561,6 +652,19 @@ nm_strcmp_p_with_data (gconstpointer a, gconstpointer b, gpointer user_data)
 	const char *s2 = *((const char **) b);
 
 	return strcmp (s1, s2);
+}
+
+static inline int
+nm_cmp_uint32_p_with_data (gconstpointer p_a, gconstpointer p_b, gpointer user_data)
+{
+	const guint32 a = *((const guint32 *) p_a);
+	const guint32 b = *((const guint32 *) p_b);
+
+	if (a < b)
+		return -1;
+	if (a > b)
+		return 1;
+	return 0;
 }
 
 /*****************************************************************************/
@@ -621,6 +725,21 @@ nm_decode_version (guint version, guint *major, guint *minor, guint *micro) {
 	*minor = (version & 0x0000FF00u) >>  8;
 	*micro = (version & 0x000000FFu);
 }
+
+/*****************************************************************************/
+
+/* taken from systemd's DECIMAL_STR_MAX()
+ *
+ * Returns the number of chars needed to format variables of the
+ * specified type as a decimal string. Adds in extra space for a
+ * negative '-' prefix (hence works correctly on signed
+ * types). Includes space for the trailing NUL. */
+#define NM_DECIMAL_STR_MAX(type) \
+    (2+(sizeof(type) <= 1 ? 3 : \
+        sizeof(type) <= 2 ? 5 : \
+        sizeof(type) <= 4 ? 10 : \
+        sizeof(type) <= 8 ? 20 : sizeof(int[-2*(sizeof(type) > 8)])))
+
 /*****************************************************************************/
 
 /* if @str is NULL, return "(null)". Otherwise, allocate a buffer using
@@ -654,23 +773,27 @@ nm_decode_version (guint version, guint *major, guint *minor, guint *micro) {
 
 #define nm_sprintf_buf(buf, format, ...) ({ \
 		char * _buf = (buf); \
+		int _buf_len; \
 		\
 		/* some static assert trying to ensure that the buffer is statically allocated.
 		 * It disallows a buffer size of sizeof(gpointer) to catch that. */ \
 		G_STATIC_ASSERT (G_N_ELEMENTS (buf) == sizeof (buf) && sizeof (buf) != sizeof (char *)); \
-		g_snprintf (_buf, sizeof (buf), \
-		            ""format"", ##__VA_ARGS__); \
+		_buf_len = g_snprintf (_buf, sizeof (buf), \
+		                       ""format"", ##__VA_ARGS__); \
+		nm_assert (_buf_len < sizeof (buf)); \
 		_buf; \
 	})
 
 #define nm_sprintf_bufa(n_elements, format, ...) \
 	({ \
 		char *_buf; \
+		int _buf_len; \
 		\
 		G_STATIC_ASSERT (sizeof (char[MAX ((n_elements), 1)]) == (n_elements)); \
 		_buf = g_alloca (n_elements); \
-		g_snprintf (_buf, n_elements, \
-		            ""format"", ##__VA_ARGS__); \
+		_buf_len = g_snprintf (_buf, (n_elements), \
+		                       ""format"", ##__VA_ARGS__); \
+		nm_assert (_buf_len < (n_elements)); \
 		_buf; \
 	})
 
@@ -720,6 +843,33 @@ nm_decode_version (guint version, guint *major, guint *minor, guint *micro) {
 #define true    1
 #define false   0
 #endif
+
+
+#ifdef _G_BOOLEAN_EXPR
+/* g_assert() uses G_LIKELY(), which in turn uses _G_BOOLEAN_EXPR().
+ * As glib's implementation uses a local variable _g_boolean_var_,
+ * we cannot do
+ *   g_assert (some_macro ());
+ * where some_macro() itself expands to ({g_assert(); ...}).
+ * In other words, you cannot have a g_assert() inside a g_assert()
+ * without getting a -Werror=shadow failure.
+ *
+ * Workaround that by re-defining _G_BOOLEAN_EXPR()
+ **/
+#undef  _G_BOOLEAN_EXPR
+#define __NM_G_BOOLEAN_EXPR_IMPL(v, expr) \
+	({ \
+		int NM_UNIQ_T(V, v); \
+		\
+		if (expr) \
+			NM_UNIQ_T(V, v) = 1; \
+		else \
+			NM_UNIQ_T(V, v) = 0; \
+		NM_UNIQ_T(V, v); \
+	})
+#define _G_BOOLEAN_EXPR(expr) __NM_G_BOOLEAN_EXPR_IMPL (NM_UNIQ, expr)
+#endif
+
 
 /*****************************************************************************/
 

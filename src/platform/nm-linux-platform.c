@@ -21,6 +21,7 @@
 
 #include "nm-linux-platform.h"
 
+#include <endian.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -51,19 +52,17 @@
 #include "wifi/wifi-utils-wext.h"
 #include "nm-utils/unaligned.h"
 
-#define offset_plus_sizeof(t,m) (offsetof (t,m) + sizeof (((t *) NULL)->m))
-
 #define VLAN_FLAG_MVRP 0x8
 
 /* nm-internal error codes for libnl. Make sure they don't overlap. */
 #define _NLE_NM_NOBUFS 500
 #define _NLE_MSG_TRUNC 501
 
-/*********************************************************************************************/
+/*****************************************************************************/
 
 #define IFQDISCSIZ                      32
 
-/*********************************************************************************************/
+/*****************************************************************************/
 
 #ifndef IFLA_PROMISCUITY
 #define IFLA_PROMISCUITY                30
@@ -111,7 +110,26 @@
 #define IP6_FLOWINFO_TCLASS_SHIFT       20
 #define IP6_FLOWINFO_FLOWLABEL_MASK     0x000FFFFF
 
-/*********************************************************************************************/
+/*****************************************************************************/
+
+#define IFLA_MACSEC_UNSPEC              0
+#define IFLA_MACSEC_SCI                 1
+#define IFLA_MACSEC_PORT                2
+#define IFLA_MACSEC_ICV_LEN             3
+#define IFLA_MACSEC_CIPHER_SUITE        4
+#define IFLA_MACSEC_WINDOW              5
+#define IFLA_MACSEC_ENCODING_SA         6
+#define IFLA_MACSEC_ENCRYPT             7
+#define IFLA_MACSEC_PROTECT             8
+#define IFLA_MACSEC_INC_SCI             9
+#define IFLA_MACSEC_ES                  10
+#define IFLA_MACSEC_SCB                 11
+#define IFLA_MACSEC_REPLAY_PROTECT      12
+#define IFLA_MACSEC_VALIDATION          13
+#define IFLA_MACSEC_PAD                 14
+#define __IFLA_MACSEC_MAX               15
+
+/*****************************************************************************/
 
 #define _NMLOG_PREFIX_NAME                "platform-linux"
 #define _NMLOG_DOMAIN                     LOGD_PLATFORM
@@ -239,7 +257,7 @@ static void do_request_all_no_delayed_actions (NMPlatform *platform, DelayedActi
 static void cache_pre_hook (NMPCache *cache, const NMPObject *old, const NMPObject *new, NMPCacheOpsType ops_type, gpointer user_data);
 static void cache_prune_candidates_prune (NMPlatform *platform);
 static gboolean event_handler_read_netlink (NMPlatform *platform, gboolean wait_for_acks);
-static void _assert_netns_current (NMPlatform *platform);
+static void ASSERT_NETNS_CURRENT (NMPlatform *platform);
 
 /*****************************************************************************/
 
@@ -367,6 +385,7 @@ static const LinkDesc linktypes[] = {
 	{ NM_LINK_TYPE_IP6TNL,        "ip6tnl",      "ip6tnl",      NULL },
 	{ NM_LINK_TYPE_IPIP,          "ipip",        "ipip",        NULL },
 	{ NM_LINK_TYPE_LOOPBACK,      "loopback",    NULL,          NULL },
+	{ NM_LINK_TYPE_MACSEC,        "macsec",      "macsec",      NULL },
 	{ NM_LINK_TYPE_MACVLAN,       "macvlan",     "macvlan",     NULL },
 	{ NM_LINK_TYPE_MACVTAP,       "macvtap",     "macvtap",     NULL },
 	{ NM_LINK_TYPE_OPENVSWITCH,   "openvswitch", "openvswitch", NULL },
@@ -547,7 +566,7 @@ _addrtime_get_lifetimes (guint32 timestamp,
 	*out_preferred = preferred;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static const NMPObject *
 _lookup_cached_link (const NMPCache *cache, int ifindex, gboolean *completed_from_cache, const NMPObject **link_cached)
@@ -568,23 +587,19 @@ _lookup_cached_link (const NMPCache *cache, int ifindex, gboolean *completed_fro
 	return *link_cached;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 #define DEVTYPE_PREFIX "DEVTYPE="
 
 static char *
-_linktype_read_devtype (const char *ifname)
+_linktype_read_devtype (int dirfd)
 {
-	char uevent[NM_STRLEN ("/sys/class/net/123456789012345/uevent\0") + 100 /*safety*/];
 	char *contents = NULL;
 	char *cont, *end;
 
-	nm_sprintf_buf (uevent,
-	                "/sys/class/net/%s/uevent",
-	                NM_ASSERT_VALID_PATH_COMPONENT (ifname));
-	nm_assert (strlen (uevent) < sizeof (uevent) - 1);
+	nm_assert (dirfd >= 0);
 
-	if (!g_file_get_contents (uevent, &contents, NULL, NULL))
+	if (nm_utils_file_get_contents (dirfd, "uevent", 1*1024*1024, &contents, NULL, NULL) < 0)
 		return NULL;
 	for (cont = contents; cont; cont = end) {
 		end = strpbrk (cont, "\r\n");
@@ -614,7 +629,8 @@ _linktype_get_type (NMPlatform *platform,
 {
 	guint i;
 
-	_assert_netns_current (platform);
+	ASSERT_NETNS_CURRENT (platform);
+	nm_assert (ifname);
 
 	if (completed_from_cache) {
 		const NMPObject *obj;
@@ -635,7 +651,7 @@ _linktype_get_type (NMPlatform *platform,
 		 * of messing stuff up. */
 		if (   obj
 		    && !NM_IN_SET (obj->link.type, NM_LINK_TYPE_UNKNOWN, NM_LINK_TYPE_NONE)
-		    && !g_strcmp0 (ifname, obj->link.name)
+		    && nm_streq (ifname, obj->link.name)
 		    && (   !kind
 		        || !g_strcmp0 (kind, obj->link.kind))) {
 			nm_assert (obj->link.kind == g_intern_string (obj->link.kind));
@@ -656,7 +672,7 @@ _linktype_get_type (NMPlatform *platform,
 			NMPlatformTunProperties props;
 
 			if (   platform
-			    && nm_platform_link_tun_get_properties_ifname (platform, ifname, &props)) {
+			    && nm_platform_link_tun_get_properties (platform, ifindex, &props)) {
 				if (!g_strcmp0 (props.mode, "tap"))
 					return NM_LINK_TYPE_TAP;
 				if (!g_strcmp0 (props.mode, "tun"))
@@ -679,50 +695,52 @@ _linktype_get_type (NMPlatform *platform,
 	else if (arptype == ARPHRD_TUNNEL6)
 		return NM_LINK_TYPE_IP6TNL;
 
-	if (ifname) {
-		char anycast_mask[NM_STRLEN ("/sys/class/net/123456789012345/anycast_mask\0") + 100 /*safety*/];
-		gs_free char *driver = NULL;
-		gs_free char *devtype = NULL;
+	{
+		NMPUtilsEthtoolDriverInfo driver_info;
 
 		/* Fallback OVS detection for kernel <= 3.16 */
-		if (nmp_utils_ethtool_get_driver_info (ifname, &driver, NULL, NULL)) {
-			if (!g_strcmp0 (driver, "openvswitch"))
+		if (nmp_utils_ethtool_get_driver_info (ifindex, &driver_info)) {
+			if (nm_streq (driver_info.driver, "openvswitch"))
 				return NM_LINK_TYPE_OPENVSWITCH;
 
 			if (arptype == 256) {
 				/* Some s390 CTC-type devices report 256 for the encapsulation type
 				 * for some reason, but we need to call them Ethernet.
 				 */
-				if (!g_strcmp0 (driver, "ctcm"))
+				if (nm_streq (driver_info.driver, "ctcm"))
 					return NM_LINK_TYPE_ETHERNET;
 			}
 		}
+	}
 
-		nm_sprintf_buf (anycast_mask,
-		                "/sys/class/net/%s/anycast_mask",
-		                NM_ASSERT_VALID_PATH_COMPONENT (ifname));
-		nm_assert (strlen (anycast_mask) < sizeof (anycast_mask) - 1);
+	{
+		nm_auto_close int dirfd = -1;
+		gs_free char *devtype = NULL;
+		char ifname_verified[IFNAMSIZ];
 
-		if (g_file_test (anycast_mask, G_FILE_TEST_EXISTS))
-			return NM_LINK_TYPE_OLPC_MESH;
+		dirfd = nmp_utils_sysctl_open_netdir (ifindex, ifname, ifname_verified);
+		if (dirfd >= 0) {
+			if (faccessat (dirfd, "anycast_mask", F_OK, 0) == 0)
+				return NM_LINK_TYPE_OLPC_MESH;
 
-		devtype = _linktype_read_devtype (ifname);
-		for (i = 0; devtype && i < G_N_ELEMENTS (linktypes); i++) {
-			if (g_strcmp0 (devtype, linktypes[i].devtype) == 0) {
-				if (linktypes[i].nm_type == NM_LINK_TYPE_BNEP) {
-					/* Both BNEP and 6lowpan use DEVTYPE=bluetooth, so we must
-					 * use arptype to distinguish between them.
-					 */
-					if (arptype != ARPHRD_ETHER)
-						continue;
+			devtype = _linktype_read_devtype (dirfd);
+			for (i = 0; devtype && i < G_N_ELEMENTS (linktypes); i++) {
+				if (g_strcmp0 (devtype, linktypes[i].devtype) == 0) {
+					if (linktypes[i].nm_type == NM_LINK_TYPE_BNEP) {
+						/* Both BNEP and 6lowpan use DEVTYPE=bluetooth, so we must
+						 * use arptype to distinguish between them.
+						 */
+						if (arptype != ARPHRD_ETHER)
+							continue;
+					}
+					return linktypes[i].nm_type;
 				}
-				return linktypes[i].nm_type;
 			}
-		}
 
-		/* Fallback for drivers that don't call SET_NETDEV_DEVTYPE() */
-		if (wifi_utils_is_wifi (ifindex, ifname))
-			return NM_LINK_TYPE_WIFI;
+			/* Fallback for drivers that don't call SET_NETDEV_DEVTYPE() */
+			if (wifi_utils_is_wifi (dirfd, ifname_verified))
+				return NM_LINK_TYPE_WIFI;
+		}
 
 		if (arptype == ARPHRD_ETHER) {
 			/* Misc non-upstream WWAN drivers.  rmnet is Qualcomm's proprietary
@@ -811,7 +829,7 @@ _parse_af_inet6 (NMPlatform *platform,
 {
 	static struct nla_policy policy[IFLA_INET6_MAX+1] = {
 		[IFLA_INET6_FLAGS]              = { .type = NLA_U32 },
-		[IFLA_INET6_CACHEINFO]          = { .minlen = offset_plus_sizeof(struct ifla_cacheinfo, retrans_time) },
+		[IFLA_INET6_CACHEINFO]          = { .minlen = nm_offsetofend (struct ifla_cacheinfo, retrans_time) },
 		[IFLA_INET6_CONF]               = { .minlen = 4 },
 		[IFLA_INET6_STATS]              = { .minlen = 8 },
 		[IFLA_INET6_ICMP6STATS]         = { .minlen = 8 },
@@ -1113,6 +1131,56 @@ _parse_lnk_macvlan (const char *kind, struct nlattr *info_data)
 /*****************************************************************************/
 
 static NMPObject *
+_parse_lnk_macsec (const char *kind, struct nlattr *info_data)
+{
+	static struct nla_policy policy[__IFLA_MACSEC_MAX] = {
+		[IFLA_MACSEC_SCI]            = { .type = NLA_U64 },
+		[IFLA_MACSEC_ICV_LEN]        = { .type = NLA_U8 },
+		[IFLA_MACSEC_CIPHER_SUITE]   = { .type = NLA_U64 },
+		[IFLA_MACSEC_WINDOW]         = { .type = NLA_U32 },
+		[IFLA_MACSEC_ENCODING_SA]    = { .type = NLA_U8 },
+		[IFLA_MACSEC_ENCRYPT]        = { .type = NLA_U8 },
+		[IFLA_MACSEC_PROTECT]        = { .type = NLA_U8 },
+		[IFLA_MACSEC_INC_SCI]        = { .type = NLA_U8 },
+		[IFLA_MACSEC_ES]             = { .type = NLA_U8 },
+		[IFLA_MACSEC_SCB]            = { .type = NLA_U8 },
+		[IFLA_MACSEC_REPLAY_PROTECT] = { .type = NLA_U8 },
+		[IFLA_MACSEC_VALIDATION]     = { .type = NLA_U8 },
+	};
+	struct nlattr *tb[__IFLA_MACSEC_MAX];
+	int err;
+	NMPObject *obj;
+	NMPlatformLnkMacsec *props;
+
+	if (!info_data || !nm_streq0 (kind, "macsec"))
+		return NULL;
+
+	err = nla_parse_nested (tb, __IFLA_MACSEC_MAX - 1, info_data, policy);
+	if (err < 0)
+		return NULL;
+
+	obj = nmp_object_new (NMP_OBJECT_TYPE_LNK_MACSEC, NULL);
+	props = &obj->lnk_macsec;
+
+	props->sci = tb[IFLA_MACSEC_SCI] ? be64toh (nla_get_u64 (tb[IFLA_MACSEC_SCI])) : 0;
+	props->icv_length = tb[IFLA_MACSEC_ICV_LEN] ? nla_get_u8 (tb[IFLA_MACSEC_ICV_LEN]) : 0;
+	props->cipher_suite = tb [IFLA_MACSEC_CIPHER_SUITE] ? nla_get_u64 (tb[IFLA_MACSEC_CIPHER_SUITE]) : 0;
+	props->window = tb [IFLA_MACSEC_WINDOW] ? nla_get_u32 (tb[IFLA_MACSEC_WINDOW]) : 0;
+	props->encoding_sa = tb[IFLA_MACSEC_ENCODING_SA] ? !!nla_get_u8 (tb[IFLA_MACSEC_ENCODING_SA]) : 0;
+	props->encrypt = tb[IFLA_MACSEC_ENCRYPT] ? !!nla_get_u8 (tb[IFLA_MACSEC_ENCRYPT]) : 0;
+	props->protect = tb[IFLA_MACSEC_PROTECT] ? !!nla_get_u8 (tb[IFLA_MACSEC_PROTECT]) : 0;
+	props->include_sci = tb[IFLA_MACSEC_INC_SCI] ? !!nla_get_u8 (tb[IFLA_MACSEC_INC_SCI]) : 0;
+	props->es = tb[IFLA_MACSEC_ES] ? !!nla_get_u8 (tb[IFLA_MACSEC_ES]) : 0;
+	props->scb = tb[IFLA_MACSEC_SCB] ? !!nla_get_u8 (tb[IFLA_MACSEC_SCB]) : 0;
+	props->replay_protect = tb[IFLA_MACSEC_REPLAY_PROTECT] ? !!nla_get_u8 (tb[IFLA_MACSEC_REPLAY_PROTECT]) : 0;
+	props->validation = tb[IFLA_MACSEC_VALIDATION] ? nla_get_u8 (tb[IFLA_MACSEC_VALIDATION]) : 0;
+
+	return obj;
+}
+
+/*****************************************************************************/
+
+static NMPObject *
 _parse_lnk_sit (const char *kind, struct nlattr *info_data)
 {
 	static struct nla_policy policy[IFLA_IPTUN_MAX + 1] = {
@@ -1219,7 +1287,7 @@ _parse_lnk_vlan (const char *kind, struct nlattr *info_data)
 {
 	static struct nla_policy policy[IFLA_VLAN_MAX+1] = {
 		[IFLA_VLAN_ID]          = { .type = NLA_U16 },
-		[IFLA_VLAN_FLAGS]       = { .minlen = offset_plus_sizeof(struct ifla_vlan_flags, flags) },
+		[IFLA_VLAN_FLAGS]       = { .minlen = nm_offsetofend (struct ifla_vlan_flags, flags) },
 		[IFLA_VLAN_INGRESS_QOS] = { .type = NLA_NESTED },
 		[IFLA_VLAN_EGRESS_QOS]  = { .type = NLA_NESTED },
 		[IFLA_VLAN_PROTOCOL]    = { .type = NLA_U16 },
@@ -1406,9 +1474,9 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 		[IFLA_LINKINFO]         = { .type = NLA_NESTED },
 		[IFLA_QDISC]            = { .type = NLA_STRING,
 		                            .maxlen = IFQDISCSIZ },
-		[IFLA_STATS]            = { .minlen = offset_plus_sizeof(struct rtnl_link_stats, tx_compressed) },
-		[IFLA_STATS64]          = { .minlen = offset_plus_sizeof(struct rtnl_link_stats64, tx_compressed)},
-		[IFLA_MAP]              = { .minlen = offset_plus_sizeof(struct rtnl_link_ifmap, port) },
+		[IFLA_STATS]            = { .minlen = nm_offsetofend (struct rtnl_link_stats, tx_compressed) },
+		[IFLA_STATS64]          = { .minlen = nm_offsetofend (struct rtnl_link_stats64, tx_compressed)},
+		[IFLA_MAP]              = { .minlen = nm_offsetofend (struct rtnl_link_ifmap, port) },
 		[IFLA_IFALIAS]          = { .type = NLA_STRING, .maxlen = IFALIASZ },
 		[IFLA_NUM_VF]           = { .type = NLA_U32 },
 		[IFLA_AF_SPEC]          = { .type = NLA_NESTED },
@@ -1558,6 +1626,9 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 	case NM_LINK_TYPE_IPIP:
 		lnk_data = _parse_lnk_ipip (nl_info_kind, nl_info_data);
 		break;
+	case NM_LINK_TYPE_MACSEC:
+		lnk_data = _parse_lnk_macsec (nl_info_kind, nl_info_data);
+		break;
 	case NM_LINK_TYPE_MACVLAN:
 	case NM_LINK_TYPE_MACVTAP:
 		lnk_data = _parse_lnk_macvlan (nl_info_kind, nl_info_data);
@@ -1630,7 +1701,7 @@ _new_from_nl_addr (struct nlmsghdr *nlh, gboolean id_only)
 	static struct nla_policy policy[IFA_MAX+1] = {
 		[IFA_LABEL]     = { .type = NLA_STRING,
 		                     .maxlen = IFNAMSIZ },
-		[IFA_CACHEINFO] = { .minlen = offset_plus_sizeof(struct ifa_cacheinfo, tstamp) },
+		[IFA_CACHEINFO] = { .minlen = nm_offsetofend (struct ifa_cacheinfo, tstamp) },
 	};
 	const struct ifaddrmsg *ifa;
 	struct nlattr *tb[IFA_MAX+1];
@@ -1747,7 +1818,7 @@ _new_from_nl_route (struct nlmsghdr *nlh, gboolean id_only)
 		[RTA_OIF]       = { .type = NLA_U32 },
 		[RTA_PRIORITY]  = { .type = NLA_U32 },
 		[RTA_FLOW]      = { .type = NLA_U32 },
-		[RTA_CACHEINFO] = { .minlen = offset_plus_sizeof(struct rta_cacheinfo, rta_tsage) },
+		[RTA_CACHEINFO] = { .minlen = nm_offsetofend (struct rta_cacheinfo, rta_tsage) },
 		[RTA_METRICS]   = { .type = NLA_NESTED },
 		[RTA_MULTIPATH] = { .type = NLA_NESTED },
 	};
@@ -1978,7 +2049,7 @@ nmp_object_new_from_nl (NMPlatform *platform, const NMPCache *cache, struct nl_m
 	}
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 _nl_msg_new_link_set_afspec (struct nl_msg *msg,
@@ -2355,7 +2426,7 @@ nla_put_failure:
 	g_return_val_if_reached (NULL);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static int _support_kernel_extended_ifa_flags = -1;
 
@@ -2407,9 +2478,7 @@ typedef struct {
 	gint *out_refresh_all_in_progess;
 } DelayedActionWaitForNlResponseData;
 
-typedef struct _NMLinuxPlatformPrivate NMLinuxPlatformPrivate;
-
-struct _NMLinuxPlatformPrivate {
+typedef struct {
 	struct nl_sock *nlh;
 	guint32 nlh_seq_next;
 #ifdef NM_MORE_LOGGING
@@ -2444,17 +2513,26 @@ struct _NMLinuxPlatformPrivate {
 	GHashTable *prune_candidates;
 
 	GHashTable *wifi_data;
+} NMLinuxPlatformPrivate;
+
+struct _NMLinuxPlatform {
+	NMPlatform parent;
+	NMLinuxPlatformPrivate _priv;
 };
+
+struct _NMLinuxPlatformClass {
+	NMPlatformClass parent;
+};
+
+G_DEFINE_TYPE (NMLinuxPlatform, nm_linux_platform, NM_TYPE_PLATFORM)
 
 static inline NMLinuxPlatformPrivate *
 NM_LINUX_PLATFORM_GET_PRIVATE (const void *self)
 {
 	nm_assert (NM_IS_LINUX_PLATFORM (self));
 
-	return ((NMLinuxPlatform *) self)->priv;
+	return &(((NMLinuxPlatform *) self)->_priv);
 }
-
-G_DEFINE_TYPE (NMLinuxPlatform, nm_linux_platform, NM_TYPE_PLATFORM)
 
 NMPlatform *
 nm_linux_platform_new (gboolean netns_support)
@@ -2474,50 +2552,66 @@ nm_linux_platform_setup (void)
 	              NULL);
 }
 
-/******************************************************************/
-
 static void
-_assert_netns_current (NMPlatform *platform)
+ASSERT_NETNS_CURRENT (NMPlatform *platform)
 {
-#if NM_MORE_ASSERTS
 	nm_assert (NM_IS_LINUX_PLATFORM (platform));
-
 	nm_assert (NM_IN_SET (nm_platform_netns_get (platform), NULL, nmp_netns_get_current ()));
-#endif
 }
 
+/*****************************************************************************/
+
+#define ASSERT_SYSCTL_ARGS(pathid, dirfd, path) \
+	G_STMT_START { \
+		const char *const _pathid = (pathid); \
+		const int _dirfd = (dirfd); \
+		const char *const _path = (path); \
+		\
+		nm_assert (_path && _path[0]); \
+		g_assert (!strstr (_path, "/../")); \
+		if (_dirfd < 0) { \
+			nm_assert (!_pathid); \
+			nm_assert (_path[0] == '/'); \
+			nm_assert (   g_str_has_prefix (_path, "/proc/sys/") \
+			           || g_str_has_prefix (_path, "/sys/")); \
+		} else { \
+			nm_assert (_pathid && _pathid[0] && _pathid[0] != '/'); \
+			nm_assert (_path[0] != '/'); \
+		} \
+	} G_STMT_END
+
 static void
-_log_dbg_sysctl_set_impl (NMPlatform *platform, const char *path, const char *value)
+_log_dbg_sysctl_set_impl (NMPlatform *platform, const char *pathid, int dirfd, const char *path, const char *value)
 {
 	GError *error = NULL;
 	char *contents, *contents_escaped;
 	char *value_escaped = g_strescape (value, NULL);
 
-	if (!g_file_get_contents (path, &contents, NULL, &error)) {
-		_LOGD ("sysctl: setting '%s' to '%s' (current value cannot be read: %s)", path, value_escaped, error->message);
+	if (nm_utils_file_get_contents (dirfd, path, 1*1024*1024, &contents, NULL, &error) < 0) {
+		_LOGD ("sysctl: setting '%s' to '%s' (current value cannot be read: %s)", pathid, value_escaped, error->message);
 		g_clear_error (&error);
 	} else {
 		g_strstrip (contents);
 		contents_escaped = g_strescape (contents, NULL);
 		if (strcmp (contents, value) == 0)
-			_LOGD ("sysctl: setting '%s' to '%s' (current value is identical)", path, value_escaped);
+			_LOGD ("sysctl: setting '%s' to '%s' (current value is identical)", pathid, value_escaped);
 		else
-			_LOGD ("sysctl: setting '%s' to '%s' (current value is '%s')", path, value_escaped, contents_escaped);
+			_LOGD ("sysctl: setting '%s' to '%s' (current value is '%s')", pathid, value_escaped, contents_escaped);
 		g_free (contents);
 		g_free (contents_escaped);
 	}
 	g_free (value_escaped);
 }
 
-#define _log_dbg_sysctl_set(platform, path, value) \
+#define _log_dbg_sysctl_set(platform, pathid, dirfd, path, value) \
 	G_STMT_START { \
 		if (_LOGD_ENABLED ()) { \
-			_log_dbg_sysctl_set_impl (platform, path, value); \
+			_log_dbg_sysctl_set_impl (platform, pathid, dirfd, path, value); \
 		} \
 	} G_STMT_END
 
 static gboolean
-sysctl_set (NMPlatform *platform, const char *path, const char *value)
+sysctl_set (NMPlatform *platform, const char *pathid, int dirfd, const char *path, const char *value)
 {
 	nm_auto_pop_netns NMPNetns *netns = NULL;
 	int fd, tries;
@@ -2530,32 +2624,46 @@ sysctl_set (NMPlatform *platform, const char *path, const char *value)
 	g_return_val_if_fail (path != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
 
-	/* Don't write outside known locations */
-	g_assert (g_str_has_prefix (path, "/proc/sys/")
-	          || g_str_has_prefix (path, "/sys/"));
-	/* Don't write to suspicious locations */
-	g_assert (!strstr (path, "/../"));
+	ASSERT_SYSCTL_ARGS (pathid, dirfd, path);
 
-	if (!nm_platform_netns_push (platform, &netns)) {
-		errno = ENETDOWN;
-		return FALSE;
-	}
-
-	fd = open (path, O_WRONLY | O_TRUNC);
-	if (fd == -1) {
-		errsv = errno;
-		if (errsv == ENOENT) {
-			_LOGD ("sysctl: failed to open '%s': (%d) %s",
-			       path, errsv, strerror (errsv));
-		} else {
-			_LOGE ("sysctl: failed to open '%s': (%d) %s",
-			       path, errsv, strerror (errsv));
+	if (dirfd < 0) {
+		if (!nm_platform_netns_push (platform, &netns)) {
+			errno = ENETDOWN;
+			return FALSE;
 		}
-		errno = errsv;
-		return FALSE;
+
+		pathid = path;
+
+		fd = open (path, O_WRONLY | O_TRUNC | O_CLOEXEC);
+		if (fd == -1) {
+			errsv = errno;
+			if (errsv == ENOENT) {
+				_LOGD ("sysctl: failed to open '%s': (%d) %s",
+				       pathid, errsv, strerror (errsv));
+			} else {
+				_LOGE ("sysctl: failed to open '%s': (%d) %s",
+				       pathid, errsv, strerror (errsv));
+			}
+			errno = errsv;
+			return FALSE;
+		}
+	} else {
+		fd = openat (dirfd, path, O_WRONLY | O_TRUNC | O_CLOEXEC);
+		if (fd == -1) {
+			errsv = errno;
+			if (errsv == ENOENT) {
+				_LOGD ("sysctl: failed to openat '%s': (%d) %s",
+				       pathid, errsv, strerror (errsv));
+			} else {
+				_LOGE ("sysctl: failed to openat '%s': (%d) %s",
+				       pathid, errsv, strerror (errsv));
+			}
+			errno = errsv;
+			return FALSE;
+		}
 	}
 
-	_log_dbg_sysctl_set (platform, path, value);
+	_log_dbg_sysctl_set (platform, pathid, dirfd, path, value);
 
 	/* Most sysfs and sysctl options don't care about a trailing LF, while some
 	 * (like infiniband) do.  So always add the LF.  Also, neither sysfs nor
@@ -2573,7 +2681,7 @@ sysctl_set (NMPlatform *platform, const char *path, const char *value)
 
 	/* Try to write the entire value three times if a partial write occurs */
 	errsv = 0;
-	for (tries = 0, nwrote = 0; tries < 3 && nwrote != len; tries++) {
+	for (tries = 0, nwrote = 0; tries < 3 && nwrote < len - 1; tries++) {
 		nwrote = write (fd, actual, len);
 		if (nwrote == -1) {
 			errsv = errno;
@@ -2587,12 +2695,12 @@ sysctl_set (NMPlatform *platform, const char *path, const char *value)
 	if (nwrote == -1 && errsv != EEXIST) {
 		_LOGE ("sysctl: failed to set '%s' to '%s': (%d) %s",
 		       path, value, errsv, strerror (errsv));
-	} else if (nwrote < len) {
+	} else if (nwrote < len - 1) {
 		_LOGE ("sysctl: failed to set '%s' to '%s' after three attempts",
 		       path, value);
 	}
 
-	if (nwrote != len) {
+	if (nwrote < len - 1) {
 		if (close (fd) != 0) {
 			if (errsv != 0)
 				errno = errsv;
@@ -2628,7 +2736,7 @@ _nm_logging_clear_platform_logging_cache_impl (void)
 }
 
 static void
-_log_dbg_sysctl_get_impl (NMPlatform *platform, const char *path, const char *contents)
+_log_dbg_sysctl_get_impl (NMPlatform *platform, const char *pathid, const char *contents)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	const char *prev_value = NULL;
@@ -2638,24 +2746,24 @@ _log_dbg_sysctl_get_impl (NMPlatform *platform, const char *path, const char *co
 		sysctl_clear_cache_list = g_slist_prepend (sysctl_clear_cache_list, platform);
 		priv->sysctl_get_prev_values = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	} else
-		prev_value = g_hash_table_lookup (priv->sysctl_get_prev_values, path);
+		prev_value = g_hash_table_lookup (priv->sysctl_get_prev_values, pathid);
 
 	if (prev_value) {
 		if (strcmp (prev_value, contents) != 0) {
 			char *contents_escaped = g_strescape (contents, NULL);
 			char *prev_value_escaped = g_strescape (prev_value, NULL);
 
-			_LOGD ("sysctl: reading '%s': '%s' (changed from '%s' on last read)", path, contents_escaped, prev_value_escaped);
+			_LOGD ("sysctl: reading '%s': '%s' (changed from '%s' on last read)", pathid, contents_escaped, prev_value_escaped);
 			g_free (contents_escaped);
 			g_free (prev_value_escaped);
-			g_hash_table_insert (priv->sysctl_get_prev_values, g_strdup (path), g_strdup (contents));
+			g_hash_table_insert (priv->sysctl_get_prev_values, g_strdup (pathid), g_strdup (contents));
 		}
 	} else {
 		char *contents_escaped = g_strescape (contents, NULL);
 
-		_LOGD ("sysctl: reading '%s': '%s'", path, contents_escaped);
+		_LOGD ("sysctl: reading '%s': '%s'", pathid, contents_escaped);
 		g_free (contents_escaped);
-		g_hash_table_insert (priv->sysctl_get_prev_values, g_strdup (path), g_strdup (contents));
+		g_hash_table_insert (priv->sysctl_get_prev_values, g_strdup (pathid), g_strdup (contents));
 	}
 
 	if (   !priv->sysctl_get_warned
@@ -2665,47 +2773,47 @@ _log_dbg_sysctl_get_impl (NMPlatform *platform, const char *path, const char *co
 	}
 }
 
-#define _log_dbg_sysctl_get(platform, path, contents) \
+#define _log_dbg_sysctl_get(platform, pathid, contents) \
 	G_STMT_START { \
 		if (_LOGD_ENABLED ()) \
-			_log_dbg_sysctl_get_impl (platform, path, contents); \
+			_log_dbg_sysctl_get_impl (platform, pathid, contents); \
 	} G_STMT_END
 
 static char *
-sysctl_get (NMPlatform *platform, const char *path)
+sysctl_get (NMPlatform *platform, const char *pathid, int dirfd, const char *path)
 {
 	nm_auto_pop_netns NMPNetns *netns = NULL;
 	GError *error = NULL;
 	char *contents;
 
-	/* Don't write outside known locations */
-	g_assert (g_str_has_prefix (path, "/proc/sys/")
-	          || g_str_has_prefix (path, "/sys/"));
-	/* Don't write to suspicious locations */
-	g_assert (!strstr (path, "/../"));
+	ASSERT_SYSCTL_ARGS (pathid, dirfd, path);
 
-	if (!nm_platform_netns_push (platform, &netns))
-		return NULL;
+	if (dirfd < 0) {
+		if (!nm_platform_netns_push (platform, &netns))
+			return NULL;
+		pathid = path;
+	}
 
-	if (!g_file_get_contents (path, &contents, NULL, &error)) {
+	if (nm_utils_file_get_contents (dirfd, path, 1*1024*1024, &contents, NULL, &error) < 0) {
 		/* We assume FAILED means EOPNOTSUP */
 		if (   g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT)
+		    || g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NODEV)
 		    || g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_FAILED))
-			_LOGD ("error reading %s: %s", path, error->message);
+			_LOGD ("error reading %s: %s", pathid, error->message);
 		else
-			_LOGE ("error reading %s: %s", path, error->message);
+			_LOGE ("error reading %s: %s", pathid, error->message);
 		g_clear_error (&error);
 		return NULL;
 	}
 
 	g_strstrip (contents);
 
-	_log_dbg_sysctl_get (platform, path, contents);
+	_log_dbg_sysctl_get (platform, pathid, contents);
 
 	return contents;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 check_support_kernel_extended_ifa_flags (NMPlatform *platform)
@@ -2729,14 +2837,18 @@ process_events (NMPlatform *platform)
 	delayed_action_handle_all (platform, TRUE);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 #define cache_lookup_all_objects(type, platform, obj_type, visible_only) \
-	((const type *const*) nmp_cache_lookup_multi (NM_LINUX_PLATFORM_GET_PRIVATE ((platform))->cache, \
-	                                              nmp_cache_id_init_object_type (NMP_CACHE_ID_STATIC, (obj_type), (visible_only)), \
-	                                              NULL))
+	({ \
+		NMPCacheId _cache_id; \
+		\
+		((const type *const*) nmp_cache_lookup_multi (NM_LINUX_PLATFORM_GET_PRIVATE ((platform))->cache, \
+		                                              nmp_cache_id_init_object_type (&_cache_id, (obj_type), (visible_only)), \
+		                                              NULL)); \
+	})
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 do_emit_signal (NMPlatform *platform, const NMPObject *obj, NMPCacheOpsType cache_op, gboolean was_visible)
@@ -2751,8 +2863,7 @@ do_emit_signal (NMPlatform *platform, const NMPObject *obj, NMPCacheOpsType cach
 	nm_assert (!obj || cache_op == NMP_CACHE_OPS_REMOVED || obj == nmp_cache_lookup_obj (NM_LINUX_PLATFORM_GET_PRIVATE (platform)->cache, obj));
 	nm_assert (!obj || cache_op != NMP_CACHE_OPS_REMOVED || obj != nmp_cache_lookup_obj (NM_LINUX_PLATFORM_GET_PRIVATE (platform)->cache, obj));
 
-	/* we raise the signals inside the namespace of the NMPlatform instance. */
-	_assert_netns_current (platform);
+	ASSERT_NETNS_CURRENT (platform);
 
 	switch (cache_op) {
 	case NMP_CACHE_OPS_ADDED:
@@ -2800,13 +2911,13 @@ do_emit_signal (NMPlatform *platform, const NMPObject *obj, NMPCacheOpsType cach
 	g_signal_emit (platform,
 	               _nm_platform_signal_id_get (klass->signal_type_id),
 	               0,
-	               klass->obj_type,
+	               (int) klass->obj_type,
 	               obj_clone.object.ifindex,
 	               &obj_clone.object,
-	               (NMPlatformSignalChangeType) cache_op);
+	               (int) cache_op);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 _NM_UTILS_LOOKUP_DEFINE (static, delayed_action_refresh_from_object_type, NMPObjectType, DelayedActionType,
 	NM_UTILS_LOOKUP_DEFAULT_NM_ASSERT (DELAYED_ACTION_TYPE_NONE),
@@ -3030,7 +3141,7 @@ delayed_action_handle_one (NMPlatform *platform)
 		g_ptr_array_remove_index_fast (priv->delayed_action.list_master_connected, 0);
 		if (priv->delayed_action.list_master_connected->len == 0)
 			priv->delayed_action.flags &= ~DELAYED_ACTION_TYPE_MASTER_CONNECTED;
-		nm_assert (_nm_utils_ptrarray_find_first (priv->delayed_action.list_master_connected->pdata, priv->delayed_action.list_master_connected->len, user_data) < 0);
+		nm_assert (_nm_utils_ptrarray_find_first ((gconstpointer *) priv->delayed_action.list_master_connected->pdata, priv->delayed_action.list_master_connected->len, user_data) < 0);
 
 		_LOGt_delayed_action (DELAYED_ACTION_TYPE_MASTER_CONNECTED, user_data, "handle");
 		delayed_action_handle_MASTER_CONNECTED (platform, GPOINTER_TO_INT (user_data));
@@ -3071,7 +3182,7 @@ delayed_action_handle_one (NMPlatform *platform)
 		g_ptr_array_remove_index_fast (priv->delayed_action.list_refresh_link, 0);
 		if (priv->delayed_action.list_refresh_link->len == 0)
 			priv->delayed_action.flags &= ~DELAYED_ACTION_TYPE_REFRESH_LINK;
-		nm_assert (_nm_utils_ptrarray_find_first (priv->delayed_action.list_refresh_link->pdata, priv->delayed_action.list_refresh_link->len, user_data) < 0);
+		nm_assert (_nm_utils_ptrarray_find_first ((gconstpointer *) priv->delayed_action.list_refresh_link->pdata, priv->delayed_action.list_refresh_link->len, user_data) < 0);
 
 		_LOGt_delayed_action (DELAYED_ACTION_TYPE_REFRESH_LINK, user_data, "handle");
 
@@ -3120,11 +3231,11 @@ delayed_action_schedule (NMPlatform *platform, DelayedActionType action_type, gp
 
 	switch (action_type) {
 	case DELAYED_ACTION_TYPE_REFRESH_LINK:
-		if (_nm_utils_ptrarray_find_first (priv->delayed_action.list_refresh_link->pdata, priv->delayed_action.list_refresh_link->len, user_data) < 0)
+		if (_nm_utils_ptrarray_find_first ((gconstpointer *) priv->delayed_action.list_refresh_link->pdata, priv->delayed_action.list_refresh_link->len, user_data) < 0)
 			g_ptr_array_add (priv->delayed_action.list_refresh_link, user_data);
 		break;
 	case DELAYED_ACTION_TYPE_MASTER_CONNECTED:
-		if (_nm_utils_ptrarray_find_first (priv->delayed_action.list_master_connected->pdata, priv->delayed_action.list_master_connected->len, user_data) < 0)
+		if (_nm_utils_ptrarray_find_first ((gconstpointer *) priv->delayed_action.list_master_connected->pdata, priv->delayed_action.list_master_connected->len, user_data) < 0)
 			g_ptr_array_add (priv->delayed_action.list_master_connected, user_data);
 		break;
 	case DELAYED_ACTION_TYPE_WAIT_FOR_NL_RESPONSE:
@@ -3165,15 +3276,16 @@ delayed_action_schedule_WAIT_FOR_NL_RESPONSE (NMPlatform *platform,
 	                         &data);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 cache_prune_candidates_record_all (NMPlatform *platform, NMPObjectType obj_type)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
+	NMPCacheId cache_id;
 
 	priv->prune_candidates = nmp_cache_lookup_all_to_hash (priv->cache,
-	                                                       nmp_cache_id_init_object_type (NMP_CACHE_ID_STATIC, obj_type, FALSE),
+	                                                       nmp_cache_id_init_object_type (&cache_id, obj_type, FALSE),
 	                                                       priv->prune_candidates);
 	_LOGt ("cache-prune: record %s (now %u candidates)", nmp_class_from_type (obj_type)->obj_type_name,
 	       priv->prune_candidates ? g_hash_table_size (priv->prune_candidates) : 0);
@@ -3511,7 +3623,7 @@ cache_post (NMPlatform *platform,
 	}
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static int
 _nl_send_auto_with_seq (NMPlatform *platform,
@@ -3773,7 +3885,7 @@ event_valid_msg (NMPlatform *platform, struct nl_msg *msg, gboolean handle_event
 	cache_prune_candidates_drop (platform, obj_cache);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static const NMPObject *
 cache_lookup_link (NMPlatform *platform, int ifindex)
@@ -3801,10 +3913,11 @@ static GArray *
 link_get_all (NMPlatform *platform)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
+	NMPCacheId cache_id;
 
 	return nmp_cache_lookup_multi_to_array (priv->cache,
 	                                        NMP_OBJECT_TYPE_LINK,
-	                                        nmp_cache_id_init_object_type (NMP_CACHE_ID_STATIC, NMP_OBJECT_TYPE_LINK, TRUE));
+	                                        nmp_cache_id_init_object_type (&cache_id, NMP_OBJECT_TYPE_LINK, TRUE));
 }
 
 static const NMPlatformLink *
@@ -4414,10 +4527,6 @@ static gboolean
 link_supports_carrier_detect (NMPlatform *platform, int ifindex)
 {
 	nm_auto_pop_netns NMPNetns *netns = NULL;
-	const char *name = nm_platform_link_get_name (platform, ifindex);
-
-	if (!name)
-		return FALSE;
 
 	if (!nm_platform_netns_push (platform, &netns))
 		return FALSE;
@@ -4426,7 +4535,7 @@ link_supports_carrier_detect (NMPlatform *platform, int ifindex)
 	 * us whether the device actually supports carrier detection in the first
 	 * place. We assume any device that does implements one of these two APIs.
 	 */
-	return nmp_utils_ethtool_supports_carrier_detect (name) || nmp_utils_mii_supports_carrier_detect (name);
+	return nmp_utils_ethtool_supports_carrier_detect (ifindex) || nmp_utils_mii_supports_carrier_detect (ifindex);
 }
 
 static gboolean
@@ -4444,7 +4553,7 @@ link_supports_vlans (NMPlatform *platform, int ifindex)
 	if (!nm_platform_netns_push (platform, &netns))
 		return FALSE;
 
-	return nmp_utils_ethtool_supports_vlans (obj->link.name);
+	return nmp_utils_ethtool_supports_vlans (ifindex);
 }
 
 static NMPlatformError
@@ -4512,7 +4621,7 @@ link_get_permanent_address (NMPlatform *platform,
 	if (!nm_platform_netns_push (platform, &netns))
 		return FALSE;
 
-	return nmp_utils_ethtool_get_permanent_address (nm_platform_link_get_name (platform, ifindex), buf, length);
+	return nmp_utils_ethtool_get_permanent_address (ifindex, buf, length);
 }
 
 static gboolean
@@ -4541,44 +4650,27 @@ nla_put_failure:
 static char *
 link_get_physical_port_id (NMPlatform *platform, int ifindex)
 {
-	const char *ifname;
-	char *path, *id;
+	nm_auto_close int dirfd = -1;
+	char ifname_verified[IFNAMSIZ];
 
-	ifname = nm_platform_link_get_name (platform, ifindex);
-	if (!ifname)
+	dirfd = nm_platform_sysctl_open_netdir (platform, ifindex, ifname_verified);
+	if (dirfd < 0)
 		return NULL;
-
-	ifname = NM_ASSERT_VALID_PATH_COMPONENT (ifname);
-
-	path = g_strdup_printf ("/sys/class/net/%s/phys_port_id", ifname);
-	id = sysctl_get (platform, path);
-	g_free (path);
-
-	return id;
+	return sysctl_get (platform, NMP_SYSCTL_PATHID_NETDIR (dirfd, ifname_verified, "phys_port_id"));
 }
 
 static guint
 link_get_dev_id (NMPlatform *platform, int ifindex)
 {
-	const char *ifname;
-	gs_free char *path = NULL, *id = NULL;
-	gint64 int_val;
+	nm_auto_close int dirfd = -1;
+	char ifname_verified[IFNAMSIZ];
 
-	ifname = nm_platform_link_get_name (platform, ifindex);
-	if (!ifname)
+	dirfd = nm_platform_sysctl_open_netdir (platform, ifindex, ifname_verified);
+	if (dirfd < 0)
 		return 0;
-
-	ifname = NM_ASSERT_VALID_PATH_COMPONENT (ifname);
-
-	path = g_strdup_printf ("/sys/class/net/%s/dev_id", ifname);
-	id = sysctl_get (platform, path);
-	if (!id || !*id)
-		return 0;
-
-	/* Value is reported as hex */
-	int_val = _nm_utils_ascii_str_to_int64 (id, 16, 0, G_MAXUINT16, 0);
-
-	return errno ? 0 : (int) int_val;
+	return nm_platform_sysctl_get_int_checked (platform,
+	                                           NMP_SYSCTL_PATHID_NETDIR (dirfd, ifname_verified, "dev_id"),
+	                                           16, 0, G_MAXUINT16, 0);
 }
 
 static int
@@ -4790,6 +4882,68 @@ link_ipip_add (NMPlatform *platform,
 	nla_nest_end (nlmsg, info);
 
 	return do_add_link_with_lookup (platform, NM_LINK_TYPE_IPIP, name, nlmsg, out_link);
+nla_put_failure:
+	g_return_val_if_reached (FALSE);
+}
+
+static int
+link_macsec_add (NMPlatform *platform,
+                 const char *name,
+                 int parent,
+                 const NMPlatformLnkMacsec *props,
+                 const NMPlatformLink **out_link)
+{
+	nm_auto_nlmsg struct nl_msg *nlmsg = NULL;
+	struct nlattr *info;
+	struct nlattr *data;
+
+	_LOGD ("adding macsec '%s' parent %u sci %llx",
+	       name,
+	       parent,
+	       (unsigned long long) props->sci);
+
+	nlmsg = _nl_msg_new_link (RTM_NEWLINK,
+	                          NLM_F_CREATE | NLM_F_EXCL,
+	                          0,
+	                          name,
+	                          0,
+	                          0);
+	if (!nlmsg)
+		return FALSE;
+
+	NLA_PUT_U32 (nlmsg, IFLA_LINK, parent);
+
+	if (!(info = nla_nest_start (nlmsg, IFLA_LINKINFO)))
+		goto nla_put_failure;
+
+	NLA_PUT_STRING (nlmsg, IFLA_INFO_KIND, "macsec");
+
+	if (!(data = nla_nest_start (nlmsg, IFLA_INFO_DATA)))
+		goto nla_put_failure;
+
+	if (props->icv_length)
+		NLA_PUT_U8 (nlmsg, IFLA_MACSEC_ICV_LEN, 16);
+	if (props->cipher_suite)
+		NLA_PUT_U64 (nlmsg, IFLA_MACSEC_CIPHER_SUITE, props->cipher_suite);
+	if (props->replay_protect)
+		NLA_PUT_U32 (nlmsg, IFLA_MACSEC_WINDOW, props->window);
+
+	NLA_PUT_U64 (nlmsg, IFLA_MACSEC_SCI, htobe64 (props->sci));
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_ENCODING_SA, props->encoding_sa);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_ENCRYPT, props->encrypt);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_PROTECT, props->protect);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_INC_SCI, props->include_sci);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_ES, props->es);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_SCB, props->scb);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_REPLAY_PROTECT, props->replay_protect);
+	NLA_PUT_U8 (nlmsg, IFLA_MACSEC_VALIDATION, props->validation);
+
+	nla_nest_end (nlmsg, data);
+	nla_nest_end (nlmsg, info);
+
+	return do_add_link_with_lookup (platform,
+	                               NM_LINK_TYPE_MACSEC,
+	                                name, nlmsg, out_link);
 nla_put_failure:
 	g_return_val_if_reached (FALSE);
 }
@@ -5226,7 +5380,7 @@ link_release (NMPlatform *platform, int master, int slave)
 	return link_enslave (platform, 0, slave);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 _infiniband_partition_action (NMPlatform *platform,
@@ -5236,9 +5390,9 @@ _infiniband_partition_action (NMPlatform *platform,
                               const NMPlatformLink **out_link)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
-	const NMPObject *obj_parent;
+	nm_auto_close int dirfd = -1;
+	char ifname_parent[IFNAMSIZ];
 	const NMPObject *obj;
-	char path[NM_STRLEN ("/sys/class/net/%s/%s") + IFNAMSIZ + 100];
 	char id[20];
 	char name[IFNAMSIZ];
 	gboolean success;
@@ -5246,20 +5400,18 @@ _infiniband_partition_action (NMPlatform *platform,
 	nm_assert (NM_IN_SET (action, INFINIBAND_ACTION_CREATE_CHILD, INFINIBAND_ACTION_DELETE_CHILD));
 	nm_assert (p_key > 0 && p_key <= 0xffff && p_key != 0x8000);
 
-	obj_parent = nmp_cache_lookup_link (priv->cache, parent);
-	if (!obj_parent || !obj_parent->link.name[0]) {
+	dirfd = nm_platform_sysctl_open_netdir (platform, parent, ifname_parent);
+	if (dirfd < 0) {
 		errno = ENOENT;
 		return FALSE;
 	}
 
-	nm_sprintf_buf (path,
-	                "/sys/class/net/%s/%s",
-	                NM_ASSERT_VALID_PATH_COMPONENT (obj_parent->link.name),
-	                (action == INFINIBAND_ACTION_CREATE_CHILD
-	                     ? "create_child"
-	                     : "delete_child"));
 	nm_sprintf_buf (id, "0x%04x", p_key);
-	success = nm_platform_sysctl_set (platform, path, id);
+	if (action == INFINIBAND_ACTION_CREATE_CHILD)
+		success = nm_platform_sysctl_set (platform, NMP_SYSCTL_PATHID_NETDIR (dirfd, ifname_parent, "create_child"), id);
+	else
+		success = nm_platform_sysctl_set (platform, NMP_SYSCTL_PATHID_NETDIR (dirfd, ifname_parent, "delete_child"), id);
+
 	if (!success) {
 		if (   action == INFINIBAND_ACTION_DELETE_CHILD
 		    && errno == ENODEV)
@@ -5267,7 +5419,7 @@ _infiniband_partition_action (NMPlatform *platform,
 		return FALSE;
 	}
 
-	nm_utils_new_infiniband_name (name, obj_parent->link.name, p_key);
+	nm_utils_new_infiniband_name (name, ifname_parent, p_key);
 	do_request_link (platform, 0, name);
 
 	if (action == INFINIBAND_ACTION_DELETE_CHILD)
@@ -5292,7 +5444,7 @@ infiniband_partition_delete (NMPlatform *platform, int parent, int p_key)
 	return _infiniband_partition_action (platform, INFINIBAND_ACTION_DELETE_CHILD, parent, p_key, NULL);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static WifiData *
 wifi_get_wifi_data (NMPlatform *platform, int ifindex)
@@ -5423,7 +5575,7 @@ wifi_indicate_addressing_running (NMPlatform *platform, int ifindex, gboolean ru
 	wifi_utils_indicate_addressing_running (wifi_data, running);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 link_can_assume (NMPlatform *platform, int ifindex)
@@ -5466,7 +5618,7 @@ link_can_assume (NMPlatform *platform, int ifindex)
 	return FALSE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static guint32
 mesh_get_channel (NMPlatform *platform, int ifindex)
@@ -5489,7 +5641,7 @@ mesh_set_ssid (NMPlatform *platform, int ifindex, const guint8 *ssid, gsize len)
 	return wifi_utils_set_mesh_ssid (wifi_data, ssid, len);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 link_get_wake_on_lan (NMPlatform *platform, int ifindex)
@@ -5501,7 +5653,7 @@ link_get_wake_on_lan (NMPlatform *platform, int ifindex)
 		return FALSE;
 
 	if (type == NM_LINK_TYPE_ETHERNET)
-		return nmp_utils_ethtool_get_wake_on_lan (nm_platform_link_get_name (platform, ifindex));
+		return nmp_utils_ethtool_get_wake_on_lan (ifindex);
 	else if (type == NM_LINK_TYPE_WIFI) {
 		WifiData *wifi_data = wifi_get_wifi_data (platform, ifindex);
 
@@ -5521,28 +5673,32 @@ link_get_driver_info (NMPlatform *platform,
                       char **out_fw_version)
 {
 	nm_auto_pop_netns NMPNetns *netns = NULL;
+	NMPUtilsEthtoolDriverInfo driver_info;
 
 	if (!nm_platform_netns_push (platform, &netns))
 		return FALSE;
 
-	return nmp_utils_ethtool_get_driver_info (nm_platform_link_get_name (platform, ifindex),
-	                                          out_driver_name,
-	                                          out_driver_version,
-	                                          out_fw_version);
+	if (!nmp_utils_ethtool_get_driver_info (ifindex, &driver_info))
+		return FALSE;
+	NM_SET_OUT (out_driver_name,    g_strdup (driver_info.driver));
+	NM_SET_OUT (out_driver_version, g_strdup (driver_info.version));
+	NM_SET_OUT (out_fw_version,     g_strdup (driver_info.fw_version));
+	return TRUE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static GArray *
 ipx_address_get_all (NMPlatform *platform, int ifindex, NMPObjectType obj_type)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
+	NMPCacheId cache_id;
 
 	nm_assert (NM_IN_SET (obj_type, NMP_OBJECT_TYPE_IP4_ADDRESS, NMP_OBJECT_TYPE_IP6_ADDRESS));
 
 	return nmp_cache_lookup_multi_to_array (priv->cache,
 	                                        obj_type,
-	                                        nmp_cache_id_init_addrroute_visible_by_ifindex (NMP_CACHE_ID_STATIC,
+	                                        nmp_cache_id_init_addrroute_visible_by_ifindex (&cache_id,
 	                                                                                        obj_type,
 	                                                                                        ifindex));
 }
@@ -5696,7 +5852,7 @@ ip6_address_get (NMPlatform *platform, int ifindex, struct in6_addr addr, guint8
 	return NULL;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static GArray *
 ipx_route_get_all (NMPlatform *platform, int ifindex, NMPObjectType obj_type, NMPlatformGetRouteFlags flags)
@@ -5911,7 +6067,7 @@ ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, guint
 	return NULL;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 #define EVENT_CONDITIONS      ((GIOCondition) (G_IO_IN | G_IO_PRI))
 #define ERROR_CONDITIONS      ((GIOCondition) (G_IO_ERR | G_IO_NVAL))
@@ -6264,7 +6420,7 @@ after_read:
 	}
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 cache_update_link_udev (NMPlatform *platform, int ifindex, GUdevDevice *udev_device)
@@ -6380,18 +6536,16 @@ handle_udev_event (GUdevClient *client,
 		udev_device_removed (platform, udev_device);
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 nm_linux_platform_init (NMLinuxPlatform *self)
 {
-	NMLinuxPlatformPrivate *priv = G_TYPE_INSTANCE_GET_PRIVATE (self, NM_TYPE_LINUX_PLATFORM, NMLinuxPlatformPrivate);
+	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (self);
 	gboolean use_udev;
 
 	use_udev =    nmp_netns_is_initial ()
 	           && access ("/sys", W_OK) == 0;
-
-	self->priv = priv;
 
 	priv->nlh_seq_next = 1;
 	priv->cache = nmp_cache_new (use_udev);
@@ -6530,7 +6684,7 @@ dispose (GObject *object)
 }
 
 static void
-nm_linux_platform_finalize (GObject *object)
+finalize (GObject *object)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (object);
 
@@ -6540,7 +6694,6 @@ nm_linux_platform_finalize (GObject *object)
 	g_ptr_array_unref (priv->delayed_action.list_refresh_link);
 	g_array_unref (priv->delayed_action.list_wait_for_nl_response);
 
-	/* Free netlink resources */
 	g_source_remove (priv->event_id);
 	g_io_channel_unref (priv->event_channel);
 	nl_socket_free (priv->nlh);
@@ -6555,20 +6708,15 @@ nm_linux_platform_finalize (GObject *object)
 	G_OBJECT_CLASS (nm_linux_platform_parent_class)->finalize (object);
 }
 
-#define OVERRIDE(function) platform_class->function = function
-
 static void
 nm_linux_platform_class_init (NMLinuxPlatformClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	NMPlatformClass *platform_class = NM_PLATFORM_CLASS (klass);
 
-	g_type_class_add_private (klass, sizeof (NMLinuxPlatformPrivate));
-
-	/* virtual methods */
 	object_class->constructed = constructed;
 	object_class->dispose = dispose;
-	object_class->finalize = nm_linux_platform_finalize;
+	object_class->finalize = finalize;
 
 	platform_class->sysctl_set = sysctl_set;
 	platform_class->sysctl_get = sysctl_get;
@@ -6642,6 +6790,7 @@ nm_linux_platform_class_init (NMLinuxPlatformClass *klass)
 
 	platform_class->link_gre_add = link_gre_add;
 	platform_class->link_ip6tnl_add = link_ip6tnl_add;
+	platform_class->link_macsec_add = link_macsec_add;
 	platform_class->link_macvlan_add = link_macvlan_add;
 	platform_class->link_ipip_add = link_ipip_add;
 	platform_class->link_sit_add = link_sit_add;

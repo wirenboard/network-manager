@@ -30,7 +30,7 @@
 #include "nm-active-connection.h"
 #include "nm-dbus-helpers.h"
 
-#include "nmdbus-vpn-connection.h"
+#include "introspection/org.freedesktop.NetworkManager.VPN.Connection.h"
 
 G_DEFINE_TYPE (NMVpnConnection, nm_vpn_connection, NM_TYPE_ACTIVE_CONNECTION)
 
@@ -79,7 +79,7 @@ nm_vpn_connection_get_banner (NMVpnConnection *vpn)
 	if (priv->vpn_state != NM_VPN_CONNECTION_STATE_ACTIVATED)
 		return NULL;
 
-	return priv->banner;
+	return nm_str_not_empty (priv->banner);
 }
 
 /**
@@ -144,6 +144,7 @@ init_dbus (NMObject *object)
 	proxy = _nm_object_get_proxy (object, NM_DBUS_INTERFACE_VPN_CONNECTION);
 	g_signal_connect (proxy, "vpn-state-changed",
 	                  G_CALLBACK (vpn_state_changed_proxy), object);
+	g_object_unref (proxy);
 }
 
 static void
@@ -184,10 +185,6 @@ nm_vpn_connection_class_init (NMVpnConnectionClass *connection_class)
 	NMObjectClass *nm_object_class = NM_OBJECT_CLASS (connection_class);
 
 	g_type_class_add_private (connection_class, sizeof (NMVpnConnectionPrivate));
-
-	_nm_object_class_add_interface (nm_object_class, NM_DBUS_INTERFACE_VPN_CONNECTION);
-	_nm_dbus_register_proxy_type (NM_DBUS_INTERFACE_VPN_CONNECTION,
-	                              NMDBUS_TYPE_VPN_CONNECTION_PROXY);
 
 	/* virtual methods */
 	object_class->get_property = get_property;

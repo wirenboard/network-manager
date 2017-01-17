@@ -284,9 +284,7 @@ sd_dhcp_lease *sd_dhcp_lease_unref(sd_dhcp_lease *lease) {
         free(lease->static_route);
         free(lease->client_id);
         free(lease->vendor_specific);
-        free(lease);
-
-        return NULL;
+        return mfree(lease);
 }
 
 static int lease_parse_u32(const uint8_t *option, size_t len, uint32_t *ret, uint32_t min) {
@@ -387,6 +385,23 @@ static int lease_parse_domain(const uint8_t *option, size_t len, char **ret) {
         return 0;
 }
 
+static void filter_bogus_addresses(struct in_addr *addresses, size_t *n) {
+        size_t i, j;
+
+        /* Silently filter DNS/NTP servers supplied to us that do not make outside of the local scope. */
+
+        for (i = 0, j = 0; i < *n; i ++) {
+
+                if (in4_addr_is_null(addresses+i) ||
+                    in4_addr_is_localhost(addresses+i))
+                        continue;
+
+                addresses[j++] = addresses[i];
+        }
+
+        *n = j;
+}
+
 static int lease_parse_in_addrs(const uint8_t *option, size_t len, struct in_addr **ret, size_t *n_ret) {
         assert(option);
         assert(ret);
@@ -407,6 +422,8 @@ static int lease_parse_in_addrs(const uint8_t *option, size_t len, struct in_add
                 addresses = newdup(struct in_addr, option, n_addresses);
                 if (!addresses)
                         return -ENOMEM;
+
+                filter_bogus_addresses(addresses, &n_addresses);
 
                 free(*ret);
                 *ret = addresses;

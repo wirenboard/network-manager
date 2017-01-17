@@ -443,7 +443,7 @@ usage_device_wifi (void)
 	              "used to list APs for a particular interface, or with a specific BSSID.\n"
 	              "\n"
 	              "ARGUMENTS := connect <(B)SSID> [password <password>] [wep-key-type key|phrase] [ifname <ifname>]\n"
-	              "                    [bssid <BSSID>] [name <name>] [private yes|no] [hidden yes|no]\n"
+	              "                     [bssid <BSSID>] [name <name>] [private yes|no] [hidden yes|no]\n"
 	              "\n"
 	              "Connect to a Wi-Fi network specified by SSID or BSSID. The command creates\n"
 	              "a new connection and then activates it on a device. This is a command-line\n"
@@ -454,8 +454,8 @@ usage_device_wifi (void)
 	              "only open, WEP and WPA-PSK networks are supported at the moment. It is also\n"
 	              "assumed that IP configuration is obtained via DHCP.\n"
 	              "\n"
-	              "ARGUMENTS := wifi hotspot [ifname <ifname>] [con-name <name>] [ssid <SSID>]\n"
-	              "                          [band a|bg] [channel <channel>] [password <password>]\n"
+	              "ARGUMENTS := hotspot [ifname <ifname>] [con-name <name>] [ssid <SSID>]\n"
+	              "                     [band a|bg] [channel <channel>] [password <password>]\n"
 	              "\n"
 	              "Create a Wi-Fi hotspot. Use 'connection down' or 'device disconnect'\n"
 	              "to stop the hotspot.\n"
@@ -1855,8 +1855,6 @@ do_device_connect (NmCli *nmc, int argc, char **argv)
 	 */
 	nmc->nowait_flag = (nmc->timeout == 0);
 	nmc->should_wait++;
-
-	nmc->connections = nm_client_get_connections (nmc->client);
 
 	/* Create secret agent */
 	nmc->secret_agent = nm_secret_agent_simple_new ("nmcli-connect");
@@ -3313,6 +3311,7 @@ do_device_wifi_hotspot (NmCli *nmc, int argc, char **argv)
 	NMSettingWireless *s_wifi;
 	NMSettingWirelessSecurity *s_wsec;
 	NMSettingIPConfig *s_ip4, *s_ip6;
+	NMSettingProxy *s_proxy;
 	GBytes *ssid_bytes;
 	GError *error = NULL;
 
@@ -3479,6 +3478,10 @@ do_device_wifi_hotspot (NmCli *nmc, int argc, char **argv)
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 	g_object_set (s_ip6, NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
 
+	s_proxy = (NMSettingProxy *) nm_setting_proxy_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_proxy));
+	g_object_set (s_proxy, NM_SETTING_PROXY_METHOD, (int) NM_SETTING_PROXY_METHOD_NONE, NULL);
+
 	/* Activate the connection now */
 	nmc->nowait_flag = (nmc->timeout == 0);
 	nmc->should_wait++;
@@ -3604,11 +3607,11 @@ finish:
 }
 
 static NMCCommand device_wifi_cmds[] = {
-	{"list",     do_device_wifi_list,            NULL },
-	{"connect",  do_device_wifi_connect_network, NULL },
-	{"hotspot",  do_device_wifi_hotspot,         NULL },
-	{"rescan",   do_device_wifi_rescan,          NULL },
-	{NULL,       do_device_wifi_list,            NULL }
+	{ "list",     do_device_wifi_list,            NULL,             TRUE,   TRUE },
+	{ "connect",  do_device_wifi_connect_network, NULL,             TRUE,   TRUE },
+	{ "hotspot",  do_device_wifi_hotspot,         NULL,             TRUE,   TRUE },
+	{ "rescan",   do_device_wifi_rescan,          NULL,             TRUE,   TRUE },
+	{ NULL,       do_device_wifi_list,            NULL,             TRUE,   TRUE },
 };
 
 static NMCResultCode
@@ -3622,7 +3625,9 @@ do_device_wifi (NmCli *nmc, int argc, char **argv)
 		return NMC_RESULT_ERROR_USER_INPUT;
 	}
 
-	return nmc_do_cmd (nmc, device_wifi_cmds, *argv, argc, argv);
+	nmc_do_cmd (nmc, device_wifi_cmds, *argv, argc, argv);
+
+	return nmc->return_value;
 }
 
 static int
@@ -3777,8 +3782,8 @@ do_device_lldp_list (NmCli *nmc, int argc, char **argv)
 }
 
 static NMCCommand device_lldp_cmds[] = {
-	{"list",  do_device_lldp_list,  NULL },
-	{NULL,    do_device_lldp_list,  NULL }
+	{ "list",  do_device_lldp_list,  NULL,             TRUE,   TRUE },
+	{ NULL,    do_device_lldp_list,  NULL,             TRUE,   TRUE },
 };
 
 static NMCResultCode
@@ -3795,7 +3800,9 @@ do_device_lldp (NmCli *nmc, int argc, char **argv)
 	if (!nmc->mode_specified)
 		nmc->multiline_output = TRUE;  /* multiline mode is default for 'device lldp' */
 
-	return nmc_do_cmd (nmc, device_lldp_cmds, *argv, argc, argv);
+	nmc_do_cmd (nmc, device_lldp_cmds, *argv, argc, argv);
+
+	return nmc->return_value;
 }
 
 static gboolean
@@ -3841,18 +3848,18 @@ nmcli_device_tab_completion (const char *text, int start, int end)
 }
 
 static const NMCCommand device_cmds[] = {
-	{"status",      do_devices_status,      usage_device_status },
-	{"show",        do_device_show,         usage_device_show },
-	{"connect",     do_device_connect,      usage_device_connect },
-	{"reapply",     do_device_reapply,      usage_device_reapply },
-	{"disconnect",  do_devices_disconnect,  usage_device_disconnect },
-	{"delete",      do_devices_delete,      usage_device_delete },
-	{"set",         do_device_set,          usage_device_set },
-	{"monitor",     do_devices_monitor,     usage_device_monitor },
-	{"wifi",        do_device_wifi,         usage_device_wifi },
-	{"lldp",        do_device_lldp,         usage_device_lldp },
-	{"modify",      do_device_modify,       usage_device_modify },
-	{NULL,          do_devices_status,      usage },
+	{ "status",      do_devices_status,      usage_device_status,      TRUE,   TRUE },
+	{ "show",        do_device_show,         usage_device_show,        TRUE,   TRUE },
+	{ "connect",     do_device_connect,      usage_device_connect,     TRUE,   TRUE },
+	{ "reapply",     do_device_reapply,      usage_device_reapply,     TRUE,   TRUE },
+	{ "disconnect",  do_devices_disconnect,  usage_device_disconnect,  TRUE,   TRUE },
+	{ "delete",      do_devices_delete,      usage_device_delete,      TRUE,   TRUE },
+	{ "set",         do_device_set,          usage_device_set,         TRUE,   TRUE },
+	{ "monitor",     do_devices_monitor,     usage_device_monitor,     TRUE,   TRUE },
+	{ "wifi",        do_device_wifi,         usage_device_wifi,        FALSE,  FALSE },
+	{ "lldp",        do_device_lldp,         usage_device_lldp,        FALSE,  FALSE },
+	{ "modify",      do_device_modify,       usage_device_modify,      TRUE,   TRUE },
+	{ NULL,          do_devices_status,      usage,                    TRUE,   TRUE },
 };
 
 NMCResultCode
@@ -3863,16 +3870,9 @@ do_devices (NmCli *nmc, int argc, char **argv)
 
 	rl_attempted_completion_function = (rl_completion_func_t *) nmcli_device_tab_completion;
 
-	/* Get NMClient object early */
-	nmc->get_client (nmc);
+	nmc_do_cmd (nmc, device_cmds, *argv, argc, argv);
 
-	/* Check whether NetworkManager is running */
-	if (!nm_client_get_nm_running (nmc->client)) {
-		g_string_printf (nmc->return_text, _("Error: NetworkManager is not running."));
-		return NMC_RESULT_ERROR_NM_NOT_RUNNING;
-	}
-
-	return nmc_do_cmd (nmc, device_cmds, *argv, argc, argv);
+	return nmc->return_value;
 }
 
 void

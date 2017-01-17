@@ -38,18 +38,18 @@
 #include "nm-dbus-interface.h"
 #include "NetworkManagerUtils.h"
 #include "nm-manager.h"
-#include "nm-linux-platform.h"
+#include "platform/nm-linux-platform.h"
 #include "nm-bus-manager.h"
-#include "nm-device.h"
-#include "nm-dhcp-manager.h"
+#include "devices/nm-device.h"
+#include "dhcp/nm-dhcp-manager.h"
 #include "nm-config.h"
 #include "nm-session-monitor.h"
 #include "nm-dispatcher.h"
-#include "nm-settings.h"
+#include "settings/nm-settings.h"
 #include "nm-auth-manager.h"
 #include "nm-core-internal.h"
 #include "nm-exported-object.h"
-#include "nm-sd.h"
+#include "systemd/nm-sd.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -85,8 +85,9 @@ _set_g_fatal_warnings (void)
 }
 
 static void
-_init_nm_debug (const char *debug)
+_init_nm_debug (NMConfig *config)
 {
+	gs_free char *debug = NULL;
 	const guint D_RLIMIT_CORE = 1;
 	const guint D_FATAL_WARNINGS = 2;
 	GDebugKey keys[] = {
@@ -95,6 +96,11 @@ _init_nm_debug (const char *debug)
 	};
 	guint flags;
 	const char *env = getenv ("NM_DEBUG");
+
+	debug = nm_config_data_get_value (nm_config_get_data_orig (config),
+	                                  NM_CONFIG_KEYFILE_GROUP_MAIN,
+	                                  NM_CONFIG_KEYFILE_KEY_MAIN_DEBUG,
+	                                  NM_MANAGER_RELOAD_FLAGS_NONE);
 
 	flags  = nm_utils_parse_debug_string (env, keys, G_N_ELEMENTS (keys));
 	flags |= nm_utils_parse_debug_string (debug, keys, G_N_ELEMENTS (keys));
@@ -272,7 +278,7 @@ main (int argc, char *argv[])
 
 		/* don't free these strings, we need them for the entire
 		 * process lifetime */
-		nm_dhcp_helper_path = g_strdup_printf ("%s/src/dhcp-manager/nm-dhcp-helper", path);
+		nm_dhcp_helper_path = g_strdup_printf ("%s/src/dhcp/nm-dhcp-helper", path);
 
 		g_free (path);
 	}
@@ -302,7 +308,7 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	_init_nm_debug (nm_config_get_debug (config));
+	_init_nm_debug (config);
 
 	/* Initialize logging from config file *only* if not explicitly
 	 * specified by commandline.
@@ -362,7 +368,10 @@ main (int argc, char *argv[])
 #endif
 	             );
 
-	nm_auth_manager_setup (nm_config_get_auth_polkit (config));
+	nm_auth_manager_setup (nm_config_data_get_value_boolean (nm_config_get_data_orig (config),
+	                                                         NM_CONFIG_KEYFILE_GROUP_MAIN,
+	                                                         NM_CONFIG_KEYFILE_KEY_MAIN_AUTH_POLKIT,
+	                                                         NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT_BOOL));
 
 	nm_manager_setup ();
 
@@ -412,6 +421,13 @@ main (int argc, char *argv[])
 	}
 
 done:
+
+	/* write the device-state to file. Note that we only persist the
+	 * state here. We don't bother updating the state as devices
+	 * change during regular operation. If NM is killed with SIGKILL,
+	 * it misses to update the state. */
+	nm_manager_write_device_state (nm_manager_get ());
+
 	nm_exported_object_class_set_quitting ();
 
 	nm_manager_stop (nm_manager_get ());

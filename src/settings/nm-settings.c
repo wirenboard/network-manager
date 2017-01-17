@@ -57,40 +57,32 @@
 #include "nm-setting-adsl.h"
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
+#include "nm-setting-proxy.h"
 #include "nm-setting-bond.h"
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 
-#include "nm-device-ethernet.h"
+#include "devices/nm-device-ethernet.h"
 #include "nm-settings-connection.h"
 #include "nm-settings-plugin.h"
 #include "nm-bus-manager.h"
 #include "nm-auth-utils.h"
 #include "nm-auth-subject.h"
 #include "nm-session-monitor.h"
-#include "plugins/keyfile/plugin.h"
+#include "plugins/keyfile/nms-keyfile-plugin.h"
 #include "nm-agent-manager.h"
 #include "nm-config.h"
 #include "nm-audit-manager.h"
 #include "NetworkManagerUtils.h"
 #include "nm-dispatcher.h"
+#include "nm-inotify-helper.h"
 
-#include "nmdbus-settings.h"
+#include "introspection/org.freedesktop.NetworkManager.Settings.h"
 
-#define _NMLOG_DOMAIN         LOGD_SETTINGS
-#define _NMLOG_PREFIX_NAME    "settings"
-#define _NMLOG(level, ...) \
-    G_STMT_START { \
-        nm_log ((level), _NMLOG_DOMAIN, \
-                "%s" _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
-                _NMLOG_PREFIX_NAME": " \
-                _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
-    } G_STMT_END
+/*****************************************************************************/
 
-/* LINKER CRACKROCK */
 #define EXPORT(sym) void * __export_##sym = &sym;
 
-#include "nm-inotify-helper.h"
 EXPORT(nm_inotify_helper_get_type)
 EXPORT(nm_inotify_helper_get)
 EXPORT(nm_inotify_helper_add_watch)
@@ -99,7 +91,8 @@ EXPORT(nm_inotify_helper_remove_watch)
 EXPORT(nm_settings_connection_get_type)
 EXPORT(nm_settings_connection_replace_settings)
 EXPORT(nm_settings_connection_replace_and_commit)
-/* END LINKER CRACKROCK */
+
+/*****************************************************************************/
 
 #define HOSTNAMED_SERVICE_NAME      "org.freedesktop.hostname1"
 #define HOSTNAMED_SERVICE_PATH      "/org/freedesktop/hostname1"
@@ -127,17 +120,27 @@ EXPORT(nm_settings_connection_replace_and_commit)
 #define HOSTNAME_FILE           HOSTNAME_FILE_DEFAULT
 #endif
 
-static void claim_connection (NMSettings *self,
-                              NMSettingsConnection *connection);
+/*****************************************************************************/
 
-static void unmanaged_specs_changed (NMSettingsPlugin *config, gpointer user_data);
-static void unrecognized_specs_changed (NMSettingsPlugin *config, gpointer user_data);
+NM_GOBJECT_PROPERTIES_DEFINE (NMSettings,
+	PROP_UNMANAGED_SPECS,
+	PROP_HOSTNAME,
+	PROP_CAN_MODIFY,
+	PROP_CONNECTIONS,
+	PROP_STARTUP_COMPLETE,
+);
 
-static void connection_ready_changed (NMSettingsConnection *conn,
-                                      GParamSpec *pspec,
-                                      gpointer user_data);
+enum {
+	CONNECTION_ADDED,
+	CONNECTION_UPDATED,
+	CONNECTION_REMOVED,
+	CONNECTION_VISIBILITY_CHANGED,
+	AGENT_REGISTERED,
+	NEW_CONNECTION, /* exported, not used internally */
+	LAST_SIGNAL
+};
 
-G_DEFINE_TYPE (NMSettings, nm_settings, NM_TYPE_EXPORTED_OBJECT);
+static guint signals[LAST_SIGNAL] = { 0 };
 
 typedef struct {
 	NMAgentManager *agent_mgr;
@@ -166,27 +169,37 @@ typedef struct {
 	} hostname;
 } NMSettingsPrivate;
 
-#define NM_SETTINGS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTINGS, NMSettingsPrivate))
-
-enum {
-	CONNECTION_ADDED,
-	CONNECTION_UPDATED,
-	CONNECTION_REMOVED,
-	CONNECTION_VISIBILITY_CHANGED,
-	AGENT_REGISTERED,
-
-	NEW_CONNECTION, /* exported, not used internally */
-	LAST_SIGNAL
+struct _NMSettings {
+	NMExportedObject parent;
+	NMSettingsPrivate _priv;
 };
-static guint signals[LAST_SIGNAL] = { 0 };
 
-NM_GOBJECT_PROPERTIES_DEFINE (NMSettings,
-	PROP_UNMANAGED_SPECS,
-	PROP_HOSTNAME,
-	PROP_CAN_MODIFY,
-	PROP_CONNECTIONS,
-	PROP_STARTUP_COMPLETE,
-);
+struct _NMSettingsClass {
+	NMExportedObjectClass parent;
+};
+
+G_DEFINE_TYPE (NMSettings, nm_settings, NM_TYPE_EXPORTED_OBJECT);
+
+#define NM_SETTINGS_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMSettings, NM_IS_SETTINGS)
+
+/*****************************************************************************/
+
+#define _NMLOG_DOMAIN         LOGD_SETTINGS
+#define _NMLOG(level, ...) __NMLOG_DEFAULT (level, _NMLOG_DOMAIN, "settings", __VA_ARGS__)
+
+/*****************************************************************************/
+
+static void claim_connection (NMSettings *self,
+                              NMSettingsConnection *connection);
+
+static void unmanaged_specs_changed (NMSettingsPlugin *config, gpointer user_data);
+static void unrecognized_specs_changed (NMSettingsPlugin *config, gpointer user_data);
+
+static void connection_ready_changed (NMSettingsConnection *conn,
+                                      GParamSpec *pspec,
+                                      gpointer user_data);
+
+/*****************************************************************************/
 
 static void
 check_startup_complete (NMSettings *self)
@@ -778,10 +791,9 @@ find_plugin (GSList *list, const char *pname)
 static void
 add_keyfile_plugin (NMSettings *self)
 {
-	gs_unref_object GObject *keyfile_plugin = NULL;
+	gs_unref_object NMSKeyfilePlugin *keyfile_plugin = NULL;
 
-	keyfile_plugin = nm_settings_keyfile_plugin_new ();
-	g_assert (keyfile_plugin);
+	keyfile_plugin = nms_keyfile_plugin_new ();
 	if (!add_plugin (self, NM_SETTINGS_PLUGIN (keyfile_plugin)))
 		g_return_if_reached ();
 }
@@ -1700,9 +1712,6 @@ write_hostname (NMSettingsPrivate *priv, const char *hostname)
 	hostname_eol = g_strdup_printf ("%s\n", hostname);
 #endif
 
-	/* FIXME: g_file_set_contents() writes first to a temporary file
-	 * and renames it atomically. We should hack g_file_set_contents()
-	 * to set the SELINUX labels before renaming the file. */
 	ret = g_file_set_contents (file, hostname_eol, -1, &error);
 
 #if HAVE_SELINUX
@@ -2072,7 +2081,7 @@ nm_settings_device_removed (NMSettings *self, NMDevice *device, gboolean quittin
 	}
 }
 
-/***************************************************************/
+/*****************************************************************************/
 
 /* GCompareFunc helper for sorting "best" connections.
  * The function sorts connections in ascending timestamp order.
@@ -2173,7 +2182,7 @@ nm_settings_get_best_connections (NMSettings *self,
 	return g_slist_reverse (sorted);
 }
 
-/***************************************************************/
+/*****************************************************************************/
 
 gboolean
 nm_settings_get_startup_complete (NMSettings *self)
@@ -2183,7 +2192,7 @@ nm_settings_get_startup_complete (NMSettings *self)
 	return priv->startup_complete;
 }
 
-/***************************************************************/
+/*****************************************************************************/
 
 static void
 hostnamed_properties_changed (GDBusProxy *proxy,
@@ -2268,22 +2277,6 @@ setup_hostname_file_monitors (NMSettings *self)
 	hostname_maybe_changed (self);
 }
 
-NMSettings *
-nm_settings_new (void)
-{
-	NMSettings *self;
-	NMSettingsPrivate *priv;
-
-	self = g_object_new (NM_TYPE_SETTINGS, NULL);
-
-	priv = NM_SETTINGS_GET_PRIVATE (self);
-
-	priv->config = nm_config_get ();
-
-	nm_exported_object_export (NM_EXPORTED_OBJECT (self));
-	return self;
-}
-
 gboolean
 nm_settings_start (NMSettings *self, GError **error)
 {
@@ -2291,11 +2284,14 @@ nm_settings_start (NMSettings *self, GError **error)
 	GDBusProxy *proxy;
 	GVariant *variant;
 	GError *local_error = NULL;
+	gs_strfreev char **plugins = NULL;
 
 	priv = NM_SETTINGS_GET_PRIVATE (self);
 
 	/* Load the plugins; fail if a plugin is not found. */
-	if (!load_plugins (self, nm_config_get_plugins (priv->config), error)) {
+	plugins = nm_config_data_get_plugins (nm_config_get_data_orig (priv->config), TRUE);
+
+	if (!load_plugins (self, (const char **) plugins, error)) {
 		g_object_unref (self);
 		return FALSE;
 	}
@@ -2333,6 +2329,57 @@ nm_settings_start (NMSettings *self, GError **error)
 	return TRUE;
 }
 
+/*****************************************************************************/
+
+static void
+get_property (GObject *object, guint prop_id,
+              GValue *value, GParamSpec *pspec)
+{
+	NMSettings *self = NM_SETTINGS (object);
+	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+	const GSList *specs, *iter;
+	GHashTableIter citer;
+	GPtrArray *array;
+	const char *path;
+
+	switch (prop_id) {
+	case PROP_UNMANAGED_SPECS:
+		array = g_ptr_array_new ();
+		specs = nm_settings_get_unmanaged_specs (self);
+		for (iter = specs; iter; iter = g_slist_next (iter))
+			g_ptr_array_add (array, g_strdup (iter->data));
+		g_ptr_array_add (array, NULL);
+		g_value_take_boxed (value, (char **) g_ptr_array_free (array, FALSE));
+		break;
+	case PROP_HOSTNAME:
+		g_value_take_string (value, nm_settings_get_hostname (self));
+
+		/* Don't ever pass NULL through D-Bus */
+		if (!g_value_get_string (value))
+			g_value_set_static_string (value, "");
+		break;
+	case PROP_CAN_MODIFY:
+		g_value_set_boolean (value, !!get_plugin (self, NM_SETTINGS_PLUGIN_CAP_MODIFY_CONNECTIONS));
+		break;
+	case PROP_CONNECTIONS:
+		array = g_ptr_array_sized_new (g_hash_table_size (priv->connections) + 1);
+		g_hash_table_iter_init (&citer, priv->connections);
+		while (g_hash_table_iter_next (&citer, (gpointer) &path, NULL))
+			g_ptr_array_add (array, g_strdup (path));
+		g_ptr_array_add (array, NULL);
+		g_value_take_boxed (value, (char **) g_ptr_array_free (array, FALSE));
+		break;
+	case PROP_STARTUP_COMPLETE:
+		g_value_set_boolean (value, nm_settings_get_startup_complete (self));
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+/*****************************************************************************/
+
 static void
 nm_settings_init (NMSettings *self)
 {
@@ -2347,7 +2394,15 @@ nm_settings_init (NMSettings *self)
 	 */
 	priv->agent_mgr = g_object_ref (nm_agent_manager_get ());
 
+	priv->config = g_object_ref (nm_config_get ());
+
 	g_signal_connect (priv->agent_mgr, "agent-registered", G_CALLBACK (secret_agent_registered), self);
+}
+
+NMSettings *
+nm_settings_new (void)
+{
+	return g_object_new (NM_TYPE_SETTINGS, NULL);
 }
 
 static void
@@ -2404,54 +2459,9 @@ finalize (GObject *object)
 
 	g_slist_free_full (priv->plugins, g_object_unref);
 
+	g_clear_object (&priv->config);
+
 	G_OBJECT_CLASS (nm_settings_parent_class)->finalize (object);
-}
-
-static void
-get_property (GObject *object, guint prop_id,
-              GValue *value, GParamSpec *pspec)
-{
-	NMSettings *self = NM_SETTINGS (object);
-	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
-	const GSList *specs, *iter;
-	GHashTableIter citer;
-	GPtrArray *array;
-	const char *path;
-
-	switch (prop_id) {
-	case PROP_UNMANAGED_SPECS:
-		array = g_ptr_array_new ();
-		specs = nm_settings_get_unmanaged_specs (self);
-		for (iter = specs; iter; iter = g_slist_next (iter))
-			g_ptr_array_add (array, g_strdup (iter->data));
-		g_ptr_array_add (array, NULL);
-		g_value_take_boxed (value, (char **) g_ptr_array_free (array, FALSE));
-		break;
-	case PROP_HOSTNAME:
-		g_value_take_string (value, nm_settings_get_hostname (self));
-
-		/* Don't ever pass NULL through D-Bus */
-		if (!g_value_get_string (value))
-			g_value_set_static_string (value, "");
-		break;
-	case PROP_CAN_MODIFY:
-		g_value_set_boolean (value, !!get_plugin (self, NM_SETTINGS_PLUGIN_CAP_MODIFY_CONNECTIONS));
-		break;
-	case PROP_CONNECTIONS:
-		array = g_ptr_array_sized_new (g_hash_table_size (priv->connections) + 1);
-		g_hash_table_iter_init (&citer, priv->connections);
-		while (g_hash_table_iter_next (&citer, (gpointer) &path, NULL))
-			g_ptr_array_add (array, g_strdup (path));
-		g_ptr_array_add (array, NULL);
-		g_value_take_boxed (value, (char **) g_ptr_array_free (array, FALSE));
-		break;
-	case PROP_STARTUP_COMPLETE:
-		g_value_set_boolean (value, nm_settings_get_startup_complete (self));
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
 }
 
 static void
@@ -2460,16 +2470,11 @@ nm_settings_class_init (NMSettingsClass *class)
 	GObjectClass *object_class = G_OBJECT_CLASS (class);
 	NMExportedObjectClass *exported_object_class = NM_EXPORTED_OBJECT_CLASS (class);
 
-	g_type_class_add_private (class, sizeof (NMSettingsPrivate));
-
 	exported_object_class->export_path = NM_DBUS_PATH_SETTINGS;
 
-	/* virtual methods */
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
-
-	/* properties */
 
 	obj_properties[PROP_UNMANAGED_SPECS] =
 	    g_param_spec_boxed (NM_SETTINGS_UNMANAGED_SPECS, "", "",
@@ -2503,7 +2508,6 @@ nm_settings_class_init (NMSettingsClass *class)
 
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
-	/* signals */
 	signals[CONNECTION_ADDED] =
 	    g_signal_new (NM_SETTINGS_SIGNAL_CONNECTION_ADDED,
 	                  G_OBJECT_CLASS_TYPE (object_class),

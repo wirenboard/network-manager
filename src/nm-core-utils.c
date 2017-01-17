@@ -520,7 +520,7 @@ fail:
 	return 0;
 }
 
-/******************************************************************************************/
+/*****************************************************************************/
 
 typedef struct {
 	pid_t pid;
@@ -1152,12 +1152,12 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 const char *const NM_PATHS_DEFAULT[] = {
 	PREFIX "/sbin/",
 	PREFIX "/bin/",
+	"/usr/local/sbin/",
 	"/sbin/",
 	"/usr/sbin/",
-	"/usr/local/sbin/",
+	"/usr/local/bin/",
 	"/bin/",
 	"/usr/bin/",
-	"/usr/local/bin/",
 	NULL,
 };
 
@@ -1167,7 +1167,7 @@ nm_utils_find_helper(const char *progname, const char *try_first, GError **error
 	return nm_utils_file_search_in_paths (progname, try_first, NM_PATHS_DEFAULT, G_FILE_TEST_IS_EXECUTABLE, NULL, NULL, error);
 }
 
-/******************************************************************************************/
+/*****************************************************************************/
 
 /**
  * nm_utils_read_link_absolute:
@@ -1201,7 +1201,7 @@ nm_utils_read_link_absolute (const char *link_file, GError **error)
 	return ln_abs;
 }
 
-/******************************************************************************************/
+/*****************************************************************************/
 
 #define MAC_TAG "mac:"
 #define INTERFACE_NAME_TAG "interface-name:"
@@ -1771,83 +1771,6 @@ nm_utils_to_string_buffer_init_null (gconstpointer obj, char **buf, gsize *len)
 	return TRUE;
 }
 
-void
-nm_utils_strbuf_append_c (char **buf, gsize *len, char c)
-{
-	switch (*len) {
-	case 0:
-		return;
-	case 1:
-		(*buf)[0] = '\0';
-		*len = 0;
-		(*buf)++;
-		return;
-	default:
-		(*buf)[0] = c;
-		(*buf)[1] = '\0';
-		(*len)--;
-		(*buf)++;
-		return;
-	}
-}
-
-void
-nm_utils_strbuf_append_str (char **buf, gsize *len, const char *str)
-{
-	gsize src_len;
-
-	switch (*len) {
-	case 0:
-		return;
-	case 1:
-		if (!str || !*str) {
-			(*buf)[0] = '\0';
-			return;
-		}
-		(*buf)[0] = '\0';
-		*len = 0;
-		(*buf)++;
-		return;
-	default:
-		if (!str || !*str) {
-			(*buf)[0] = '\0';
-			return;
-		}
-		src_len = g_strlcpy (*buf, str, *len);
-		if (src_len >= *len) {
-			*buf = &(*buf)[*len];
-			*len = 0;
-		} else {
-			*buf = &(*buf)[src_len];
-			*len -= src_len;
-		}
-		return;
-	}
-}
-
-void
-nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...)
-{
-	char *p = *buf;
-	va_list args;
-	gint retval;
-
-	if (*len == 0)
-		return;
-
-	va_start (args, format);
-	retval = g_vsnprintf (p, *len, format, args);
-	va_end (args);
-
-	if (retval >= *len) {
-		*buf = &p[*len];
-		*len = 0;
-	} else {
-		*buf = &p[retval];
-		*len -= retval;
-	}
-}
-
 const char *
 nm_utils_flags2str (const NMUtilsFlags2StrDesc *descs,
                     gsize n_descs,
@@ -2080,7 +2003,7 @@ nm_utils_cmp_connection_by_autoconnect_priority (NMConnection **a, NMConnection 
 	return 0;
 }
 
-/**************************************************************************/
+/*****************************************************************************/
 
 static gint64 monotonic_timestamp_offset_sec;
 static int monotonic_timestamp_clock_mode = 0;
@@ -2649,7 +2572,7 @@ nm_utils_is_specific_hostname (const char *name)
 	return FALSE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 gboolean
 nm_utils_machine_id_parse (const char *id_str, /*uuid_t*/ guchar *out_uuid)
@@ -2802,6 +2725,246 @@ nm_utils_fd_read_loop_exact (int fd, void *buf, size_t nbytes, bool do_poll)
 	return 0;
 }
 
+_nm_printf (3, 4)
+static int
+_get_contents_error (GError **error, int errsv, const char *format, ...)
+{
+	if (errsv < 0)
+		errsv = -errsv;
+	else if (!errsv)
+		errsv = errno;
+
+	if (error) {
+		char *msg;
+		va_list args;
+
+		va_start (args, format);
+		msg = g_strdup_vprintf (format, args);
+		va_end (args);
+		g_set_error (error,
+		             G_FILE_ERROR,
+		             g_file_error_from_errno (errsv),
+		             "%s: %s",
+		             msg, g_strerror (errsv));
+		g_free (msg);
+	}
+	return -errsv;
+}
+
+/**
+ * nm_utils_fd_get_contents:
+ * @fd: open file descriptor to read. The fd will not be closed,
+ *   but don't rely on it's state afterwards.
+ * @max_length: allocate at most @max_length bytes. If the
+ *   file is larger, reading will fail. Set to zero to use
+ *   a very large default.
+ *
+ *   WARNING: @max_length is here to avoid a crash for huge/unlimited files.
+ *   For example, stat(/sys/class/net/enp0s25/ifindex) gives a filesize of
+ *   4K, although the actual real is small. @max_length is the memory
+ *   allocated in the process of reading the file, thus it must be at least
+ *   the size reported by fstat.
+ *   If you set it to 1K, read will fail because fstat() claims the
+ *   file is larger.
+ *
+ * @contents: the output buffer with the file read. It is always
+ *   NUL terminated. The buffer is at most @max_length long, including
+ *  the NUL byte. That is, it reads only files up to a length of
+ *  @max_length - 1 bytes.
+ * @length: optional output argument of the read file size.
+ *
+ * A reimplementation of g_file_get_contents() with a few differences:
+ *   - accepts an open fd, instead of a path name. This allows you to
+ *     use openat().
+ *   - limits the maxium filesize to max_length.
+ *
+ * Returns: a negative error code on failure.
+ */
+int
+nm_utils_fd_get_contents (int fd,
+                          gsize max_length,
+                          char **contents,
+                          gsize *length,
+                          GError **error)
+{
+	struct stat stat_buf;
+	gs_free char *str = NULL;
+
+	g_return_val_if_fail (fd >= 0, -EINVAL);
+	g_return_val_if_fail (contents, -EINVAL);
+	g_return_val_if_fail (!error || !*error, -EINVAL);
+
+	if (fstat (fd, &stat_buf) < 0)
+		return _get_contents_error (error, 0, "failure during fstat");
+
+	if (!max_length) {
+		/* default to a very large size, but not extreme */
+		max_length = 2 * 1024 * 1024;
+	}
+
+	if (   stat_buf.st_size > 0
+	    && S_ISREG (stat_buf.st_mode)) {
+		const gsize n_stat = stat_buf.st_size;
+		ssize_t n_read;
+
+		if (n_stat > max_length - 1)
+			return _get_contents_error (error, EMSGSIZE, "file too large (%zu+1 bytes with maximum %zu bytes)", n_stat, max_length);
+
+		str = g_try_malloc (n_stat + 1);
+		if (!str)
+			return _get_contents_error (error, ENOMEM, "failure to allocate buffer of %zu+1 bytes", n_stat);
+
+		n_read = nm_utils_fd_read_loop (fd, str, n_stat, TRUE);
+		if (n_read < 0)
+			return _get_contents_error (error, n_read, "error reading %zu bytes from file descriptor", n_stat);
+		str[n_read] = '\0';
+
+		if (n_read < n_stat) {
+			char *tmp;
+
+			tmp = g_try_realloc (str, n_read + 1);
+			if (!tmp)
+				return _get_contents_error (error, ENOMEM, "failure to reallocate buffer with %zu bytes", n_read + 1);
+			str = tmp;
+		}
+		NM_SET_OUT (length, n_read);
+	} else {
+		nm_auto_fclose FILE *f = NULL;
+		char buf[4096];
+		gsize n_have, n_alloc;
+
+		if (!(f = fdopen (fd, "r")))
+			return _get_contents_error (error, 0, "failure during fdopen");
+
+		n_have = 0;
+		n_alloc = 0;
+
+		while (!feof (f)) {
+			int errsv;
+			gsize n_read;
+
+			n_read = fread (buf, 1, sizeof (buf), f);
+			errsv = errno;
+			if (ferror (f))
+				return _get_contents_error (error, errsv, "error during fread");
+
+			if (   n_have > G_MAXSIZE - 1 - n_read
+			    || n_have + n_read + 1 > max_length) {
+				return _get_contents_error (error, EMSGSIZE, "file stream too large (%zu+1 bytes with maximum %zu bytes)",
+				                            (n_have > G_MAXSIZE - 1 - n_read) ? G_MAXSIZE : n_have + n_read,
+				                            max_length);
+			}
+
+			if (n_have + n_read + 1 >= n_alloc) {
+				char *tmp;
+
+				if (str) {
+					if (n_alloc >= max_length / 2)
+						n_alloc = max_length;
+					else
+						n_alloc *= 2;
+				} else
+					n_alloc = NM_MIN (n_read + 1, sizeof (buf));
+
+				tmp = g_try_realloc (str, n_alloc);
+				if (!tmp)
+					return _get_contents_error (error, ENOMEM, "failure to allocate buffer of %zu bytes", n_alloc);
+				str = tmp;
+			}
+
+			memcpy (str + n_have, buf, n_read);
+			n_have += n_read;
+		}
+
+		if (n_alloc == 0)
+			str = g_new0 (gchar, 1);
+		else {
+			str[n_have] = '\0';
+			if (n_have + 1 < n_alloc) {
+				char *tmp;
+
+				tmp = g_try_realloc (str, n_have + 1);
+				if (!tmp)
+					return _get_contents_error (error, ENOMEM, "failure to truncate buffer to %zu bytes", n_have + 1);
+				str = tmp;
+			}
+		}
+
+		NM_SET_OUT (length, n_have);
+	}
+
+	*contents = g_steal_pointer (&str);
+	return 0;
+}
+
+/**
+ * nm_utils_file_get_contents:
+ * @dirfd: optional file descriptor to use openat(). If negative, use plain open().
+ * @filename: the filename to open. Possibly relative to @dirfd.
+ * @max_length: allocate at most @max_length bytes.
+ *   WARNING: see nm_utils_fd_get_contents() hint about @max_length.
+ * @contents: the output buffer with the file read. It is always
+ *   NUL terminated. The buffer is at most @max_length long, including
+ *  the NUL byte. That is, it reads only files up to a length of
+ *  @max_length - 1 bytes.
+ * @length: optional output argument of the read file size.
+ *
+ * A reimplementation of g_file_get_contents() with a few differences:
+ *   - accepts an @dirfd to open @filename relative to that path via openat().
+ *   - limits the maxium filesize to max_length.
+ *   - uses O_CLOEXEC on internal file descriptor
+ *
+ * Returns: a negative error code on failure.
+ */
+int
+nm_utils_file_get_contents (int dirfd,
+                            const char *filename,
+                            gsize max_length,
+                            char **contents,
+                            gsize *length,
+                            GError **error)
+{
+	nm_auto_close int fd = -1;
+	int errsv;
+
+	g_return_val_if_fail (filename && filename[0], -EINVAL);
+
+	if (dirfd >= 0) {
+		fd = openat (dirfd, filename, O_RDONLY | O_CLOEXEC);
+		if (fd < 0) {
+			errsv = errno;
+
+			g_set_error (error,
+			             G_FILE_ERROR,
+			             g_file_error_from_errno (errsv),
+			             "Failed to open file \"%s\" with openat: %s",
+			             filename,
+			             g_strerror (errsv));
+			return -errsv;
+		}
+	} else {
+		fd = open (filename, O_RDONLY | O_CLOEXEC);
+		if (fd < 0) {
+			errsv = errno;
+
+			g_set_error (error,
+			             G_FILE_ERROR,
+			             g_file_error_from_errno (errsv),
+			             "Failed to open file \"%s\": %s",
+			             filename,
+			             g_strerror (errsv));
+			return -errsv;
+		}
+	}
+	return nm_utils_fd_get_contents (fd,
+	                                 max_length,
+	                                 contents,
+	                                 length,
+	                                 error);
+}
+
+/*****************************************************************************/
+
 /* taken from systemd's dev_urandom(). */
 int
 nm_utils_read_urandom (void *p, size_t nbytes)
@@ -2876,6 +3039,39 @@ out:
 	g_free (secret_key);
 	return NULL;
 }
+
+/*****************************************************************************/
+
+const char *
+nm_utils_get_boot_id (void)
+{
+	static const char *boot_id;
+
+	if (G_UNLIKELY (!boot_id)) {
+		gs_free char *contents = NULL;
+
+		nm_utils_file_get_contents (-1, "/proc/sys/kernel/random/boot_id", 0,
+		                            &contents, NULL, NULL);
+		if (contents) {
+			g_strstrip (contents);
+			if (contents[0]) {
+				/* clone @contents because we keep @boot_id until the program
+				 * ends.
+				 * nm_utils_file_get_contents() likely allocated a larger
+				 * buffer chunk initially and (although using realloc to shrink
+				 * the buffer) it might not be best to keep this memory
+				 * around. */
+				boot_id = g_strdup (contents);
+			}
+		}
+		if (!boot_id)
+			boot_id = nm_utils_uuid_generate ();
+	}
+
+	return boot_id;
+}
+
+/*****************************************************************************/
 
 /* Returns the "u" (universal/local) bit value for a Modified EUI-64 */
 static gboolean
@@ -3071,8 +3267,188 @@ nm_utils_inet6_interface_identifier_to_token (NMUtilsIPv6IfaceId iid, char *buf)
 
 /*****************************************************************************/
 
+char *
+nm_utils_stable_id_random (void)
+{
+	char buf[15];
+
+	if (nm_utils_read_urandom (buf, sizeof (buf)) < 0)
+		g_return_val_if_reached (nm_utils_uuid_generate ());
+	return g_base64_encode ((guchar *) buf, sizeof (buf));
+}
+
+char *
+nm_utils_stable_id_generated_complete (const char *stable_id_generated)
+{
+	guint8 buf[20];
+	GChecksum *sum;
+	gsize buf_size;
+	char *base64;
+
+	/* for NM_UTILS_STABLE_TYPE_GENERATED we genererate a possibly long string
+	 * by doing text-substitutions in nm_utils_stable_id_parse().
+	 *
+	 * Let's shorten the (possibly) long stable_id to something more compact. */
+
+	g_return_val_if_fail (stable_id_generated, NULL);
+
+	sum = g_checksum_new (G_CHECKSUM_SHA1);
+	nm_assert (sum);
+
+	g_checksum_update (sum, (guchar *) stable_id_generated, strlen (stable_id_generated));
+
+	buf_size = sizeof (buf);
+	g_checksum_get_digest (sum, buf, &buf_size);
+	nm_assert (buf_size == sizeof (buf));
+
+	g_checksum_free (sum);
+
+	/* we don't care to use the sha1 sum in common hex representation.
+	 * Use instead base64, it's 27 chars (stripping the padding) vs.
+	 * 40. */
+
+	base64 = g_base64_encode ((guchar *) buf, sizeof (buf));
+	nm_assert (strlen (base64) == 28);
+	nm_assert (base64[27] == '=');
+
+	base64[27] = '\0';
+	return base64;
+}
+
+static void
+_stable_id_append (GString *str,
+                   const char *substitution)
+{
+	if (!substitution)
+		substitution = "";
+	g_string_append_printf (str, "=%zu{%s}", strlen (substitution), substitution);
+}
+
+NMUtilsStableType
+nm_utils_stable_id_parse (const char *stable_id,
+                          const char *uuid,
+                          const char *bootid,
+                          char **out_generated)
+{
+	gsize i, idx_start;
+	GString *str = NULL;
+
+	g_return_val_if_fail (out_generated, NM_UTILS_STABLE_TYPE_RANDOM);
+
+	if (!stable_id) {
+		out_generated = NULL;
+		return NM_UTILS_STABLE_TYPE_UUID;
+	}
+
+	/* the stable-id allows for some dynamic by performing text-substitutions
+	 * of ${...} patterns.
+	 *
+	 * At first, it looks a bit like bash parameter substitution.
+	 * In contrast however, the process is unambigious so that the resulting
+	 * effective id differs if:
+	 *  - the original, untranslated stable-id differs
+	 *  - or any of the subsitutions differs.
+	 *
+	 * The reason for that is, for example if you specify "${CONNECTION}" in the
+	 * stable-id, then the resulting ID should be always(!) unique for this connection.
+	 * There should be no way another connection could specify any stable-id that results
+	 * in the same addresses to be generated (aside hash collisions).
+	 *
+	 *
+	 * For example: say you have a connection with UUID
+	 * "123e4567-e89b-12d3-a456-426655440000" which happens also to be
+	 * the current boot-id.
+	 * Then:
+	 *   (1) connection.stable-id = <NULL>
+	 *   (2) connection.stable-id = "123e4567-e89b-12d3-a456-426655440000"
+	 *   (3) connection.stable-id = "${CONNECTION}"
+	 *   (3) connection.stable-id = "${BOOT}"
+	 * will all generate different addresses, although in one way or the
+	 * other, they all mangle the uuid "123e4567-e89b-12d3-a456-426655440000".
+	 *
+	 * For example, with stable-id="${FOO}${BAR}" the substitutions
+	 *   - FOO="ab", BAR="c"
+	 *   - FOO="a",  BAR="bc"
+	 * should give a different effective id.
+	 *
+	 * For example, with FOO="x" and BAR="x", the stable-ids
+	 *   - "${FOO}${BAR}"
+	 *   - "${BAR}${FOO}"
+	 * should give a different effective id.
+	 */
+
+	idx_start = 0;
+	for (i = 0; stable_id[i]; ) {
+		if (stable_id[i] != '$') {
+			i++;
+			continue;
+		}
+
+#define CHECK_PREFIX(prefix) \
+		({ \
+			gboolean _match = FALSE; \
+			\
+			if (g_str_has_prefix (&stable_id[i], ""prefix"")) { \
+				_match = TRUE; \
+				if (!str) \
+					str = g_string_sized_new (256); \
+				i += NM_STRLEN (prefix); \
+				g_string_append_len (str, &(stable_id)[idx_start], i - idx_start); \
+				idx_start = i; \
+			} \
+			_match; \
+		})
+		if (CHECK_PREFIX ("${CONNECTION}"))
+			_stable_id_append (str, uuid);
+		else if (CHECK_PREFIX ("${BOOT}"))
+			_stable_id_append (str, bootid ?: nm_utils_get_boot_id ());
+		else if (g_str_has_prefix (&stable_id[i], "${RANDOM}")) {
+			/* RANDOM makes not so much sense for cloned-mac-address
+			 * as the result is simmilar to specifing "cloned-mac-address=random".
+			 * It makes however sense for RFC 7217 Stable Privacy IPv6 addresses
+			 * where this is effectively the only way to generate a different
+			 * (random) host identifier for each connect.
+			 *
+			 * With RANDOM, the user can switch the lifetime of the
+			 * generated cloned-mac-address and IPv6 host identifier
+			 * by toggeling only the stable-id property of the connection.
+			 * With RANDOM being the most short-lived, ~non-stable~ variant.
+			 */
+			if (str)
+				g_string_free (str, TRUE);
+			*out_generated = NULL;
+			return NM_UTILS_STABLE_TYPE_RANDOM;
+		} else {
+			/* The text following the '$' is not recognized as valid
+			 * substitution pattern. Treat it verbatim. */
+			i++;
+
+			/* Note that using unrecognized substitution patterns might
+			 * yield different results with future versions. Avoid that,
+			 * by not using '$' (except for actual substitutions) or escape
+			 * it as "$$" (which is guaranteed to be treated verbatim
+			 * in future). */
+			if (stable_id[i] == '$')
+				i++;
+		}
+	}
+#undef CHECK_PREFIX
+
+	if (!str) {
+		*out_generated = NULL;
+		return NM_UTILS_STABLE_TYPE_STABLE_ID;
+	}
+
+	if (idx_start < i)
+		g_string_append_len (str, &stable_id[idx_start], i - idx_start);
+	*out_generated = g_string_free (str, FALSE);
+	return NM_UTILS_STABLE_TYPE_GENERATED;
+}
+
+/*****************************************************************************/
+
 static gboolean
-_set_stable_privacy (guint8 stable_type,
+_set_stable_privacy (NMUtilsStableType stable_type,
                      struct in6_addr *addr,
                      const char *ifname,
                      const char *network_id,
@@ -3086,7 +3462,8 @@ _set_stable_privacy (guint8 stable_type,
 	guint32 tmp[2];
 	gsize len = sizeof (digest);
 
-	g_return_val_if_fail (key_len, FALSE);
+	nm_assert (key_len);
+	nm_assert (network_id);
 
 	/* Documentation suggests that this can fail.
 	 * Maybe in case of a missing algorithm in crypto library? */
@@ -3100,6 +3477,11 @@ _set_stable_privacy (guint8 stable_type,
 	key_len = MIN (key_len, G_MAXUINT32);
 
 	if (stable_type != NM_UTILS_STABLE_TYPE_UUID) {
+		guint8 stable_type_uint8;
+
+		nm_assert (stable_type < (NMUtilsStableType) 255);
+		stable_type_uint8 = (guint8) stable_type;
+
 		/* Preferably, we would always like to include the stable-type,
 		 * but for backward compatibility reasons, we cannot for UUID.
 		 *
@@ -3109,13 +3491,11 @@ _set_stable_privacy (guint8 stable_type,
 		 * and the terminating '\0' of @network_id, it is unambigiously
 		 * possible to revert the process and deduce the @stable_type.
 		 */
-		g_checksum_update (sum, &stable_type, sizeof (stable_type));
+		g_checksum_update (sum, &stable_type_uint8, sizeof (stable_type_uint8));
 	}
 
 	g_checksum_update (sum, addr->s6_addr, 8);
 	g_checksum_update (sum, (const guchar *) ifname, strlen (ifname) + 1);
-	if (!network_id)
-		network_id = "";
 	g_checksum_update (sum, (const guchar *) network_id, strlen (network_id) + 1);
 	tmp[0] = htonl (dad_counter);
 	tmp[1] = htonl (key_len);
@@ -3130,6 +3510,19 @@ _set_stable_privacy (guint8 stable_type,
 	memcpy (addr->s6_addr + 8, &digest[0], 8);
 
 	return TRUE;
+}
+
+gboolean
+nm_utils_ipv6_addr_set_stable_privacy_impl (NMUtilsStableType stable_type,
+                                            struct in6_addr *addr,
+                                            const char *ifname,
+                                            const char *network_id,
+                                            guint dad_counter,
+                                            guint8 *secret_key,
+                                            gsize key_len,
+                                            GError **error)
+{
+	return _set_stable_privacy (stable_type, addr, ifname, network_id, dad_counter, secret_key, key_len, error);
 }
 
 #define RFC7217_IDGEN_RETRIES 3
@@ -3152,9 +3545,7 @@ nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType stable_type,
 	gs_free guint8 *secret_key = NULL;
 	gsize key_len = 0;
 
-	nm_assert (NM_IN_SET (stable_type,
-	                      NM_UTILS_STABLE_TYPE_UUID,
-	                      NM_UTILS_STABLE_TYPE_STABLE_ID));
+	g_return_val_if_fail (network_id, FALSE);
 
 	if (dad_counter >= RFC7217_IDGEN_RETRIES) {
 		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
@@ -3254,9 +3645,6 @@ _hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
 	guint8 stable_type_uint8;
 
 	nm_assert (stable_id);
-	nm_assert (NM_IN_SET (stable_type,
-	                      NM_UTILS_STABLE_TYPE_UUID,
-	                      NM_UTILS_STABLE_TYPE_STABLE_ID));
 	nm_assert (secret_key);
 
 	sum = g_checksum_new (G_CHECKSUM_SHA256);
@@ -3265,6 +3653,7 @@ _hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
 
 	key_len = MIN (key_len, G_MAXUINT32);
 
+	nm_assert (stable_type < (NMUtilsStableType) 255);
 	stable_type_uint8 = stable_type;
 	g_checksum_update (sum, (const guchar *) &stable_type_uint8, sizeof (stable_type_uint8));
 
@@ -3282,6 +3671,18 @@ _hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
 	memcpy (&bin_addr, digest, ETH_ALEN);
 	_hw_addr_eth_complete (&bin_addr, current_mac_address, generate_mac_address_mask);
 	return nm_utils_hwaddr_ntoa (&bin_addr, ETH_ALEN);
+}
+
+char *
+nm_utils_hw_addr_gen_stable_eth_impl (NMUtilsStableType stable_type,
+                                      const char *stable_id,
+                                      const guint8 *secret_key,
+                                      gsize key_len,
+                                      const char *ifname,
+                                      const char *current_mac_address,
+                                      const char *generate_mac_address_mask)
+{
+	return _hw_addr_gen_stable_eth (stable_type, stable_id, secret_key, key_len, ifname, current_mac_address, generate_mac_address_mask);
 }
 
 char *
@@ -3418,7 +3819,7 @@ nm_utils_ifname_cpy (char *dst, const char *name)
 	g_return_if_fail (dst);
 	g_return_if_fail (name && name[0]);
 
-	nm_assert (nm_utils_iface_valid_name (name));
+	nm_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	if (g_strlcpy (dst, name, IFNAMSIZ) >= IFNAMSIZ)
 		g_return_if_reached ();
@@ -3486,14 +3887,15 @@ nm_utils_lifetime_get (guint32 timestamp,
 
 	nm_assert (now >= 0);
 
-	if (lifetime == 0) {
+	if (timestamp == 0 && lifetime == 0) {
+		/* We treat lifetime==0 && timestamp == 0 addresses as permanent addresses to allow easy
+		 * creation of such addresses (without requiring to set the lifetime fields to
+		 * NM_PLATFORM_LIFETIME_PERMANENT). The real lifetime==0 addresses (E.g. DHCP6 telling us
+		 * to drop an address will have timestamp set.
+		 */
 		*out_lifetime = NM_PLATFORM_LIFETIME_PERMANENT;
 		*out_preferred = NM_PLATFORM_LIFETIME_PERMANENT;
-
-		/* We treat lifetime==0 as permanent addresses to allow easy creation of such addresses
-		 * (without requiring to set the lifetime fields to NM_PLATFORM_LIFETIME_PERMANENT).
-		 * In that case we also expect that the other fields (timestamp and preferred) are left unset. */
-		g_return_val_if_fail (timestamp == 0 && preferred == 0, TRUE);
+		g_return_val_if_fail (preferred == 0, TRUE);
 	} else {
 		if (now <= 0)
 			now = nm_utils_get_monotonic_timestamp_s ();
@@ -3654,3 +4056,228 @@ nm_utils_get_reverse_dns_domains_ip6 (const struct in6_addr *ip, guint8 plen, GP
 
 #undef N_SHIFT
 }
+
+/**
+ * Copied from GLib's g_file_set_contents() et al., but allows
+ * specifying a mode for the new file.
+ */
+gboolean
+nm_utils_file_set_contents (const gchar *filename,
+                            const gchar *contents,
+                            gssize length,
+                            mode_t mode,
+                            GError **error)
+{
+	gs_free char *tmp_name = NULL;
+	struct stat statbuf;
+	int errsv;
+	gssize s;
+	int fd;
+
+	g_return_val_if_fail (filename, FALSE);
+	g_return_val_if_fail (contents || !length, FALSE);
+	g_return_val_if_fail (!error || !*error, FALSE);
+	g_return_val_if_fail (length >= -1, FALSE);
+
+	tmp_name = g_strdup_printf ("%s.XXXXXX", filename);
+	fd = g_mkstemp_full (tmp_name, O_RDWR, mode);
+	if (fd < 0) {
+		errsv = errno;
+		g_set_error (error,
+		             G_FILE_ERROR,
+		             g_file_error_from_errno (errsv),
+		             "failed to create file %s: %s",
+		             tmp_name,
+		             g_strerror (errsv));
+		return FALSE;
+	}
+
+	while (length > 0) {
+		s = write (fd, contents, length);
+		if (s < 0) {
+			errsv = errno;
+			if (errsv == EINTR)
+				continue;
+
+			close (fd);
+			unlink (tmp_name);
+
+			g_set_error (error,
+			             G_FILE_ERROR,
+			             g_file_error_from_errno (errsv),
+			             "failed to write to file %s: %s",
+			             tmp_name,
+			             g_strerror (errsv));
+			return FALSE;
+		}
+
+		g_assert (s <= length);
+
+		contents += s;
+		length -= s;
+	}
+
+	/* If the final destination exists and is > 0 bytes, we want to sync the
+	 * newly written file to ensure the data is on disk when we rename over
+	 * the destination. Otherwise if we get a system crash we can lose both
+	 * the new and the old file on some filesystems. (I.E. those that don't
+	 * guarantee the data is written to the disk before the metadata.)
+	 */
+	if (   lstat (filename, &statbuf) == 0
+	    && statbuf.st_size > 0
+	    && fsync (fd) != 0) {
+		errsv = errno;
+
+		close (fd);
+		unlink (tmp_name);
+
+		g_set_error (error,
+		             G_FILE_ERROR,
+		             g_file_error_from_errno (errsv),
+		             "failed to fsync %s: %s",
+		             tmp_name,
+		             g_strerror (errsv));
+		return FALSE;
+	}
+
+	close (fd);
+
+	if (rename (tmp_name, filename)) {
+		errsv = errno;
+		unlink (tmp_name);
+		g_set_error (error,
+		             G_FILE_ERROR,
+		             g_file_error_from_errno (errsv),
+		             "failed to rename %s to %s: %s",
+		             tmp_name,
+		             filename,
+		             g_strerror (errsv));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+struct plugin_info {
+	char *path;
+	struct stat st;
+};
+
+static gint
+read_device_factory_paths_sort_fcn (gconstpointer a, gconstpointer b)
+{
+	const struct plugin_info *da = a;
+	const struct plugin_info *db = b;
+	time_t ta, tb;
+
+	ta = MAX (da->st.st_mtime, da->st.st_ctime);
+	tb = MAX (db->st.st_mtime, db->st.st_ctime);
+
+	if (ta < tb)
+		return 1;
+	if (ta > tb)
+		return -1;
+	return 0;
+}
+
+gboolean
+nm_utils_validate_plugin (const char *path, struct stat *st, GError **error)
+{
+	g_return_val_if_fail (path, FALSE);
+	g_return_val_if_fail (st, FALSE);
+	g_return_val_if_fail (!error || !*error, FALSE);
+
+	if (!S_ISREG (st->st_mode)) {
+		g_set_error_literal (error,
+		                     NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "not a regular file");
+		return FALSE;
+	}
+
+	if (st->st_uid != 0) {
+		g_set_error_literal (error,
+		                     NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "file has invalid owner (should be root)");
+		return FALSE;
+	}
+
+	if (st->st_mode & (S_IWGRP | S_IWOTH | S_ISUID)) {
+		g_set_error_literal (error,
+		                     NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "file has invalid permissions");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+char **
+nm_utils_read_plugin_paths (const char *dirname, const char *prefix)
+{
+	GDir *dir;
+	GError *error = NULL;
+	const char *item;
+	GArray *paths;
+	char **result;
+	guint i;
+
+	g_return_val_if_fail (dirname, NULL);
+	g_return_val_if_fail (prefix, NULL);
+
+	dir = g_dir_open (dirname, 0, &error);
+	if (!dir) {
+		nm_log_warn (LOGD_CORE, "device plugin: failed to open directory %s: %s",
+		             dirname,
+		             error->message);
+		g_clear_error (&error);
+		return NULL;
+	}
+
+	paths = g_array_new (FALSE, FALSE, sizeof (struct plugin_info));
+
+	while ((item = g_dir_read_name (dir))) {
+		int errsv;
+		struct plugin_info data;
+
+		if (!g_str_has_prefix (item, prefix))
+			continue;
+		if (g_str_has_suffix (item, ".la"))
+			continue;
+
+		data.path = g_build_filename (dirname, item, NULL);
+
+		if (stat (data.path, &data.st) != 0) {
+			errsv = errno;
+			nm_log_warn (LOGD_CORE,
+			             "plugin: skip invalid file %s (error during stat: %s)",
+			             data.path, strerror (errsv));
+			goto skip;
+		}
+
+		if (!nm_utils_validate_plugin (data.path, &data.st, &error)) {
+			nm_log_warn (LOGD_CORE,
+			             "plugin: skip invalid file %s: %s",
+			             data.path, error->message);
+			g_clear_error (&error);
+			goto skip;
+		}
+
+		g_array_append_val (paths, data);
+		continue;
+skip:
+		g_free (data.path);
+	}
+	g_dir_close (dir);
+
+	/* sort filenames by modification time. */
+	g_array_sort (paths, read_device_factory_paths_sort_fcn);
+
+	result = g_new (char *, paths->len + 1);
+	for (i = 0; i < paths->len; i++)
+		result[i] = g_array_index (paths, struct plugin_info, i).path;
+	result[i] = NULL;
+
+	g_array_free (paths, TRUE);
+	return result;
+}
+

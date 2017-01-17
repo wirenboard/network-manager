@@ -23,11 +23,11 @@
 #include <arpa/inet.h>
 #include <linux/rtnetlink.h>
 
-#include "nm-platform.h"
-#include "nm-platform-utils.h"
+#include "platform/nm-platform.h"
+#include "platform/nm-platform-utils.h"
 #include "nm-route-manager.h"
 
-#include "test-common.h"
+#include "platform/tests/test-common.h"
 
 typedef struct {
 	int ifindex0, ifindex1;
@@ -911,6 +911,8 @@ fixture_teardown (test_fixture *fixture, gconstpointer user_data)
 }
 
 /*****************************************************************************/
+
+NMTstpSetupFunc const _nmtstp_setup_platform_func = SETUP;
 
 void
 _nmtstp_init_tests (int *argc, char ***argv)
