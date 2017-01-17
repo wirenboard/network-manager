@@ -12,19 +12,19 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 120 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index c3d65cd..f5b3996 100644
+index 867e0db6d..92e457a93 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
-@@ -60,6 +60,8 @@
- #include "nmdbus-manager.h"
- #include "nmdbus-device.h"
+@@ -59,6 +59,8 @@
+ #include "introspection/org.freedesktop.NetworkManager.h"
+ #include "introspection/org.freedesktop.NetworkManager.Device.h"
  
 +#define IFUPDOWN_STATE_FILE "/run/network/ifstate"
 +
  static gboolean add_device (NMManager *self, NMDevice *device, GError **error);
  
  static NMActiveConnection *_new_active_connection (NMManager *self,
-@@ -143,6 +145,10 @@ typedef struct {
+@@ -145,6 +147,10 @@ typedef struct {
  	GFileMonitor *fw_monitor;
  	guint fw_changed_id;
  
@@ -35,7 +35,7 @@ index c3d65cd..f5b3996 100644
  	guint timestamp_update_id;
  
  	gboolean startup;
-@@ -798,6 +804,29 @@ find_best_device_state (NMManager *manager, gboolean *force_connectivity_check)
+@@ -809,6 +815,29 @@ find_best_device_state (NMManager *manager, gboolean *force_connectivity_check)
  	return best_state;
  }
  
@@ -65,7 +65,7 @@ index c3d65cd..f5b3996 100644
  static void
  nm_manager_update_metered (NMManager *self)
  {
-@@ -837,6 +866,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -848,6 +877,9 @@ nm_manager_update_state (NMManager *manager)
  	else
  		new_state = find_best_device_state (manager, &force_connectivity_check);
  
@@ -75,7 +75,7 @@ index c3d65cd..f5b3996 100644
  	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
  
  	if (new_state == NM_STATE_CONNECTED_SITE || force_connectivity_check) {
-@@ -4587,6 +4619,65 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -4705,6 +4737,65 @@ impl_manager_check_connectivity (NMManager *self,
  }
  
  static void
@@ -141,7 +141,7 @@ index c3d65cd..f5b3996 100644
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
  	nm_device_factory_start (factory);
-@@ -4657,6 +4748,9 @@ nm_manager_start (NMManager *self, GError **error)
+@@ -4827,6 +4918,9 @@ nm_manager_start (NMManager *self, GError **error)
  
  	check_if_startup_complete (self);
  
@@ -151,7 +151,7 @@ index c3d65cd..f5b3996 100644
  	return TRUE;
  }
  
-@@ -5625,6 +5719,22 @@ nm_manager_init (NMManager *self)
+@@ -5833,6 +5927,22 @@ nm_manager_init (NMManager *self)
  		       KERNEL_FIRMWARE_DIR);
  	}
  
@@ -174,7 +174,7 @@ index c3d65cd..f5b3996 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
  
-@@ -5858,6 +5968,16 @@ dispose (GObject *object)
+@@ -6072,6 +6182,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
