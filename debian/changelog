@@ -1,8 +1,14 @@
-network-manager (1.5.90-1) UNRELEASED; urgency=medium
+network-manager (1.5.90-1) experimental; urgency=medium
 
   * New upstream release (1.6 rc1).
+  * Rebase patches.
+  * Enable JSON validation.
+    This enables team configuration validation via Jansson.
+  * Update symbols file for libnm0.
+  * Install the D-Bus interface introspection files in network-manager-dev.
+  * Update package description for the dev packages.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 17 Jan 2017 20:25:53 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 18 Jan 2017 00:00:50 +0100
 
 network-manager (1.4.4-1) unstable; urgency=medium
 
