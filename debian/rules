@@ -44,6 +44,7 @@ override_dh_auto_configure:
 		--enable-gtk-doc \
 		--enable-concheck \
 		--enable-teamdctl \
+		--enable-json-validation \
 		--enable-bluez5-dun \
 		--with-selinux=yes \
 		--with-libaudit=yes
