@@ -33,6 +33,8 @@
 #include "common.h"
 #include "utils.h"
 
+extern GMainLoop *loop;
+
 /* Available fields for IPv4 group */
 NmcOutputField nmc_fields_ip4_config[] = {
 	{"GROUP",      N_("GROUP")},    /* 0 */
@@ -824,10 +826,11 @@ nmc_bond_validate_mode (const char *mode, GError **error)
 /*
  * nmc_team_check_config:
  * @config: file name with team config, or raw team JSON config data
- * @out_config: raw team JSON config data (with removed new-line characters)
+ * @out_config: raw team JSON config data
+ *   The value must be freed with g_free().
  * @error: location to store error, or %NUL
  *
- * Check team config from @config parameter and return the checked/sanitized
+ * Check team config from @config parameter and return the checked
  * config in @out_config.
  *
  * Returns: %TRUE if the config is valid, %FALSE if it is invalid
@@ -835,33 +838,140 @@ nmc_bond_validate_mode (const char *mode, GError **error)
 gboolean
 nmc_team_check_config (const char *config, char **out_config, GError **error)
 {
-	char *contents = NULL;
+	enum {
+		_TEAM_CONFIG_TYPE_GUESS,
+		_TEAM_CONFIG_TYPE_FILE,
+		_TEAM_CONFIG_TYPE_JSON,
+	} desired_type = _TEAM_CONFIG_TYPE_GUESS;
+	const char *filename = NULL;
 	size_t c_len = 0;
+	gs_free char *config_clone = NULL;
 
 	*out_config = NULL;
 
-	if (!config || strlen (config) == strspn (config, " \t"))
+	if (!config || !config[0])
 		return TRUE;
 
-	/* 'config' can be either a file name or raw JSON config data */
-	if (g_file_test (config, G_FILE_TEST_EXISTS))
-		(void) g_file_get_contents (config, &contents, NULL, NULL);
-	else
-		contents = g_strdup (config);
-
-	if (contents) {
-		g_strstrip (contents);
-		c_len = strlen (contents);
+	if (g_str_has_prefix (config, "file://")) {
+		config += NM_STRLEN ("file://");
+		desired_type = _TEAM_CONFIG_TYPE_FILE;
+	} else if (g_str_has_prefix (config, "json://")) {
+		config += NM_STRLEN ("json://");
+		desired_type = _TEAM_CONFIG_TYPE_JSON;
 	}
 
-	/* Do a simple validity check */
-	if (!contents || !contents[0] || c_len > 100000 || contents[0] != '{' || contents[c_len-1] != '}') {
-		g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
-		             _("'%s' is not a valid team configuration or file name."), config);
-		g_free (contents);
+	if (NM_IN_SET (desired_type, _TEAM_CONFIG_TYPE_FILE, _TEAM_CONFIG_TYPE_GUESS)) {
+		gs_free char *contents = NULL;
+
+		if (!g_file_get_contents (config, &contents, &c_len, NULL)) {
+			if (desired_type == _TEAM_CONFIG_TYPE_FILE) {
+				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+				             _("cannot read team config from file '%s'"),
+				             config);
+				return FALSE;
+			}
+		} else {
+			if (c_len != strlen (contents)) {
+				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+				             _("team config file '%s' contains non-valid utf-8"),
+				             config);
+				return FALSE;
+			}
+			filename = config;
+			config = config_clone = g_steal_pointer (&contents);
+		}
+	}
+
+	if (!nm_utils_is_json_object (config, NULL)) {
+		if (filename) {
+			g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			             _("'%s' does not contain a valid team configuration"), filename);
+		} else {
+			g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			             _("team configuration must be a JSON object"));
+		}
 		return FALSE;
 	}
-	*out_config = g_strdelimit (contents, "\r\n", ' ');
+
+	*out_config = (config == config_clone)
+	              ? g_steal_pointer (&config_clone)
+	              : g_strdup (config);
+	return TRUE;
+}
+
+/*
+ * nmc_proxy_check_script:
+ * @script: file name with PAC script, or raw PAC Script data
+ * @out_script: raw PAC Script (with removed new-line characters)
+ * @error: location to store error, or %NULL
+ *
+ * Check PAC Script from @script parameter and return the checked/sanitized
+ * config in @out_script.
+ *
+ * Returns: %TRUE if the script is valid, %FALSE if it is invalid
+ */
+gboolean
+nmc_proxy_check_script (const char *script, char **out_script, GError **error)
+{
+	enum {
+		_PAC_SCRIPT_TYPE_GUESS,
+		_PAC_SCRIPT_TYPE_FILE,
+		_PAC_SCRIPT_TYPE_JSON,
+	} desired_type = _PAC_SCRIPT_TYPE_GUESS;
+	const char *filename = NULL;
+	size_t c_len = 0;
+	gs_free char *script_clone = NULL;
+
+	*out_script = NULL;
+
+	if (!script || !script[0])
+		return TRUE;
+
+	if (g_str_has_prefix (script, "file://")) {
+		script += NM_STRLEN ("file://");
+		desired_type = _PAC_SCRIPT_TYPE_FILE;
+	} else if (g_str_has_prefix (script, "js://")) {
+		script += NM_STRLEN ("js://");
+		desired_type = _PAC_SCRIPT_TYPE_JSON;
+	}
+
+	if (NM_IN_SET (desired_type, _PAC_SCRIPT_TYPE_FILE, _PAC_SCRIPT_TYPE_GUESS)) {
+		gs_free char *contents = NULL;
+
+		if (!g_file_get_contents (script, &contents, &c_len, NULL)) {
+			if (desired_type == _PAC_SCRIPT_TYPE_FILE) {
+				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+				             _("cannot read pac-script from file '%s'"),
+				             script);
+				return FALSE;
+			}
+		} else {
+			if (c_len != strlen (contents)) {
+				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+				             _("file '%s' contains non-valid utf-8"),
+				             script);
+				return FALSE;
+			}
+			filename = script;
+			script = script_clone = g_steal_pointer (&contents);
+		}
+	}
+
+	if (   !strstr (script, "FindProxyForURL")
+	    || !g_utf8_validate (script, -1, NULL)) {
+		if (filename) {
+			g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			             _("'%s' does not contain a valid PAC Script"), filename);
+		} else {
+			g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			             _("Not a valid PAC Script"));
+		}
+		return FALSE;
+	}
+
+	*out_script = (script == script_clone)
+	              ? g_steal_pointer (&script_clone)
+	              : g_strdup (script);
 	return TRUE;
 }
 
@@ -1107,6 +1217,7 @@ nmc_secrets_requested (NMSecretAgentSimple *agent,
 	NMConnection *connection = NULL;
 	char *path, *p;
 	gboolean success = FALSE;
+	const GPtrArray *connections;
 
 	if (nmc->print_output == NMC_PRINT_PRETTY)
 		nmc_terminal_erase_line ();
@@ -1117,7 +1228,8 @@ nmc_secrets_requested (NMSecretAgentSimple *agent,
 		p = strrchr (path, '/');
 		if (p)
 			*p = '\0';
-		connection = nmc_find_connection (nmc->connections, "path", path, NULL, FALSE);
+		connections = nm_client_get_connections (nmc->client);
+		connection = nmc_find_connection (connections, "path", path, NULL, FALSE);
 		g_free (path);
 	}
 
@@ -1159,6 +1271,11 @@ nmc_unique_connection_name (const GPtrArray *connections, const char *try_name)
 	return new_name;
 }
 
+/* readline state variables */
+static gboolean nmcli_in_readline = FALSE;
+static gboolean rl_got_line;
+static char *rl_string;
+
 /**
  * nmc_cleanup_readline:
  *
@@ -1172,88 +1289,94 @@ nmc_cleanup_readline (void)
 	rl_cleanup_after_signal ();
 }
 
-
-static gboolean nmcli_in_readline = FALSE;
-static pthread_mutex_t readline_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 gboolean
 nmc_get_in_readline (void)
 {
-	gboolean in_readline;
-
-	pthread_mutex_lock (&readline_mutex);
-	in_readline = nmcli_in_readline;
-	pthread_mutex_unlock (&readline_mutex);
-	return in_readline;
+	return nmcli_in_readline;
 }
 
 void
 nmc_set_in_readline (gboolean in_readline)
 {
-	pthread_mutex_lock (&readline_mutex);
 	nmcli_in_readline = in_readline;
-	pthread_mutex_unlock (&readline_mutex);
+}
+
+static void
+readline_cb (char *line)
+{
+	rl_got_line = TRUE;
+	rl_string = line;
+	rl_callback_handler_remove ();
+}
+
+static gboolean
+stdin_ready_cb (GIOChannel * io, GIOCondition condition, gpointer data)
+{
+	rl_callback_read_char ();
+	return TRUE;
 }
 
 static char *
 nmc_readline_helper (const char *prompt)
 {
-	char *str;
-	int b;
+	GIOChannel *io = NULL;
+	guint io_watch_id;
 
-readline_mark:
-	/* We are in readline -> Ctrl-C should not quit nmcli */
 	nmc_set_in_readline (TRUE);
-	str = readline (prompt);
-	/* We are outside readline -> Ctrl-C should quit nmcli */
-	nmc_set_in_readline (FALSE);
 
-	/* Check for an I/O error by attempting to peek into the input buffer.
-	 * Readline just inserts newlines when errors occur so we need to check ourselves. */
-	if (ioctl (0, FIONREAD, &b) == -1) {
-		g_free (str);
-		str = NULL;
+	io = g_io_channel_unix_new (STDIN_FILENO);
+	io_watch_id = g_io_add_watch (io, G_IO_IN, stdin_ready_cb, NULL);
+	g_io_channel_unref (io);
+
+read_again:
+	rl_string = NULL;
+	rl_got_line = FALSE;
+	rl_callback_handler_install (prompt, readline_cb);
+
+	while (   !rl_got_line
+	       && g_main_loop_is_running (loop)
+	       && !nmc_seen_sigint ())
+		g_main_context_iteration (NULL, TRUE);
+
+	/* If Ctrl-C was detected, complete the line */
+	if (nmc_seen_sigint ()) {
+		rl_echo_signal_char (SIGINT);
+		rl_stuff_char ('\n');
+		rl_callback_read_char ();
 	}
 
 	/* Add string to the history */
-	if (str && *str)
-		add_history (str);
+	if (rl_string && *rl_string)
+		add_history (rl_string);
 
-	/*-- React on Ctrl-C and Ctrl-D --*/
-	/* We quit on Ctrl-D when line is empty */
-	if (str == NULL) {
-		/* Send SIGQUIT to itself */
-		nmc_set_sigquit_internal ();
-		kill (getpid (), SIGQUIT);
-		/* Sleep in this thread so that we don't do anything else until exit */
-		for (;;)
-			sleep (3);
-	}
-	/* Ctrl-C */
 	if (nmc_seen_sigint ()) {
+		/* Ctrl-C */
 		nmc_clear_sigint ();
-		if (nm_cli.in_editor || *str) {
+		if (   nm_cli.in_editor
+		    || (rl_string  && *rl_string)) {
 			/* In editor, or the line is not empty */
 			/* Call readline again to get new prompt (repeat) */
-			g_free (str);
-			goto readline_mark;
+			g_free (rl_string);
+			goto read_again;
 		} else {
-			/* Not in editor and line is empty */
-			/* Send SIGQUIT to itself */
-			nmc_set_sigquit_internal ();
-			kill (getpid (), SIGQUIT);
-			/* Sleep in this thread so that we don't do anything else until exit */
-			for (;;)
-				sleep (3);
+			/* Not in editor and line is empty, exit */
+			nmc_exit ();
 		}
+	} else if (!rl_string) {
+		/* Ctrl-D, exit */
+		nmc_exit ();
 	}
 
 	/* Return NULL, not empty string */
-	if (str && *str == '\0') {
-		g_free (str);
-		str = NULL;
+	if (rl_string && *rl_string == '\0') {
+		g_free (rl_string);
+		rl_string = NULL;
 	}
-	return str;
+
+	g_source_remove (io_watch_id);
+	nmc_set_in_readline (FALSE);
+
+	return rl_string;
 }
 
 /**
@@ -1364,7 +1487,6 @@ nmc_rl_gen_func_ifnames (const char *text, int state)
 	const char **ifnames;
 	char *ret;
 
-	nm_cli.get_client (&nm_cli);
 	devices = nm_client_get_devices (nm_cli.client);
 	if (devices->len == 0)
 		return NULL;
@@ -1442,13 +1564,92 @@ nmc_parse_lldp_capabilities (guint value)
 	return g_string_free (str, FALSE);
 }
 
+extern GMainLoop *loop;
+
+static void
+command_done (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	GSimpleAsyncResult *simple = (GSimpleAsyncResult *)res;
+	NmCli *nmc = user_data;
+	GError *error = NULL;
+
+	if (g_simple_async_result_propagate_error (simple, &error)) {
+		nmc->return_value = error->code;
+		g_string_assign (nmc->return_text, error->message);
+		g_error_free (error);
+	}
+
+	if (!nmc->should_wait)
+		g_main_loop_quit (loop);
+}
+
+typedef struct {
+	NmCli *nmc;
+	const NMCCommand *cmd;
+	int argc;
+	char **argv;
+	GSimpleAsyncResult *simple;
+} CmdCall;
+
+static void
+call_cmd (NmCli *nmc, GSimpleAsyncResult *simple, const NMCCommand *cmd, int argc, char **argv);
+
+static void
+got_client (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	GError *error = NULL;
+	CmdCall *call = user_data;
+	NmCli *nmc = call->nmc;
+
+	nmc->should_wait--;
+	nmc->client = nm_client_new_finish (res, &error);
+
+	if (!nmc->client) {
+		g_simple_async_result_set_error (call->simple, NMCLI_ERROR, NMC_RESULT_ERROR_UNKNOWN,
+		                                 _("Error: Could not create NMClient object: %s."), error->message);
+		g_error_free (error);
+		g_simple_async_result_complete (call->simple);
+	} else {
+		call_cmd (nmc, call->simple, call->cmd, call->argc, call->argv);
+	}
+
+	g_slice_free (CmdCall, call);
+}
+
+static void
+call_cmd (NmCli *nmc, GSimpleAsyncResult *simple, const NMCCommand *cmd, int argc, char **argv)
+{
+	CmdCall *call;
+
+	if (nmc->client || !cmd->needs_client) {
+
+		/* Check whether NetworkManager is running */
+		if (cmd->needs_nm_running && !nm_client_get_nm_running (nmc->client)) {
+			g_simple_async_result_set_error (simple, NMCLI_ERROR, NMC_RESULT_ERROR_NM_NOT_RUNNING,
+			                                 _("Error: NetworkManager is not running."));
+		} else
+			nmc->return_value = cmd->func (nmc, argc, argv);
+		g_simple_async_result_complete_in_idle (simple);
+		g_object_unref (simple);
+	} else {
+		nmc->should_wait++;
+		call = g_slice_new0 (CmdCall);
+		call->nmc = nmc;
+		call->cmd = cmd;
+		call->argc = argc;
+		call->argv = argv;
+		call->simple = simple;
+		nm_client_new_async (NULL, got_client, call);
+	}
+}
+
 /**
  * nmc_do_cmd:
  * @nmc: Client instance
  * @cmds: Command table
  * @cmd: Command
  * @argc: Argument count
- * @argv: Arguments vector
+ * @argv: Arguments vector. Must be a global variable.
  *
  * Picks the right callback to handle command from the command table.
  * If --help argument follows and the usage callback is specified for the command
@@ -1457,22 +1658,35 @@ nmc_parse_lldp_capabilities (guint value)
  * The command table is terminated with a %NULL command. The terminating
  * entry's handlers are called if the command is empty.
  *
- * Returns: a nmcli return code
+ * The argument vector needs to be a pointer to the global arguments vector that is
+ * never freed, since the command handler will be called asynchronously and there's
+ * no callback to free the memory in (for simplicity).
  */
-NMCResultCode
+void
 nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *cmd, int argc, char **argv)
 {
 	const NMCCommand *c;
+	GSimpleAsyncResult *simple;
 
-	if (argc == 0 && nmc->complete)
-		return nmc->return_value;
+	simple = g_simple_async_result_new (NULL,
+	                                    command_done,
+	                                    nmc,
+	                                    nmc_do_cmd);
+
+	if (argc == 0 && nmc->complete) {
+		g_simple_async_result_complete_in_idle (simple);
+		g_object_unref (simple);
+		return;
+	}
 
 	if (argc == 1 && nmc->complete) {
 		for (c = cmds; c->cmd; ++c) {
 			if (!*cmd || matches (cmd, c->cmd) == 0)
 				g_print ("%s\n", c->cmd);
 		}
-		return nmc->return_value;
+		g_simple_async_result_complete_in_idle (simple);
+		g_object_unref (simple);
+		return;
 	}
 
 	for (c = cmds; c->cmd; ++c) {
@@ -1482,28 +1696,34 @@ nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *cmd, int argc, char
 
 	if (c->cmd) {
 		/* A valid command was specified. */
-		if (c->usage && nmc_arg_is_help (*(argv+1)))
+		if (c->usage && nmc_arg_is_help (*(argv+1))) {
 			c->usage ();
-		else
-			nmc->return_value = c->func (nmc, argc-1, argv+1);
+			g_simple_async_result_complete_in_idle (simple);
+			g_object_unref (simple);
+		} else
+			call_cmd (nmc, simple, c, argc-1, argv+1);
 	} else if (cmd) {
 		/* Not a known command. */
 		if (nmc_arg_is_help (cmd) && c->usage) {
 			c->usage ();
+			g_simple_async_result_complete_in_idle (simple);
+			g_object_unref (simple);
 		} else {
-			g_string_printf (nmc->return_text, _("Error: argument '%s' not understood. Try passing --help instead."), cmd);
-			nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+			g_simple_async_result_set_error (simple, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			                                 _("Error: argument '%s' not understood. Try passing --help instead."), cmd);
+			g_simple_async_result_complete_in_idle (simple);
+			g_object_unref (simple);
 		}
 	} else if (c->func) {
 		/* No command, run the default handler. */
-		nmc->return_value = c->func (nmc, argc, argv);
+		call_cmd (nmc, simple, c, argc, argv);
 	} else {
 		/* No command and no default handler. */
-		g_string_printf (nmc->return_text, _("Error: missing argument. Try passing --help."));
-		nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+		g_simple_async_result_set_error (simple, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+		                                 _("Error: missing argument. Try passing --help."));
+		g_simple_async_result_complete_in_idle (simple);
+		g_object_unref (simple);
 	}
-
-	return nmc->return_value;
 }
 
 /**

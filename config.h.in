@@ -3,15 +3,8 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
-/* Define if you we can build nm-setting-docs.xml, nm-keyfile-docs.xml and
-   nm-ifcfg-rh-docs.xml */
-#undef BUILD_SETTING_DOCS
-
 /* Path to ConsoleKit database */
 #undef CKDB_PATH
-
-/* Default configuration option for main.plugins setting */
-#undef CONFIG_PLUGINS_DEFAULT
 
 /* Define if dhcpcd supports IPv6 (6.x+) */
 #undef DHCPCD_SUPPORTS_IPV6
@@ -92,9 +85,6 @@
 /* Define if you have SELinux support */
 #undef HAVE_SELINUX
 
-/* Define if you have pre-built settings docs */
-#undef HAVE_SETTING_DOCS
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -149,18 +139,24 @@
 /* Path to netconfig */
 #undef NETCONFIG_PATH
 
-/* The default value of the auth-polkit configuration option */
-#undef NM_CONFIG_DEFAULT_AUTH_POLKIT
-
-/* Default value for main.rc-manager setting
-   (--with-config-dns-rc-manager-default) */
-#undef NM_CONFIG_DEFAULT_DNS_RC_MANAGER
-
 /* The default value of the logging.audit configuration option */
 #undef NM_CONFIG_DEFAULT_LOGGING_AUDIT
 
 /* Default configuration option for logging.backend */
-#undef NM_CONFIG_LOGGING_BACKEND_DEFAULT
+#undef NM_CONFIG_DEFAULT_LOGGING_BACKEND
+
+/* The default value of the auth-polkit configuration option */
+#undef NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT
+
+/* Default configuration option for main.dhcp setting */
+#undef NM_CONFIG_DEFAULT_MAIN_DHCP
+
+/* Default configuration option for main.plugins setting */
+#undef NM_CONFIG_DEFAULT_MAIN_PLUGINS
+
+/* Default value for main.rc-manager setting
+   (--with-config-dns-rc-manager-default) */
+#undef NM_CONFIG_DEFAULT_MAIN_RC_MANAGER
 
 /* Define the distribution version string */
 #undef NM_DIST_VERSION
@@ -227,6 +223,9 @@
 
 /* Define to path to system CA certificates */
 #undef SYSTEM_CA_PATH
+
+/* Define python path for test binary */
+#undef TEST_NM_PYTHON
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE

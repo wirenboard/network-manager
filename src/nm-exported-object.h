@@ -23,6 +23,8 @@
 
 /*****************************************************************************/
 
+#define NM_EXPORT_PATH_NUMBERED(basepath) ""basepath"/%llu"
+
 char *nm_exported_object_skeletonify_method_name (const char *dbus_method_name);
 
 typedef struct {
@@ -47,8 +49,11 @@ void nm_exported_object_skeleton_release (GDBusInterfaceSkeleton *interface);
 #define NM_IS_EXPORTED_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  NM_TYPE_EXPORTED_OBJECT))
 #define NM_EXPORTED_OBJECT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_EXPORTED_OBJECT, NMExportedObjectClass))
 
+struct _NMExportedObjectPrivate;
+
 struct _NMExportedObject {
 	GDBusObjectSkeleton parent;
+	struct _NMExportedObjectPrivate *_priv;
 };
 
 typedef struct {

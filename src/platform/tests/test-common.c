@@ -32,12 +32,18 @@
 
 /*****************************************************************************/
 
+void
+nmtstp_setup_platform (void)
+{
+	g_assert (_nmtstp_setup_platform_func);
+	_nmtstp_setup_platform_func ();
+}
+
 gboolean
 nmtstp_is_root_test (void)
 {
-	NM_PRAGMA_WARNING_DISABLE("-Wtautological-compare")
-	return (SETUP == nm_linux_platform_setup);
-	NM_PRAGMA_WARNING_REENABLE
+	g_assert (_nmtstp_setup_platform_func);
+	return _nmtstp_setup_platform_func == nm_linux_platform_setup;
 }
 
 gboolean
@@ -143,12 +149,15 @@ _free_signal (const char *file, int line, const char *func, SignalData *data)
 }
 
 void
-link_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, NMPlatformLink *received, NMPlatformSignalChangeType change_type, SignalData *data)
+link_callback (NMPlatform *platform, int obj_type_i, int ifindex, NMPlatformLink *received, int change_type_i, SignalData *data)
 {
+	const NMPObjectType obj_type = obj_type_i;
+	const NMPlatformSignalChangeType change_type = change_type_i;
 	GArray *links;
 	NMPlatformLink *cached;
 	int i;
 
+	g_assert_cmpint (obj_type, ==, NMP_OBJECT_TYPE_LINK);
 	g_assert (received);
 	g_assert_cmpint (received->ifindex, ==, ifindex);
 	g_assert (data && data->name);
@@ -217,7 +226,7 @@ nmtstp_ip4_route_exists (const char *ifname, guint32 network, int plen, guint32 
 	gs_free_error GError *error = NULL;
 	gs_free char *metric_pattern = NULL;
 
-	g_assert (ifname && nm_utils_iface_valid_name (ifname));
+	g_assert (ifname && nm_utils_is_valid_iface_name (ifname, NULL));
 	g_assert (!strstr (ifname, " metric "));
 	g_assert (plen >= 0 && plen <= 32);
 
@@ -335,10 +344,10 @@ typedef struct {
 
 static void
 _wait_for_signal_cb (NMPlatform *platform,
-                     NMPObjectType obj_type,
+                     int obj_type_i,
                      int ifindex,
                      NMPlatformLink *plink,
-                     NMPlatformSignalChangeType change_type,
+                     int change_type_i,
                      gpointer user_data)
 {
 	WaitForSignalData *data = user_data;
@@ -508,7 +517,7 @@ nmtstp_ip_address_check_lifetime (const NMPlatformIPAddress *addr,
 	g_assert (expected_preferred <= expected_lifetime);
 
 	if (   expected_lifetime == NM_PLATFORM_LIFETIME_PERMANENT
-	    && expected_lifetime == NM_PLATFORM_LIFETIME_PERMANENT) {
+	    && expected_preferred == NM_PLATFORM_LIFETIME_PERMANENT) {
 		return    addr->timestamp == 0
 		       && addr->lifetime == NM_PLATFORM_LIFETIME_PERMANENT
 		       && addr->preferred == NM_PLATFORM_LIFETIME_PERMANENT;
@@ -554,7 +563,7 @@ nmtstp_ip_address_assert_lifetime (const NMPlatformIPAddress *addr,
 	g_assert (expected_preferred <= expected_lifetime);
 
 	if (   expected_lifetime == NM_PLATFORM_LIFETIME_PERMANENT
-	    && expected_lifetime == NM_PLATFORM_LIFETIME_PERMANENT) {
+	    && expected_preferred == NM_PLATFORM_LIFETIME_PERMANENT) {
 		g_assert_cmpint (addr->timestamp, ==, 0);
 		g_assert_cmpint (addr->lifetime, ==, NM_PLATFORM_LIFETIME_PERMANENT);
 		g_assert_cmpint (addr->preferred, ==, NM_PLATFORM_LIFETIME_PERMANENT);
@@ -924,7 +933,7 @@ nmtstp_link_dummy_add (NMPlatform *platform,
 	const NMPlatformLink *pllink = NULL;
 	gboolean success;
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -953,7 +962,7 @@ nmtstp_link_gre_add (NMPlatform *platform,
 	gboolean success;
 	char buffer[INET_ADDRSTRLEN];
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -993,7 +1002,7 @@ nmtstp_link_ip6tnl_add (NMPlatform *platform,
 	gboolean success;
 	char buffer[INET6_ADDRSTRLEN];
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -1047,7 +1056,7 @@ nmtstp_link_ipip_add (NMPlatform *platform,
 	gboolean success;
 	char buffer[INET_ADDRSTRLEN];
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -1088,7 +1097,7 @@ nmtstp_link_macvlan_add (NMPlatform *platform,
 	gboolean success;
 	NMLinkType link_type;
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -1135,7 +1144,7 @@ nmtstp_link_sit_add (NMPlatform *platform,
 	gboolean success;
 	char buffer[INET_ADDRSTRLEN];
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -1180,7 +1189,7 @@ nmtstp_link_vxlan_add (NMPlatform *platform,
 	NMPlatformError plerr;
 	int err;
 
-	g_assert (nm_utils_iface_valid_name (name));
+	g_assert (nm_utils_is_valid_iface_name (name, NULL));
 
 	external_command = nmtstp_run_command_check_external (external_command);
 
@@ -1264,7 +1273,7 @@ nmtstp_link_get_typed (NMPlatform *platform,
 			g_assert_cmpstr (name, ==, pllink->name);
 	}
 
-	g_assert (!name || nm_utils_iface_valid_name (name));
+	g_assert (!name || nm_utils_is_valid_iface_name (name, NULL));
 
 	if (pllink && link_type != NM_LINK_TYPE_NONE)
 		g_assert_cmpint (pllink->type, ==, link_type);
@@ -1545,6 +1554,25 @@ nmtstp_namespace_get_fd_for_process (pid_t pid, const char *ns_name)
 
 /*****************************************************************************/
 
+void
+nmtstp_netns_select_random (NMPlatform **platforms, gsize n_platforms, NMPNetns **netns)
+{
+	int i;
+
+	g_assert (platforms);
+	g_assert (n_platforms && n_platforms <= G_MAXINT32);
+	g_assert (netns && !*netns);
+	for (i = 0; i < n_platforms; i++)
+		g_assert (NM_IS_PLATFORM (platforms[i]));
+
+	i = nmtst_get_rand_int () % (n_platforms + 1);
+	if (i == 0)
+		return;
+	g_assert (nm_platform_netns_push (platforms[i - 1], netns));
+}
+
+/*****************************************************************************/
+
 NMTST_DEFINE();
 
 static gboolean
@@ -1620,36 +1648,50 @@ main (int argc, char **argv)
 			g_error ("unshare(CLONE_NEWNET|CLONE_NEWNS) failed with %s (%d)", strerror (errsv), errsv);
 		}
 
-		/* Mount our /sys instance, so that gudev sees only our devices.
-		 * Needs to be read-only, because we don't run udev. */
+		/* Below we need a read-only /sys (to signal that we're in an environment
+		 * we don't have udev and writable /sys/devices so that we still are able
+		 * to test device classes that modify the device attributes (such as bridges).
+		 *
+		 * We use two sysfs instances to achieve this, binding the /device subtree
+		 * of the writeable one to the read-only one.
+		 *
+		 * We abuse a /sys/kernel/debug for our temporary writable sysfs mount,
+		 * just because it's guarranteed to exist and mounts are allowed there even
+		 * after the sysfs mount point hardening [linux 0cbee99269]. It's just in
+		 * our mount namespace, we release it quickly and don't need debugfs anyway...
+		 * An alrernative would be to create a temporary directory, but that seems
+		 * like an overkill. */
+
+		/* Make the mounts below /sys private to our namespace. Other mounts
+		 * wouldn't be permitted for good reasons. */
 		mount (NULL, "/sys", "sysfs", MS_SLAVE, NULL);
+
+		/* Mount the read-only sysfs. */
 		if (mount ("sys", "/sys", "sysfs", MS_RDONLY, NULL) != 0) {
 			errsv = errno;
 			g_error ("mount(\"/sys\") failed with %s (%d)", strerror (errsv), errsv);
 		}
 
-		/* Create a writable /sys/devices tree. This makes it possible to run tests
-		 * that modify values via sysfs (such as bridge forward delay). */
-		if (mount ("sys", "/sys/devices", "sysfs", 0, NULL) != 0) {
+		/* Create the writable /sys/devices tree. */
+		if (mount ("sys", "/sys/kernel/debug", "sysfs", 0, NULL) != 0) {
 			errsv = errno;
-			g_error ("mount(\"/sys/devices\") failed with %s (%d)", strerror (errsv), errsv);
+			g_error ("mount(\"/sys/devices/k\") failed with %s (%d)", strerror (errsv), errsv);
 		}
-		if (mount (NULL, "/sys/devices", "sysfs", MS_REMOUNT, NULL) != 0) {
-			/* Read-write remount failed. Never mind, we're probably just a root in
-			 * our user NS. */
-			if (umount ("/sys/devices") != 0) {
-				errsv = errno;
-				g_error ("umount(\"/sys/devices\") failed with  %s (%d)", strerror (errsv), errsv);
-			}
-		} else {
-			if (mount ("/sys/devices/devices", "/sys/devices", "sysfs", MS_BIND, NULL) != 0) {
-				errsv = errno;
-				g_error ("mount(\"/sys\") failed with %s (%d)", strerror (errsv), errsv);
-			}
+
+		/* Bind mound the writable device tree to the read-only sysfs. */
+		if (mount ("/sys/kernel/debug/devices", "/sys/devices", "sysfs", MS_BIND, NULL) != 0) {
+			errsv = errno;
+			g_error ("mount(\"/sys\") failed with %s (%d)", strerror (errsv), errsv);
+		}
+
+		/* Release the temporary mount now that we bound the /devices subtree. */
+		if (umount ("/sys/kernel/debug") != 0) {
+			errsv = errno;
+			g_error ("umount(\"/sys/kernel/debug\") failed with  %s (%d)", strerror (errsv), errsv);
 		}
 	}
 
-	SETUP ();
+	nmtstp_setup_platform ();
 
 	_nmtstp_setup_tests ();
 

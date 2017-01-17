@@ -42,15 +42,18 @@ typedef struct _NMDefaultRouteManager NMDefaultRouteManager;
 typedef struct _NMDevice             NMDevice;
 typedef struct _NMDhcp4Config        NMDhcp4Config;
 typedef struct _NMDhcp6Config        NMDhcp6Config;
+typedef struct _NMProxyConfig        NMProxyConfig;
 typedef struct _NMIP4Config          NMIP4Config;
 typedef struct _NMIP6Config          NMIP6Config;
 typedef struct _NMManager            NMManager;
 typedef struct _NMPolicy             NMPolicy;
 typedef struct _NMRfkillManager      NMRfkillManager;
+typedef struct _NMPacrunnerManager   NMPacrunnerManager;
 typedef struct _NMRouteManager       NMRouteManager;
 typedef struct _NMSessionMonitor     NMSessionMonitor;
 typedef struct _NMSleepMonitor       NMSleepMonitor;
 typedef struct _NMLldpListener       NMLldpListener;
+typedef struct _NMConfigDeviceStateData NMConfigDeviceStateData;
 
 typedef enum {
 	/* In priority order; higher number == higher priority */
@@ -76,7 +79,7 @@ typedef enum {
 	NM_IP_CONFIG_SOURCE_WWAN,
 	NM_IP_CONFIG_SOURCE_VPN,
 	NM_IP_CONFIG_SOURCE_DHCP,
-	NM_IP_CONFIG_SOURCE_RDISC,
+	NM_IP_CONFIG_SOURCE_NDISC,
 	NM_IP_CONFIG_SOURCE_USER,
 } NMIPConfigSource;
 
@@ -126,6 +129,7 @@ typedef enum {
 	NM_LINK_TYPE_IP6TNL,
 	NM_LINK_TYPE_IPIP,
 	NM_LINK_TYPE_LOOPBACK,
+	NM_LINK_TYPE_MACSEC,
 	NM_LINK_TYPE_MACVLAN,
 	NM_LINK_TYPE_MACVTAP,
 	NM_LINK_TYPE_OPENVSWITCH,
@@ -157,6 +161,7 @@ typedef enum {
 	NMP_OBJECT_TYPE_LNK_INFINIBAND,
 	NMP_OBJECT_TYPE_LNK_IP6TNL,
 	NMP_OBJECT_TYPE_LNK_IPIP,
+	NMP_OBJECT_TYPE_LNK_MACSEC,
 	NMP_OBJECT_TYPE_LNK_MACVLAN,
 	NMP_OBJECT_TYPE_LNK_MACVTAP,
 	NMP_OBJECT_TYPE_LNK_SIT,

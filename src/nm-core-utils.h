@@ -262,23 +262,6 @@ fcn_name (lookup_type val) \
 
 /*****************************************************************************/
 
-static inline void
-_nm_utils_strbuf_init (char *buf, gsize len, char **p_buf_ptr, gsize *p_buf_len)
-{
-	NM_SET_OUT (p_buf_len, len);
-	NM_SET_OUT (p_buf_ptr, buf);
-	buf[0] = '\0';
-}
-
-#define nm_utils_strbuf_init(buf, p_buf_ptr, p_buf_len) \
-	G_STMT_START { \
-		G_STATIC_ASSERT (G_N_ELEMENTS (buf) == sizeof (buf) && sizeof (buf) > sizeof (char *)); \
-		_nm_utils_strbuf_init ((buf), sizeof (buf), (p_buf_ptr), (p_buf_len)); \
-	} G_STMT_END
-void nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...) _nm_printf (3, 4);
-void nm_utils_strbuf_append_c (char **buf, gsize *len, char c);
-void nm_utils_strbuf_append_str (char **buf, gsize *len, const char *str);
-
 const char *nm_utils_get_ip_config_method (NMConnection *connection,
                                            GType         ip_setting_type);
 
@@ -313,12 +296,33 @@ int nm_utils_fd_wait_for_event (int fd, int event, gint64 timeout_ns);
 ssize_t nm_utils_fd_read_loop (int fd, void *buf, size_t nbytes, bool do_poll);
 int nm_utils_fd_read_loop_exact (int fd, void *buf, size_t nbytes, bool do_poll);
 
+int nm_utils_fd_get_contents (int fd,
+                              gsize max_length,
+                              char **contents,
+                              gsize *length,
+                              GError **error);
+
+int nm_utils_file_get_contents (int dirfd,
+                                const char *filename,
+                                gsize max_length,
+                                char **contents,
+                                gsize *length,
+                                GError **error);
+
+gboolean nm_utils_file_set_contents (const gchar *filename,
+                                     const gchar *contents,
+                                     gssize length,
+                                     mode_t mode,
+                                     GError **error);
+
 int nm_utils_read_urandom (void *p, size_t n);
 
 char *nm_utils_machine_id_read (void);
 gboolean nm_utils_machine_id_parse (const char *id_str, /*uuid_t*/ guchar *out_uuid);
 
 guint8 *nm_utils_secret_key_read (gsize *out_key_len, GError **error);
+
+const char *nm_utils_get_boot_id (void);
 
 /* IPv6 Interface Identifer helpers */
 
@@ -358,10 +362,35 @@ gboolean nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
                                                  guint dev_id,
                                                  NMUtilsIPv6IfaceId *out_iid);
 
-typedef enum { /*< skip >*/
-	NM_UTILS_STABLE_TYPE_UUID = 0,
+typedef enum {
+	/* The stable type. Note that this value is encoded in the
+	 * generated addresses, thus the numbers MUST not change.
+	 *
+	 * Also note, if we ever allocate ID 255, we must take care
+	 * that nm_utils_ipv6_addr_set_stable_privacy() extends the
+	 * uint8 encoding of this value. */
+	NM_UTILS_STABLE_TYPE_UUID      = 0,
 	NM_UTILS_STABLE_TYPE_STABLE_ID = 1,
+	NM_UTILS_STABLE_TYPE_GENERATED = 2,
+	NM_UTILS_STABLE_TYPE_RANDOM    = 3,
 } NMUtilsStableType;
+
+NMUtilsStableType nm_utils_stable_id_parse (const char *stable_id,
+                                            const char *uuid,
+                                            const char *bootid,
+                                            char **out_generated);
+
+char *nm_utils_stable_id_random (void);
+char *nm_utils_stable_id_generated_complete (const char *msg);
+
+gboolean nm_utils_ipv6_addr_set_stable_privacy_impl (NMUtilsStableType stable_type,
+                                                     struct in6_addr *addr,
+                                                     const char *ifname,
+                                                     const char *network_id,
+                                                     guint dad_counter,
+                                                     guint8 *secret_key,
+                                                     gsize key_len,
+                                                     GError **error);
 
 gboolean nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType id_type,
                                                 struct in6_addr *addr,
@@ -372,6 +401,13 @@ gboolean nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType id_type,
 
 char *nm_utils_hw_addr_gen_random_eth (const char *current_mac_address,
                                        const char *generate_mac_address_mask);
+char *nm_utils_hw_addr_gen_stable_eth_impl (NMUtilsStableType stable_type,
+                                            const char *stable_id,
+                                            const guint8 *secret_key,
+                                            gsize key_len,
+                                            const char *ifname,
+                                            const char *current_mac_address,
+                                            const char *generate_mac_address_mask);
 char *nm_utils_hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
                                        const char *stable_id,
                                        const char *ifname,
@@ -427,5 +463,10 @@ const char *nm_utils_dnsmasq_status_to_string (int status, char *dest, gsize siz
 
 void nm_utils_get_reverse_dns_domains_ip4 (guint32 ip, guint8 plen, GPtrArray *domains);
 void nm_utils_get_reverse_dns_domains_ip6 (const struct in6_addr *ip, guint8 plen, GPtrArray *domains);
+
+struct stat;
+
+gboolean nm_utils_validate_plugin (const char *path, struct stat *stat, GError **error);
+char **nm_utils_read_plugin_paths (const char *dirname, const char *prefix);
 
 #endif /* __NM_CORE_UTILS_H__ */

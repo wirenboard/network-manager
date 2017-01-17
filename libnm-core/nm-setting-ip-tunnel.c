@@ -285,13 +285,13 @@ nm_setting_ip_tunnel_get_mtu (NMSettingIPTunnel *setting)
 	return NM_SETTING_IP_TUNNEL_GET_PRIVATE (setting)->mtu;
 }
 
-/*********************************************************************/
+/*****************************************************************************/
 
 static gboolean
 verify (NMSetting *setting, NMConnection *connection, GError **error)
 {
 	NMSettingIPTunnelPrivate *priv = NM_SETTING_IP_TUNNEL_GET_PRIVATE (setting);
-	int family;
+	int family = AF_UNSPEC;
 
 	switch (priv->mode) {
 	case NM_IP_TUNNEL_MODE_IPIP:
@@ -307,8 +307,8 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	case NM_IP_TUNNEL_MODE_VTI6:
 		family = AF_INET6;
 		break;
-	default:
-		family = AF_UNSPEC;
+	case NM_IP_TUNNEL_MODE_UNKNOWN:
+		break;
 	}
 
 	if (family == AF_UNSPEC) {
@@ -322,7 +322,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	}
 
 	if (   priv->parent
-	    && !nm_utils_iface_valid_name (priv->parent)
+	    && !nm_utils_is_valid_iface_name (priv->parent, NULL)
 	    && !nm_utils_is_uuid (priv->parent)) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
@@ -345,7 +345,16 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		return FALSE;
 	}
 
-	if (priv->remote && !nm_utils_ipaddr_valid (family, priv->remote)) {
+	if (!priv->remote) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_IP_TUNNEL_SETTING_NAME, NM_SETTING_IP_TUNNEL_REMOTE);
+		return FALSE;
+	}
+
+	if (!nm_utils_ipaddr_valid (family, priv->remote)) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
 		             NM_CONNECTION_ERROR_INVALID_PROPERTY,

@@ -50,6 +50,7 @@
 
 /* Internal non-exported properties */
 #define NM_ACTIVE_CONNECTION_INT_SETTINGS_CONNECTION "int-settings-connection"
+#define NM_ACTIVE_CONNECTION_INT_APPLIED_CONNECTION  "int-applied-connection"
 #define NM_ACTIVE_CONNECTION_INT_DEVICE         "int-device"
 #define NM_ACTIVE_CONNECTION_INT_SUBJECT        "int-subject"
 #define NM_ACTIVE_CONNECTION_INT_MASTER         "int-master"
@@ -60,8 +61,11 @@
 #define NM_ACTIVE_CONNECTION_DEVICE_METERED_CHANGED  "device-metered-changed"
 #define NM_ACTIVE_CONNECTION_PARENT_ACTIVE           "parent-active"
 
+struct _NMActiveConnectionPrivate;
+
 struct _NMActiveConnection {
 	NMExportedObject parent;
+	struct _NMActiveConnectionPrivate *_priv;
 };
 
 typedef struct {

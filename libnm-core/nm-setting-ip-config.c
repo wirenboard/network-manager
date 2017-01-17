@@ -1773,7 +1773,6 @@ nm_setting_ip_config_get_dns_priority (NMSettingIPConfig *setting)
 
 	return NM_SETTING_IP_CONFIG_GET_PRIVATE (setting)->dns_priority;
 }
-NM_BACKPORT_SYMBOL (libnm_1_2_4, gint, nm_setting_ip_config_get_dns_priority, (NMSettingIPConfig *setting), (setting));
 
 /**
  * nm_setting_ip_config_get_num_addresses:
@@ -2234,7 +2233,7 @@ verify_label (const char *label)
 	if (!p)
 		return FALSE;
 	iface = g_strndup (label, p - label);
-	if (!nm_utils_iface_valid_name (iface)) {
+	if (!nm_utils_is_valid_iface_name (iface, NULL)) {
 		g_free (iface);
 		return FALSE;
 	}
@@ -2711,7 +2710,7 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 	/**
 	 * NMSettingIPConfig:dns-options:
 	 *
-	 * Array of DNS options.
+	 * Array of DNS options as described in man 5 resolv.conf.
 	 *
 	 * %NULL means that the options are unset and left at the default.
 	 * In this case NetworkManager will use default options. This is
@@ -2729,19 +2728,23 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 	/**
 	 * NMSettingIPConfig:dns-priority:
 	 *
-	 * DNS priority.
+	 * Intra-connection DNS priority.
 	 *
 	 * The relative priority to be used when determining the order of DNS
 	 * servers in resolv.conf.  A lower value means that servers will be on top
 	 * of the file.  Zero selects the default value, which is 50 for VPNs and
-	 * 100 for other connections.  When multiple devices have configurations
-	 * with the same priority, the one with an active default route will be
-	 * preferred.  Note that when using dns=dnsmasq the order is meaningless
+	 * 100 for other connections.  Note that the priority is to order DNS
+	 * settings for multiple active connections. It does not disambiguate
+	 * multiple DNS servers within the same connection profile. For that,
+	 * just specify the DNS servers in the desired order.
+	 * When multiple devices have configurations with the same priority, the
+	 * one with an active default route will be preferred.
+	 * Note that when using dns=dnsmasq the order is meaningless
 	 * since dnsmasq forwards queries to all known servers at the same time.
 	 *
 	 * Negative values have the special effect of excluding other configurations
 	 * with a greater priority value; so in presence of at least a negative
-	 * priority, only DNS servers from configurations with the lowest priority
+	 * priority, only DNS servers from connections with the lowest priority
 	 * value will be used.
 	 *
 	 * Since: 1.4
@@ -2879,7 +2882,6 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 		 g_param_spec_string (NM_SETTING_IP_CONFIG_DHCP_HOSTNAME, "", "",
 		                      NULL,
 		                      G_PARAM_READWRITE |
-		                      NM_SETTING_PARAM_INFERRABLE |
 		                      G_PARAM_STATIC_STRINGS));
 
 	/**

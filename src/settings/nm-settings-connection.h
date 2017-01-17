@@ -95,8 +95,11 @@ typedef void (*NMSettingsConnectionDeleteFunc) (NMSettingsConnection *self,
                                                 GError *error,
                                                 gpointer user_data);
 
+struct _NMSettingsConnectionPrivate;
+
 struct _NMSettingsConnection {
 	NMExportedObject parent;
+	struct _NMSettingsConnectionPrivate *_priv;
 };
 
 struct _NMSettingsConnectionClass {
@@ -173,7 +176,7 @@ void nm_settings_connection_recheck_visibility (NMSettingsConnection *self);
 gboolean nm_settings_connection_check_permission (NMSettingsConnection *self,
                                                   const char *permission);
 
-void nm_settings_connection_signal_remove (NMSettingsConnection *self);
+void nm_settings_connection_signal_remove (NMSettingsConnection *self, gboolean allow_reuse);
 
 gboolean nm_settings_connection_get_unsaved (NMSettingsConnection *self);
 

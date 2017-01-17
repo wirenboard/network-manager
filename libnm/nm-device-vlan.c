@@ -28,7 +28,6 @@
 #include "nm-utils.h"
 
 #include "nm-device-vlan.h"
-#include "nm-device-private.h"
 #include "nm-object-private.h"
 
 G_DEFINE_TYPE (NMDeviceVlan, nm_device_vlan, NM_TYPE_DEVICE)
@@ -66,7 +65,7 @@ nm_device_vlan_get_hw_address (NMDeviceVlan *device)
 {
 	g_return_val_if_fail (NM_IS_DEVICE_VLAN (device), NULL);
 
-	return NM_DEVICE_VLAN_GET_PRIVATE (device)->hw_address;
+	return nm_str_not_empty (NM_DEVICE_VLAN_GET_PRIVATE (device)->hw_address);
 }
 
 /**
@@ -167,12 +166,11 @@ get_hw_address (NMDevice *device)
 	return nm_device_vlan_get_hw_address (NM_DEVICE_VLAN (device));
 }
 
-/***********************************************************/
+/*****************************************************************************/
 
 static void
 nm_device_vlan_init (NMDeviceVlan *device)
 {
-	_nm_device_set_device_type (NM_DEVICE (device), NM_DEVICE_TYPE_VLAN);
 }
 
 static void
@@ -240,8 +238,6 @@ nm_device_vlan_class_init (NMDeviceVlanClass *vlan_class)
 	NMDeviceClass *device_class = NM_DEVICE_CLASS (vlan_class);
 
 	g_type_class_add_private (vlan_class, sizeof (NMDeviceVlanPrivate));
-
-	_nm_object_class_add_interface (nm_object_class, NM_DBUS_INTERFACE_DEVICE_VLAN);
 
 	/* virtual methods */
 	object_class->finalize = finalize;

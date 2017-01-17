@@ -69,9 +69,9 @@
                   A group of related key/value pairs describing a specific piece of a
                   <span class="emphasis"><em>Connection (profile)</em></span>. Settings keys and allowed values are
                   described in the tables below. Keys are also referred to as properties.
-                  Developers can find the setting objects and their properties in the libnm-util
-                  sources. Look for the <code class="function">class_init</code> functions near the bottom of
-                  each setting source file.
+                  Developers can find the setting objects and their properties in the libnm-core
+                  sources. Look for the <code class="function">*_class_init</code> functions near the bottom
+                  of each setting source file.
                 </p></td>
 </tr></tbody>
 </table></div>
@@ -94,7 +94,7 @@
 </table>
 </div>
 <div class="table">
-<a name="id-1.2.6.4.3"></a><p class="title"><b>Table 24. 802-1x setting</b></p>
+<a name="id-1.2.6.4.3"></a><p class="title"><b>Table 25. 802-1x setting</b></p>
 <div class="table-contents"><table class="table" summary="802-1x setting" border="1">
 <colgroup>
 <col>
@@ -358,7 +358,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.4"></a><p class="title"><b>Table 25. adsl setting</b></p>
+<a name="id-1.2.6.4.4"></a><p class="title"><b>Table 26. adsl setting</b></p>
 <div class="table-contents"><table class="table" summary="adsl setting" border="1">
 <colgroup>
 <col>
@@ -433,7 +433,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.5"></a><p class="title"><b>Table 26. bluetooth setting</b></p>
+<a name="id-1.2.6.4.5"></a><p class="title"><b>Table 27. bluetooth setting</b></p>
 <div class="table-contents"><table class="table" summary="bluetooth setting" border="1">
 <colgroup>
 <col>
@@ -473,7 +473,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.6"></a><p class="title"><b>Table 27. bond setting</b></p>
+<a name="id-1.2.6.4.6"></a><p class="title"><b>Table 28. bond setting</b></p>
 <div class="table-contents"><table class="table" summary="bond setting" border="1">
 <colgroup>
 <col>
@@ -513,7 +513,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.7"></a><p class="title"><b>Table 28. bridge setting</b></p>
+<a name="id-1.2.6.4.7"></a><p class="title"><b>Table 29. bridge setting</b></p>
 <div class="table-contents"><table class="table" summary="bridge setting" border="1">
 <colgroup>
 <col>
@@ -602,7 +602,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.8"></a><p class="title"><b>Table 29. bridge-port setting</b></p>
+<a name="id-1.2.6.4.8"></a><p class="title"><b>Table 30. bridge-port setting</b></p>
 <div class="table-contents"><table class="table" summary="bridge-port setting" border="1">
 <colgroup>
 <col>
@@ -649,7 +649,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.9"></a><p class="title"><b>Table 30. cdma setting</b></p>
+<a name="id-1.2.6.4.9"></a><p class="title"><b>Table 31. cdma setting</b></p>
 <div class="table-contents"><table class="table" summary="cdma setting" border="1">
 <colgroup>
 <col>
@@ -703,7 +703,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.10"></a><p class="title"><b>Table 31. connection setting</b></p>
+<a name="id-1.2.6.4.10"></a><p class="title"><b>Table 32. connection setting</b></p>
 <div class="table-contents"><table class="table" summary="connection setting" border="1">
 <colgroup>
 <col>
@@ -731,6 +731,13 @@
 <td align="left">int32</td>
 <td align="left">0</td>
 <td>The autoconnect priority. If the connection is set to autoconnect, connections with higher priority will be preferred. Defaults to 0. The higher number means higher priority.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.connection.autoconnect-retries"></a>autoconnect-retries</td>
+<td align="left">int32</td>
+<td align="left">-1</td>
+<td>The number of times a connection should be tried when autoctivating before giving up. Zero means forever, -1 means the global default (4 times if not overridden).</td>
 </tr>
 <tr>
 <td align="left">
@@ -821,7 +828,7 @@
 <a name="nm-settings.property.connection.stable-id"></a>stable-id</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>This token to generate stable IDs for the connection. If unset, the UUID will be used instead. The stable-id is used instead of the connection UUID for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable.</td>
+<td>Token to generate stable IDs for the connection. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. Note that also the interface name of the activating connection and a per-host secret key is included into the address generation so that the same stable-id on different hosts/devices yields different addresses. If the value is unset, an ID unique for the connection is used. Specifing a stable-id allows multiple connections to generate the same addresses. Another use is to generate IDs at runtime via dynamic substitutions. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-boot, or every time. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot. Note that two connections only use the same effective id if their stable-id is also identical before performing dynamic substitutions.</td>
 </tr>
 <tr>
 <td align="left">
@@ -855,7 +862,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.11"></a><p class="title"><b>Table 32. dcb setting</b></p>
+<a name="id-1.2.6.4.11"></a><p class="title"><b>Table 33. dcb setting</b></p>
 <div class="table-contents"><table class="table" summary="dcb setting" border="1">
 <colgroup>
 <col>
@@ -986,7 +993,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.12"></a><p class="title"><b>Table 33. generic setting</b></p>
+<a name="id-1.2.6.4.12"></a><p class="title"><b>Table 34. generic setting</b></p>
 <div class="table-contents"><table class="table" summary="generic setting" border="1">
 <colgroup>
 <col>
@@ -1010,7 +1017,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.13"></a><p class="title"><b>Table 34. gsm setting</b></p>
+<a name="id-1.2.6.4.13"></a><p class="title"><b>Table 35. gsm setting</b></p>
 <div class="table-contents"><table class="table" summary="gsm setting" border="1">
 <colgroup>
 <col>
@@ -1120,7 +1127,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.14"></a><p class="title"><b>Table 35. infiniband setting</b></p>
+<a name="id-1.2.6.4.14"></a><p class="title"><b>Table 36. infiniband setting</b></p>
 <div class="table-contents"><table class="table" summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -1181,7 +1188,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.15"></a><p class="title"><b>Table 36. ipv4 setting</b></p>
+<a name="id-1.2.6.4.15"></a><p class="title"><b>Table 37. ipv4 setting</b></p>
 <div class="table-contents"><table class="table" summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -1264,14 +1271,14 @@
 <a name="nm-settings.property.ipv4.dns-options"></a>dns-options</td>
 <td align="left">array of string</td>
 <td align="left">[]</td>
-<td>Array of DNS options. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
+<td>Array of DNS options as described in man 5 resolv.conf. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
 </tr>
 <tr>
 <td align="left">
 <a name="nm-settings.property.ipv4.dns-priority"></a>dns-priority</td>
 <td align="left">int32</td>
 <td align="left">0</td>
-<td>DNS priority. The relative priority to be used when determining the order of DNS servers in resolv.conf.  A lower value means that servers will be on top of the file.  Zero selects the default value, which is 50 for VPNs and 100 for other connections.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used.</td>
+<td>Intra-connection DNS priority. The relative priority to be used when determining the order of DNS servers in resolv.conf.  A lower value means that servers will be on top of the file.  Zero selects the default value, which is 50 for VPNs and 100 for other connections.  Note that the priority is to order DNS settings for multiple active connections. It does not disambiguate multiple DNS servers within the same connection profile. For that, just specify the DNS servers in the desired order. When multiple devices have configurations with the same priority, the one with an active default route will be preferred. Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1354,7 +1361,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.16"></a><p class="title"><b>Table 37. ipv6 setting</b></p>
+<a name="id-1.2.6.4.16"></a><p class="title"><b>Table 38. ipv6 setting</b></p>
 <div class="table-contents"><table class="table" summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -1374,7 +1381,7 @@
 <a name="nm-settings.property.ipv6.addr-gen-mode"></a>addr-gen-mode</td>
 <td align="left">int32</td>
 <td align="left">1</td>
-<td>Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration. The permitted values are: "eui64", or "stable-privacy". If the property is set to "eui64", the addresses will be generated using the interface tokens derived from  hardware address. This makes the host part of the address to stay constant, making it possible to track host's presence when it changes networks. The address changes when the interface hardware is replaced. The value of "stable-privacy" enables use of cryptographically secure hash of a secret host-specific key along with the connection identification and the network address as specified by RFC7217. This makes it impossible to use the address track host's presence, and makes the address stable when the network interface hardware is replaced. On D-Bus, the absence of an addr-gen-mode setting equals enabling "stable-privacy". For keyfile plugin, the absence of the setting on disk means "eui64" so that the property doesn't change on upgrade from older versions. Note that this setting is distinct from the Privacy Extensions as configured by "ip6-privacy" property and it does not affect the temporary addresses configured with this option.</td>
+<td>Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration. The permitted values are: "eui64", or "stable-privacy". If the property is set to "eui64", the addresses will be generated using the interface tokens derived from  hardware address. This makes the host part of the address to stay constant, making it possible to track host's presence when it changes networks. The address changes when the interface hardware is replaced. The value of "stable-privacy" enables use of cryptographically secure hash of a secret host-specific key along with the connection's stable-id and the network address as specified by RFC7217. This makes it impossible to use the address track host's presence, and makes the address stable when the network interface hardware is replaced. On D-Bus, the absence of an addr-gen-mode setting equals enabling "stable-privacy". For keyfile plugin, the absence of the setting on disk means "eui64" so that the property doesn't change on upgrade from older versions. Note that this setting is distinct from the Privacy Extensions as configured by "ip6-privacy" property and it does not affect the temporary addresses configured with this option.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1430,14 +1437,14 @@
 <a name="nm-settings.property.ipv6.dns-options"></a>dns-options</td>
 <td align="left">array of string</td>
 <td align="left">[]</td>
-<td>Array of DNS options. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
+<td>Array of DNS options as described in man 5 resolv.conf. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
 </tr>
 <tr>
 <td align="left">
 <a name="nm-settings.property.ipv6.dns-priority"></a>dns-priority</td>
 <td align="left">int32</td>
 <td align="left">0</td>
-<td>DNS priority. The relative priority to be used when determining the order of DNS servers in resolv.conf.  A lower value means that servers will be on top of the file.  Zero selects the default value, which is 50 for VPNs and 100 for other connections.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used.</td>
+<td>Intra-connection DNS priority. The relative priority to be used when determining the order of DNS servers in resolv.conf.  A lower value means that servers will be on top of the file.  Zero selects the default value, which is 50 for VPNs and 100 for other connections.  Note that the priority is to order DNS settings for multiple active connections. It does not disambiguate multiple DNS servers within the same connection profile. For that, just specify the DNS servers in the desired order. When multiple devices have configurations with the same priority, the one with an active default route will be preferred. Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1534,7 +1541,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.17"></a><p class="title"><b>Table 38. ip-tunnel setting</b></p>
+<a name="id-1.2.6.4.17"></a><p class="title"><b>Table 39. ip-tunnel setting</b></p>
 <div class="table-contents"><table class="table" summary="ip-tunnel setting" border="1">
 <colgroup>
 <col>
@@ -1644,7 +1651,89 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.18"></a><p class="title"><b>Table 39. macvlan setting</b></p>
+<a name="id-1.2.6.4.18"></a><p class="title"><b>Table 40. macsec setting</b></p>
+<div class="table-contents"><table class="table" summary="macsec setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.encrypt"></a>encrypt</td>
+<td align="left">boolean</td>
+<td align="left">TRUE</td>
+<td>Whether the transmitted traffic must be encrypted.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.mka-cak"></a>mka-cak</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The pre-shared CAK (Connectivity Association Key) for MACsec Key Agreement.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.mka-cak-flags"></a>mka-cak-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "mka-cak" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.mka-ckn"></a>mka-ckn</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The pre-shared CKN (Connectivity-association Key Name) for MACsec Key Agreement.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.mode"></a>mode</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Specifies how the CAK (Connectivity Association Key) for MKA (MACsec Key Agreement) is obtained.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">macsec</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.parent"></a>parent</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>If given, specifies the parent interface name or parent connection UUID from which this MACSEC interface should be created.  If this property is not specified, the connection must contain an "802-3-ethernet" setting with a "mac-address" property.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.port"></a>port</td>
+<td align="left">int32</td>
+<td align="left">1</td>
+<td>The port component of the SCI (Secure Channel Identifier), between 1 and 65534.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.validation"></a>validation</td>
+<td align="left">int32</td>
+<td align="left">2</td>
+<td>Specifies the validation mode for incoming frames.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<br class="table-break"><div class="table">
+<a name="id-1.2.6.4.19"></a><p class="title"><b>Table 41. macvlan setting</b></p>
 <div class="table-contents"><table class="table" summary="macvlan setting" border="1">
 <colgroup>
 <col>
@@ -1698,7 +1787,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.19"></a><p class="title"><b>Table 40. 802-11-olpc-mesh setting</b></p>
+<a name="id-1.2.6.4.20"></a><p class="title"><b>Table 42. 802-11-olpc-mesh setting</b></p>
 <div class="table-contents"><table class="table" summary="802-11-olpc-mesh setting" border="1">
 <colgroup>
 <col>
@@ -1745,7 +1834,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.20"></a><p class="title"><b>Table 41. ppp setting</b></p>
+<a name="id-1.2.6.4.21"></a><p class="title"><b>Table 43. ppp setting</b></p>
 <div class="table-contents"><table class="table" summary="ppp setting" border="1">
 <colgroup>
 <col>
@@ -1897,7 +1986,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.21"></a><p class="title"><b>Table 42. pppoe setting</b></p>
+<a name="id-1.2.6.4.22"></a><p class="title"><b>Table 44. pppoe setting</b></p>
 <div class="table-contents"><table class="table" summary="pppoe setting" border="1">
 <colgroup>
 <col>
@@ -1951,7 +2040,61 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.22"></a><p class="title"><b>Table 43. serial setting</b></p>
+<a name="id-1.2.6.4.23"></a><p class="title"><b>Table 45. proxy setting</b></p>
+<div class="table-contents"><table class="table" summary="proxy setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.proxy.browser-only"></a>browser-only</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Whether the proxy configuration is for browser only.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.proxy.method"></a>method</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Method for proxy configuration, Default is NM_SETTING_PROXY_METHOD_NONE (0)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.proxy.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">proxy</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.proxy.pac-script"></a>pac-script</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>PAC script for the connection.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.proxy.pac-url"></a>pac-url</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>PAC URL for obtaining PAC file.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<br class="table-break"><div class="table">
+<a name="id-1.2.6.4.24"></a><p class="title"><b>Table 46. serial setting</b></p>
 <div class="table-contents"><table class="table" summary="serial setting" border="1">
 <colgroup>
 <col>
@@ -2012,7 +2155,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.23"></a><p class="title"><b>Table 44. team setting</b></p>
+<a name="id-1.2.6.4.25"></a><p class="title"><b>Table 47. team setting</b></p>
 <div class="table-contents"><table class="table" summary="team setting" border="1">
 <colgroup>
 <col>
@@ -2052,7 +2195,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.24"></a><p class="title"><b>Table 45. team-port setting</b></p>
+<a name="id-1.2.6.4.26"></a><p class="title"><b>Table 48. team-port setting</b></p>
 <div class="table-contents"><table class="table" summary="team-port setting" border="1">
 <colgroup>
 <col>
@@ -2085,7 +2228,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.25"></a><p class="title"><b>Table 46. tun setting</b></p>
+<a name="id-1.2.6.4.27"></a><p class="title"><b>Table 49. tun setting</b></p>
 <div class="table-contents"><table class="table" summary="tun setting" border="1">
 <colgroup>
 <col>
@@ -2153,7 +2296,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.26"></a><p class="title"><b>Table 47. vlan setting</b></p>
+<a name="id-1.2.6.4.28"></a><p class="title"><b>Table 50. vlan setting</b></p>
 <div class="table-contents"><table class="table" summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -2221,7 +2364,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.27"></a><p class="title"><b>Table 48. vpn setting</b></p>
+<a name="id-1.2.6.4.29"></a><p class="title"><b>Table 51. vpn setting</b></p>
 <div class="table-contents"><table class="table" summary="vpn setting" border="1">
 <colgroup>
 <col>
@@ -2289,7 +2432,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.28"></a><p class="title"><b>Table 49. vxlan setting</b></p>
+<a name="id-1.2.6.4.30"></a><p class="title"><b>Table 52. vxlan setting</b></p>
 <div class="table-contents"><table class="table" summary="vxlan setting" border="1">
 <colgroup>
 <col>
@@ -2427,7 +2570,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.29"></a><p class="title"><b>Table 50. wimax setting</b></p>
+<a name="id-1.2.6.4.31"></a><p class="title"><b>Table 53. wimax setting</b></p>
 <div class="table-contents"><table class="table" summary="wimax setting" border="1">
 <colgroup>
 <col>
@@ -2467,7 +2610,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.30"></a><p class="title"><b>Table 51. 802-3-ethernet setting</b></p>
+<a name="id-1.2.6.4.32"></a><p class="title"><b>Table 54. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table class="table" summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -2487,28 +2630,28 @@
 <a name="nm-settings.property.802-3-ethernet.assigned-mac-address"></a>assigned-mac-address</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The new field for the cloned MAC address. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable". This field replaces the deprecated "cloned-mac-address" on D-Bus, which can only contain explict hardware addresses.</td>
+<td>The new field for the cloned MAC address. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable". This field replaces the deprecated "cloned-mac-address" on D-Bus, which can only contain explict hardware addresses. Note that this property only exists in D-Bus API. libnm and nmcli continue to call this property "cloned-mac-address".</td>
 </tr>
 <tr>
 <td align="left">
 <a name="nm-settings.property.802-3-ethernet.auto-negotiate"></a>auto-negotiate</td>
 <td align="left">boolean</td>
-<td align="left">TRUE</td>
-<td>If TRUE, allow auto-negotiation of port speed and duplex mode.  If FALSE, do not allow auto-negotiation, in which case the "speed" and "duplex" properties should be set.</td>
+<td align="left">FALSE</td>
+<td>If TRUE, enforce auto-negotiation of port speed and duplex mode.  If FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped.</td>
 </tr>
 <tr>
 <td align="left">
 <a name="nm-settings.property.802-3-ethernet.cloned-mac-address"></a>cloned-mac-address</td>
 <td align="left">byte array</td>
 <td align="left"> </td>
-<td>This D-Bus field is deprecated in favor of "assigned-mac-address" which is more flexible and allows specifying special variants like "random".</td>
+<td>This D-Bus field is deprecated in favor of "assigned-mac-address" which is more flexible and allows specifying special variants like "random". For libnm and nmcli, this field is called "cloned-mac-address".</td>
 </tr>
 <tr>
 <td align="left">
 <a name="nm-settings.property.802-3-ethernet.duplex"></a>duplex</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>If specified, request that the device only use the specified duplex mode. Either "half" or "full".</td>
+<td>Can be specified only when "auto-negotiate" is "off". In that case, statically configures the device to use that specified duplex mode, either "half" or "full". Must be set together with the "speed" property if specified. Before specifying a duplex mode be sure your device supports it.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2578,7 +2721,7 @@
 <a name="nm-settings.property.802-3-ethernet.speed"></a>speed</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>If non-zero, request that the device use only the specified speed.  In Mbit/s, ie 100 == 100Mbit/s.</td>
+<td>Can be set to a value grater than zero only when "auto-negotiate" is "off". In that case, statically configures the device to use that specified speed. In Mbit/s, ie 100 == 100Mbit/s. Must be set together with the "duplex" property when non-zero. Before specifying a speed value be sure your device supports it.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2598,7 +2741,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.31"></a><p class="title"><b>Table 52. 802-11-wireless setting</b></p>
+<a name="id-1.2.6.4.33"></a><p class="title"><b>Table 55. 802-11-wireless setting</b></p>
 <div class="table-contents"><table class="table" summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -2618,7 +2761,7 @@
 <a name="nm-settings.property.802-11-wireless.assigned-mac-address"></a>assigned-mac-address</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The new field for the cloned MAC address. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable". This field replaces the deprecated "cloned-mac-address" on D-Bus, which can only contain explict hardware addresses.</td>
+<td>The new field for the cloned MAC address. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable". This field replaces the deprecated "cloned-mac-address" on D-Bus, which can only contain explict hardware addresses. Note that this property only exists in D-Bus API. libnm and nmcli continue to call this property "cloned-mac-address".</td>
 </tr>
 <tr>
 <td align="left">
@@ -2646,7 +2789,7 @@
 <a name="nm-settings.property.802-11-wireless.cloned-mac-address"></a>cloned-mac-address</td>
 <td align="left">byte array</td>
 <td align="left"> </td>
-<td>This D-Bus field is deprecated in favor of "assigned-mac-address" which is more flexible and allows specifying special variants like "random".</td>
+<td>This D-Bus field is deprecated in favor of "assigned-mac-address" which is more flexible and allows specifying special variants like "random". For libnm and nmcli, this field is called "cloned-mac-address".</td>
 </tr>
 <tr>
 <td align="left">
@@ -2681,7 +2824,7 @@
 <a name="nm-settings.property.802-11-wireless.mac-address-randomization"></a>mac-address-randomization</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address). Deprecated: 1</td>
+<td>One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address). This property is deprecated for 'cloned-mac-address'. Deprecated: 1</td>
 </tr>
 <tr>
 <td align="left">
@@ -2750,7 +2893,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.6.4.32"></a><p class="title"><b>Table 53. 802-11-wireless-security setting</b></p>
+<a name="id-1.2.6.4.34"></a><p class="title"><b>Table 56. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table class="table" summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>

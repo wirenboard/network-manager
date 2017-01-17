@@ -44,6 +44,7 @@ nmc_vlan_parse_priority_maps (const char *priority_map,
 
 const char *nmc_bond_validate_mode (const char *mode, GError **error);
 gboolean nmc_team_check_config (const char *config, char **out_config, GError **error);
+gboolean nmc_proxy_check_script (const char *script, char **out_script, GError **error);
 
 NMConnection *nmc_find_connection (const GPtrArray *connections,
                                    const char *filter_type,
@@ -79,9 +80,11 @@ typedef struct {
 	const char *cmd;
 	NMCResultCode (*func) (NmCli *nmc, int argc, char **argv);
 	void (*usage) (void);
+	gboolean needs_client;
+	gboolean needs_nm_running;
 } NMCCommand;
 
-NMCResultCode nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *argv0, int argc, char **argv);
+void nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *cmd, int argc, char **argv);
 
 void nmc_complete_strings (const char *prefix, ...) G_GNUC_NULL_TERMINATED;
 

@@ -86,6 +86,12 @@
   </chapters>
   <functions>
     <keyword type="function" name="nm_client_error_quark ()" link="NMClient.html#nm-client-error-quark"/>
+    <keyword type="function" name="nm_dns_entry_unref ()" link="NMClient.html#nm-dns-entry-unref" since="1.6"/>
+    <keyword type="function" name="nm_dns_entry_get_interface ()" link="NMClient.html#nm-dns-entry-get-interface" since="1.6"/>
+    <keyword type="function" name="nm_dns_entry_get_nameservers ()" link="NMClient.html#nm-dns-entry-get-nameservers" since="1.6"/>
+    <keyword type="function" name="nm_dns_entry_get_domains ()" link="NMClient.html#nm-dns-entry-get-domains" since="1.6"/>
+    <keyword type="function" name="nm_dns_entry_get_priority ()" link="NMClient.html#nm-dns-entry-get-priority" since="1.6"/>
+    <keyword type="function" name="nm_dns_entry_get_vpn ()" link="NMClient.html#nm-dns-entry-get-vpn" since="1.6"/>
     <keyword type="function" name="nm_client_new ()" link="NMClient.html#nm-client-new"/>
     <keyword type="function" name="nm_client_new_async ()" link="NMClient.html#nm-client-new-async"/>
     <keyword type="function" name="nm_client_new_finish ()" link="NMClient.html#nm-client-new-finish"/>
@@ -140,6 +146,9 @@
     <keyword type="function" name="nm_client_reload_connections ()" link="NMClient.html#nm-client-reload-connections"/>
     <keyword type="function" name="nm_client_reload_connections_async ()" link="NMClient.html#nm-client-reload-connections-async"/>
     <keyword type="function" name="nm_client_reload_connections_finish ()" link="NMClient.html#nm-client-reload-connections-finish"/>
+    <keyword type="function" name="nm_client_get_dns_mode ()" link="NMClient.html#nm-client-get-dns-mode" since="1.6"/>
+    <keyword type="function" name="nm_client_get_dns_rc_manager ()" link="NMClient.html#nm-client-get-dns-rc-manager" since="1.6"/>
+    <keyword type="function" name="nm_client_get_dns_configuration ()" link="NMClient.html#nm-client-get-dns-configuration" since="1.6"/>
     <keyword type="macro" name="NM_CLIENT_VERSION" link="NMClient.html#NM-CLIENT-VERSION:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_STATE" link="NMClient.html#NM-CLIENT-STATE:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_STARTUP" link="NMClient.html#NM-CLIENT-STARTUP:CAPS"/>
@@ -161,6 +170,9 @@
     <keyword type="macro" name="NM_CLIENT_HOSTNAME" link="NMClient.html#NM-CLIENT-HOSTNAME:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_CAN_MODIFY" link="NMClient.html#NM-CLIENT-CAN-MODIFY:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_METERED" link="NMClient.html#NM-CLIENT-METERED:CAPS"/>
+    <keyword type="macro" name="NM_CLIENT_DNS_MODE" link="NMClient.html#NM-CLIENT-DNS-MODE:CAPS"/>
+    <keyword type="macro" name="NM_CLIENT_DNS_RC_MANAGER" link="NMClient.html#NM-CLIENT-DNS-RC-MANAGER:CAPS"/>
+    <keyword type="macro" name="NM_CLIENT_DNS_CONFIGURATION" link="NMClient.html#NM-CLIENT-DNS-CONFIGURATION:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DEVICE_ADDED" link="NMClient.html#NM-CLIENT-DEVICE-ADDED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DEVICE_REMOVED" link="NMClient.html#NM-CLIENT-DEVICE-REMOVED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_ANY_DEVICE_ADDED" link="NMClient.html#NM-CLIENT-ANY-DEVICE-ADDED:CAPS"/>
@@ -182,6 +194,9 @@
     <keyword type="property" name="The “connections” property" link="NMClient.html#NMClient--connections"/>
     <keyword type="property" name="The “connectivity” property" link="NMClient.html#NMClient--connectivity"/>
     <keyword type="property" name="The “devices” property" link="NMClient.html#NMClient--devices"/>
+    <keyword type="property" name="The “dns-configuration” property" link="NMClient.html#NMClient--dns-configuration"/>
+    <keyword type="property" name="The “dns-mode” property" link="NMClient.html#NMClient--dns-mode"/>
+    <keyword type="property" name="The “dns-rc-manager” property" link="NMClient.html#NMClient--dns-rc-manager"/>
     <keyword type="property" name="The “hostname” property" link="NMClient.html#NMClient--hostname"/>
     <keyword type="property" name="The “metered” property" link="NMClient.html#NMClient--metered"/>
     <keyword type="property" name="The “networking-enabled” property" link="NMClient.html#NMClient--networking-enabled"/>
@@ -230,9 +245,11 @@
     <keyword type="function" name="nm_object_get_path ()" link="NMObject.html#nm-object-get-path"/>
     <keyword type="macro" name="NM_OBJECT_PATH" link="NMObject.html#NM-OBJECT-PATH:CAPS"/>
     <keyword type="macro" name="NM_OBJECT_DBUS_CONNECTION" link="NMObject.html#NM-OBJECT-DBUS-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_OBJECT_DBUS_OBJECT_MANAGER" link="NMObject.html#NM-OBJECT-DBUS-OBJECT-MANAGER:CAPS"/>
     <keyword type="struct" name="NMObject" link="NMObject.html#NMObject-struct"/>
     <keyword type="property" name="The “dbus-connection” property" link="NMObject.html#NMObject--dbus-connection"/>
-    <keyword type="property" name="The “nm-running-internal” property" link="NMObject.html#NMObject--nm-running-internal"/>
+    <keyword type="property" name="The “dbus-object” property" link="NMObject.html#NMObject--dbus-object"/>
+    <keyword type="property" name="The “dbus-object-manager” property" link="NMObject.html#NMObject--dbus-object-manager"/>
     <keyword type="property" name="The “path” property" link="NMObject.html#NMObject--path"/>
     <keyword type="function" name="nm_agent_manager_error_quark ()" link="libnm-nm-errors.html#nm-agent-manager-error-quark"/>
     <keyword type="function" name="nm_connection_error_quark ()" link="libnm-nm-errors.html#nm-connection-error-quark"/>
@@ -287,6 +304,7 @@
     <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_GENERIC" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-GENERIC:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_VETH" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-VETH:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_TUN" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-TUN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_MACSEC" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MACSEC:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_MACVLAN" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_VXLAN" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-VXLAN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_GRE" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-GRE:CAPS"/>
@@ -301,6 +319,9 @@
     <keyword type="macro" name="NM_DBUS_PATH_AGENT_MANAGER" link="libnm-nm-dbus-interface.html#NM-DBUS-PATH-AGENT-MANAGER:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_SECRET_AGENT" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-SECRET-AGENT:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_SECRET_AGENT" link="libnm-nm-dbus-interface.html#NM-DBUS-PATH-SECRET-AGENT:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DNS_MANAGER" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DNS-MANAGER:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_DNS_MANAGER" link="libnm-nm-dbus-interface.html#NM-DBUS-PATH-DNS-MANAGER:CAPS"/>
+    <keyword type="enum" name="enum NMCapability" link="libnm-nm-dbus-interface.html#NMCapability"/>
     <keyword type="enum" name="enum NMState" link="libnm-nm-dbus-interface.html#NMState"/>
     <keyword type="enum" name="enum NMConnectivityState" link="libnm-nm-dbus-interface.html#NMConnectivityState"/>
     <keyword type="enum" name="enum NMDeviceType" link="libnm-nm-dbus-interface.html#NMDeviceType"/>
@@ -382,10 +403,12 @@
     <keyword type="function" name="nm_connection_get_setting_ip_tunnel ()" link="NMConnection.html#nm-connection-get-setting-ip-tunnel" since="1.2"/>
     <keyword type="function" name="nm_connection_get_setting_ip4_config ()" link="NMConnection.html#nm-connection-get-setting-ip4-config"/>
     <keyword type="function" name="nm_connection_get_setting_ip6_config ()" link="NMConnection.html#nm-connection-get-setting-ip6-config"/>
+    <keyword type="function" name="nm_connection_get_setting_macsec ()" link="NMConnection.html#nm-connection-get-setting-macsec" since="1.6"/>
     <keyword type="function" name="nm_connection_get_setting_macvlan ()" link="NMConnection.html#nm-connection-get-setting-macvlan" since="1.2"/>
     <keyword type="function" name="nm_connection_get_setting_olpc_mesh ()" link="NMConnection.html#nm-connection-get-setting-olpc-mesh"/>
     <keyword type="function" name="nm_connection_get_setting_ppp ()" link="NMConnection.html#nm-connection-get-setting-ppp"/>
     <keyword type="function" name="nm_connection_get_setting_pppoe ()" link="NMConnection.html#nm-connection-get-setting-pppoe"/>
+    <keyword type="function" name="nm_connection_get_setting_proxy ()" link="NMConnection.html#nm-connection-get-setting-proxy" since="1.6"/>
     <keyword type="function" name="nm_connection_get_setting_serial ()" link="NMConnection.html#nm-connection-get-setting-serial"/>
     <keyword type="function" name="nm_connection_get_setting_tun ()" link="NMConnection.html#nm-connection-get-setting-tun" since="1.2"/>
     <keyword type="function" name="nm_connection_get_setting_vpn ()" link="NMConnection.html#nm-connection-get-setting-vpn"/>
@@ -439,6 +462,7 @@
     <keyword type="function" name="nm_setting_connection_get_connection_type ()" link="NMSettingConnection.html#nm-setting-connection-get-connection-type"/>
     <keyword type="function" name="nm_setting_connection_get_autoconnect ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect"/>
     <keyword type="function" name="nm_setting_connection_get_autoconnect_priority ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect-priority"/>
+    <keyword type="function" name="nm_setting_connection_get_autoconnect_retries ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect-retries" since="1.6"/>
     <keyword type="function" name="nm_setting_connection_get_timestamp ()" link="NMSettingConnection.html#nm-setting-connection-get-timestamp"/>
     <keyword type="function" name="nm_setting_connection_get_read_only ()" link="NMSettingConnection.html#nm-setting-connection-get-read-only"/>
     <keyword type="function" name="nm_setting_connection_get_num_permissions ()" link="NMSettingConnection.html#nm-setting-connection-get-num-permissions"/>
@@ -471,6 +495,7 @@
     <keyword type="macro" name="NM_SETTING_CONNECTION_TYPE" link="NMSettingConnection.html#NM-SETTING-CONNECTION-TYPE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-RETRIES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_TIMESTAMP" link="NMSettingConnection.html#NM-SETTING-CONNECTION-TIMESTAMP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_READ_ONLY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-READ-ONLY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_PERMISSIONS" link="NMSettingConnection.html#NM-SETTING-CONNECTION-PERMISSIONS:CAPS"/>
@@ -487,6 +512,7 @@
     <keyword type="struct" name="NMSettingConnection" link="NMSettingConnection.html#NMSettingConnection-struct"/>
     <keyword type="property" name="The “autoconnect” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect"/>
     <keyword type="property" name="The “autoconnect-priority” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect-priority"/>
+    <keyword type="property" name="The “autoconnect-retries” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect-retries"/>
     <keyword type="property" name="The “autoconnect-slaves” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect-slaves"/>
     <keyword type="property" name="The “gateway-ping-timeout” property" link="NMSettingConnection.html#NMSettingConnection--gateway-ping-timeout"/>
     <keyword type="property" name="The “id” property" link="NMSettingConnection.html#NMSettingConnection--id"/>
@@ -520,6 +546,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_ca_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_ca_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_ca_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-path"/>
+    <keyword type="function" name="nm_setting_802_1x_get_ca_cert_uri ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-uri" since="1.6"/>
     <keyword type="function" name="nm_setting_802_1x_set_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-ca-cert"/>
     <keyword type="function" name="nm_setting_802_1x_get_subject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-subject-match"/>
     <keyword type="function" name="nm_setting_802_1x_get_num_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-get-num-altsubject-matches"/>
@@ -532,6 +559,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path"/>
+    <keyword type="function" name="nm_setting_802_1x_get_client_cert_uri ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-uri" since="1.6"/>
     <keyword type="function" name="nm_setting_802_1x_set_client_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-client-cert"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase1_peapver ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase1-peapver"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase1_peaplabel ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase1-peaplabel"/>
@@ -541,6 +569,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-path"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert_uri ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-uri" since="1.6"/>
     <keyword type="function" name="nm_setting_802_1x_set_phase2_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-ca-cert"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_subject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-subject-match"/>
     <keyword type="function" name="nm_setting_802_1x_get_num_phase2_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-get-num-phase2-altsubject-matches"/>
@@ -553,6 +582,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-path"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_uri ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-uri" since="1.6"/>
     <keyword type="function" name="nm_setting_802_1x_set_phase2_client_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-client-cert"/>
     <keyword type="function" name="nm_setting_802_1x_get_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-password"/>
     <keyword type="function" name="nm_setting_802_1x_get_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-password-flags"/>
@@ -563,6 +593,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_private_key_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-path"/>
+    <keyword type="function" name="nm_setting_802_1x_get_private_key_uri ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-uri" since="1.6"/>
     <keyword type="function" name="nm_setting_802_1x_set_private_key ()" link="NMSetting8021x.html#nm-setting-802-1x-set-private-key"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-password"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-password-flags"/>
@@ -570,11 +601,13 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-path"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_uri ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-uri" since="1.6"/>
     <keyword type="function" name="nm_setting_802_1x_set_phase2_private_key ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-private-key"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_format ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-format"/>
     <keyword type="macro" name="NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CERT-SCHEME-PREFIX-PATH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11" link="NMSetting8021x.html#NM-SETTING-802-1X-CERT-SCHEME-PREFIX-PKCS11:CAPS"/>
     <keyword type="enum" name="enum NMSetting8021xCKFormat" link="NMSetting8021x.html#NMSetting8021xCKFormat"/>
     <keyword type="enum" name="enum NMSetting8021xCKScheme" link="NMSetting8021x.html#NMSetting8021xCKScheme"/>
     <keyword type="macro" name="NM_SETTING_802_1X_SETTING_NAME" link="NMSetting8021x.html#NM-SETTING-802-1X-SETTING-NAME:CAPS"/>
@@ -2131,6 +2164,7 @@
     <keyword type="function" name="nm_utils_ap_mode_security_valid ()" link="libnm-nm-utils.html#nm-utils-ap-mode-security-valid"/>
     <keyword type="function" name="nm_utils_wep_key_valid ()" link="libnm-nm-utils.html#nm-utils-wep-key-valid"/>
     <keyword type="function" name="nm_utils_wpa_psk_valid ()" link="libnm-nm-utils.html#nm-utils-wpa-psk-valid"/>
+    <keyword type="function" name="nm_utils_is_json_object ()" link="libnm-nm-utils.html#nm-utils-is-json-object" since="1.6"/>
     <keyword type="function" name="nm_utils_ip4_dns_to_variant ()" link="libnm-nm-utils.html#nm-utils-ip4-dns-to-variant"/>
     <keyword type="function" name="nm_utils_ip4_dns_from_variant ()" link="libnm-nm-utils.html#nm-utils-ip4-dns-from-variant"/>
     <keyword type="function" name="nm_utils_ip4_addresses_to_variant ()" link="libnm-nm-utils.html#nm-utils-ip4-addresses-to-variant"/>
@@ -2173,7 +2207,8 @@
     <keyword type="function" name="nm_utils_hwaddr_matches ()" link="libnm-nm-utils.html#nm-utils-hwaddr-matches"/>
     <keyword type="function" name="nm_utils_bin2hexstr ()" link="libnm-nm-utils.html#nm-utils-bin2hexstr"/>
     <keyword type="function" name="nm_utils_hexstr2bin ()" link="libnm-nm-utils.html#nm-utils-hexstr2bin"/>
-    <keyword type="function" name="nm_utils_iface_valid_name ()" link="libnm-nm-utils.html#nm-utils-iface-valid-name"/>
+    <keyword type="function" name="nm_utils_iface_valid_name ()" link="libnm-nm-utils.html#nm-utils-iface-valid-name" deprecated="1.6: use nm_utils_is_valid_iface_name() insteead, with better error reporting."/>
+    <keyword type="function" name="nm_utils_is_valid_iface_name ()" link="libnm-nm-utils.html#nm-utils-is-valid-iface-name"/>
     <keyword type="function" name="nm_utils_is_uuid ()" link="libnm-nm-utils.html#nm-utils-is-uuid"/>
     <keyword type="function" name="nm_utils_inet4_ntop ()" link="libnm-nm-utils.html#nm-utils-inet4-ntop"/>
     <keyword type="function" name="nm_utils_inet6_ntop ()" link="libnm-nm-utils.html#nm-utils-inet6-ntop"/>
@@ -2184,6 +2219,7 @@
     <keyword type="function" name="nm_utils_enum_to_str ()" link="libnm-nm-utils.html#nm-utils-enum-to-str" since="1.2"/>
     <keyword type="function" name="nm_utils_enum_from_str ()" link="libnm-nm-utils.html#nm-utils-enum-from-str" since="1.2"/>
     <keyword type="function" name="nm_utils_enum_get_values ()" link="libnm-nm-utils.html#nm-utils-enum-get-values" since="1.2"/>
+    <keyword type="function" name="nm_utils_version ()" link="libnm-nm-utils.html#nm-utils-version" since="1.6.0"/>
     <keyword type="enum" name="enum NMUtilsSecurityType" link="libnm-nm-utils.html#NMUtilsSecurityType"/>
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
     <keyword type="macro" name="NM_UTILS_INET_ADDRSTRLEN" link="libnm-nm-utils.html#NM-UTILS-INET-ADDRSTRLEN:CAPS"/>
@@ -2192,6 +2228,7 @@
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_2_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-2-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_4_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-4-FOR:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_6_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-6-FOR:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MIN_REQUIRED" link="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MAX_ALLOWED" link="libnm-nm-version.html#NM-VERSION-MAX-ALLOWED:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS"/>
@@ -2202,6 +2239,8 @@
     <keyword type="macro" name="NM_AVAILABLE_IN_1_2" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-2:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_4" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-4:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-4:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_6" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-6:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_6" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-6:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
@@ -2232,6 +2271,7 @@
     <keyword type="enum" name="enum NMVpnConnectionStateReason" link="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionStateReason"/>
     <keyword type="enum" name="enum NMVpnPluginFailure" link="libnm-nm-vpn-dbus-interface.html#NMVpnPluginFailure"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_TUNDEV" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-CONFIG-TUNDEV:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_PROXY_PAC" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-CONFIG-PROXY-PAC:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_BANNER" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-CONFIG-BANNER:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_EXT_GATEWAY" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-CONFIG-EXT-GATEWAY:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_MTU" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-CONFIG-MTU:CAPS"/>
@@ -2355,6 +2395,7 @@
     <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_LOG_LEVEL" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-LEVEL:CAPS"/>
     <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_LOG_DOMAIN" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-DOMAIN:CAPS"/>
     <keyword type="constant" name="NM_MANAGER_ERROR_INVALID_ARGUMENTS" link="libnm-nm-errors.html#NM-MANAGER-ERROR-INVALID-ARGUMENTS:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_MISSING_PLUGIN" link="libnm-nm-errors.html#NM-MANAGER-ERROR-MISSING-PLUGIN:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_ERROR_FAILED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-FAILED:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_ERROR_PERMISSION_DENIED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-PERMISSION-DENIED:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-INVALID-CONNECTION:CAPS"/>
@@ -2378,6 +2419,7 @@
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-LAUNCH-FAILED:CAPS"/>
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-INVALID-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-INTERACTIVE-NOT-SUPPORTED:CAPS"/>
+    <keyword type="constant" name="NM_CAPABILITY_TEAM" link="libnm-nm-dbus-interface.html#NM-CAPABILITY-TEAM:CAPS"/>
     <keyword type="constant" name="NM_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-STATE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_STATE_ASLEEP" link="libnm-nm-dbus-interface.html#NM-STATE-ASLEEP:CAPS"/>
     <keyword type="constant" name="NM_STATE_DISCONNECTED" link="libnm-nm-dbus-interface.html#NM-STATE-DISCONNECTED:CAPS"/>
@@ -2412,6 +2454,7 @@
     <keyword type="constant" name="NM_DEVICE_TYPE_MACVLAN" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-MACVLAN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_TYPE_VXLAN" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-VXLAN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_TYPE_VETH" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-VETH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_MACSEC" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-MACSEC:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_CAP_NONE" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-NONE:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_CAP_NM_SUPPORTED" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-NM-SUPPORTED:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_CAP_CARRIER_DETECT" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-CARRIER-DETECT:CAPS"/>
@@ -2564,6 +2607,8 @@
     <keyword type="constant" name="NM_IP_TUNNEL_MODE_VTI6" link="libnm-nm-dbus-interface.html#NM-IP-TUNNEL-MODE-VTI6:CAPS"/>
     <keyword type="constant" name="NM_CHECKPOINT_CREATE_FLAG_NONE" link="libnm-nm-dbus-interface.html#NM-CHECKPOINT-CREATE-FLAG-NONE:CAPS"/>
     <keyword type="constant" name="NM_CHECKPOINT_CREATE_FLAG_DESTROY_ALL" link="libnm-nm-dbus-interface.html#NM-CHECKPOINT-CREATE-FLAG-DESTROY-ALL:CAPS"/>
+    <keyword type="constant" name="NM_CHECKPOINT_CREATE_FLAG_DELETE_NEW_CONNECTIONS" link="libnm-nm-dbus-interface.html#NM-CHECKPOINT-CREATE-FLAG-DELETE-NEW-CONNECTIONS:CAPS"/>
+    <keyword type="constant" name="NM_CHECKPOINT_CREATE_FLAG_DISCONNECT_NEW_DEVICES" link="libnm-nm-dbus-interface.html#NM-CHECKPOINT-CREATE-FLAG-DISCONNECT-NEW-DEVICES:CAPS"/>
     <keyword type="constant" name="NM_ROLLBACK_RESULT_OK" link="libnm-nm-dbus-interface.html#NM-ROLLBACK-RESULT-OK:CAPS"/>
     <keyword type="constant" name="NM_ROLLBACK_RESULT_ERR_NO_DEVICE" link="libnm-nm-dbus-interface.html#NM-ROLLBACK-RESULT-ERR-NO-DEVICE:CAPS"/>
     <keyword type="constant" name="NM_ROLLBACK_RESULT_ERR_DEVICE_UNMANAGED" link="libnm-nm-dbus-interface.html#NM-ROLLBACK-RESULT-ERR-DEVICE-UNMANAGED:CAPS"/>
@@ -2605,6 +2650,7 @@
     <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_BLOB" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_PKCS11" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PKCS11:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DCB_FLAG_NONE" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-NONE:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DCB_FLAG_ENABLE" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DCB_FLAG_ADVERTISE" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ADVERTISE:CAPS"/>

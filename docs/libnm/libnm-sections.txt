@@ -105,6 +105,9 @@ NM_CLIENT_CONNECTIONS
 NM_CLIENT_HOSTNAME
 NM_CLIENT_CAN_MODIFY
 NM_CLIENT_METERED
+NM_CLIENT_DNS_MODE
+NM_CLIENT_DNS_RC_MANAGER
+NM_CLIENT_DNS_CONFIGURATION
 NM_CLIENT_DEVICE_ADDED
 NM_CLIENT_DEVICE_REMOVED
 NM_CLIENT_ANY_DEVICE_ADDED
@@ -119,6 +122,12 @@ NMClientPermissionResult
 NMClientError
 NM_CLIENT_ERROR
 nm_client_error_quark
+nm_dns_entry_unref
+nm_dns_entry_get_interface
+nm_dns_entry_get_nameservers
+nm_dns_entry_get_domains
+nm_dns_entry_get_priority
+nm_dns_entry_get_vpn
 NMClient
 nm_client_new
 nm_client_new_async
@@ -174,8 +183,12 @@ nm_client_load_connections_finish
 nm_client_reload_connections
 nm_client_reload_connections_async
 nm_client_reload_connections_finish
+nm_client_get_dns_mode
+nm_client_get_dns_rc_manager
+nm_client_get_dns_configuration
 <SUBSECTION Standard>
 NMClientClass
+NMDnsEntry
 NM_CLIENT
 NM_CLIENT_CLASS
 NM_CLIENT_GET_CLASS
@@ -183,6 +196,7 @@ NM_IS_CLIENT
 NM_IS_CLIENT_CLASS
 NM_TYPE_CLIENT
 nm_client_get_type
+nm_dns_entry_get_type
 </SECTION>
 
 <SECTION>
@@ -239,10 +253,12 @@ nm_connection_get_setting_infiniband
 nm_connection_get_setting_ip_tunnel
 nm_connection_get_setting_ip4_config
 nm_connection_get_setting_ip6_config
+nm_connection_get_setting_macsec
 nm_connection_get_setting_macvlan
 nm_connection_get_setting_olpc_mesh
 nm_connection_get_setting_ppp
 nm_connection_get_setting_pppoe
+nm_connection_get_setting_proxy
 nm_connection_get_setting_serial
 nm_connection_get_setting_tun
 nm_connection_get_setting_vpn
@@ -271,6 +287,7 @@ NM_TYPE_802_11_MODE
 NM_TYPE_ACTIVE_CONNECTION_STATE
 NM_TYPE_AGENT_MANAGER_ERROR
 NM_TYPE_BLUETOOTH_CAPABILITIES
+NM_TYPE_CAPABILITY
 NM_TYPE_CONNECTION_ERROR
 NM_TYPE_CONNECTION_SERIALIZATION_FLAGS
 NM_TYPE_CONNECTIVITY_STATE
@@ -298,8 +315,11 @@ NM_TYPE_SETTING_DCB_FLAGS
 NM_TYPE_SETTING_DIFF_RESULT
 NM_TYPE_SETTING_IP6_CONFIG_ADDR_GEN_MODE
 NM_TYPE_SETTING_IP6_CONFIG_PRIVACY
+NM_TYPE_SETTING_MACSEC_MODE
+NM_TYPE_SETTING_MACSEC_VALIDATION
 NM_TYPE_SETTING_MACVLAN_MODE
 NM_TYPE_SETTING_MAC_RANDOMIZATION
+NM_TYPE_SETTING_PROXY_METHOD
 NM_TYPE_SETTING_SECRET_FLAGS
 NM_TYPE_SETTING_SERIAL_PARITY
 NM_TYPE_SETTING_TUN_MODE
@@ -323,6 +343,7 @@ nm_802_11_mode_get_type
 nm_active_connection_state_get_type
 nm_agent_manager_error_get_type
 nm_bluetooth_capabilities_get_type
+nm_capability_get_type
 nm_connection_error_get_type
 nm_connection_serialization_flags_get_type
 nm_connectivity_state_get_type
@@ -350,7 +371,10 @@ nm_setting_diff_result_get_type
 nm_setting_ip6_config_addr_gen_mode_get_type
 nm_setting_ip6_config_privacy_get_type
 nm_setting_mac_randomization_get_type
+nm_setting_macsec_mode_get_type
+nm_setting_macsec_validation_get_type
 nm_setting_macvlan_mode_get_type
+nm_setting_proxy_method_get_type
 nm_setting_secret_flags_get_type
 nm_setting_serial_parity_get_type
 nm_setting_tun_mode_get_type
@@ -391,10 +415,12 @@ NMSettingIP6Config
 NMSettingIPConfig
 NMSettingIPTunnel
 NMSettingInfiniband
+NMSettingMacsec
 NMSettingMacvlan
 NMSettingOlpcMesh
 NMSettingPpp
 NMSettingPppoe
+NMSettingProxy
 NMSettingSerial
 NMSettingTeam
 NMSettingTeamPort
@@ -440,6 +466,7 @@ NM_DBUS_INTERFACE_DEVICE_BRIDGE
 NM_DBUS_INTERFACE_DEVICE_GENERIC
 NM_DBUS_INTERFACE_DEVICE_VETH
 NM_DBUS_INTERFACE_DEVICE_TUN
+NM_DBUS_INTERFACE_DEVICE_MACSEC
 NM_DBUS_INTERFACE_DEVICE_MACVLAN
 NM_DBUS_INTERFACE_DEVICE_VXLAN
 NM_DBUS_INTERFACE_DEVICE_GRE
@@ -454,6 +481,9 @@ NM_DBUS_INTERFACE_AGENT_MANAGER
 NM_DBUS_PATH_AGENT_MANAGER
 NM_DBUS_INTERFACE_SECRET_AGENT
 NM_DBUS_PATH_SECRET_AGENT
+NM_DBUS_INTERFACE_DNS_MANAGER
+NM_DBUS_PATH_DNS_MANAGER
+NMCapability
 NMState
 NMConnectivityState
 NMDeviceType
@@ -771,6 +801,49 @@ NM_IS_DEVICE_IP_TUNNEL
 NM_IS_DEVICE_IP_TUNNEL_CLASS
 NM_TYPE_DEVICE_IP_TUNNEL
 nm_device_ip_tunnel_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-device-macsec</FILE>
+<TITLE>NMDeviceMacsec</TITLE>
+NM_DEVICE_MACSEC_PARENT
+NM_DEVICE_MACSEC_HW_ADDRESS
+NM_DEVICE_MACSEC_SCI
+NM_DEVICE_MACSEC_ICV_LENGTH
+NM_DEVICE_MACSEC_CIPHER_SUITE
+NM_DEVICE_MACSEC_WINDOW
+NM_DEVICE_MACSEC_ENCODING_SA
+NM_DEVICE_MACSEC_VALIDATION
+NM_DEVICE_MACSEC_ENCRYPT
+NM_DEVICE_MACSEC_PROTECT
+NM_DEVICE_MACSEC_INCLUDE_SCI
+NM_DEVICE_MACSEC_ES
+NM_DEVICE_MACSEC_SCB
+NM_DEVICE_MACSEC_REPLAY_PROTECT
+NMDeviceMacsec
+nm_device_macsec_get_parent
+nm_device_macsec_get_hw_address
+nm_device_macsec_get_sci
+nm_device_macsec_get_icv_length
+nm_device_macsec_get_cipher_suite
+nm_device_macsec_get_window
+nm_device_macsec_get_encoding_sa
+nm_device_macsec_get_validation
+nm_device_macsec_get_encrypt
+nm_device_macsec_get_protect
+nm_device_macsec_get_include_sci
+nm_device_macsec_get_es
+nm_device_macsec_get_scb
+nm_device_macsec_get_replay_protect
+<SUBSECTION Standard>
+NMDeviceMacsecClass
+NM_DEVICE_MACSEC
+NM_DEVICE_MACSEC_CLASS
+NM_DEVICE_MACSEC_GET_CLASS
+NM_IS_DEVICE_MACSEC
+NM_IS_DEVICE_MACSEC_CLASS
+NM_TYPE_DEVICE_MACSEC
+nm_device_macsec_get_type
 </SECTION>
 
 <SECTION>
@@ -1125,6 +1198,7 @@ nm_ip_config_get_type
 <TITLE>NMObject</TITLE>
 NM_OBJECT_PATH
 NM_OBJECT_DBUS_CONNECTION
+NM_OBJECT_DBUS_OBJECT_MANAGER
 NMObject
 nm_object_get_path
 <SUBSECTION Standard>
@@ -1133,6 +1207,7 @@ NM_IS_OBJECT
 NM_IS_OBJECT_CLASS
 NM_OBJECT
 NM_OBJECT_CLASS
+NM_OBJECT_DBUS_OBJECT
 NM_OBJECT_GET_CLASS
 NM_TYPE_OBJECT
 nm_object_get_type
@@ -1244,6 +1319,7 @@ nm_setting_get_type
 <FILE>nm-setting-8021x</FILE>
 <TITLE>NMSetting8021x</TITLE>
 NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH
+NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11
 NMSetting8021xCKFormat
 NMSetting8021xCKScheme
 NM_SETTING_802_1X_SETTING_NAME
@@ -1299,6 +1375,7 @@ nm_setting_802_1x_get_phase2_ca_path
 nm_setting_802_1x_get_ca_cert_scheme
 nm_setting_802_1x_get_ca_cert_blob
 nm_setting_802_1x_get_ca_cert_path
+nm_setting_802_1x_get_ca_cert_uri
 nm_setting_802_1x_set_ca_cert
 nm_setting_802_1x_get_subject_match
 nm_setting_802_1x_get_num_altsubject_matches
@@ -1311,6 +1388,7 @@ nm_setting_802_1x_get_domain_suffix_match
 nm_setting_802_1x_get_client_cert_scheme
 nm_setting_802_1x_get_client_cert_blob
 nm_setting_802_1x_get_client_cert_path
+nm_setting_802_1x_get_client_cert_uri
 nm_setting_802_1x_set_client_cert
 nm_setting_802_1x_get_phase1_peapver
 nm_setting_802_1x_get_phase1_peaplabel
@@ -1320,6 +1398,7 @@ nm_setting_802_1x_get_phase2_autheap
 nm_setting_802_1x_get_phase2_ca_cert_scheme
 nm_setting_802_1x_get_phase2_ca_cert_blob
 nm_setting_802_1x_get_phase2_ca_cert_path
+nm_setting_802_1x_get_phase2_ca_cert_uri
 nm_setting_802_1x_set_phase2_ca_cert
 nm_setting_802_1x_get_phase2_subject_match
 nm_setting_802_1x_get_num_phase2_altsubject_matches
@@ -1332,6 +1411,7 @@ nm_setting_802_1x_get_phase2_domain_suffix_match
 nm_setting_802_1x_get_phase2_client_cert_scheme
 nm_setting_802_1x_get_phase2_client_cert_blob
 nm_setting_802_1x_get_phase2_client_cert_path
+nm_setting_802_1x_get_phase2_client_cert_uri
 nm_setting_802_1x_set_phase2_client_cert
 nm_setting_802_1x_get_password
 nm_setting_802_1x_get_password_flags
@@ -1342,6 +1422,7 @@ nm_setting_802_1x_get_pin_flags
 nm_setting_802_1x_get_private_key_scheme
 nm_setting_802_1x_get_private_key_blob
 nm_setting_802_1x_get_private_key_path
+nm_setting_802_1x_get_private_key_uri
 nm_setting_802_1x_set_private_key
 nm_setting_802_1x_get_private_key_password
 nm_setting_802_1x_get_private_key_password_flags
@@ -1349,6 +1430,7 @@ nm_setting_802_1x_get_private_key_format
 nm_setting_802_1x_get_phase2_private_key_scheme
 nm_setting_802_1x_get_phase2_private_key_blob
 nm_setting_802_1x_get_phase2_private_key_path
+nm_setting_802_1x_get_phase2_private_key_uri
 nm_setting_802_1x_set_phase2_private_key
 nm_setting_802_1x_get_phase2_private_key_password
 nm_setting_802_1x_get_phase2_private_key_password_flags
@@ -1571,6 +1653,7 @@ NM_SETTING_CONNECTION_INTERFACE_NAME
 NM_SETTING_CONNECTION_TYPE
 NM_SETTING_CONNECTION_AUTOCONNECT
 NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY
+NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES
 NM_SETTING_CONNECTION_TIMESTAMP
 NM_SETTING_CONNECTION_READ_ONLY
 NM_SETTING_CONNECTION_PERMISSIONS
@@ -1593,6 +1676,7 @@ nm_setting_connection_get_interface_name
 nm_setting_connection_get_connection_type
 nm_setting_connection_get_autoconnect
 nm_setting_connection_get_autoconnect_priority
+nm_setting_connection_get_autoconnect_retries
 nm_setting_connection_get_timestamp
 nm_setting_connection_get_read_only
 nm_setting_connection_get_num_permissions
@@ -2000,6 +2084,43 @@ nm_setting_ip6_config_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-setting-macsec</FILE>
+<TITLE>NMSettingMacsec</TITLE>
+NM_SETTING_MACSEC_SETTING_NAME
+NM_SETTING_MACSEC_PARENT
+NM_SETTING_MACSEC_MODE
+NM_SETTING_MACSEC_ENCRYPT
+NM_SETTING_MACSEC_MKA_CAK
+NM_SETTING_MACSEC_MKA_CAK_FLAGS
+NM_SETTING_MACSEC_MKA_CKN
+NM_SETTING_MACSEC_PORT
+NM_SETTING_MACSEC_VALIDATION
+NMSettingMacsec
+NMSettingMacsecMode
+NMSettingMacsecValidation
+NM_SETTING_MACSEC_MKA_CAK_LENGTH
+NM_SETTING_MACSEC_MKA_CKN_LENGTH
+nm_setting_macsec_new
+nm_setting_macsec_get_parent
+nm_setting_macsec_get_mode
+nm_setting_macsec_get_encrypt
+nm_setting_macsec_get_mka_cak
+nm_setting_macsec_get_mka_cak_flags
+nm_setting_macsec_get_mka_ckn
+nm_setting_macsec_get_port
+nm_setting_macsec_get_validation
+<SUBSECTION Standard>
+NMSettingMacsecClass
+NM_IS_SETTING_MACSEC
+NM_IS_SETTING_MACSEC_CLASS
+NM_SETTING_MACSEC
+NM_SETTING_MACSEC_CLASS
+NM_SETTING_MACSEC_GET_CLASS
+NM_TYPE_SETTING_MACSEC
+nm_setting_macsec_get_type
+</SECTION>
+
+<SECTION>
 <FILE>nm-setting-macvlan</FILE>
 <TITLE>NMSettingMacvlan</TITLE>
 NM_SETTING_MACVLAN_SETTING_NAME
@@ -2124,6 +2245,32 @@ NM_SETTING_PPPOE_CLASS
 NM_SETTING_PPPOE_GET_CLASS
 NM_TYPE_SETTING_PPPOE
 nm_setting_pppoe_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-setting-proxy</FILE>
+<TITLE>NMSettingProxy</TITLE>
+NMSettingProxyMethod
+NM_SETTING_PROXY_SETTING_NAME
+NM_SETTING_PROXY_METHOD
+NM_SETTING_PROXY_BROWSER_ONLY
+NM_SETTING_PROXY_PAC_URL
+NM_SETTING_PROXY_PAC_SCRIPT
+nm_setting_proxy_new
+nm_setting_proxy_get_method
+nm_setting_proxy_get_browser_only
+nm_setting_proxy_get_pac_url
+nm_setting_proxy_get_pac_script
+<SUBSECTION Standard>
+NMSettingProxy
+NMSettingProxyClass
+NM_IS_SETTING_PROXY
+NM_IS_SETTING_PROXY_CLASS
+NM_SETTING_PROXY
+NM_SETTING_PROXY_CLASS
+NM_SETTING_PROXY_GET_CLASS
+NM_TYPE_SETTING_PROXY
+nm_setting_proxy_get_type
 </SECTION>
 
 <SECTION>
@@ -2582,6 +2729,7 @@ NMDeviceEthernet
 NMDeviceGeneric
 NMDeviceIPTunnel
 NMDeviceInfiniband
+NMDeviceMacsec
 NMDeviceMacvlan
 NMDeviceModem
 NMDeviceOlpcMesh
@@ -2610,6 +2758,7 @@ nm_utils_security_valid
 nm_utils_ap_mode_security_valid
 nm_utils_wep_key_valid
 nm_utils_wpa_psk_valid
+nm_utils_is_json_object
 nm_utils_ip4_dns_to_variant
 nm_utils_ip4_dns_from_variant
 nm_utils_ip4_addresses_to_variant
@@ -2654,6 +2803,7 @@ nm_utils_hwaddr_matches
 nm_utils_bin2hexstr
 nm_utils_hexstr2bin
 nm_utils_iface_valid_name
+nm_utils_is_valid_iface_name
 nm_utils_is_uuid
 NM_UTILS_INET_ADDRSTRLEN
 nm_utils_inet4_ntop
@@ -2665,6 +2815,7 @@ nm_utils_bond_mode_int_to_string
 nm_utils_enum_to_str
 nm_utils_enum_from_str
 nm_utils_enum_get_values
+nm_utils_version
 stat
 </SECTION>
 
@@ -2684,6 +2835,9 @@ NM_AVAILABLE_IN_1_2
 NM_DEPRECATED_IN_1_4
 NM_DEPRECATED_IN_1_4_FOR
 NM_AVAILABLE_IN_1_4
+NM_DEPRECATED_IN_1_6
+NM_DEPRECATED_IN_1_6_FOR
+NM_AVAILABLE_IN_1_6
 </SECTION>
 
 <SECTION>
@@ -2737,6 +2891,7 @@ NMVpnConnectionState
 NMVpnConnectionStateReason
 NMVpnPluginFailure
 NM_VPN_PLUGIN_CONFIG_TUNDEV
+NM_VPN_PLUGIN_CONFIG_PROXY_PAC
 NM_VPN_PLUGIN_CONFIG_BANNER
 NM_VPN_PLUGIN_CONFIG_EXT_GATEWAY
 NM_VPN_PLUGIN_CONFIG_MTU

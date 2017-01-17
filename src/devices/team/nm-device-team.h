@@ -21,7 +21,7 @@
 #ifndef __NETWORKMANAGER_DEVICE_TEAM_H__
 #define __NETWORKMANAGER_DEVICE_TEAM_H__
 
-#include "nm-device.h"
+#include "devices/nm-device.h"
 
 #define NM_TYPE_DEVICE_TEAM            (nm_device_team_get_type ())
 #define NM_DEVICE_TEAM(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_DEVICE_TEAM, NMDeviceTeam))
@@ -33,8 +33,8 @@
 /* Properties */
 #define NM_DEVICE_TEAM_CONFIG          "config"
 
-typedef NMDevice NMDeviceTeam;
-typedef NMDeviceClass NMDeviceTeamClass;
+typedef struct _NMDeviceTeam NMDeviceTeam;
+typedef struct _NMDeviceTeamClass NMDeviceTeamClass;
 
 GType nm_device_team_get_type (void);
 

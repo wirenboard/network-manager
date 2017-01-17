@@ -23,8 +23,9 @@
 #include <string.h>
 
 #include "nm-core-internal.h"
-#include "interface_parser.h"
-#include "parser.h"
+
+#include "settings/plugins/ifupdown/nms-ifupdown-interface-parser.h"
+#include "settings/plugins/ifupdown/nms-ifupdown-parser.h"
 
 #include "nm-test-utils-core.h"
 

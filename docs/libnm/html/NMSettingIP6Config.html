@@ -85,7 +85,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
+<td class="property_type"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
 <td class="property_name"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--addr-gen-mode" title="The “addr-gen-mode” property">addr-gen-mode</a></td>
 <td class="property_flags">Read / Write / Construct</td>
 </tr>
@@ -96,7 +96,7 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--token" title="The “token” property">token</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -171,7 +171,7 @@
 <pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NMSettingIP6ConfigAddrGenMode
     <span class="lineart">╰──</span> NMSettingIP6ConfigPrivacy
-    <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <a href="/usr/share/gtk-doc/html/gobjectgobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
             <span class="lineart">╰──</span> NMSettingIP6Config
@@ -422,7 +422,7 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6ConfigAddrGenMode"></a><h3>enum NMSettingIP6ConfigAddrGenMode</h3>
-<p><a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigAddrGenMode" title="enum NMSettingIP6ConfigAddrGenMode"><span class="type">NMSettingIP6ConfigAddrGenMode</span></a> controls how the the Interface Identifier for
+<p><a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigAddrGenMode" title="enum NMSettingIP6ConfigAddrGenMode"><span class="type">NMSettingIP6ConfigAddrGenMode</span></a> controls how the Interface Identifier for
 RFC4862 Stateless Address Autoconfiguration is created.</p>
 <div class="refsect3">
 <a name="NMSettingIP6ConfigAddrGenMode.members"></a><h4>Members</h4>
@@ -466,7 +466,7 @@ specified by RFC7217.</p>
 <a name="NMSettingIP6Config.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingIP6Config--addr-gen-mode"></a><h3>The <code class="literal">“addr-gen-mode”</code> property</h3>
-<pre class="programlisting">  “addr-gen-mode”            <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
+<pre class="programlisting">  “addr-gen-mode”            <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
 <p>Configure method for creating the address for use with RFC4862 IPv6
 Stateless Address Autoconfiguration. The permitted values are: "eui64",
 or "stable-privacy".</p>
@@ -476,8 +476,8 @@ the host part of the address to stay constant, making it possible
 to track host's presence when it changes networks. The address changes
 when the interface hardware is replaced.</p>
 <p>The value of "stable-privacy" enables use of cryptographically
-secure hash of a secret host-specific key along with the connection
-identification and the network address as specified by RFC7217.
+secure hash of a secret host-specific key along with the connection's
+stable-id and the network address as specified by RFC7217.
 This makes it impossible to use the address track host's presence,
 and makes the address stable when the network interface hardware is
 replaced.</p>
@@ -516,7 +516,7 @@ setting as another way of avoiding host tracking with IPv6 addresses.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--token"></a><h3>The <code class="literal">“token”</code> property</h3>
-<pre class="programlisting">  “token”                    <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “token”                    <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
 <p>Configure the token for draft-chown-6man-tokenised-ipv6-identifiers-02
 IPv6 tokenized interface identifiers. Useful with eui64 addr-gen-mode.</p>
 <p>Flags: Read / Write</p>

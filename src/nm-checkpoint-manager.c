@@ -25,7 +25,7 @@
 #include "nm-checkpoint.h"
 #include "nm-connection.h"
 #include "nm-core-utils.h"
-#include "nm-device.h"
+#include "devices/nm-device.h"
 #include "nm-exported-object.h"
 #include "nm-manager.h"
 #include "nm-utils.h"
@@ -51,14 +51,8 @@ struct _NMCheckpointManager {
 
 /*****************************************************************************/
 
-#define _NMLOG_PREFIX_NAME                "checkpoint"
-#define _NMLOG_DOMAIN                     LOGD_CORE
-
-#define _NMLOG(level, ...) \
-	nm_log (level, _NMLOG_DOMAIN, \
-	        "%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
-	        _NMLOG_PREFIX_NAME \
-	        _NM_UTILS_MACRO_REST(__VA_ARGS__))
+#define _NMLOG_DOMAIN      LOGD_CORE
+#define _NMLOG(level, ...) __NMLOG_DEFAULT (level, _NMLOG_DOMAIN, "checkpoint", __VA_ARGS__)
 
 /*****************************************************************************/
 
@@ -145,19 +139,31 @@ nm_checkpoint_manager_create (NMCheckpointManager *self,
                               NMCheckpointCreateFlags flags,
                               GError **error)
 {
+	NMManager *manager;
 	NMCheckpoint *checkpoint;
 	const char * const *path;
 	gs_unref_ptrarray GPtrArray *devices = NULL;
 	NMDevice *device;
 	const char *checkpoint_path;
+	gs_free const char **device_paths_free = NULL;
 	guint i;
 
 	g_return_val_if_fail (self, FALSE);
 	g_return_val_if_fail (!error || !*error, FALSE);
+	manager = GET_MANAGER (self);
+
+	if (!device_paths || !device_paths[0]) {
+		device_paths_free = nm_manager_get_device_paths (manager);
+		device_paths = (const char *const *) device_paths_free;
+	} else if (NM_FLAGS_HAS (flags, NM_CHECKPOINT_CREATE_FLAG_DISCONNECT_NEW_DEVICES)) {
+		g_set_error_literal (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_INVALID_ARGUMENTS,
+		                     "the DISCONNECT_NEW_DEVICES flag can only be used with an empty device list");
+		return NULL;
+	}
 
 	devices = g_ptr_array_new ();
 	for (path = device_paths; *path; path++) {
-		device = nm_manager_get_device_by_path (GET_MANAGER (self), *path);
+		device = nm_manager_get_device_by_path (manager, *path);
 		if (!device) {
 			g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_UNKNOWN_DEVICE,
 			             "device %s does not exist", *path);
@@ -178,8 +184,7 @@ nm_checkpoint_manager_create (NMCheckpointManager *self,
 		}
 	}
 
-	checkpoint = nm_checkpoint_new (GET_MANAGER (self), devices,
-	                                rollback_timeout, error);
+	checkpoint = nm_checkpoint_new (manager, devices, rollback_timeout, flags, error);
 	if (!checkpoint)
 		return NULL;
 
@@ -295,4 +300,3 @@ nm_checkpoint_manager_unref (NMCheckpointManager *self)
 
 	g_slice_free (NMCheckpointManager, self);
 }
-

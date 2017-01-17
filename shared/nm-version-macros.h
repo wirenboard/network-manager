@@ -37,7 +37,7 @@
  * Evaluates to the minor version number of NetworkManager which this source
  * is compiled against.
  */
-#define NM_MINOR_VERSION (4)
+#define NM_MINOR_VERSION (5)
 
 /**
  * NM_MICRO_VERSION:
@@ -45,7 +45,7 @@
  * Evaluates to the micro version number of NetworkManager which this source
  * compiled against.
  */
-#define NM_MICRO_VERSION (4)
+#define NM_MICRO_VERSION (90)
 
 /**
  * NM_CHECK_VERSION:
@@ -69,11 +69,11 @@
 #define NM_VERSION_1_0    (NM_ENCODE_VERSION (1, 0, 0))
 #define NM_VERSION_1_2    (NM_ENCODE_VERSION (1, 2, 0))
 #define NM_VERSION_1_4    (NM_ENCODE_VERSION (1, 4, 0))
-#define NM_VERSION_1_4_2  (NM_ENCODE_VERSION (1, 4, 2))
-#define NM_VERSION_1_4_4  (NM_ENCODE_VERSION (1, 4, 4))
-#define NM_VERSION_1_4_6  (NM_ENCODE_VERSION (1, 4, 6))
+#define NM_VERSION_1_6    (NM_ENCODE_VERSION (1, 6, 0))
 
-#define NM_VERSION_CUR_STABLE  NM_VERSION_1_4_4
-#define NM_VERSION_NEXT_STABLE NM_VERSION_1_4_6
+#define NM_VERSION_CUR_STABLE  NM_VERSION_1_4
+#define NM_VERSION_NEXT_STABLE NM_VERSION_1_6
+
+#define NM_VERSION NM_ENCODE_VERSION (NM_MAJOR_VERSION, NM_MINOR_VERSION, NM_MICRO_VERSION)
 
 #endif  /* __NM_VERSION_MACROS_H__ */

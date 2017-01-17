@@ -210,12 +210,15 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	}
 
 	if (priv->parent) {
-		if (!nm_utils_iface_valid_name (priv->parent)) {
-			g_set_error_literal (error,
-			                     NM_CONNECTION_ERROR,
-			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			                     _("not a valid interface name"));
+		GError *tmp_error = NULL;
+
+		if (!nm_utils_is_valid_iface_name (priv->parent, &tmp_error)) {
+			g_set_error (error,
+			             NM_CONNECTION_ERROR,
+			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			             "'%s': %s", priv->parent, tmp_error->message);
 			g_prefix_error (error, "%s: ", NM_SETTING_INFINIBAND_PARENT);
+			g_error_free (tmp_error);
 			return FALSE;
 		}
 		if (priv->p_key == -1) {
@@ -241,10 +244,11 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 	s_con = nm_connection_get_setting_connection (connection);
 	if (s_con) {
 		const char *interface_name = nm_setting_connection_get_interface_name (s_con);
+		GError *tmp_error = NULL;
 
 		if (!interface_name)
 			;
-		else if (!nm_utils_iface_valid_name (interface_name)) {
+		else if (!nm_utils_is_valid_iface_name (interface_name, &tmp_error)) {
 			/* report the error for NMSettingConnection:interface-name, because
 			 * it's that property that is invalid -- although we currently verify()
 			 * NMSettingInfiniband.
@@ -252,9 +256,9 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 			g_set_error (error,
 			             NM_CONNECTION_ERROR,
 			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			             _("'%s' is not a valid interface name"),
-			             interface_name);
+			             "'%s': %s", interface_name, tmp_error->message);
 			g_prefix_error (error, "%s.%s: ", NM_SETTING_CONNECTION_SETTING_NAME, NM_SETTING_CONNECTION_INTERFACE_NAME);
+			g_error_free (tmp_error);
 			return FALSE;
 		} else {
 			if (priv->p_key != -1) {
@@ -406,7 +410,10 @@ nm_setting_infiniband_class_init (NMSettingInfinibandClass *setting_class)
 	 * property: mac-address
 	 * variable: HWADDR
 	 * description: IBoIP 20-byte hardware address of the device (in traditional
-	 *   hex-digits-and-colons notation).
+	 *    hex-digits-and-colons notation).
+	 *    Note that for initscripts this is the current MAC address of the device as found
+	 *    during ifup. For NetworkManager this is the permanent MAC address. Or in case no
+	 *    permanent MAC address exists, the MAC address initially configured on the device.
 	 * example: HWADDR=01:02:03:04:05:06:07:08:09:0A:01:02:03:04:05:06:07:08:09:11
 	 * ---end---
 	 */

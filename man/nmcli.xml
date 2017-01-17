@@ -415,7 +415,7 @@
         <term><command>off</command></term>
 
         <listitem>
-          <para>Enable enable or disable networking control by NetworkManager.
+          <para>Enable or disable networking control by NetworkManager.
           All interfaces managed by NetworkManager are deactivated when networking
           is disabled.</para>
         </listitem>
@@ -1648,9 +1648,8 @@
 
     <para>Apart from the property-value pairs, <command>connection add</command>,
     <command>connection modify</command> and <command>device modify</command> also
-    accept short forms of some properties. They exist for convenience and compatiblity
-    with older versions of <command>nmcli</command> that could not accept the raw
-    properties.</para>
+    accept short forms of some properties. They exist for convenience. Some aliases can
+    affect multiple connection properties at once.</para>
 
    <para>The overview of the aliases is below. An actual connection type is used to
    disambiguate these options from the options of the same name that are valid for
@@ -1827,21 +1826,25 @@ It's equivalent of using the <literal>+bond.options 'option=value'</literal> syn
     </tbody>
     </tgroup></table>
 
-    <table><title>Team options</title><tgroup cols="2">
+    <table><title>Team options</title><tgroup cols="3">
     <thead>
-      <row><entry>Alias</entry><entry>Property</entry></row>
+      <row><entry>Alias</entry><entry>Property</entry><entry>Note</entry></row>
     </thead>
     <tbody>
-      <row><entry align="left">config</entry><entry align="left"><link linkend="nm-settings.property.team.config">team.config</link></entry></row>
+      <row><entry align="left">config</entry><entry align="left"><link linkend="nm-settings.property.team.config">team.config</link></entry>
+           <entry align="left">Either a filename or a team configuration in JSON format. To enforce one or the other, the value can be prefixed with "file://" or "json://".</entry>
+      </row>
     </tbody>
     </tgroup></table>
 
-    <table><title>Team port options</title><tgroup cols="2">
+    <table><title>Team port options</title><tgroup cols="3">
     <thead>
-      <row><entry>Alias</entry><entry>Property</entry></row>
+      <row><entry>Alias</entry><entry>Property</entry><entry>Note</entry></row>
     </thead>
     <tbody>
-      <row><entry align="left">config</entry><entry align="left"><link linkend="nm-settings.property.team-port.config">team-port.config</link></entry></row>
+      <row><entry align="left">config</entry><entry align="left"><link linkend="nm-settings.property.team-port.config">team-port.config</link></entry>
+           <entry align="left">Either a filename or a team configuration in JSON format. To enforce one or the other, the value can be prefixed with "file://" or "json://".</entry>
+      </row>
     </tbody>
     </tgroup></table>
 
@@ -1956,9 +1959,10 @@ It's equivalent of using the <literal>+bond.options 'option=value'</literal> syn
     <tbody>
       <row>
         <entry align="left">ip4</entry>
-        <entry align="left"><link linkend="nm-settings.property.ipv4.addresses">ipv4.addresses</link></entry>
+        <entry align="left"><link linkend="nm-settings.property.ipv4.addresses">ipv4.addresses</link>
+                            <link linkend="nm-settings.property.ipv4.method">ipv4.method</link></entry>
         <entry align="left" valign="top">This option can be specified multiple times.
-It's equivalent of using <literal>+ipv4.addresses</literal> syntax.</entry>
+It's equivalent of using <literal>+ipv4.addresses</literal> syntax and setting <literal>ipv4.method</literal> to <literal>manual</literal>.</entry>
       </row>
       <row><entry align="left">gw4</entry><entry align="left"><link linkend="nm-settings.property.ipv4.gateway">ipv4.gateway</link></entry><entry align="left" /></row>
     </tbody>
@@ -1971,11 +1975,25 @@ It's equivalent of using <literal>+ipv4.addresses</literal> syntax.</entry>
     <tbody>
       <row>
         <entry align="left">ip6</entry>
-        <entry align="left"><link linkend="nm-settings.property.ipv6.addresses">ipv6.addresses</link></entry>
+        <entry align="left"><link linkend="nm-settings.property.ipv6.addresses">ipv6.addresses</link>
+                            <link linkend="nm-settings.property.ipv6.method">ipv6.method</link></entry>
         <entry align="left" valign="top">This option can be specified multiple times.
-It's equivalent of using <literal>+ipv6.addresses</literal> syntax.</entry>
+It's equivalent of using <literal>+ipv6.addresses</literal> syntax and setting <literal>ipv6.method</literal> to <literal>manual</literal>.</entry>
       </row>
       <row><entry align="left">gw6</entry><entry align="left"><link linkend="nm-settings.property.ipv6.gateway">ipv6.gateway</link></entry><entry align="left" /></row>
+    </tbody>
+    </tgroup></table>
+
+    <table><title>Proxy options</title><tgroup cols="3">
+    <thead>
+      <row><entry>Alias</entry><entry>Property</entry><entry>Note</entry></row>
+    </thead>
+    <tbody>
+      <row>
+        <entry align="left"></entry>
+        <entry align="left"><link linkend="nm-settings.property.proxy.pac-script">proxy.pac-script</link></entry>
+        <entry align="left" valign="top">Read the java script pac-script from file or pass it directly on the command line. Prefix the value with "file://" or "js://" to force one or the other.</entry>
+      </row>
     </tbody>
     </tgroup></table>
 

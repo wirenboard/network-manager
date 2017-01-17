@@ -27,9 +27,9 @@
 
 #include "nm-bus-manager.h"
 
-#include "nm-device.h"
+#include "devices/nm-device.h"
 #include "nm-active-connection.h"
-#include "nmdbus-device-statistics.h"
+#include "introspection/org.freedesktop.NetworkManager.Device.Statistics.h"
 
 #if NM_MORE_ASSERTS >= 2
 #define _ASSERT_NO_EARLY_EXPORT
@@ -37,15 +37,13 @@
 
 static gboolean quitting = FALSE;
 
-G_DEFINE_ABSTRACT_TYPE (NMExportedObject, nm_exported_object, G_TYPE_DBUS_OBJECT_SKELETON);
-
 typedef struct {
 	GDBusInterfaceSkeleton *interface;
 	guint property_changed_signal_id;
 	GHashTable *pending_notifies;
 } InterfaceData;
 
-typedef struct {
+typedef struct _NMExportedObjectPrivate {
 	NMBusManager *bus_mgr;
 	char *path;
 
@@ -59,7 +57,11 @@ typedef struct {
 #endif
 } NMExportedObjectPrivate;
 
-#define NM_EXPORTED_OBJECT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_EXPORTED_OBJECT, NMExportedObjectPrivate))
+G_DEFINE_ABSTRACT_TYPE (NMExportedObject, nm_exported_object, G_TYPE_DBUS_OBJECT_SKELETON);
+
+#define NM_EXPORTED_OBJECT_GET_PRIVATE(self) _NM_GET_PRIVATE_PTR (self, NMExportedObject, NM_IS_EXPORTED_OBJECT)
+
+/*****************************************************************************/
 
 typedef struct {
 	GHashTable *properties;
@@ -72,23 +74,11 @@ G_DEFINE_QUARK (NMExportedObjectClassInfo, nm_exported_object_class_info)
 
 /*****************************************************************************/
 
-#define _NMLOG_PREFIX_NAME                "exported-object"
-#define _NMLOG_DOMAIN                     LOGD_CORE
+#define _NMLOG_DOMAIN      LOGD_CORE
+#define _NMLOG(level, ...) __NMLOG_DEFAULT_WITH_ADDR (level, _NMLOG_DOMAIN, "exported-object", __VA_ARGS__)
 
-#define _NMLOG(level, ...) \
-    nm_log ((level), _NMLOG_DOMAIN, \
-            "%s[%p]: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
-            _NMLOG_PREFIX_NAME, (self) \
-            _NM_UTILS_MACRO_REST (__VA_ARGS__))
-
-#define _NMLOG2_PREFIX_NAME               "properties-changed"
-#define _NMLOG2_DOMAIN                    LOGD_DBUS_PROPS
-
-#define _NMLOG2(level, ...) \
-    nm_log ((level), _NMLOG2_DOMAIN, \
-            "%s[%p]: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
-            _NMLOG2_PREFIX_NAME, (self) \
-            _NM_UTILS_MACRO_REST (__VA_ARGS__))
+#define _NMLOG2_DOMAIN      LOGD_DBUS_PROPS
+#define _NMLOG2(level, ...) __NMLOG_DEFAULT_WITH_ADDR (level, _NMLOG2_DOMAIN, "properties-changed", __VA_ARGS__)
 
 /*****************************************************************************/
 
@@ -574,7 +564,7 @@ _create_export_path (NMExportedObjectClass *klass)
 {
 	const char *class_export_path, *p;
 	static GHashTable *prefix_counters;
-	guint *counter;
+	guint64 *counter;
 
 	class_export_path = klass->export_path;
 
@@ -585,17 +575,19 @@ _create_export_path (NMExportedObjectClass *klass)
 		if (G_UNLIKELY (!prefix_counters))
 			prefix_counters = g_hash_table_new (g_str_hash, g_str_equal);
 
-		g_assert (p[1] == 'u');
-		g_assert (strchr (p + 1, '%') == NULL);
+		nm_assert (p[1] == 'l');
+		nm_assert (p[2] == 'l');
+		nm_assert (p[3] == 'u');
+		nm_assert (p[4] == '\0');
 
 		counter = g_hash_table_lookup (prefix_counters, class_export_path);
 		if (!counter) {
-			counter = g_slice_new0 (guint);
-			g_hash_table_insert (prefix_counters, g_strdup (class_export_path), counter);
+			counter = g_slice_new0 (guint64);
+			g_hash_table_insert (prefix_counters, (char *) class_export_path, counter);
 		}
 
 		NM_PRAGMA_WARNING_DISABLE("-Wformat-nonliteral")
-		return g_strdup_printf (class_export_path, (*counter)++);
+		return g_strdup_printf (class_export_path, (long long unsigned) (++(*counter)));
 		NM_PRAGMA_WARNING_REENABLE
 	}
 
@@ -800,7 +792,7 @@ _sort_pending_notifies (gconstpointer a, gconstpointer b, gpointer       user_da
 static gboolean
 idle_emit_properties_changed (gpointer self)
 {
-	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (self);
+	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (NM_EXPORTED_OBJECT (self));
 	guint k;
 
 	priv->notify_idle_id = 0;
@@ -958,7 +950,7 @@ vtype_found:
 		                     (gpointer) dbus_property_name,
 		                     value_variant);
 	} else
-		nm_assert_not_reached ();
+		g_variant_unref (value_variant);
 
 	if (!priv->notify_idle_id)
 		priv->notify_idle_id = g_idle_add (idle_emit_properties_changed, self);
@@ -969,6 +961,10 @@ vtype_found:
 static void
 nm_exported_object_init (NMExportedObject *self)
 {
+	NMExportedObjectPrivate *priv;
+
+	priv = G_TYPE_INSTANCE_GET_PRIVATE (self, NM_TYPE_EXPORTED_OBJECT, NMExportedObjectPrivate);
+	self->_priv = priv;
 }
 
 static void
@@ -979,7 +975,7 @@ constructed (GObject *object)
 	G_OBJECT_CLASS (nm_exported_object_parent_class)->constructed (object);
 
 #ifdef _ASSERT_NO_EARLY_EXPORT
-	NM_EXPORTED_OBJECT_GET_PRIVATE (object)->_constructed = TRUE;
+	NM_EXPORTED_OBJECT_GET_PRIVATE (NM_EXPORTED_OBJECT (object))->_constructed = TRUE;
 #endif
 
 	klass = NM_EXPORTED_OBJECT_GET_CLASS (object);
@@ -989,9 +985,9 @@ constructed (GObject *object)
 }
 
 static void
-nm_exported_object_dispose (GObject *object)
+dispose (GObject *object)
 {
-	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (object);
+	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (NM_EXPORTED_OBJECT (object));
 
 	/* Objects should have already been unexported by their owner, unless
 	 * we are quitting, where many objects stick around until exit.
@@ -1018,7 +1014,5 @@ nm_exported_object_class_init (NMExportedObjectClass *klass)
 
 	object_class->constructed = constructed;
 	object_class->notify = nm_exported_object_notify;
-	object_class->dispose = nm_exported_object_dispose;
+	object_class->dispose = dispose;
 }
-
-

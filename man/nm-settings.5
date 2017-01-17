@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 12/16/2016
+.\"      Date: 01/17/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.4.3
+.\"    Source: NetworkManager 1.5.90
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.4\&.3" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.5\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -46,8 +46,8 @@ objects\&.
 Setting
 .RS 4
 A group of related key/value pairs describing a specific piece of a
-\fIConnection (profile)\fR\&. Settings keys and allowed values are described in the tables below\&. Keys are also referred to as properties\&. Developers can find the setting objects and their properties in the libnm\-util sources\&. Look for the
-\fBclass_init\fR
+\fIConnection (profile)\fR\&. Settings keys and allowed values are described in the tables below\&. Keys are also referred to as properties\&. Developers can find the setting objects and their properties in the libnm\-core sources\&. Look for the
+\fB*_class_init\fR
 functions near the bottom of each setting source file\&.
 .RE
 .PP
@@ -922,6 +922,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 autoconnect
@@ -940,6 +941,15 @@ T}:T{
 0
 T}:T{
 The autoconnect priority\&. If the connection is set to autoconnect, connections with higher priority will be preferred\&. Defaults to 0\&. The higher number means higher priority\&.
+T}
+T{
+autoconnect\-retries
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+The number of times a connection should be tried when autoctivating before giving up\&. Zero means forever, \-1 means the global default (4 times if not overridden)\&.
 T}
 T{
 autoconnect\-slaves
@@ -1056,7 +1066,7 @@ string
 T}:T{
 \ \&
 T}:T{
-This token to generate stable IDs for the connection\&. If unset, the UUID will be used instead\&. The stable\-id is used instead of the connection UUID for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&.
+Token to generate stable IDs for the connection\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. Note that also the interface name of the activating connection and a per\-host secret key is included into the address generation so that the same stable\-id on different hosts/devices yields different addresses\&. If the value is unset, an ID unique for the connection is used\&. Specifing a stable\-id allows multiple connections to generate the same addresses\&. Another use is to generate IDs at runtime via dynamic substitutions\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-boot, or every time\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot\&. Note that two connections only use the same effective id if their stable\-id is also identical before performing dynamic substitutions\&.
 T}
 T{
 timestamp
@@ -1669,7 +1679,7 @@ array of string
 T}:T{
 []
 T}:T{
-Array of DNS options\&. NULL means that the options are unset and left at the default\&. In this case NetworkManager will use default options\&. This is distinct from an empty list of properties\&.
+Array of DNS options as described in man 5 resolv\&.conf\&. NULL means that the options are unset and left at the default\&. In this case NetworkManager will use default options\&. This is distinct from an empty list of properties\&.
 T}
 T{
 dns\-priority
@@ -1678,7 +1688,7 @@ int32
 T}:T{
 0
 T}:T{
-DNS priority\&. The relative priority to be used when determining the order of DNS servers in resolv\&.conf\&.  A lower value means that servers will be on top of the file\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time\&. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used\&.
+Intra\-connection DNS priority\&. The relative priority to be used when determining the order of DNS servers in resolv\&.conf\&.  A lower value means that servers will be on top of the file\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&.  Note that the priority is to order DNS settings for multiple active connections\&. It does not disambiguate multiple DNS servers within the same connection profile\&. For that, just specify the DNS servers in the desired order\&. When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&. Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time\&. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used\&.
 T}
 T{
 dns\-search
@@ -1830,7 +1840,7 @@ int32
 T}:T{
 1
 T}:T{
-Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration\&. The permitted values are: "eui64", or "stable\-privacy"\&. If the property is set to "eui64", the addresses will be generated using the interface tokens derived from  hardware address\&. This makes the host part of the address to stay constant, making it possible to track host\*(Aqs presence when it changes networks\&. The address changes when the interface hardware is replaced\&. The value of "stable\-privacy" enables use of cryptographically secure hash of a secret host\-specific key along with the connection identification and the network address as specified by RFC7217\&. This makes it impossible to use the address track host\*(Aqs presence, and makes the address stable when the network interface hardware is replaced\&. On D\-Bus, the absence of an addr\-gen\-mode setting equals enabling "stable\-privacy"\&. For keyfile plugin, the absence of the setting on disk means "eui64" so that the property doesn\*(Aqt change on upgrade from older versions\&. Note that this setting is distinct from the Privacy Extensions as configured by "ip6\-privacy" property and it does not affect the temporary addresses configured with this option\&.
+Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration\&. The permitted values are: "eui64", or "stable\-privacy"\&. If the property is set to "eui64", the addresses will be generated using the interface tokens derived from  hardware address\&. This makes the host part of the address to stay constant, making it possible to track host\*(Aqs presence when it changes networks\&. The address changes when the interface hardware is replaced\&. The value of "stable\-privacy" enables use of cryptographically secure hash of a secret host\-specific key along with the connection\*(Aqs stable\-id and the network address as specified by RFC7217\&. This makes it impossible to use the address track host\*(Aqs presence, and makes the address stable when the network interface hardware is replaced\&. On D\-Bus, the absence of an addr\-gen\-mode setting equals enabling "stable\-privacy"\&. For keyfile plugin, the absence of the setting on disk means "eui64" so that the property doesn\*(Aqt change on upgrade from older versions\&. Note that this setting is distinct from the Privacy Extensions as configured by "ip6\-privacy" property and it does not affect the temporary addresses configured with this option\&.
 T}
 T{
 address\-data
@@ -1902,7 +1912,7 @@ array of string
 T}:T{
 []
 T}:T{
-Array of DNS options\&. NULL means that the options are unset and left at the default\&. In this case NetworkManager will use default options\&. This is distinct from an empty list of properties\&.
+Array of DNS options as described in man 5 resolv\&.conf\&. NULL means that the options are unset and left at the default\&. In this case NetworkManager will use default options\&. This is distinct from an empty list of properties\&.
 T}
 T{
 dns\-priority
@@ -1911,7 +1921,7 @@ int32
 T}:T{
 0
 T}:T{
-DNS priority\&. The relative priority to be used when determining the order of DNS servers in resolv\&.conf\&.  A lower value means that servers will be on top of the file\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time\&. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used\&.
+Intra\-connection DNS priority\&. The relative priority to be used when determining the order of DNS servers in resolv\&.conf\&.  A lower value means that servers will be on top of the file\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&.  Note that the priority is to order DNS settings for multiple active connections\&. It does not disambiguate multiple DNS servers within the same connection profile\&. For that, just specify the DNS servers in the desired order\&. When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&. Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time\&. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used\&.
 T}
 T{
 dns\-search
@@ -2188,7 +2198,118 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&16.\ \&macvlan setting
+.B Table\ \&16.\ \&macsec setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+encrypt
+T}:T{
+boolean
+T}:T{
+TRUE
+T}:T{
+Whether the transmitted traffic must be encrypted\&.
+T}
+T{
+mka\-cak
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The pre\-shared CAK (Connectivity Association Key) for MACsec Key Agreement\&.
+T}
+T{
+mka\-cak\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "mka\-cak" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+mka\-ckn
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The pre\-shared CKN (Connectivity\-association Key Name) for MACsec Key Agreement\&.
+T}
+T{
+mode
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Specifies how the CAK (Connectivity Association Key) for MKA (MACsec Key Agreement) is obtained\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+macsec
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+parent
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+If given, specifies the parent interface name or parent connection UUID from which this MACSEC interface should be created\&.  If this property is not specified, the connection must contain an "802\-3\-ethernet" setting with a "mac\-address" property\&.
+T}
+T{
+port
+T}:T{
+int32
+T}:T{
+1
+T}:T{
+The port component of the SCI (Secure Channel Identifier), between 1 and 65534\&.
+T}
+T{
+validation
+T}:T{
+int32
+T}:T{
+2
+T}:T{
+Specifies the validation mode for incoming frames\&.
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&17.\ \&macvlan setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2259,7 +2380,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&17.\ \&802\-11\-olpc\-mesh setting
+.B Table\ \&18.\ \&802\-11\-olpc\-mesh setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2320,7 +2441,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&18.\ \&ppp setting
+.B Table\ \&19.\ \&ppp setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2531,7 +2652,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&19.\ \&pppoe setting
+.B Table\ \&20.\ \&pppoe setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2602,7 +2723,78 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&20.\ \&serial setting
+.B Table\ \&21.\ \&proxy setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+browser\-only
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Whether the proxy configuration is for browser only\&.
+T}
+T{
+method
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Method for proxy configuration, Default is NM_SETTING_PROXY_METHOD_NONE (0)
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+proxy
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+pac\-script
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+PAC script for the connection\&.
+T}
+T{
+pac\-url
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+PAC URL for obtaining PAC file\&.
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&22.\ \&serial setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2683,7 +2875,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&21.\ \&team setting
+.B Table\ \&23.\ \&team setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2734,7 +2926,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&22.\ \&team\-port setting
+.B Table\ \&24.\ \&team\-port setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2775,7 +2967,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&23.\ \&tun setting
+.B Table\ \&25.\ \&tun setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2866,7 +3058,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&24.\ \&vlan setting
+.B Table\ \&26.\ \&vlan setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2957,7 +3149,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&25.\ \&vpn setting
+.B Table\ \&27.\ \&vpn setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3048,7 +3240,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&26.\ \&vxlan setting
+.B Table\ \&28.\ \&vxlan setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3239,7 +3431,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&27.\ \&wimax setting
+.B Table\ \&29.\ \&wimax setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3290,7 +3482,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&28.\ \&802\-3\-ethernet setting
+.B Table\ \&30.\ \&802\-3\-ethernet setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3327,16 +3519,16 @@ string
 T}:T{
 \ \&
 T}:T{
-The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&.
+The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&. Note that this property only exists in D\-Bus API\&. libnm and nmcli continue to call this property "cloned\-mac\-address"\&.
 T}
 T{
 auto\-negotiate
 T}:T{
 boolean
 T}:T{
-TRUE
+FALSE
 T}:T{
-If TRUE, allow auto\-negotiation of port speed and duplex mode\&.  If FALSE, do not allow auto\-negotiation, in which case the "speed" and "duplex" properties should be set\&.
+If TRUE, enforce auto\-negotiation of port speed and duplex mode\&.  If FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped\&.
 T}
 T{
 cloned\-mac\-address
@@ -3345,7 +3537,7 @@ byte array
 T}:T{
 \ \&
 T}:T{
-This D\-Bus field is deprecated in favor of "assigned\-mac\-address" which is more flexible and allows specifying special variants like "random"\&.
+This D\-Bus field is deprecated in favor of "assigned\-mac\-address" which is more flexible and allows specifying special variants like "random"\&. For libnm and nmcli, this field is called "cloned\-mac\-address"\&.
 T}
 T{
 duplex
@@ -3354,7 +3546,7 @@ string
 T}:T{
 \ \&
 T}:T{
-If specified, request that the device only use the specified duplex mode\&. Either "half" or "full"\&.
+Can be specified only when "auto\-negotiate" is "off"\&. In that case, statically configures the device to use that specified duplex mode, either "half" or "full"\&. Must be set together with the "speed" property if specified\&. Before specifying a duplex mode be sure your device supports it\&.
 T}
 T{
 generate\-mac\-address\-mask
@@ -3444,7 +3636,7 @@ uint32
 T}:T{
 0
 T}:T{
-If non\-zero, request that the device use only the specified speed\&.  In Mbit/s, ie 100 == 100Mbit/s\&.
+Can be set to a value grater than zero only when "auto\-negotiate" is "off"\&. In that case, statically configures the device to use that specified speed\&. In Mbit/s, ie 100 == 100Mbit/s\&. Must be set together with the "duplex" property when non\-zero\&. Before specifying a speed value be sure your device supports it\&.
 T}
 T{
 wake\-on\-lan
@@ -3471,7 +3663,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&29.\ \&802\-11\-wireless setting
+.B Table\ \&31.\ \&802\-11\-wireless setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3511,7 +3703,7 @@ string
 T}:T{
 \ \&
 T}:T{
-The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&.
+The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&. Note that this property only exists in D\-Bus API\&. libnm and nmcli continue to call this property "cloned\-mac\-address"\&.
 T}
 T{
 band
@@ -3547,7 +3739,7 @@ byte array
 T}:T{
 \ \&
 T}:T{
-This D\-Bus field is deprecated in favor of "assigned\-mac\-address" which is more flexible and allows specifying special variants like "random"\&.
+This D\-Bus field is deprecated in favor of "assigned\-mac\-address" which is more flexible and allows specifying special variants like "random"\&. For libnm and nmcli, this field is called "cloned\-mac\-address"\&.
 T}
 T{
 generate\-mac\-address\-mask
@@ -3592,7 +3784,7 @@ uint32
 T}:T{
 0
 T}:T{
-One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address)\&. Deprecated: 1
+One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address)\&. This property is deprecated for \*(Aqcloned\-mac\-address\*(Aq\&. Deprecated: 1
 T}
 T{
 mode
@@ -3682,7 +3874,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&30.\ \&802\-11\-wireless\-security setting
+.B Table\ \&32.\ \&802\-11\-wireless\-security setting
 .TS
 allbox tab(:);
 lB lB lB lB.

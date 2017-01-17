@@ -158,6 +158,10 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MACSEC:CAPS" title="NM_DBUS_INTERFACE_DEVICE_MACSEC">NM_DBUS_INTERFACE_DEVICE_MACSEC</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS" title="NM_DBUS_INTERFACE_DEVICE_MACVLAN">NM_DBUS_INTERFACE_DEVICE_MACVLAN</a></td>
 </tr>
 <tr>
@@ -211,6 +215,18 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-SECRET-AGENT:CAPS" title="NM_DBUS_PATH_SECRET_AGENT">NM_DBUS_PATH_SECRET_AGENT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DNS-MANAGER:CAPS" title="NM_DBUS_INTERFACE_DNS_MANAGER">NM_DBUS_INTERFACE_DNS_MANAGER</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-DNS-MANAGER:CAPS" title="NM_DBUS_PATH_DNS_MANAGER">NM_DBUS_PATH_DNS_MANAGER</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMCapability" title="enum NMCapability">NMCapability</a></td>
 </tr>
 <tr>
 <td class="datatype_keyword">enum</td>
@@ -368,6 +384,7 @@
 <pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NM80211Mode
     <span class="lineart">├──</span> NMActiveConnectionState
+    <span class="lineart">├──</span> NMCapability
     <span class="lineart">├──</span> NMConnectivityState
     <span class="lineart">├──</span> NMDeviceState
     <span class="lineart">├──</span> NMDeviceStateReason
@@ -570,6 +587,12 @@
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-MACSEC:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MACSEC</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACSEC     NM_DBUS_INTERFACE_DEVICE ".Macsec"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MACVLAN</h3>
 <pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACVLAN    NM_DBUS_INTERFACE_DEVICE ".Macvlan"
 </pre>
@@ -651,6 +674,45 @@
 <a name="NM-DBUS-PATH-SECRET-AGENT:CAPS"></a><h3>NM_DBUS_PATH_SECRET_AGENT</h3>
 <pre class="programlisting">#define NM_DBUS_PATH_SECRET_AGENT         "/org/freedesktop/NetworkManager/SecretAgent"
 </pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DNS-MANAGER:CAPS"></a><h3>NM_DBUS_INTERFACE_DNS_MANAGER</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DNS_MANAGER     "org.freedesktop.NetworkManager.DnsManager"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-DNS-MANAGER:CAPS"></a><h3>NM_DBUS_PATH_DNS_MANAGER</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_DNS_MANAGER          "/org/freedesktop/NetworkManager/DnsManager"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMCapability"></a><h3>enum NMCapability</h3>
+<p><a class="link" href="libnm-nm-dbus-interface.html#NMCapability" title="enum NMCapability"><span class="type">NMCapability</span></a> names the numbers in the Capabilities property.
+Capabilities are positive numbers. They are part of stable API
+and a certain capability number is guaranteed not to change.</p>
+<p>The range 0x7000 - 0x7FFF of capabilities is guaranteed not to be
+used by upstream NetworkManager. It could thus be used for downstream
+extensions.</p>
+<div class="refsect3">
+<a name="NMCapability.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody><tr>
+<td class="enum_member_name"><p><a name="NM-CAPABILITY-TEAM:CAPS"></a>NM_CAPABILITY_TEAM</p></td>
+<td class="enum_member_description">
+<p>Teams can be managed</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -938,6 +1000,13 @@ GSM/UMTS, or LTE network access protocols</p>
 <td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-VETH:CAPS"></a>NM_DEVICE_TYPE_VETH</p></td>
 <td class="enum_member_description">
 <p>a VETH interface</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-MACSEC:CAPS"></a>NM_DEVICE_TYPE_MACSEC</p></td>
+<td class="enum_member_description">
+<p>a MACsec interface</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -2227,91 +2296,91 @@ VPN plugin authentication dialogs.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-DESTINATION:CAPS"></a><h3>NM_LLDP_ATTR_DESTINATION</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_DESTINATION "destination"
+<pre class="programlisting">#define NM_LLDP_ATTR_DESTINATION             "destination"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-CHASSIS-ID-TYPE:CAPS"></a><h3>NM_LLDP_ATTR_CHASSIS_ID_TYPE</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_CHASSIS_ID_TYPE "chassis-id-type"
+<pre class="programlisting">#define NM_LLDP_ATTR_CHASSIS_ID_TYPE         "chassis-id-type"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-CHASSIS-ID:CAPS"></a><h3>NM_LLDP_ATTR_CHASSIS_ID</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_CHASSIS_ID "chassis-id"
+<pre class="programlisting">#define NM_LLDP_ATTR_CHASSIS_ID              "chassis-id"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-PORT-ID-TYPE:CAPS"></a><h3>NM_LLDP_ATTR_PORT_ID_TYPE</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_PORT_ID_TYPE "port-id-type"
+<pre class="programlisting">#define NM_LLDP_ATTR_PORT_ID_TYPE            "port-id-type"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-PORT-ID:CAPS"></a><h3>NM_LLDP_ATTR_PORT_ID</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_PORT_ID "port-id"
+<pre class="programlisting">#define NM_LLDP_ATTR_PORT_ID                 "port-id"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-PORT-DESCRIPTION:CAPS"></a><h3>NM_LLDP_ATTR_PORT_DESCRIPTION</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_PORT_DESCRIPTION "port-description"
+<pre class="programlisting">#define NM_LLDP_ATTR_PORT_DESCRIPTION        "port-description"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-SYSTEM-NAME:CAPS"></a><h3>NM_LLDP_ATTR_SYSTEM_NAME</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_SYSTEM_NAME "system-name"
+<pre class="programlisting">#define NM_LLDP_ATTR_SYSTEM_NAME             "system-name"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-SYSTEM-DESCRIPTION:CAPS"></a><h3>NM_LLDP_ATTR_SYSTEM_DESCRIPTION</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_SYSTEM_DESCRIPTION "system-description"
+<pre class="programlisting">#define NM_LLDP_ATTR_SYSTEM_DESCRIPTION      "system-description"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-SYSTEM-CAPABILITIES:CAPS"></a><h3>NM_LLDP_ATTR_SYSTEM_CAPABILITIES</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_SYSTEM_CAPABILITIES "system-capabilities"
+<pre class="programlisting">#define NM_LLDP_ATTR_SYSTEM_CAPABILITIES     "system-capabilities"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-IEEE-802-1-PVID:CAPS"></a><h3>NM_LLDP_ATTR_IEEE_802_1_PVID</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_PVID "ieee-802-1-pvid"
+<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_PVID         "ieee-802-1-pvid"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-IEEE-802-1-PPVID:CAPS"></a><h3>NM_LLDP_ATTR_IEEE_802_1_PPVID</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_PPVID "ieee-802-1-ppvid"
+<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_PPVID        "ieee-802-1-ppvid"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-IEEE-802-1-PPVID-FLAGS:CAPS"></a><h3>NM_LLDP_ATTR_IEEE_802_1_PPVID_FLAGS</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_PPVID_FLAGS "ieee-802-1-ppvid-flags"
+<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_PPVID_FLAGS  "ieee-802-1-ppvid-flags"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-IEEE-802-1-VID:CAPS"></a><h3>NM_LLDP_ATTR_IEEE_802_1_VID</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_VID "ieee-802-1-vid"
+<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_VID          "ieee-802-1-vid"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-ATTR-IEEE-802-1-VLAN-NAME:CAPS"></a><h3>NM_LLDP_ATTR_IEEE_802_1_VLAN_NAME</h3>
-<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_VLAN_NAME "ieee-802-1-vlan-name"
+<pre class="programlisting">#define NM_LLDP_ATTR_IEEE_802_1_VLAN_NAME    "ieee-802-1-vlan-name"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-LLDP-DEST-NEAREST-BRIDGE:CAPS"></a><h3>NM_LLDP_DEST_NEAREST_BRIDGE</h3>
-<pre class="programlisting">#define NM_LLDP_DEST_NEAREST_BRIDGE "nearest-bridge"
+<pre class="programlisting">#define NM_LLDP_DEST_NEAREST_BRIDGE          "nearest-bridge"
 </pre>
 </div>
 <hr>
@@ -2439,6 +2508,22 @@ VPN plugin authentication dialogs.</p>
 <td class="enum_member_description">
 <p>when creating
   a new checkpoint, destroy all existing ones.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-CHECKPOINT-CREATE-FLAG-DELETE-NEW-CONNECTIONS:CAPS"></a>NM_CHECKPOINT_CREATE_FLAG_DELETE_NEW_CONNECTIONS</p></td>
+<td class="enum_member_description">
+<p>upon rollback,
+  delete any new connection added after the checkpoint.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-CHECKPOINT-CREATE-FLAG-DISCONNECT-NEW-DEVICES:CAPS"></a>NM_CHECKPOINT_CREATE_FLAG_DISCONNECT_NEW_DEVICES</p></td>
+<td class="enum_member_description">
+<p>upon rollback,
+  disconnect any new device appeared after the checkpoint.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>

@@ -26,12 +26,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "nm-lldp-listener.h"
-#include "nm-sd.h"
+#include "devices/nm-lldp-listener.h"
+#include "systemd/nm-sd.h"
 
-#include "sd-lldp.h"
-
-#include "test-common.h"
+#include "platform/tests/test-common.h"
 
 #include "nm-test-utils-core.h"
 
@@ -433,6 +431,8 @@ _test_recv_fixture_teardown (TestRecvFixture *fixture, gconstpointer user_data)
 }
 
 /*****************************************************************************/
+
+NMTstpSetupFunc const _nmtstp_setup_platform_func = nm_linux_platform_setup;
 
 void
 _nmtstp_init_tests (int *argc, char ***argv)

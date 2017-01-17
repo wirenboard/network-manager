@@ -36,7 +36,39 @@
 
 #include "nm-test-utils-core.h"
 
-/*********************************************************************************************/
+/*****************************************************************************/
+
+typedef struct {
+	NMPlatformLink link;
+
+	char *udi;
+	NMPObject *lnk;
+	struct in6_addr ip6_lladdr;
+} NMFakePlatformLink;
+
+typedef struct {
+	GHashTable *options;
+	GArray *links;
+	GArray *ip4_addresses;
+	GArray *ip6_addresses;
+	GArray *ip4_routes;
+	GArray *ip6_routes;
+} NMFakePlatformPrivate;
+
+struct _NMFakePlatform {
+	NMPlatform parent;
+	NMFakePlatformPrivate _priv;
+};
+
+struct _NMFakePlatformClass {
+	NMPlatformClass parent;
+};
+
+G_DEFINE_TYPE (NMFakePlatform, nm_fake_platform, NM_TYPE_PLATFORM)
+
+#define NM_FAKE_PLATFORM_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMFakePlatform, NM_IS_FAKE_PLATFORM)
+
+/*****************************************************************************/
 
 #define _NMLOG_PREFIX_NAME                "platform-fake"
 #define _NMLOG_DOMAIN                     LOGD_PLATFORM
@@ -62,30 +94,7 @@
         } \
     } G_STMT_END
 
-/*********************************************************************************************/
-
-typedef struct {
-	GHashTable *options;
-	GArray *links;
-	GArray *ip4_addresses;
-	GArray *ip6_addresses;
-	GArray *ip4_routes;
-	GArray *ip6_routes;
-} NMFakePlatformPrivate;
-
-typedef struct {
-	NMPlatformLink link;
-
-	char *udi;
-	NMPObject *lnk;
-	struct in6_addr ip6_lladdr;
-} NMFakePlatformLink;
-
-#define NM_FAKE_PLATFORM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_FAKE_PLATFORM, NMFakePlatformPrivate))
-
-G_DEFINE_TYPE (NMFakePlatform, nm_fake_platform, NM_TYPE_PLATFORM)
-
-/******************************************************************/
+/*****************************************************************************/
 
 static void link_changed (NMPlatform *platform, NMFakePlatformLink *device, gboolean raise_signal);
 
@@ -99,7 +108,7 @@ static gboolean ip6_address_add (NMPlatform *platform,
                                  guint flags);
 static gboolean ip6_address_delete (NMPlatform *platform, int ifindex, struct in6_addr addr, guint8 plen);
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 _ip4_address_equal_peer_net (in_addr_t peer1, in_addr_t peer2, guint8 plen)
@@ -107,12 +116,32 @@ _ip4_address_equal_peer_net (in_addr_t peer1, in_addr_t peer2, guint8 plen)
 	return ((peer1 ^ peer2) & nm_utils_ip4_prefix_to_netmask (plen)) == 0;
 }
 
-/******************************************************************/
+/*****************************************************************************/
+
+#define ASSERT_SYSCTL_ARGS(pathid, dirfd, path) \
+	G_STMT_START { \
+		const char *const _pathid = (pathid); \
+		const int _dirfd = (dirfd); \
+		const char *const _path = (path); \
+		\
+		g_assert (_path && _path[0]); \
+		g_assert (!strstr (_path, "/../")); \
+		if (_dirfd < 0) { \
+			g_assert (!_pathid); \
+			g_assert (_path[0] == '/'); \
+			g_assert (   g_str_has_prefix (_path, "/proc/sys/") \
+			          || g_str_has_prefix (_path, "/sys/")); \
+		} else { \
+			g_assert_not_reached (); \
+		} \
+	} G_STMT_END
 
 static gboolean
-sysctl_set (NMPlatform *platform, const char *path, const char *value)
+sysctl_set (NMPlatform *platform, const char *pathid, int dirfd, const char *path, const char *value)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
+
+	ASSERT_SYSCTL_ARGS (pathid, dirfd, path);
 
 	g_hash_table_insert (priv->options, g_strdup (path), g_strdup (value));
 
@@ -120,9 +149,11 @@ sysctl_set (NMPlatform *platform, const char *path, const char *value)
 }
 
 static char *
-sysctl_get (NMPlatform *platform, const char *path)
+sysctl_get (NMPlatform *platform, const char *pathid, int dirfd, const char *path)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
+
+	ASSERT_SYSCTL_ARGS (pathid, dirfd, path);
 
 	return g_strdup (g_hash_table_lookup (priv->options, path));
 }
@@ -186,7 +217,7 @@ link_init (NMFakePlatformLink *device, int ifindex, int type, const char *name)
 static NMFakePlatformLink *
 link_get (NMPlatform *platform, int ifindex)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMFakePlatformLink *device;
 
 	if (ifindex >= priv->links->len)
@@ -204,7 +235,7 @@ not_found:
 static GArray *
 link_get_all (NMPlatform *platform)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	GArray *links = g_array_sized_new (TRUE, TRUE, sizeof (NMPlatformLink), priv->links->len);
 	int i;
 
@@ -226,7 +257,7 @@ _nm_platform_link_get (NMPlatform *platform, int ifindex)
 static const NMPlatformLink *
 _nm_platform_link_get_by_ifname (NMPlatform *platform, const char *ifname)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	guint i;
 
 	for (i = 0; i < priv->links->len; i++) {
@@ -243,7 +274,7 @@ _nm_platform_link_get_by_address (NMPlatform *platform,
                                   gconstpointer address,
                                   size_t length)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	guint i;
 
 	if (   length == 0
@@ -296,7 +327,7 @@ link_add (NMPlatform *platform,
           size_t address_len,
           const NMPlatformLink **out_link)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMFakePlatformLink device;
 	NMFakePlatformLink *new_device;
 
@@ -312,7 +343,7 @@ link_add (NMPlatform *platform,
 	new_device = &g_array_index (priv->links, NMFakePlatformLink, priv->links->len - 1);
 
 	if (device.link.ifindex) {
-		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, NMP_OBJECT_TYPE_LINK, device.link.ifindex, &device, NM_PLATFORM_SIGNAL_ADDED);
+		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, (int) NMP_OBJECT_TYPE_LINK, device.link.ifindex, &device, (int) NM_PLATFORM_SIGNAL_ADDED);
 
 		link_changed (platform, &g_array_index (priv->links, NMFakePlatformLink, priv->links->len - 1), FALSE);
 	}
@@ -325,7 +356,7 @@ link_add (NMPlatform *platform,
 static gboolean
 link_delete (NMPlatform *platform, int ifindex)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMFakePlatformLink *device = link_get (platform, ifindex);
 	NMPlatformLink deleted_device;
 	int i;
@@ -364,7 +395,7 @@ link_delete (NMPlatform *platform, int ifindex)
 			memset (route, 0, sizeof (*route));
 	}
 
-	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, NMP_OBJECT_TYPE_LINK, ifindex, &deleted_device, NM_PLATFORM_SIGNAL_REMOVED);
+	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, (int) NMP_OBJECT_TYPE_LINK, ifindex, &deleted_device, (int) NM_PLATFORM_SIGNAL_REMOVED);
 
 	return TRUE;
 }
@@ -378,11 +409,11 @@ link_get_type_name (NMPlatform *platform, int ifindex)
 static void
 link_changed (NMPlatform *platform, NMFakePlatformLink *device, gboolean raise_signal)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	if (raise_signal)
-		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, NMP_OBJECT_TYPE_LINK, device->link.ifindex, &device->link, NM_PLATFORM_SIGNAL_CHANGED);
+		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, (int) NMP_OBJECT_TYPE_LINK, device->link.ifindex, &device->link, (int) NM_PLATFORM_SIGNAL_CHANGED);
 
 	if (device->link.ifindex && !IN6_IS_ADDR_UNSPECIFIED (&device->ip6_lladdr)) {
 		if (device->link.connected)
@@ -839,12 +870,12 @@ mesh_set_ssid (NMPlatform *platform, int ifindex, const guint8 *ssid, gsize len)
 	return FALSE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static GArray *
 ip4_address_get_all (NMPlatform *platform, int ifindex)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	GArray *addresses;
 	NMPlatformIP4Address *address;
 	int count = 0, i;
@@ -871,7 +902,7 @@ ip4_address_get_all (NMPlatform *platform, int ifindex)
 static GArray *
 ip6_address_get_all (NMPlatform *platform, int ifindex)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	GArray *addresses;
 	NMPlatformIP6Address *address;
 	int count = 0, i;
@@ -907,7 +938,7 @@ ip4_address_add (NMPlatform *platform,
                  guint32 flags,
                  const char *label)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMPlatformIP4Address address;
 	int i;
 
@@ -938,12 +969,12 @@ ip4_address_add (NMPlatform *platform,
 
 		memcpy (item, &address, sizeof (address));
 		if (changed)
-			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ADDRESS_CHANGED, NMP_OBJECT_TYPE_IP4_ADDRESS, ifindex, &address, NM_PLATFORM_SIGNAL_CHANGED);
+			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ADDRESS_CHANGED, (int) NMP_OBJECT_TYPE_IP4_ADDRESS, ifindex, &address, (int) NM_PLATFORM_SIGNAL_CHANGED);
 		return TRUE;
 	}
 
 	g_array_append_val (priv->ip4_addresses, address);
-	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ADDRESS_CHANGED, NMP_OBJECT_TYPE_IP4_ADDRESS, ifindex, &address, NM_PLATFORM_SIGNAL_ADDED);
+	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ADDRESS_CHANGED, (int) NMP_OBJECT_TYPE_IP4_ADDRESS, ifindex, &address, (int) NM_PLATFORM_SIGNAL_ADDED);
 
 	return TRUE;
 }
@@ -958,7 +989,7 @@ ip6_address_add (NMPlatform *platform,
                  guint32 preferred,
                  guint32 flags)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMPlatformIP6Address address;
 	int i;
 
@@ -985,12 +1016,12 @@ ip6_address_add (NMPlatform *platform,
 
 		memcpy (item, &address, sizeof (address));
 		if (changed)
-			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED, NMP_OBJECT_TYPE_IP6_ADDRESS, ifindex, &address, NM_PLATFORM_SIGNAL_CHANGED);
+			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED, (int) NMP_OBJECT_TYPE_IP6_ADDRESS, ifindex, &address, (int) NM_PLATFORM_SIGNAL_CHANGED);
 		return TRUE;
 	}
 
 	g_array_append_val (priv->ip6_addresses, address);
-	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED, NMP_OBJECT_TYPE_IP6_ADDRESS, ifindex, &address, NM_PLATFORM_SIGNAL_ADDED);
+	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED, (int) NMP_OBJECT_TYPE_IP6_ADDRESS, ifindex, &address, (int) NM_PLATFORM_SIGNAL_ADDED);
 
 	return TRUE;
 }
@@ -998,7 +1029,7 @@ ip6_address_add (NMPlatform *platform,
 static gboolean
 ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, guint8 plen, in_addr_t peer_address)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	for (i = 0; i < priv->ip4_addresses->len; i++) {
@@ -1012,7 +1043,7 @@ ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, guint8 pl
 
 			memcpy (&deleted_address, address, sizeof (deleted_address));
 			memset (address, 0, sizeof (*address));
-			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ADDRESS_CHANGED, NMP_OBJECT_TYPE_IP4_ADDRESS, ifindex, &deleted_address, NM_PLATFORM_SIGNAL_REMOVED);
+			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ADDRESS_CHANGED, (int) NMP_OBJECT_TYPE_IP4_ADDRESS, ifindex, &deleted_address, (int) NM_PLATFORM_SIGNAL_REMOVED);
 			return TRUE;
 		}
 	}
@@ -1023,7 +1054,7 @@ ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, guint8 pl
 static gboolean
 ip6_address_delete (NMPlatform *platform, int ifindex, struct in6_addr addr, guint8 plen)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	for (i = 0; i < priv->ip6_addresses->len; i++) {
@@ -1036,7 +1067,7 @@ ip6_address_delete (NMPlatform *platform, int ifindex, struct in6_addr addr, gui
 
 			memcpy (&deleted_address, address, sizeof (deleted_address));
 			memset (address, 0, sizeof (*address));
-			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED, NMP_OBJECT_TYPE_IP6_ADDRESS, ifindex, &deleted_address, NM_PLATFORM_SIGNAL_REMOVED);
+			g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED, (int) NMP_OBJECT_TYPE_IP6_ADDRESS, ifindex, &deleted_address, (int) NM_PLATFORM_SIGNAL_REMOVED);
 			return TRUE;
 		}
 	}
@@ -1047,7 +1078,7 @@ ip6_address_delete (NMPlatform *platform, int ifindex, struct in6_addr addr, gui
 static const NMPlatformIP4Address *
 ip4_address_get (NMPlatform *platform, int ifindex, in_addr_t addr, guint8 plen, in_addr_t peer_address)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	for (i = 0; i < priv->ip4_addresses->len; i++) {
@@ -1066,7 +1097,7 @@ ip4_address_get (NMPlatform *platform, int ifindex, in_addr_t addr, guint8 plen,
 static const NMPlatformIP6Address *
 ip6_address_get (NMPlatform *platform, int ifindex, struct in6_addr addr, guint8 plen)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	for (i = 0; i < priv->ip6_addresses->len; i++) {
@@ -1081,12 +1112,12 @@ ip6_address_get (NMPlatform *platform, int ifindex, struct in6_addr addr, guint8
 	return NULL;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static GArray *
 ip4_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteFlags flags)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	GArray *routes;
 	NMPlatformIP4Route *route;
 	guint i;
@@ -1116,7 +1147,7 @@ ip4_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteFlags fl
 static GArray *
 ip6_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteFlags flags)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	GArray *routes;
 	NMPlatformIP6Route *route;
 	guint i;
@@ -1146,7 +1177,7 @@ ip6_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteFlags fl
 static gboolean
 ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, guint8 plen, guint32 metric)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	for (i = 0; i < priv->ip4_routes->len; i++) {
@@ -1161,7 +1192,7 @@ ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, guint8 p
 
 		memcpy (&deleted_route, route, sizeof (deleted_route));
 		g_array_remove_index (priv->ip4_routes, i);
-		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, NMP_OBJECT_TYPE_IP4_ROUTE, ifindex, &deleted_route, NM_PLATFORM_SIGNAL_REMOVED);
+		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, (int) NMP_OBJECT_TYPE_IP4_ROUTE, ifindex, &deleted_route, (int) NM_PLATFORM_SIGNAL_REMOVED);
 	}
 
 	return TRUE;
@@ -1170,7 +1201,7 @@ ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, guint8 p
 static gboolean
 ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, guint8 plen, guint32 metric)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	metric = nm_utils_ip6_route_metric_normalize (metric);
@@ -1187,7 +1218,7 @@ ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, gu
 
 		memcpy (&deleted_route, route, sizeof (deleted_route));
 		g_array_remove_index (priv->ip6_routes, i);
-		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, NMP_OBJECT_TYPE_IP6_ROUTE, ifindex, &deleted_route, NM_PLATFORM_SIGNAL_REMOVED);
+		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, (int) NMP_OBJECT_TYPE_IP6_ROUTE, ifindex, &deleted_route, (int) NM_PLATFORM_SIGNAL_REMOVED);
 	}
 
 	return TRUE;
@@ -1198,7 +1229,7 @@ ip4_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
                in_addr_t network, guint8 plen, in_addr_t gateway,
                in_addr_t pref_src, guint32 metric, guint32 mss)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMPlatformIP4Route route;
 	guint i;
 	guint8 scope;
@@ -1251,12 +1282,12 @@ ip4_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 		}
 
 		memcpy (item, &route, sizeof (route));
-		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, NMP_OBJECT_TYPE_IP4_ROUTE, ifindex, &route, NM_PLATFORM_SIGNAL_CHANGED);
+		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, (int) NMP_OBJECT_TYPE_IP4_ROUTE, ifindex, &route, (int) NM_PLATFORM_SIGNAL_CHANGED);
 		return TRUE;
 	}
 
 	g_array_append_val (priv->ip4_routes, route);
-	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, NMP_OBJECT_TYPE_IP4_ROUTE, ifindex, &route, NM_PLATFORM_SIGNAL_ADDED);
+	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, (int) NMP_OBJECT_TYPE_IP4_ROUTE, ifindex, &route, (int) NM_PLATFORM_SIGNAL_ADDED);
 
 	return TRUE;
 }
@@ -1266,7 +1297,7 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
                struct in6_addr network, guint8 plen, struct in6_addr gateway,
                guint32 metric, guint32 mss)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	NMPlatformIP6Route route;
 	guint i;
 
@@ -1317,12 +1348,12 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 		}
 
 		memcpy (item, &route, sizeof (route));
-		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, NMP_OBJECT_TYPE_IP6_ROUTE, ifindex, &route, NM_PLATFORM_SIGNAL_CHANGED);
+		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, (int) NMP_OBJECT_TYPE_IP6_ROUTE, ifindex, &route, (int) NM_PLATFORM_SIGNAL_CHANGED);
 		return TRUE;
 	}
 
 	g_array_append_val (priv->ip6_routes, route);
-	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, NMP_OBJECT_TYPE_IP6_ROUTE, ifindex, &route, NM_PLATFORM_SIGNAL_ADDED);
+	g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, (int) NMP_OBJECT_TYPE_IP6_ROUTE, ifindex, &route, (int) NM_PLATFORM_SIGNAL_ADDED);
 
 	return TRUE;
 }
@@ -1330,7 +1361,7 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 static const NMPlatformIP4Route *
 ip4_route_get (NMPlatform *platform, int ifindex, in_addr_t network, guint8 plen, guint32 metric)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	for (i = 0; i < priv->ip4_routes->len; i++) {
@@ -1349,7 +1380,7 @@ ip4_route_get (NMPlatform *platform, int ifindex, in_addr_t network, guint8 plen
 static const NMPlatformIP6Route *
 ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, guint8 plen, guint32 metric)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) platform);
 	int i;
 
 	metric = nm_utils_ip6_route_metric_normalize (metric);
@@ -1367,7 +1398,7 @@ ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, guint
 	return NULL;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 nm_fake_platform_init (NMFakePlatform *fake_platform)
@@ -1404,9 +1435,9 @@ nm_fake_platform_setup (void)
 }
 
 static void
-nm_fake_platform_finalize (GObject *object)
+finalize (GObject *object)
 {
-	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (object);
+	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE ((NMFakePlatform *) object);
 	int i;
 
 	g_hash_table_unref (priv->options);
@@ -1431,10 +1462,7 @@ nm_fake_platform_class_init (NMFakePlatformClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	NMPlatformClass *platform_class = NM_PLATFORM_CLASS (klass);
 
-	g_type_class_add_private (klass, sizeof (NMFakePlatformPrivate));
-
-	/* virtual methods */
-	object_class->finalize = nm_fake_platform_finalize;
+	object_class->finalize = finalize;
 
 	platform_class->sysctl_set = sysctl_set;
 	platform_class->sysctl_get = sysctl_get;

@@ -170,7 +170,7 @@ nm_access_point_get_bssid (NMAccessPoint *ap)
 {
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NULL);
 
-	return NM_ACCESS_POINT_GET_PRIVATE (ap)->bssid;
+	return nm_str_not_empty (NM_ACCESS_POINT_GET_PRIVATE (ap)->bssid);
 }
 
 /**
@@ -381,7 +381,7 @@ nm_access_point_filter_connections (NMAccessPoint *ap, const GPtrArray *connecti
 	return filtered;
 }
 
-/************************************************************/
+/*****************************************************************************/
 
 static void
 nm_access_point_init (NMAccessPoint *ap)
@@ -484,8 +484,6 @@ nm_access_point_class_init (NMAccessPointClass *ap_class)
 	NMObjectClass *nm_object_class = NM_OBJECT_CLASS (ap_class);
 
 	g_type_class_add_private (ap_class, sizeof (NMAccessPointPrivate));
-
-	_nm_object_class_add_interface (nm_object_class, NM_DBUS_INTERFACE_ACCESS_POINT);
 
 	/* virtual methods */
 	object_class->get_property = get_property;

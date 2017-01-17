@@ -29,15 +29,13 @@
 #include "nm-common-macros.h"
 #include "nm-device-ethernet.h"
 #include "nm-device-wifi.h"
-#include "nm-device-private.h"
 #include "nm-core-internal.h"
 #include "nm-object-private.h"
 #include "nm-active-connection.h"
 #include "nm-vpn-connection.h"
-#include "nm-object-cache.h"
 #include "nm-dbus-helpers.h"
 
-#include "nmdbus-manager.h"
+#include "introspection/org.freedesktop.NetworkManager.h"
 
 void _nm_device_wifi_set_wireless_enabled (NMDeviceWifi *device, gboolean enabled);
 
@@ -54,7 +52,7 @@ G_DEFINE_TYPE_WITH_CODE (NMManager, nm_manager, NM_TYPE_OBJECT,
 #define NM_MANAGER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_MANAGER, NMManagerPrivate))
 
 typedef struct {
-	NMDBusManager *manager_proxy;
+	NMDBusManager *proxy;
 	GCancellable *props_cancellable;
 	char *version;
 	NMState state;
@@ -91,7 +89,6 @@ enum {
 	PROP_VERSION,
 	PROP_STATE,
 	PROP_STARTUP,
-	PROP_NM_RUNNING,
 	PROP_NETWORKING_ENABLED,
 	PROP_WIRELESS_ENABLED,
 	PROP_WIRELESS_HARDWARE_ENABLED,
@@ -124,11 +121,7 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-static void nm_running_changed_cb (GObject *object,
-                                   GParamSpec *pspec,
-                                   gpointer user_data);
-
-/**********************************************************************/
+/*****************************************************************************/
 
 static void
 nm_manager_init (NMManager *manager)
@@ -193,13 +186,13 @@ init_dbus (NMObject *object)
 
 	NM_OBJECT_CLASS (nm_manager_parent_class)->init_dbus (object);
 
-	priv->manager_proxy = NMDBUS_MANAGER (_nm_object_get_proxy (object, NM_DBUS_INTERFACE));
+	priv->proxy = NMDBUS_MANAGER (_nm_object_get_proxy (object, NM_DBUS_INTERFACE));
 	_nm_object_register_properties (object,
 	                                NM_DBUS_INTERFACE,
 	                                property_info);
 
 	/* Permissions */
-	g_signal_connect (priv->manager_proxy, "check-permissions",
+	g_signal_connect (priv->proxy, "check-permissions",
 	                  G_CALLBACK (manager_recheck_permissions), object);
 }
 
@@ -314,7 +307,7 @@ get_permissions_sync (NMManager *self, GError **error)
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
 	GVariant *permissions;
 
-	if (nmdbus_manager_call_get_permissions_sync (priv->manager_proxy,
+	if (nmdbus_manager_call_get_permissions_sync (priv->proxy,
 	                                              &permissions,
 	                                              NULL, error)) {
 		update_permissions (self, permissions);
@@ -371,7 +364,7 @@ manager_recheck_permissions (NMDBusManager *proxy, gpointer user_data)
 		return;
 
 	priv->perm_call_cancellable = g_cancellable_new ();
-	nmdbus_manager_call_get_permissions (priv->manager_proxy,
+	nmdbus_manager_call_get_permissions (priv->proxy,
 	                                     priv->perm_call_cancellable,
 	                                     get_permissions_reply,
 	                                     self);
@@ -382,7 +375,7 @@ nm_manager_get_version (NMManager *manager)
 {
 	g_return_val_if_fail (NM_IS_MANAGER (manager), NULL);
 
-	return NM_MANAGER_GET_PRIVATE (manager)->version;
+	return nm_str_not_empty (NM_MANAGER_GET_PRIVATE (manager)->version);
 }
 
 NMState
@@ -402,14 +395,6 @@ nm_manager_get_startup (NMManager *manager)
 }
 
 gboolean
-nm_manager_get_nm_running (NMManager *manager)
-{
-	g_return_val_if_fail (NM_IS_MANAGER (manager), FALSE);
-
-	return _nm_object_get_nm_running (NM_OBJECT (manager));
-}
-
-gboolean
 nm_manager_networking_get_enabled (NMManager *manager)
 {
 	g_return_val_if_fail (NM_IS_MANAGER (manager), FALSE);
@@ -424,7 +409,7 @@ nm_manager_networking_set_enabled (NMManager *manager, gboolean enable, GError *
 
 	g_return_val_if_fail (NM_IS_MANAGER (manager), FALSE);
 
-	ret = nmdbus_manager_call_enable_sync (NM_MANAGER_GET_PRIVATE (manager)->manager_proxy,
+	ret = nmdbus_manager_call_enable_sync (NM_MANAGER_GET_PRIVATE (manager)->proxy,
 	                                       enable,
 	                                       NULL, error);
 	if (error && *error)
@@ -526,7 +511,7 @@ nm_manager_get_logging (NMManager *manager, char **level, char **domains, GError
 	if (!level && !domains)
 		return TRUE;
 
-	ret = nmdbus_manager_call_get_logging_sync (NM_MANAGER_GET_PRIVATE (manager)->manager_proxy,
+	ret = nmdbus_manager_call_get_logging_sync (NM_MANAGER_GET_PRIVATE (manager)->proxy,
 	                                            level, domains,
 	                                            NULL, error);
 	if (error && *error)
@@ -550,7 +535,7 @@ nm_manager_set_logging (NMManager *manager, const char *level, const char *domai
 	if (!domains)
 		domains = "";
 
-	ret = nmdbus_manager_call_set_logging_sync (NM_MANAGER_GET_PRIVATE (manager)->manager_proxy,
+	ret = nmdbus_manager_call_set_logging_sync (NM_MANAGER_GET_PRIVATE (manager)->proxy,
 	                                            level, domains,
 	                                            NULL, error);
 	if (error && *error)
@@ -589,7 +574,7 @@ nm_manager_check_connectivity (NMManager *manager,
 	g_return_val_if_fail (NM_IS_MANAGER (manager), NM_CONNECTIVITY_UNKNOWN);
 	priv = NM_MANAGER_GET_PRIVATE (manager);
 
-	if (nmdbus_manager_call_check_connectivity_sync (priv->manager_proxy,
+	if (nmdbus_manager_call_check_connectivity_sync (priv->proxy,
 	                                                 &connectivity,
 	                                                 cancellable, error))
 		return connectivity;
@@ -636,7 +621,7 @@ nm_manager_check_connectivity_async (NMManager *manager,
 
 	simple = g_simple_async_result_new (G_OBJECT (manager), callback, user_data,
 	                                    nm_manager_check_connectivity_async);
-	nmdbus_manager_call_check_connectivity (priv->manager_proxy,
+	nmdbus_manager_call_check_connectivity (priv->proxy,
 	                                        cancellable,
 	                                        check_connectivity_cb, simple);
 }
@@ -657,9 +642,9 @@ nm_manager_check_connectivity_finish (NMManager *manager,
 	return (NMConnectivityState) g_simple_async_result_get_op_res_gssize (simple);
 }
 
-/****************************************************************/
+/*****************************************************************************/
 /* Devices                                                      */
-/****************************************************************/
+/*****************************************************************************/
 
 const GPtrArray *
 nm_manager_get_devices (NMManager *manager)
@@ -721,9 +706,9 @@ nm_manager_get_device_by_iface (NMManager *manager, const char *iface)
 	return device;
 }
 
-/****************************************************************/
+/*****************************************************************************/
 /* Active Connections                                           */
-/****************************************************************/
+/*****************************************************************************/
 
 const GPtrArray *
 nm_manager_get_active_connections (NMManager *manager)
@@ -758,8 +743,6 @@ typedef struct {
 	char *new_connection_path;
 } ActivateInfo;
 
-static void active_removed (NMObject *object, NMActiveConnection *active, gpointer user_data);
-
 static void
 activate_info_complete (ActivateInfo *info,
                         NMActiveConnection *active,
@@ -767,7 +750,6 @@ activate_info_complete (ActivateInfo *info,
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (info->manager);
 
-	g_signal_handlers_disconnect_by_func (info->manager, G_CALLBACK (active_removed), info);
 	if (active)
 		g_simple_async_result_set_op_res_gpointer (info->simple, g_object_ref (active), g_object_unref);
 	else
@@ -812,6 +794,10 @@ recheck_pending_activations (NMManager *self)
 	NMActiveConnection *candidate;
 	const GPtrArray *devices;
 	NMDevice *device;
+	GDBusObjectManager *object_manager = NULL;
+	GError *error;
+
+	object_manager = _nm_object_get_dbus_object_manager (NM_OBJECT (self));
 
 	/* For each pending activation, look for an active connection that has the
 	 * pending activation's object path, where the active connection and its
@@ -820,8 +806,24 @@ recheck_pending_activations (NMManager *self)
 	 */
 	for (iter = priv->pending_activations; iter; iter = next) {
 		ActivateInfo *info = iter->data;
+		gs_unref_object GDBusObject *dbus_obj = NULL;
 
 		next = g_slist_next (iter);
+
+		if (!info->active_path)
+			continue;
+
+		/* Check that the object manager still knows about the object.
+		 * It could be that it vanished before we even learned its name. */
+		dbus_obj = g_dbus_object_manager_get_object (object_manager, info->active_path);
+		if (!dbus_obj) {
+			error = g_error_new_literal (NM_CLIENT_ERROR,
+			                             NM_CLIENT_ERROR_OBJECT_CREATION_FAILED,
+			                             _("Active connection removed before it was initialized"));
+			activate_info_complete (info, NULL, error);
+			g_clear_error (&error);
+			break;
+		}
 
 		candidate = find_active_connection_by_path (self, info->active_path);
 		if (!candidate)
@@ -858,22 +860,6 @@ activation_cancelled (GCancellable *cancellable,
 }
 
 static void
-active_removed (NMObject *object, NMActiveConnection *active, gpointer user_data)
-{
-	ActivateInfo *info = user_data;
-	GError *error = NULL;
-
-	if (strcmp (info->active_path, nm_object_get_path (NM_OBJECT (active))))
-		return;
-
-	error = g_error_new_literal (NM_CLIENT_ERROR,
-	                             NM_CLIENT_ERROR_FAILED,
-	                             _("Active connection could not be attached to the device"));
-	activate_info_complete (info, NULL, error);
-	g_clear_error (&error);
-}
-
-static void
 activate_cb (GObject *object,
              GAsyncResult *result,
              gpointer user_data)
@@ -888,9 +874,6 @@ activate_cb (GObject *object,
 			info->cancelled_id = g_signal_connect (info->cancellable, "cancelled",
 			                                       G_CALLBACK (activation_cancelled), info);
 		}
-
-		g_signal_connect (info->manager, "active-connection-removed",
-		                  G_CALLBACK (active_removed), info);
 
 		recheck_pending_activations (info->manager);
 	} else {
@@ -927,7 +910,7 @@ nm_manager_activate_connection_async (NMManager *manager,
 	priv = NM_MANAGER_GET_PRIVATE (manager);
 	priv->pending_activations = g_slist_prepend (priv->pending_activations, info);
 
-	nmdbus_manager_call_activate_connection (priv->manager_proxy,
+	nmdbus_manager_call_activate_connection (priv->proxy,
 	                                         connection ? nm_connection_get_path (connection) : "/",
 	                                         device ? nm_object_get_path (NM_OBJECT (device)) : "/",
 	                                         specific_object ? specific_object : "/",
@@ -967,9 +950,6 @@ add_activate_cb (GObject *object,
 			info->cancelled_id = g_signal_connect (info->cancellable, "cancelled",
 			                                       G_CALLBACK (activation_cancelled), info);
 		}
-
-		g_signal_connect (info->manager, "active-connection-removed",
-		                  G_CALLBACK (active_removed), info);
 
 		recheck_pending_activations (info->manager);
 	} else {
@@ -1011,7 +991,7 @@ nm_manager_add_and_activate_connection_async (NMManager *manager,
 	if (!dict)
 		dict = g_variant_new_array (G_VARIANT_TYPE ("{sa{sv}}"), NULL, 0);
 
-	nmdbus_manager_call_add_and_activate_connection (priv->manager_proxy,
+	nmdbus_manager_call_add_and_activate_connection (priv->proxy,
 	                                                 dict,
 	                                                 nm_object_get_path (NM_OBJECT (device)),
 	                                                 specific_object ? specific_object : "/",
@@ -1076,33 +1056,7 @@ static void
 active_connection_removed (NMManager *self, NMActiveConnection *ac)
 {
 	g_signal_handlers_disconnect_by_func (ac, G_CALLBACK (ac_devices_changed), self);
-}
-
-static void
-object_creation_failed (NMObject *object, const char *failed_path)
-{
-	NMManager *self = NM_MANAGER (object);
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	GError *error;
-	GSList *iter;
-
-	/* A newly activated connection failed due to some immediate error
-	 * and disappeared from active connection list.  Make sure the
-	 * callback gets called.
-	 */
-	error = g_error_new_literal (NM_CLIENT_ERROR,
-	                             NM_CLIENT_ERROR_OBJECT_CREATION_FAILED,
-	                             _("Active connection removed before it was initialized"));
-
-	for (iter = priv->pending_activations; iter; iter = iter->next) {
-		ActivateInfo *info = iter->data;
-
-		if (g_strcmp0 (failed_path, info->active_path) == 0) {
-			activate_info_complete (info, NULL, error);
-			g_error_free (error);
-			return;
-		}
-	}
+	recheck_pending_activations (self);
 }
 
 gboolean
@@ -1118,7 +1072,7 @@ nm_manager_deactivate_connection (NMManager *manager,
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (active), FALSE);
 
 	path = nm_object_get_path (NM_OBJECT (active));
-	ret = nmdbus_manager_call_deactivate_connection_sync (NM_MANAGER_GET_PRIVATE (manager)->manager_proxy,
+	ret = nmdbus_manager_call_deactivate_connection_sync (NM_MANAGER_GET_PRIVATE (manager)->proxy,
 	                                                      path,
 	                                                      cancellable, error);
 	if (error && *error)
@@ -1162,7 +1116,7 @@ nm_manager_deactivate_connection_async (NMManager *manager,
 	                                    nm_manager_deactivate_connection_async);
 
 	path = nm_object_get_path (NM_OBJECT (active));
-	nmdbus_manager_call_deactivate_connection (NM_MANAGER_GET_PRIVATE (manager)->manager_proxy,
+	nmdbus_manager_call_deactivate_connection (NM_MANAGER_GET_PRIVATE (manager)->proxy,
 	                                           path,
 	                                           cancellable,
 	                                           deactivated_cb, simple);
@@ -1184,159 +1138,30 @@ nm_manager_deactivate_connection_finish (NMManager *manager,
 		return g_simple_async_result_get_op_res_gboolean (simple);
 }
 
-/****************************************************************/
+/*****************************************************************************/
 
 static void
-free_devices (NMManager *manager, gboolean in_dispose)
+free_active_connections (NMManager *manager)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-	gs_unref_ptrarray GPtrArray *real_devices = NULL;
-	gs_unref_ptrarray GPtrArray *all_devices = NULL;
-	GPtrArray *devices = NULL;
-	guint i, j;
-
-	real_devices = priv->devices;
-	all_devices = priv->all_devices;
-
-	if (in_dispose) {
-		priv->devices = NULL;
-		priv->all_devices = NULL;
-	} else {
-		priv->devices = g_ptr_array_new_with_free_func (g_object_unref);
-		priv->all_devices = g_ptr_array_new_with_free_func (g_object_unref);
-	}
-
-	if (all_devices && all_devices->len > 0)
-		devices = all_devices;
-	else if (real_devices && real_devices->len > 0)
-		devices = real_devices;
-
-	if (real_devices && devices != real_devices) {
-		for (i = 0; i < real_devices->len; i++) {
-			NMDevice *d = real_devices->pdata[i];
-
-			if (all_devices) {
-				for (j = 0; j < all_devices->len; j++) {
-					if (d == all_devices->pdata[j])
-						goto next;
-				}
-			}
-			if (in_dispose)
-				device_removed (manager, d);
-			else
-				g_signal_emit (manager, signals[DEVICE_REMOVED], 0, d);
-next:
-			;
-		}
-	}
-	if (devices) {
-		for (i = 0; i < devices->len; i++) {
-			NMDevice *d = devices->pdata[i];
-
-			if (in_dispose)
-				device_removed (manager, d);
-			else
-				g_signal_emit (manager, signals[DEVICE_REMOVED], 0, d);
-		}
-	}
-}
-
-static void
-free_active_connections (NMManager *manager, gboolean in_dispose)
-{
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-	GPtrArray *active_connections;
-	NMActiveConnection *active_connection;
 	int i;
 
 	if (!priv->active_connections)
 		return;
 
-	active_connections = priv->active_connections;
-	if (in_dispose)
-		priv->active_connections = NULL;
-	else
-		priv->active_connections = g_ptr_array_new ();
-
-	for (i = 0; i < active_connections->len; i++) {
-		active_connection = active_connections->pdata[i];
-		g_signal_emit (manager, signals[ACTIVE_CONNECTION_REMOVED], 0, active_connection);
-		/* Break circular refs */
-		g_object_run_dispose (G_OBJECT (active_connection));
-	}
-	g_ptr_array_unref (active_connections);
-
-	if (!in_dispose)
-		g_object_notify (G_OBJECT (manager), NM_MANAGER_ACTIVE_CONNECTIONS);
+	/* Break circular refs */
+	for (i = 0; i < priv->active_connections->len; i++)
+		g_object_run_dispose (G_OBJECT (priv->active_connections->pdata[i]));
+	g_ptr_array_unref (priv->active_connections);
+	priv->active_connections = NULL;
 }
 
-static void
-updated_properties (GObject *object, GAsyncResult *result, gpointer user_data)
-{
-	NMManager *manager = NM_MANAGER (user_data);
-	GError *error = NULL;
-
-	if (!_nm_object_reload_properties_finish (NM_OBJECT (object), result, &error)) {
-		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-			g_warning ("%s: error reading NMManager properties: %s", __func__, error->message);
-		g_error_free (error);
-	}
-
-	_nm_object_queue_notify (NM_OBJECT (manager), NM_MANAGER_NM_RUNNING);
-}
-
-static void
-nm_running_changed_cb (GObject *object,
-                       GParamSpec *pspec,
-                       gpointer user_data)
-{
-	NMManager *manager = NM_MANAGER (object);
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-
-	if (!nm_manager_get_nm_running (manager)) {
-		nm_clear_g_cancellable (&priv->props_cancellable);
-
-		priv->state = NM_STATE_UNKNOWN;
-		priv->startup = FALSE;
-		_nm_object_queue_notify (NM_OBJECT (manager), NM_MANAGER_NM_RUNNING);
-		_nm_object_suppress_property_updates (NM_OBJECT (manager), TRUE);
-		poke_wireless_devices_with_rf_status (manager);
-		free_devices (manager, FALSE);
-		free_active_connections (manager, FALSE);
-		update_permissions (manager, NULL);
-		priv->wireless_enabled = FALSE;
-		priv->wireless_hw_enabled = FALSE;
-		priv->wwan_enabled = FALSE;
-		priv->wwan_hw_enabled = FALSE;
-		priv->wimax_enabled = FALSE;
-		priv->wimax_hw_enabled = FALSE;
-		g_free (priv->version);
-		priv->version = NULL;
-
-		/* Clear object cache to ensure bad refcounting by managers doesn't
-		 * keep objects in the cache.
-		 */
-		_nm_object_cache_clear ();
-	} else {
-		_nm_object_suppress_property_updates (NM_OBJECT (manager), FALSE);
-
-		nm_clear_g_cancellable (&priv->props_cancellable);
-		priv->props_cancellable = g_cancellable_new ();
-		_nm_object_reload_properties_async (NM_OBJECT (manager), priv->props_cancellable, updated_properties, manager);
-
-		manager_recheck_permissions (priv->manager_proxy, manager);
-	}
-}
-
-/****************************************************************/
+/*****************************************************************************/
 
 static void
 constructed (GObject *object)
 {
 	G_OBJECT_CLASS (nm_manager_parent_class)->constructed (object);
-
-	g_signal_connect (object, "notify::" NM_OBJECT_NM_RUNNING,
-	                  G_CALLBACK (nm_running_changed_cb), NULL);
 
 	g_signal_connect (object, "notify::" NM_MANAGER_WIRELESS_ENABLED,
 	                  G_CALLBACK (wireless_enabled_cb), NULL);
@@ -1346,13 +1171,17 @@ static gboolean
 init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
 {
 	NMManager *manager = NM_MANAGER (initable);
+	GError *local_error = NULL;
 
-	if (!nm_manager_parent_initable_iface->init (initable, cancellable, error))
-		return FALSE;
+	if (!nm_manager_parent_initable_iface->init (initable, cancellable, error)) {
+		/* Never happens. */
+		g_return_val_if_reached (FALSE);
+	}
 
-	if (   nm_manager_get_nm_running (manager)
-	    && !get_permissions_sync (manager, error))
-		return FALSE;
+	if (!get_permissions_sync (manager, &local_error)) {
+		g_warning ("Unable to get permissions: %s\n", local_error->message);
+		g_error_free (local_error);
+	}
 
 	return TRUE;
 }
@@ -1375,18 +1204,18 @@ init_async_complete (NMManagerInitData *init_data)
 static void
 init_async_got_permissions (GObject *object, GAsyncResult *result, gpointer user_data)
 {
-	NMManagerInitData *init_data = user_data;
+	NMManager *manager = user_data;
 	GVariant *permissions;
 
 	if (nmdbus_manager_call_get_permissions_finish (NMDBUS_MANAGER (object),
 	                                                &permissions,
 	                                                result, NULL)) {
-		update_permissions (init_data->manager, permissions);
+		update_permissions (manager, permissions);
 		g_variant_unref (permissions);
 	} else
-		update_permissions (init_data->manager, NULL);
+		update_permissions (manager, NULL);
 
-	init_async_complete (init_data);
+	g_object_unref (manager);
 }
 
 static void
@@ -1402,14 +1231,12 @@ init_async_parent_inited (GObject *source, GAsyncResult *result, gpointer user_d
 		return;
 	}
 
-	if (!nm_manager_get_nm_running (init_data->manager)) {
-		init_async_complete (init_data);
-		return;
-	}
-
-	nmdbus_manager_call_get_permissions (priv->manager_proxy,
+	nmdbus_manager_call_get_permissions (priv->proxy,
 	                                     init_data->cancellable,
-	                                     init_async_got_permissions, init_data);
+	                                     init_async_got_permissions,
+	                                     g_object_ref (init_data->manager));
+
+	init_async_complete (init_data);
 }
 
 static void
@@ -1452,10 +1279,21 @@ dispose (GObject *object)
 		g_clear_object (&priv->perm_call_cancellable);
 	}
 
-	free_devices (manager, TRUE);
-	free_active_connections (manager, TRUE);
+
+	if (priv->devices) {
+		g_ptr_array_unref (priv->devices);
+		priv->devices = NULL;
+	}
+	if (priv->all_devices) {
+		g_ptr_array_unref (priv->all_devices);
+		priv->all_devices = NULL;
+	}
+
+	free_active_connections (manager);
 	g_clear_object (&priv->primary_connection);
 	g_clear_object (&priv->activating_connection);
+
+	g_clear_object (&priv->proxy);
 
 	/* Each activation should hold a ref on @manager, so if we're being disposed,
 	 * there shouldn't be any pending.
@@ -1539,9 +1377,6 @@ get_property (GObject *object,
 	case PROP_STARTUP:
 		g_value_set_boolean (value, nm_manager_get_startup (self));
 		break;
-	case PROP_NM_RUNNING:
-		g_value_set_boolean (value, nm_manager_get_nm_running (self));
-		break;
 	case PROP_NETWORKING_ENABLED:
 		g_value_set_boolean (value, nm_manager_networking_get_enabled (self));
 		break;
@@ -1598,9 +1433,6 @@ nm_manager_class_init (NMManagerClass *manager_class)
 
 	g_type_class_add_private (manager_class, sizeof (NMManagerPrivate));
 
-	_nm_object_class_add_interface (nm_object_class, NM_DBUS_INTERFACE);
-	_nm_dbus_register_proxy_type (NM_DBUS_INTERFACE, NMDBUS_TYPE_MANAGER_PROXY);
-
 	/* virtual methods */
 	object_class->constructed = constructed;
 	object_class->set_property = set_property;
@@ -1609,7 +1441,6 @@ nm_manager_class_init (NMManagerClass *manager_class)
 	object_class->finalize = finalize;
 
 	nm_object_class->init_dbus = init_dbus;
-	nm_object_class->object_creation_failed = object_creation_failed;
 
 	manager_class->device_added = device_added;
 	manager_class->device_removed = device_removed;
@@ -1634,12 +1465,6 @@ nm_manager_class_init (NMManagerClass *manager_class)
 	g_object_class_install_property
 		(object_class, PROP_STARTUP,
 		 g_param_spec_boolean (NM_MANAGER_STARTUP, "", "",
-		                       FALSE,
-		                       G_PARAM_READABLE |
-		                       G_PARAM_STATIC_STRINGS));
-	g_object_class_install_property
-		(object_class, PROP_NM_RUNNING,
-		 g_param_spec_boolean (NM_MANAGER_NM_RUNNING, "", "",
 		                       FALSE,
 		                       G_PARAM_READABLE |
 		                       G_PARAM_STATIC_STRINGS));

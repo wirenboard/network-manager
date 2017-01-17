@@ -220,7 +220,7 @@ char *strappend(const char *s, const char *suffix) {
         return strnappend(s, suffix, suffix ? strlen(suffix) : 0);
 }
 
-char *strjoin(const char *x, ...) {
+char *strjoin_real(const char *x, ...) {
         va_list ap;
         size_t l;
         char *r, *p;
@@ -446,7 +446,7 @@ static char *ascii_ellipsize_mem(const char *s, size_t old_length, size_t new_le
         if (old_length <= 3 || old_length <= new_length)
                 return strndup(s, old_length);
 
-        r = new0(char, new_length+1);
+        r = new0(char, new_length+3);
         if (!r)
                 return NULL;
 
@@ -456,12 +456,12 @@ static char *ascii_ellipsize_mem(const char *s, size_t old_length, size_t new_le
                 x = new_length - 3;
 
         memcpy(r, s, x);
-        r[x] = '.';
-        r[x+1] = '.';
-        r[x+2] = '.';
+        r[x] = 0xe2; /* tri-dot ellipsis: … */
+        r[x+1] = 0x80;
+        r[x+2] = 0xa6;
         memcpy(r + x + 3,
-               s + old_length - (new_length - x - 3),
-               new_length - x - 3);
+               s + old_length - (new_length - x - 1),
+               new_length - x - 1);
 
         return r;
 }
@@ -614,8 +614,7 @@ char *strreplace(const char *text, const char *old_string, const char *new_strin
         return r;
 
 oom:
-        free(r);
-        return NULL;
+        return mfree(r);
 }
 
 char *strip_tab_ansi(char **ibuf, size_t *_isz) {
@@ -686,8 +685,7 @@ char *strip_tab_ansi(char **ibuf, size_t *_isz) {
 
         if (ferror(f)) {
                 fclose(f);
-                free(obuf);
-                return NULL;
+                return mfree(obuf);
         }
 
         fclose(f);

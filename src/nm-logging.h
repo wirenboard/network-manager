@@ -66,6 +66,7 @@ typedef enum  { /*< skip >*/
 	LOGD_AUDIT      = (1LL << 34),
 	LOGD_SYSTEMD    = (1LL << 35),
 	LOGD_VPN_PLUGIN = (1LL << 36),
+	LOGD_PROXY      = (1LL << 37),
 
 	__LOGD_MAX,
 	LOGD_ALL       = (((__LOGD_MAX - 1LL) << 1) - 1LL),
@@ -186,6 +187,10 @@ gboolean nm_logging_setup (const char  *level,
                            const char  *domains,
                            char       **bad_domains,
                            GError     **error);
+
+void nm_logging_set_syslog_identifier (const char *domain);
+void nm_logging_set_prefix (const char *format, ...) _nm_printf (1, 2);
+
 void     nm_logging_syslog_openlog (const char *logging_backend);
 gboolean nm_logging_syslog_enabled (void);
 
@@ -269,5 +274,22 @@ gboolean nm_logging_syslog_enabled (void);
 extern void (*_nm_logging_clear_platform_logging_cache) (void);
 
 /*****************************************************************************/
+
+#define __NMLOG_DEFAULT(level, domain, prefix, ...) \
+	G_STMT_START { \
+		nm_log ((level), (domain), \
+		        "%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
+		        (prefix) \
+		        _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
+	} G_STMT_END
+
+#define __NMLOG_DEFAULT_WITH_ADDR(level, domain, prefix, ...) \
+	G_STMT_START { \
+		nm_log ((level), (domain), \
+		        "%s[%p]: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
+		        (prefix), \
+		        (self) \
+		        _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
+	} G_STMT_END
 
 #endif /* __NETWORKMANAGER_LOGGING_H__ */

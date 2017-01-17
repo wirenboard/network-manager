@@ -136,7 +136,7 @@ nm_setting_macvlan_get_tap (NMSettingMacvlan *setting)
 	return NM_SETTING_MACVLAN_GET_PRIVATE (setting)->tap;
 }
 
-/*********************************************************************/
+/*****************************************************************************/
 
 static void
 nm_setting_macvlan_init (NMSettingMacvlan *setting)
@@ -160,7 +160,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 
 	if (priv->parent) {
 		if (   !nm_utils_is_uuid (priv->parent)
-		    && !nm_utils_iface_valid_name (priv->parent)) {
+		    && !nm_utils_is_valid_iface_name (priv->parent, NULL)) {
 			g_set_error (error,
 			             NM_CONNECTION_ERROR,
 			             NM_CONNECTION_ERROR_INVALID_PROPERTY,

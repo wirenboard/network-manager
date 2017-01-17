@@ -136,6 +136,7 @@ gboolean nm_ip6_config_equal (const NMIP6Config *a, const NMIP6Config *b);
 
 void nm_ip6_config_set_privacy (NMIP6Config *config, NMSettingIP6ConfigPrivacy privacy);
 
+/*****************************************************************************/
 /* Testing-only functions */
 
 gboolean nm_ip6_config_capture_resolv_conf (GArray *nameservers,

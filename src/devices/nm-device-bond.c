@@ -20,32 +20,36 @@
 
 #include "nm-default.h"
 
+#include "nm-device-bond.h"
+
 #include <errno.h>
 #include <stdlib.h>
 
-#include "nm-device-bond.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
-#include "nm-platform.h"
-#include "nm-enum-types.h"
+#include "platform/nm-platform.h"
 #include "nm-device-factory.h"
 #include "nm-core-internal.h"
 #include "nm-ip4-config.h"
 
-#include "nmdbus-device-bond.h"
+#include "introspection/org.freedesktop.NetworkManager.Device.Bond.h"
 
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF(NMDeviceBond);
 
+/*****************************************************************************/
+
+struct _NMDeviceBond {
+	NMDevice parent;
+};
+
+struct _NMDeviceBondClass {
+	NMDeviceClass parent;
+};
+
 G_DEFINE_TYPE (NMDeviceBond, nm_device_bond, NM_TYPE_DEVICE)
 
-#define NM_DEVICE_BOND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DEVICE_BOND, NMDeviceBondPrivate))
-
-typedef struct {
-	int dummy;
-} NMDeviceBondPrivate;
-
-/******************************************************************/
+/*****************************************************************************/
 
 static NMDeviceCapabilities
 get_generic_capabilities (NMDevice *dev)
@@ -115,7 +119,7 @@ complete_connection (NMDevice *device,
 	return TRUE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static gboolean
 set_bond_attr (NMDevice *device, NMBondMode mode, const char *attr, const char *value)
@@ -372,28 +376,11 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 	/* Interface must be down to set bond options */
 	nm_device_take_down (dev, TRUE);
 	ret = apply_bonding_config (dev);
+	if (ret)
+		ret = nm_device_hw_addr_set_cloned (dev, nm_device_get_applied_connection (dev), FALSE);
 	nm_device_bring_up (dev, TRUE, &no_firmware);
 
 	return ret;
-}
-
-static void
-ip4_config_pre_commit (NMDevice *self, NMIP4Config *config)
-{
-	NMConnection *connection;
-	NMSettingWired *s_wired;
-	guint32 mtu;
-
-	connection = nm_device_get_applied_connection (self);
-	g_assert (connection);
-	s_wired = nm_connection_get_setting_wired (connection);
-
-	if (s_wired) {
-		/* MTU override */
-		mtu = nm_setting_wired_get_mtu (s_wired);
-		if (mtu)
-			nm_ip4_config_set_mtu (config, mtu, NM_IP_CONFIG_SOURCE_USER);
-	}
 }
 
 static gboolean
@@ -432,8 +419,14 @@ release_slave (NMDevice *device,
 {
 	NMDeviceBond *self = NM_DEVICE_BOND (device);
 	gboolean success, no_firmware = FALSE;
+	gs_free char *address = NULL;
 
 	if (configure) {
+		/* When the last slave is released the bond MAC will be set to a random
+		 * value by kernel; remember the current one and restore it afterwards.
+		 */
+		address = g_strdup (nm_device_get_hw_address (device));
+
 		success = nm_platform_link_release (NM_PLATFORM_GET,
 		                                    nm_device_get_ip_ifindex (device),
 		                                    nm_device_get_ip_ifindex (slave));
@@ -445,6 +438,10 @@ release_slave (NMDevice *device,
 			_LOGW (LOGD_BOND, "failed to release bond slave %s",
 			       nm_device_get_ip_iface (slave));
 		}
+
+		nm_platform_process_events (NM_PLATFORM_GET);
+		if (nm_device_update_hw_address (device))
+			nm_device_hw_addr_set (device, address, "restore", FALSE);
 
 		/* Kernel bonding code "closes" the slave when releasing it, (which clears
 		 * IFF_UP), so we must bring it back up here to ensure carrier changes and
@@ -482,7 +479,7 @@ create_and_realize (NMDevice *device,
 	return TRUE;
 }
 
-/******************************************************************/
+/*****************************************************************************/
 
 static void
 nm_device_bond_init (NMDeviceBond * self)
@@ -492,10 +489,7 @@ nm_device_bond_init (NMDeviceBond * self)
 static void
 nm_device_bond_class_init (NMDeviceBondClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	NMDeviceClass *parent_class = NM_DEVICE_CLASS (klass);
-
-	g_type_class_add_private (object_class, sizeof (NMDeviceBondPrivate));
 
 	NM_DEVICE_CLASS_DECLARE_TYPES (klass, NM_SETTING_BOND_SETTING_NAME, NM_LINK_TYPE_BOND)
 
@@ -510,7 +504,7 @@ nm_device_bond_class_init (NMDeviceBondClass *klass)
 
 	parent_class->create_and_realize = create_and_realize;
 	parent_class->act_stage1_prepare = act_stage1_prepare;
-	parent_class->ip4_config_pre_commit = ip4_config_pre_commit;
+	parent_class->get_configured_mtu = nm_device_get_configured_mtu_for_wired;
 	parent_class->enslave_slave = enslave_slave;
 	parent_class->release_slave = release_slave;
 
@@ -519,10 +513,10 @@ nm_device_bond_class_init (NMDeviceBondClass *klass)
 	                                        NULL);
 }
 
-/*************************************************************/
+/*****************************************************************************/
 
-#define NM_TYPE_BOND_FACTORY (nm_bond_factory_get_type ())
-#define NM_BOND_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_BOND_FACTORY, NMBondFactory))
+#define NM_TYPE_BOND_DEVICE_FACTORY (nm_bond_device_factory_get_type ())
+#define NM_BOND_DEVICE_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_BOND_DEVICE_FACTORY, NMBondDeviceFactory))
 
 static NMDevice *
 create_device (NMDeviceFactory *factory,
@@ -544,6 +538,5 @@ create_device (NMDeviceFactory *factory,
 NM_DEVICE_FACTORY_DEFINE_INTERNAL (BOND, Bond, bond,
 	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES    (NM_LINK_TYPE_BOND)
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_BOND_SETTING_NAME),
-	factory_iface->create_device = create_device;
-	)
-
+	factory_class->create_device = create_device;
+);

@@ -31,16 +31,17 @@
 #define NM_IS_CHECKPOINT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_CHECKPOINT))
 #define NM_CHECKPOINT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_CHECKPOINT, NMCheckpointClass))
 
-typedef struct _NMCheckpoint NMCheckpoint;
-
 #define NM_CHECKPOINT_DEVICES "devices"
 #define NM_CHECKPOINT_CREATED "created"
 #define NM_CHECKPOINT_ROLLBACK_TIMEOUT "rollback-timeout"
 
+typedef struct _NMCheckpoint NMCheckpoint;
+typedef struct _NMCheckpointClass NMCheckpointClass;
+
 GType nm_checkpoint_get_type (void);
 
 NMCheckpoint *nm_checkpoint_new (NMManager *manager, GPtrArray *devices, guint32 rollback_timeout,
-                                 GError **error);
+                                 NMCheckpointCreateFlags flags, GError **error);
 
 guint64 nm_checkpoint_get_rollback_ts (NMCheckpoint *checkpoint);
 gboolean nm_checkpoint_includes_device (NMCheckpoint *checkpoint, NMDevice *device);

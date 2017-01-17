@@ -45,6 +45,7 @@
   <refsynopsisdiv>
     <para><filename>/etc/NetworkManager/NetworkManager.conf</filename>,
     <filename>/etc/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</filename>,
+    <filename>/run/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</filename>,
     <filename>/usr/lib/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</filename>,
     <filename>/var/lib/NetworkManager/NetworkManager-intern.conf</filename>
     </para>
@@ -67,10 +68,13 @@
     These will be read in order, with later files overriding earlier ones.
     Packages might install further configuration snippets to <literal>/usr/lib/NetworkManager/conf.d</literal>.
     This directory is parsed first, even before <literal>NetworkManager.conf</literal>.
-    The loading of a file <literal>/usr/lib/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</literal>
+    Scripts can also put per-boot configuration into <literal>/run/NetworkManager/conf.d</literal>.
+    This directory is parsed second, also before <literal>NetworkManager.conf</literal>.
+    The loading of a file <literal>/run/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</literal>
     can be prevented by adding a file <literal>/etc/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</literal>.
-    In this case, the file from the etc configuration shadows the file from the
-    system configuration directory.
+    Likewise, a file <literal>/usr/lib/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</literal>
+    can be shadowed by putting a file of the same name to either <literal>/etc/NetworkManager/conf.d</literal>
+    or <literal>/run/NetworkManager/conf.d</literal>.
     </para>
     <para>
     NetworkManager can overwrite certain user configuration options via D-Bus or other internal
@@ -172,7 +176,7 @@ plugins-=remove-me
         <listitem><para>Whether the system uses PolicyKit for authorization.
         If <literal>false</literal>, all requests will be allowed. If
         <literal>true</literal>, non-root requests are authorized using PolicyKit.
-        The default value is <literal>&NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT;</literal>.
+        The default value is <literal>&NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT_TEXT;</literal>.
         </para></listitem>
       </varlistentry>
       <varlistentry>
@@ -185,9 +189,9 @@ plugins-=remove-me
         clients to be installed. The <literal>internal</literal>
         option uses a built-in DHCP client which is not currently as
         featureful as the external clients.</para>
-        <para>If this key is missing, available DHCP clients are
-        looked for in this order: <literal>dhclient</literal>,
-        <literal>dhcpcd</literal>,
+        <para>If this key is missing, it defaults to <literal>&NM_CONFIG_DEFAULT_MAIN_DHCP;</literal>.
+        It the chosen plugin is not available, clients are looked for
+        in this order: <literal>dhclient</literal>, <literal>dhcpcd</literal>,
         <literal>internal</literal>.</para></listitem>
       </varlistentry>
       <varlistentry>
@@ -203,7 +207,7 @@ plugins-=remove-me
         <para>When the default wired connection is deleted or saved
         to a new persistent connection by a plugin, the device is
         added to a list in the file
-        <filename>/var/run/NetworkManager/no-auto-default.state</filename>
+        <filename>/run/NetworkManager/no-auto-default.state</filename>
         to prevent creating the default connection for that device
         again.</para>
         <para>See <xref linkend="device-spec"/> for the syntax how to
@@ -226,7 +230,7 @@ no-auto-default=*
           <para>
             This setting is deprecated for the per-device setting
             <literal>ignore-carrier</literal> which overwrites this setting
-            if specified (See <xref linked="ignore-carrier"/>).
+            if specified (See <xref linkend="ignore-carrier"/>).
             Otherwise, it is a list of matches to specify for which device
             carrier should be ignored. See <xref linkend="device-spec"/> for the
             syntax how to specify a device.
@@ -274,20 +278,36 @@ no-auto-default=*
 
       <varlistentry>
         <term><varname>dns</varname></term>
-        <listitem><para>Set the DNS (<filename>resolv.conf</filename>) processing mode.</para>
-        <para><literal>default</literal>: The default if the key is
-        not specified. NetworkManager will update
-        <filename>resolv.conf</filename> to reflect the nameservers
+        <listitem><para>Set the DNS (<filename>resolv.conf</filename>) processing mode.
+        If the key is unspecified, <literal>default</literal> is used,
+        unless <filename>/etc/resolv.conf</filename> is a symlink to
+        <filename>/run/systemd/resolve/resolv.conf</filename>,
+        <filename>/lib/systemd/resolv.conf</filename> or
+        <filename>/usr/lib/systemd/resolv.conf</filename>.
+        In that case, <literal>systemd-resolved</literal> is chosen automatically.
+        </para>
+        <para><literal>default</literal>: NetworkManager will update
+        <filename>/etc/resolv.conf</filename> to reflect the nameservers
         provided by currently active connections.</para>
         <para><literal>dnsmasq</literal>: NetworkManager will run
         dnsmasq as a local caching nameserver, using a "split DNS"
         configuration if you are connected to a VPN, and then update
         <filename>resolv.conf</filename> to point to the local
-        nameserver.</para>
+        nameserver. It is possible to pass custom options to the
+        dnsmasq instance by adding them to files in the
+        "<filename>&sysconfdir;/NetworkManager/dnsmasq.d/</filename>"
+        directory. Note that when multiple upstream servers are
+        available, dnsmasq will initially contact them in parallel and
+        then use the fastest to respond, probing again other servers
+        after some time. This behavior can be modified passing the
+        'all-servers' or 'strict-order' options to dnsmasq (see the
+        manual page for more details).</para>
         <para><literal>unbound</literal>: NetworkManager will talk
         to unbound and dnssec-triggerd, providing a "split DNS"
-        configuration with DNSSEC support. The <filename>/etc/resolv.conf</filename>
+        configuration with DNSSEC support. <filename>/etc/resolv.conf</filename>
         will be managed by dnssec-trigger daemon.</para>
+        <para><literal>systemd-resolved</literal>: NetworkManager will
+        push the DNS configuration to systemd-resolved</para>
         <para><literal>none</literal>: NetworkManager will not
         modify resolv.conf. This implies
         <literal>rc-manager</literal>&nbsp;<literal>unmanaged</literal></para>
@@ -299,7 +319,7 @@ no-auto-default=*
         <listitem><para>Set the <filename>resolv.conf</filename>
         management mode. The default value depends on NetworkManager build
         options, and this version of NetworkManager was build with a default of
-        "<literal>&NM_CONFIG_DEFAULT_DNS_RC_MANAGER;</literal>".
+        "<literal>&NM_CONFIG_DEFAULT_MAIN_RC_MANAGER;</literal>".
         Regardless of this setting, NetworkManager will
         always write resolv.conf to its runtime state directory.</para>
         <para><literal>symlink</literal>: NetworkManager will symlink
@@ -341,6 +361,21 @@ no-auto-default=*
           to core dump on warning messages from glib. This is equivalent
           to the --g-fatal-warnings command line option.
         </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><varname>autoconnect-retries-default</varname></term>
+        <listitem>
+          <para>
+            The number of times a connection activation should be
+            automatically tried before switching to another one. This
+            value applies only to connections that can auto-connect
+            and have a
+            <literal>connection.autoconnect-retries</literal> property
+            set to -1. If not specified, connections will be retried 4
+            times.
+          </para>
         </listitem>
       </varlistentry>
 
@@ -523,7 +558,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           "<literal>debug</literal>" uses syslog and logs to standard error.
           If NetworkManager is started in debug mode (<literal>--debug</literal>)
           this option is ignored and "<literal>debug</literal>" is always used.
-          Otherwise, the default is "<literal>&NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT;</literal>".
+          Otherwise, the default is "<literal>&NM_CONFIG_DEFAULT_LOGGING_BACKEND_TEXT;</literal>".
           </para></listitem>
         </varlistentry>
         <varlistentry>
@@ -566,14 +601,29 @@ ipv6.ip6-privacy=0
           <term><varname>connection.lldp</varname></term>
         </varlistentry>
         <varlistentry>
+          <term><varname>connection.stable-id</varname></term>
+        </varlistentry>
+        <varlistentry>
           <term><varname>ethernet.cloned-mac-address</varname></term>
-          <listitem><para>If left unspecified, it defaults to "permanent".</para></listitem>
+          <listitem><para>If left unspecified, it defaults to "preserve".</para></listitem>
         </varlistentry>
         <varlistentry>
           <term><varname>ethernet.generate-mac-address-mask</varname></term>
         </varlistentry>
         <varlistentry>
+          <term><varname>ethernet.mtu</varname></term>
+          <listitem><para>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500.</para></listitem>
+        </varlistentry>
+        <varlistentry>
           <term><varname>ethernet.wake-on-lan</varname></term>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>infiniband.mtu</varname></term>
+          <listitem><para>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or the MTU is left unspecified on activation.</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>ip-tunnel.mtu</varname></term>
+          <listitem><para>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500.</para></listitem>
         </varlistentry>
         <varlistentry>
           <term><varname>ipv4.dad-timeout</varname></term>
@@ -601,7 +651,7 @@ ipv6.ip6-privacy=0
         </varlistentry>
         <varlistentry>
           <term><varname>wifi.cloned-mac-address</varname></term>
-          <listitem><para>If left unspecified, it defaults to "permanent".</para></listitem>
+          <listitem><para>If left unspecified, it defaults to "preserve".</para></listitem>
         </varlistentry>
         <varlistentry>
           <term><varname>wifi.generate-mac-address-mask</varname></term>
@@ -613,6 +663,10 @@ ipv6.ip6-privacy=0
           </para></listitem>
         </varlistentry>
         <varlistentry>
+          <term><varname>wifi.mtu</varname></term>
+          <listitem><para>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500.</para></listitem>
+        </varlistentry>
+        <varlistentry>
           <term><varname>wifi.powersave</varname></term>
           <listitem><para>If left unspecified, the default value
           "<literal>ignore</literal>" will be used.</para></listitem>
@@ -621,7 +675,7 @@ ipv6.ip6-privacy=0
     </para>
     </refsect2>
 
-    <refsect2 id="connection-sections">
+    <refsect2 id="connection-sections" xreflabel="“Sections” under the section called “CONNECTION SECTION”">
     <title>Sections</title>
     <para>
         You can configure multiple <literal>connection</literal>

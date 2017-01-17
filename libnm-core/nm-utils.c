@@ -667,10 +667,8 @@ _nm_utils_copy_object_array (const GPtrArray *array)
 	return _nm_utils_copy_array (array, g_object_ref, g_object_unref);
 }
 
-/* have @list of type 'gpointer *' instead of 'gconstpointer *' to
- * reduce the necessity for annoying const-casts. */
 gssize
-_nm_utils_ptrarray_find_first (gpointer *list, gssize len, gconstpointer needle)
+_nm_utils_ptrarray_find_first (gconstpointer *list, gssize len, gconstpointer needle)
 {
 	gssize i;
 
@@ -694,7 +692,7 @@ _nm_utils_ptrarray_find_first (gpointer *list, gssize len, gconstpointer needle)
 }
 
 gssize
-_nm_utils_ptrarray_find_binary_search (gpointer *list, gsize len, gpointer needle, GCompareDataFunc cmpfcn, gpointer user_data)
+_nm_utils_ptrarray_find_binary_search (gconstpointer *list, gsize len, gconstpointer needle, GCompareDataFunc cmpfcn, gpointer user_data)
 {
 	gssize imin, imax, imid;
 	int cmp;
@@ -712,6 +710,40 @@ _nm_utils_ptrarray_find_binary_search (gpointer *list, gsize len, gpointer needl
 		imid = imin + (imax - imin) / 2;
 
 		cmp = cmpfcn (list[imid], needle, user_data);
+		if (cmp == 0)
+			return imid;
+
+		if (cmp < 0)
+			imin = imid + 1;
+		else
+			imax = imid - 1;
+	}
+
+	/* return the inverse of @imin. This is a negative number, but
+	 * also is ~imin the position where the value should be inserted. */
+	return ~imin;
+}
+
+gssize
+_nm_utils_array_find_binary_search (gconstpointer list, gsize elem_size, gsize len, gconstpointer needle, GCompareDataFunc cmpfcn, gpointer user_data)
+{
+	gssize imin, imax, imid;
+	int cmp;
+
+	g_return_val_if_fail (list || !len, ~((gssize) 0));
+	g_return_val_if_fail (cmpfcn, ~((gssize) 0));
+	g_return_val_if_fail (elem_size > 0, ~((gssize) 0));
+
+	imin = 0;
+	if (len == 0)
+		return ~imin;
+
+	imax = len - 1;
+
+	while (imin <= imax) {
+		imid = imin + (imax - imin) / 2;
+
+		cmp = cmpfcn (&((const char *) list)[elem_size * imid], needle, user_data);
 		if (cmp == 0)
 			return imid;
 
@@ -2112,7 +2144,23 @@ next:
 	return routes;
 }
 
-/**********************************************************************************************/
+/*****************************************************************************/
+
+/**
+ * nm_utils_uuid_generate_buf_:
+ * @buf: input buffer, must contain at least 37 bytes
+ *
+ * Returns: generates a new random UUID, writes it to @buf and returns @buf.
+ **/
+char *
+nm_utils_uuid_generate_buf_ (char *buf)
+{
+	uuid_t uuid;
+
+	uuid_generate_random (uuid);
+	uuid_unparse_lower (uuid, buf);
+	return buf;
+}
 
 /**
  * nm_utils_uuid_generate:
@@ -2123,13 +2171,7 @@ next:
 char *
 nm_utils_uuid_generate (void)
 {
-	uuid_t uuid;
-	char *buf;
-
-	buf = g_malloc0 (37);
-	uuid_generate_random (uuid);
-	uuid_unparse_lower (uuid, &buf[0]);
-	return buf;
+	return nm_utils_uuid_generate_buf_ (g_malloc (37));
 }
 
 /**
@@ -2180,7 +2222,7 @@ nm_utils_uuid_generate_from_string (const char *s, gssize slen, int uuid_type, g
 		g_return_val_if_reached (NULL);
 	}
 
-	buf = g_malloc0 (37);
+	buf = g_malloc (37);
 	uuid_unparse_lower (uuid, &buf[0]);
 
 	return buf;
@@ -2228,7 +2270,7 @@ _nm_utils_uuid_generate_from_strings (const char *string1, ...)
 	return uuid;
 }
 
-/**********************************************************************************************/
+/*****************************************************************************/
 
 /**
  * nm_utils_rsa_key_encrypt:
@@ -2422,7 +2464,7 @@ nm_utils_file_is_pkcs12 (const char *filename)
 	return crypto_is_pkcs12_file (filename, NULL);
 }
 
-/**********************************************************************************************/
+/*****************************************************************************/
 
 gboolean
 _nm_utils_check_file (const char *filename,
@@ -2548,7 +2590,7 @@ _nm_utils_check_module_file (const char *name,
 	                             error);
 }
 
-/**********************************************************************************************/
+/*****************************************************************************/
 
 /**
  * nm_utils_file_search_in_paths:
@@ -2622,7 +2664,7 @@ NOT_FOUND:
 	return NULL;
 }
 
-/**********************************************************************************************/
+/*****************************************************************************/
 
 /* Band, channel/frequency stuff for wireless */
 struct cf_pair {
@@ -2872,7 +2914,6 @@ nm_utils_wifi_2ghz_freqs (void)
 {
 	return _wifi_freqs (TRUE);
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_6, const guint *, nm_utils_wifi_2ghz_freqs, (void), ());
 
 /**
  * nm_utils_wifi_5ghz_freqs:
@@ -2888,7 +2929,6 @@ nm_utils_wifi_5ghz_freqs (void)
 {
 	return _wifi_freqs (FALSE);
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_6, const guint *, nm_utils_wifi_5ghz_freqs, (void), ());
 
 /**
  * nm_utils_wifi_strength_bars:
@@ -2974,10 +3014,16 @@ nm_utils_hwaddr_len (int type)
 }
 
 static guint8 *
-hwaddr_aton (const char *asc, guint8 *buffer, gsize buffer_length, gsize *out_len)
+_str2bin (const char *asc,
+          gboolean delimiter_required,
+          const char *delimiter_candidates,
+          guint8 *buffer,
+          gsize buffer_length,
+          gsize *out_len)
 {
 	const char *in = asc;
 	guint8 *out = buffer;
+	gboolean delimiter_has = TRUE;
 	guint8 delimiter = '\0';
 
 	nm_assert (asc);
@@ -2999,29 +3045,82 @@ hwaddr_aton (const char *asc, guint8 *buffer, gsize buffer_length, gsize *out_le
 		if (d2 && g_ascii_isxdigit (d2)) {
 			*out++ = (HEXVAL (d1) << 4) + HEXVAL (d2);
 			d2 = in[2];
-			in += 3;
+			if (!d2)
+				break;
+			in += 2;
 		} else {
 			/* Fake leading zero */
 			*out++ = HEXVAL (d1);
-			in += 2;
+			if (!d2) {
+				if (!delimiter_has) {
+					/* when using no delimiter, there must be pairs of hex chars */
+					return NULL;
+				}
+				break;
+			}
+			in += 1;
 		}
 
-		if (!d2)
-			break;
 		if (--buffer_length == 0)
 			return NULL;
 
-		if (d2 != delimiter) {
-			if (   delimiter == '\0'
-			    && (d2 == ':' || d2 == '-'))
-				delimiter = d2;
-			else
-				return NULL;
+		if (delimiter_has) {
+			if (d2 != delimiter) {
+				if (delimiter)
+					return NULL;
+				if (delimiter_candidates) {
+					while (delimiter_candidates[0]) {
+						if (delimiter_candidates++[0] == d2)
+							delimiter = d2;
+					}
+				}
+				if (!delimiter) {
+					if (delimiter_required)
+						return NULL;
+					delimiter_has = FALSE;
+					continue;
+				}
+			}
+			in++;
 		}
 	}
 
 	*out_len = out - buffer;
 	return buffer;
+}
+
+#define hwaddr_aton(asc, buffer, buffer_length, out_len) _str2bin ((asc), TRUE, ":-", (buffer), (buffer_length), (out_len))
+
+/**
+ * nm_utils_hexstr2bin:
+ * @hex: a string of hexadecimal characters with optional ':' separators
+ *
+ * Converts a hexadecimal string @hex into an array of bytes.  The optional
+ * separator ':' may be used between single or pairs of hexadecimal characters,
+ * eg "00:11" or "0:1".  Any "0x" at the beginning of @hex is ignored.  @hex
+ * may not start or end with ':'.
+ *
+ * Return value: (transfer full): the converted bytes, or %NULL on error
+ */
+GBytes *
+nm_utils_hexstr2bin (const char *hex)
+{
+	guint8 *buffer;
+	gsize buffer_length, len;
+
+	g_return_val_if_fail (hex != NULL, NULL);
+
+	if (hex[0] == '0' && hex[1] == 'x')
+		hex += 2;
+
+	buffer_length = strlen (hex) / 2 + 3;
+	buffer = g_malloc (buffer_length);
+	if (!_str2bin (hex, FALSE, ":", buffer, buffer_length, &len)) {
+		g_free (buffer);
+		return NULL;
+	}
+	buffer = g_realloc (buffer, len);
+	return g_bytes_new_take (buffer, len);
 }
 
 /**
@@ -3117,7 +3216,7 @@ nm_utils_hwaddr_aton (const char *asc, gpointer buffer, gsize length)
 }
 
 static void
-_bin2str_buf (gconstpointer addr, gsize length, gboolean upper_case, char *out)
+_bin2str (gconstpointer addr, gsize length, const char delimiter, gboolean upper_case, char *out)
 {
 	const guint8 *in = addr;
 	const char *LOOKUP = upper_case ? "0123456789ABCDEF" : "0123456789abcdef";
@@ -3126,7 +3225,8 @@ _bin2str_buf (gconstpointer addr, gsize length, gboolean upper_case, char *out)
 	nm_assert (out);
 	nm_assert (length > 0);
 
-	/* @out must contain at least @length*3 bytes */
+	/* @out must contain at least @length*3 bytes if @delimiter is set,
+	 * otherwise, @length*2+1. */
 
 	for (;;) {
 		const guint8 v = *in++;
@@ -3136,22 +3236,42 @@ _bin2str_buf (gconstpointer addr, gsize length, gboolean upper_case, char *out)
 		length--;
 		if (!length)
 			break;
-		*out++ = ':';
+		if (delimiter)
+			*out++ = delimiter;
 	}
 
 	*out = 0;
 }
 
-static char *
-_bin2str (gconstpointer addr, gsize length, gboolean upper_case)
+/**
+ * nm_utils_bin2hexstr:
+ * @src: (type guint8) (array length=len): an array of bytes
+ * @len: the length of the @src array
+ * @final_len: an index where to cut off the returned string, or -1
+ *
+ * Converts the byte array @src into a hexadecimal string. If @final_len is
+ * greater than -1, the returned string is terminated at that index
+ * (returned_string[final_len] == '\0'),
+ *
+ * Return value: (transfer full): the textual form of @bytes
+ */
+char *
+nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len)
 {
 	char *result;
+	gsize buflen = (len * 2) + 1;
 
-	nm_assert (addr);
-	nm_assert (length > 0);
+	g_return_val_if_fail (src != NULL, NULL);
+	g_return_val_if_fail (len > 0 && (buflen - 1) / 2 == len, NULL);
+	g_return_val_if_fail (final_len < 0 || (gsize) final_len < buflen, NULL);
 
-	result = g_malloc (length * 3);
-	_bin2str_buf (addr, length, upper_case, result);
+	result = g_malloc (buflen);
+	_bin2str (src, len, '\0', FALSE, result);
+
+	/* Cut converted key off at the correct length for this cipher type */
+	if (final_len >= 0 && (gsize) final_len < buflen)
+		result[final_len] = '\0';
+
 	return result;
 }
 
@@ -3167,10 +3287,14 @@ _bin2str (gconstpointer addr, gsize length, gboolean upper_case)
 char *
 nm_utils_hwaddr_ntoa (gconstpointer addr, gsize length)
 {
+	char *result;
+
 	g_return_val_if_fail (addr, g_strdup (""));
 	g_return_val_if_fail (length > 0, g_strdup (""));
 
-	return _bin2str (addr, length, TRUE);
+	result = g_malloc (length * 3);
+	_bin2str (addr, length, ':', TRUE, result);
+	return result;
 }
 
 const char *
@@ -3182,7 +3306,7 @@ nm_utils_hwaddr_ntoa_buf (gconstpointer addr, gsize addr_len, gboolean upper_cas
 	if (buf_len < addr_len * 3)
 		g_return_val_if_reached (NULL);
 
-	_bin2str_buf (addr, addr_len, TRUE, buf);
+	_bin2str (addr, addr_len, ':', TRUE, buf);
 	return buf;
 }
 
@@ -3199,10 +3323,14 @@ nm_utils_hwaddr_ntoa_buf (gconstpointer addr, gsize addr_len, gboolean upper_cas
 char *
 _nm_utils_bin2str (gconstpointer addr, gsize length, gboolean upper_case)
 {
+	char *result;
+
 	g_return_val_if_fail (addr, g_strdup (""));
 	g_return_val_if_fail (length > 0, g_strdup (""));
 
-	return _bin2str (addr, length, upper_case);
+	result = g_malloc (length * 3);
+	_bin2str (addr, length, ':', upper_case, result);
+	return result;
 }
 
 /**
@@ -3360,7 +3488,6 @@ nm_utils_hwaddr_matches (gconstpointer hwaddr1,
 		if (l != hwaddr1_len)
 			return FALSE;
 		hwaddr2 = buf2;
-		hwaddr2_len = hwaddr1_len;
 	} else {
 		g_return_val_if_fail (hwaddr2_len > 0 && hwaddr2_len <= NM_UTILS_HWADDR_LEN_MAX, FALSE);
 
@@ -3376,7 +3503,7 @@ nm_utils_hwaddr_matches (gconstpointer hwaddr1,
 	if (hwaddr1_len == INFINIBAND_ALEN) {
 		hwaddr1 = (guint8 *)hwaddr1 + INFINIBAND_ALEN - 8;
 		hwaddr2 = (guint8 *)hwaddr2 + INFINIBAND_ALEN - 8;
-		hwaddr1_len = hwaddr2_len = 8;
+		hwaddr1_len = 8;
 	}
 
 	return !memcmp (hwaddr1, hwaddr2, hwaddr1_len);
@@ -3478,7 +3605,7 @@ _nm_utils_hwaddr_cloned_data_synth (NMSetting *setting,
 	 * to "" and it just worked as the value was not serialized in
 	 * an ill form.
 	 *
-	 * To preserve that behavior, seralize "" as NULL.
+	 * To preserve that behavior, serialize "" as NULL.
 	 */
 
 	return addr && addr[0] ? g_variant_new_string (addr) : NULL;
@@ -3610,109 +3737,11 @@ _nm_utils_generate_mac_address_mask_parse (const char *value,
 /*****************************************************************************/
 
 /**
- * nm_utils_bin2hexstr:
- * @src: (type guint8) (array length=len): an array of bytes
- * @len: the length of the @src array
- * @final_len: an index where to cut off the returned string, or -1
- *
- * Converts the byte array @src into a hexadecimal string. If @final_len is
- * greater than -1, the returned string is terminated at that index
- * (returned_string[final_len] == '\0'),
- *
- * Return value: (transfer full): the textual form of @bytes
- */
-/*
- * Code originally by Alex Larsson <alexl@redhat.com> and
- *  copyright Red Hat, Inc. under terms of the LGPL.
- */
-char *
-nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len)
-{
-	static char hex_digits[] = "0123456789abcdef";
-	const guint8 *bytes = src;
-	char *result;
-	int i;
-	gsize buflen = (len * 2) + 1;
-
-	g_return_val_if_fail (bytes != NULL, NULL);
-	g_return_val_if_fail (len > 0, NULL);
-	g_return_val_if_fail (len < 4096, NULL);   /* Arbitrary limit */
-	if (final_len > -1)
-		g_return_val_if_fail (final_len < buflen, NULL);
-
-	result = g_malloc0 (buflen);
-	for (i = 0; i < len; i++) {
-		result[2*i] = hex_digits[(bytes[i] >> 4) & 0xf];
-		result[2*i+1] = hex_digits[bytes[i] & 0xf];
-	}
-	/* Cut converted key off at the correct length for this cipher type */
-	if (final_len > -1)
-		result[final_len] = '\0';
-	else
-		result[buflen - 1] = '\0';
-
-	return result;
-}
-
-/**
- * nm_utils_hexstr2bin:
- * @hex: a string of hexadecimal characters with optional ':' separators
- *
- * Converts a hexadecimal string @hex into an array of bytes.  The optional
- * separator ':' may be used between single or pairs of hexadecimal characters,
- * eg "00:11" or "0:1".  Any "0x" at the beginning of @hex is ignored.  @hex
- * may not start or end with ':'.
- *
- * Return value: (transfer full): the converted bytes, or %NULL on error
- */
-GBytes *
-nm_utils_hexstr2bin (const char *hex)
-{
-	guint i = 0, x = 0;
-	gs_free guint8 *c = NULL;
-	int a, b;
-	gboolean found_colon = FALSE;
-
-	g_return_val_if_fail (hex != NULL, NULL);
-
-	if (strncasecmp (hex, "0x", 2) == 0)
-		hex += 2;
-	found_colon = !!strchr (hex, ':');
-
-	c = g_malloc (strlen (hex) / 2 + 1);
-	for (;;) {
-		a = g_ascii_xdigit_value (hex[i++]);
-		if (a < 0)
-			return NULL;
-
-		if (hex[i] && hex[i] != ':') {
-			b = g_ascii_xdigit_value (hex[i++]);
-			if (b < 0)
-				return NULL;
-			c[x++] = ((guint) a << 4) | ((guint) b);
-		} else
-			c[x++] = (guint) a;
-
-		if (!hex[i])
-			break;
-		if (hex[i] == ':') {
-			if (!hex[i + 1]) {
-				/* trailing ':' is invalid */
-				return NULL;
-			}
-			i++;
-		} else if (found_colon) {
-			/* If colons exist, they must delimit 1 or 2 hex chars */
-			return NULL;
-		}
-	}
-
-	return g_bytes_new (c, x);
-}
-
-/**
- * nm_utils_iface_valid_name:
+ * nm_utils_is_valid_iface_name:
  * @name: Name of interface
+ * @error: location to store the error occurring, or %NULL to ignore
+ *
+ * Validate the network interface name.
  *
  * This function is a 1:1 copy of the kernel's interface validation
  * function in net/core/dev.c.
@@ -3720,26 +3749,54 @@ nm_utils_hexstr2bin (const char *hex)
  * Returns: %TRUE if interface name is valid, otherwise %FALSE is returned.
  */
 gboolean
-nm_utils_iface_valid_name (const char *name)
+nm_utils_is_valid_iface_name (const char *name, GError **error)
 {
 	g_return_val_if_fail (name != NULL, FALSE);
 
-	if (*name == '\0')
+	if (*name == '\0') {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     _("interface name is too short"));
 		return FALSE;
+	}
 
-	if (strlen (name) >= 16)
+	if (strlen (name) >= 16) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     _("interface name is longer than 15 characters"));
 		return FALSE;
+	}
 
-	if (!strcmp (name, ".") || !strcmp (name, ".."))
+	if (!strcmp (name, ".") || !strcmp (name, "..")) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     _("interface name is reserved"));
 		return FALSE;
+	}
 
 	while (*name) {
-		if (*name == '/' || g_ascii_isspace (*name))
+		if (*name == '/' || g_ascii_isspace (*name)) {
+			g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			                     _("interface name contains an invalid character"));
 			return FALSE;
+		}
 		name++;
 	}
 
 	return TRUE;
+}
+
+/**
+ * nm_utils_iface_valid_name:
+ * @name: Name of interface
+ *
+ * Validate the network interface name.
+ *
+ * Deprecated: 1.6: use nm_utils_is_valid_iface_name() insteead, with better error reporting.
+ *
+ * Returns: %TRUE if interface name is valid, otherwise %FALSE is returned.
+ */
+gboolean
+nm_utils_iface_valid_name (const char *name)
+{
+	return nm_utils_is_valid_iface_name (name, NULL);
 }
 
 /**
@@ -4010,7 +4067,7 @@ nm_utils_bond_mode_string_to_int (const char *mode)
 	return -1;
 }
 
-/**********************************************************************************************/
+/*****************************************************************************/
 
 #define STRSTRDICTKEY_V1_SET  0x01
 #define STRSTRDICTKEY_V2_SET  0x02
@@ -4286,8 +4343,6 @@ char *nm_utils_enum_to_str (GType type, int value)
 	g_type_class_unref (class);
 	return ret;
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_6, char *, nm_utils_enum_to_str,
-                    (GType type, int value), (type, value));
 
 /**
  * nm_utils_enum_from_str:
@@ -4359,9 +4414,6 @@ gboolean nm_utils_enum_from_str (GType type, const char *str,
 	g_type_class_unref (class);
 	return ret;
 }
-NM_BACKPORT_SYMBOL (libnm_1_0_6, gboolean, nm_utils_enum_from_str,
-                    (GType type, const char *str, int *out_value, char **err_token),
-                    (type, str, out_value, err_token));
 
 /**
  * nm_utils_enum_get_values:
@@ -4416,8 +4468,20 @@ const char **nm_utils_enum_get_values (GType type, gint from, gint to)
 }
 
 #if WITH_JANSSON
+/**
+ * nm_utils_is_json_object:
+ * @str: the JSON string to test
+ * @error: optional error reason
+ *
+ * Returns: whether the passed string is valid JSON.
+ *   If libnm is not compiled with libjansson support, this check will
+ *   also return %TRUE for possibly invalid inputs. If that is a problem
+ *   for you, you must validate the JSON yourself.
+ *
+ * Since: 1.6
+ */
 gboolean
-_nm_utils_check_valid_json (const char *str, GError **error)
+nm_utils_is_json_object (const char *str, GError **error)
 {
 	json_t *json;
 	json_error_t jerror;
@@ -4428,7 +4492,7 @@ _nm_utils_check_valid_json (const char *str, GError **error)
 		g_set_error_literal (error,
 		                     NM_CONNECTION_ERROR,
 		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
-		                     "value is NULL or empty");
+		                     str ? _("value is NULL") : _("value is empty"));
 		return FALSE;
 	}
 
@@ -4437,9 +4501,19 @@ _nm_utils_check_valid_json (const char *str, GError **error)
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
 		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-		             "%s at position %d",
-		             jerror.text,
-		             jerror.position);
+		             _("invalid JSON at position %d (%s)"),
+		             jerror.position,
+		             jerror.text);
+		return FALSE;
+	}
+
+	/* valid JSON (depending on the definition) can also be a literal.
+	 * Here we only allow objects. */
+	if (!json_is_object (json)) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("is not a JSON object"));
 		return FALSE;
 	}
 
@@ -4531,17 +4605,48 @@ out:
 #else /* WITH_JANSSON */
 
 gboolean
-_nm_utils_check_valid_json (const char *str, GError **error)
+nm_utils_is_json_object (const char *str, GError **error)
 {
+	g_return_val_if_fail (!error || !*error, FALSE);
+
+	if (str) {
+		/* libjansson also requires only utf-8 encoding. */
+		if (!g_utf8_validate (str, -1, NULL)) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("not valid utf-8"));
+			return FALSE;
+		}
+		while (g_ascii_isspace (str[0]))
+			str++;
+	}
+
 	if (!str || !str[0]) {
 		g_set_error_literal (error,
 		                     NM_CONNECTION_ERROR,
 		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
-		                     "value is NULL or empty");
+		                     str ? _("value is NULL") : _("value is empty"));
 		return FALSE;
 	}
 
-	return TRUE;
+	/* do some very basic validation to see if this might be a JSON object. */
+	if (str[0] == '{') {
+		gsize l;
+
+		l = strlen (str) - 1;
+		while (l > 0 && g_ascii_isspace (str[l]))
+			l--;
+
+		if (str[l] == '}')
+			return TRUE;
+	}
+
+	g_set_error_literal (error,
+	                     NM_CONNECTION_ERROR,
+	                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+	                     _("is not a JSON object"));
+	return FALSE;
 }
 
 gboolean
@@ -4552,3 +4657,20 @@ _nm_utils_team_config_equal (const char *conf1,
 	return nm_streq0 (conf1, conf2);
 }
 #endif
+
+/*****************************************************************************/
+
+/**
+ * nm_utils_version:
+ *
+ * Returns: the version ID of the libnm version. That is, the %NM_VERSION
+ *   at runtime.
+ *
+ * Since: 1.6.0
+ */
+guint
+nm_utils_version (void)
+{
+	return NM_VERSION;
+}
+

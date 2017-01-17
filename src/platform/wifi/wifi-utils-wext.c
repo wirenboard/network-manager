@@ -31,7 +31,7 @@
 #include "wifi-utils-private.h"
 #include "wifi-utils-wext.h"
 #include "nm-utils.h"
-#include "nm-platform-utils.h"
+#include "platform/nm-platform-utils.h"
 
 /* Hacks necessary to #include wireless.h; yay for WEXT */
 #ifndef __user
@@ -369,7 +369,7 @@ wifi_wext_get_qual (WifiData *data)
 	return wext_qual_to_percent (&stats.qual, &wext->max_qual);
 }
 
-/*********************/
+/*****************************************************************************/
 /* OLPC Mesh-only functions */
 
 static guint32
@@ -441,7 +441,7 @@ wifi_wext_set_mesh_ssid (WifiData *data, const guint8 *ssid, gsize len)
 	return FALSE;
 }
 
-/*********************/
+/*****************************************************************************/
 
 static gboolean
 wext_can_scan (WifiDataWext *wext)
@@ -662,8 +662,15 @@ wifi_wext_is_wifi (const char *iface)
 	struct iwreq iwr;
 	gboolean is_wifi = FALSE;
 
-	if (!nmp_utils_device_exists (iface))
-		return FALSE;
+	/* performing an ioctl on a non-existing name may cause the automatic
+	 * loading of kernel modules, which should be avoided.
+	 *
+	 * Usually, we should thus make sure that an inteface with this name
+	 * exists.
+	 *
+	 * Note that wifi_wext_is_wifi() has only one caller which just verified
+	 * that an interface with this name exists.
+	 */
 
 	fd = socket (PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
 	if (fd >= 0) {
