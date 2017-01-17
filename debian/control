@@ -95,8 +95,8 @@ Architecture: linux-any
 Multi-Arch: same
 Depends: ${misc:Depends}
 Description: network management framework (development files)
- this package provides header files that are needed to
- compile VPN Plugins for NetworkManager.
+ This package provides general header and development files and documentation
+ of configuration formats, command line utilities and the D-Bus API.
 
 Package: libnm-glib4
 Section: libs
@@ -133,8 +133,8 @@ Description: network management framework (GLib interface)
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
- This package provides the interface that applications can use to query
- connection status via NetworkManager.
+ This package contains header and development files and the API documentation
+ for libnm-glib.
 
 Package: libnm-glib-vpn1
 Section: libs
@@ -168,8 +168,7 @@ Description: network management framework (GLib interface)
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
- This package provides the shared library that applications can use for
- creating VPN connections via NetworkManager.
+ This package contains header and development files for libnm-glib-vpn.
 
 Package: libnm-util2
 Section: libs
@@ -205,7 +204,8 @@ Description: network management framework (development files)
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
- This package contains header and development files.
+ This package contains header and development files and the API documentation
+ for libnm-util.
 
 Package: libnm0
 Section: libs
