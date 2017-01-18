@@ -1,3 +1,10 @@
+network-manager (1.5.90-2) experimental; urgency=medium
+
+  * Add explicit Build-Depends on automake (>= 1.12) as required by
+    configure.ac
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 18 Jan 2017 11:52:22 +0100
+
 network-manager (1.5.90-1) experimental; urgency=medium
 
   * New upstream release (1.6 rc1).
