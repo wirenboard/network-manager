@@ -1,3 +1,9 @@
+network-manager (1.5.91-1) UNRELEASED; urgency=medium
+
+  * New upstream release (1.6 rc2)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 23 Jan 2017 23:35:56 +0100
+
 network-manager (1.5.90-2) experimental; urgency=medium
 
   * Add explicit Build-Depends on automake (>= 1.12) as required by
