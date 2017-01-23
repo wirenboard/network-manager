@@ -10,10 +10,10 @@ to be autostarted by a client request.
  2 files changed, 6 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 211648648..5a3eaba74 100644
+index f06b7d65..143050af 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -3304,11 +3304,6 @@ endif
+@@ -3306,11 +3306,6 @@ endif
  data/NetworkManager-dispatcher.service: $(srcdir)/data/NetworkManager-dispatcher.service.in
  	$(AM_V_GEN) $(data_edit) $< >$@
  
@@ -26,7 +26,7 @@ index 211648648..5a3eaba74 100644
  	install -d $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
  	ln -sf $(systemdsystemunitdir)/NetworkManager-wait-online.service $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index a9e87310c..e6cd392ed 100644
+index a9e87310..e6cd392e 100644
 --- a/data/NetworkManager.service.in
 +++ b/data/NetworkManager.service.in
 @@ -24,6 +24,5 @@ ProtectHome=read-only

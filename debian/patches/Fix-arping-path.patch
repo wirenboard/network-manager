@@ -15,7 +15,7 @@ Closes: #755039
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/src/devices/nm-arping-manager.c b/src/devices/nm-arping-manager.c
-index 7b765844a..59f0faed5 100644
+index 7b765844..59f0faed 100644
 --- a/src/devices/nm-arping-manager.c
 +++ b/src/devices/nm-arping-manager.c
 @@ -222,7 +222,7 @@ nm_arping_manager_start_probe (NMArpingManager *self, guint timeout, GError **er
