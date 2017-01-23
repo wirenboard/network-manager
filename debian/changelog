@@ -1,8 +1,13 @@
-network-manager (1.5.91-1) UNRELEASED; urgency=medium
+network-manager (1.5.91-1) experimental; urgency=medium
 
   * New upstream release (1.6 rc2)
+  * Update Vcs-* according to the latest recommendation
+  * Install ppp plugin.
+    The PPP manager was split into a separate plugin which can be loaded on
+    demand.
+  * Rebase patches
 
- -- Michael Biebl <biebl@debian.org>  Mon, 23 Jan 2017 23:35:56 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 24 Jan 2017 00:05:28 +0100
 
 network-manager (1.5.90-2) experimental; urgency=medium
 
