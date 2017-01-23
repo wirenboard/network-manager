@@ -2140,8 +2140,7 @@ device_link_changed (NMDevice *self)
 		_notify (self, PROP_UDI);
 	}
 
-	if (g_strcmp0 (info.driver, priv->driver)) {
-		/* Update driver to what udev gives us */
+	if (!nm_streq0 (info.driver, priv->driver)) {
 		g_free (priv->driver);
 		priv->driver = g_strdup (info.driver);
 		_notify (self, PROP_DRIVER);
@@ -2150,12 +2149,6 @@ device_link_changed (NMDevice *self)
 	if (priv->mtu != info.mtu) {
 		priv->mtu = info.mtu;
 		_notify (self, PROP_MTU);
-	}
-
-	if (info.driver && g_strcmp0 (priv->driver, info.driver) != 0) {
-		g_free (priv->driver);
-		priv->driver = g_strdup (info.driver);
-		_notify (self, PROP_DRIVER);
 	}
 
 	if (ifindex == nm_device_get_ip_ifindex (self))
@@ -5698,10 +5691,9 @@ act_stage3_ip4_config_start (NMDevice *self,
 				ret = NM_ACT_STAGE_RETURN_FAILURE;
 		} else
 			g_return_val_if_reached (NM_ACT_STAGE_RETURN_FAILURE);
-	} else if (strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) == 0) {
-		_commit_mtu (self, priv->ip4_config);
+	} else if (strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) == 0)
 		ret = NM_ACT_STAGE_RETURN_SUCCESS;
-	} else
+	else
 		_LOGW (LOGD_IP4, "unhandled IPv4 config method '%s'; will fail", method);
 
 	return ret;
@@ -6630,7 +6622,7 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
 	struct {
 		gboolean initialized;
 		guint32 value;
-	} ip6_mtu_sysctl;
+	} ip6_mtu_sysctl = { 0, };
 	int ifindex;
 	char sbuf[64], sbuf1[64], sbuf2[64];
 
@@ -6729,7 +6721,6 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
 	       ip6_mtu == ip6_mtu_orig ? "" : nm_sprintf_buf (sbuf2, " (was %u)", (guint) ip6_mtu_orig),
 	       ifindex);
 
-	ip6_mtu_sysctl.initialized = FALSE;
 #define _IP6_MTU_SYS() \
 	({ \
 		if (!ip6_mtu_sysctl.initialized) { \
@@ -8317,7 +8308,7 @@ _hash_check_invalid_keys_impl (GHashTable *hash, const char *setting_name, GErro
 		gs_unref_hashtable GHashTable *check_dups = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
 
 		for (i = 0; argv[i]; i++) {
-			if (!g_hash_table_add (check_dups, (char *) argv[i]))
+			if (!nm_g_hash_table_add (check_dups, (char *) argv[i]))
 				nm_assert (FALSE);
 		}
 		nm_assert (g_hash_table_size (check_dups) > 0);
@@ -12870,42 +12861,19 @@ nm_device_get_initial_hw_address (NMDevice *self)
 gboolean
 nm_device_spec_match_list (NMDevice *self, const GSList *specs)
 {
+	NMDeviceClass *klass;
+	NMMatchSpecMatchType m;
+
 	g_return_val_if_fail (NM_IS_DEVICE (self), FALSE);
 
-	if (!specs)
-		return FALSE;
+	klass = NM_DEVICE_GET_CLASS (self);
 
-	return NM_DEVICE_GET_CLASS (self)->spec_match_list (self, specs) == NM_MATCH_SPEC_MATCH;
-}
-
-static NMMatchSpecMatchType
-spec_match_list (NMDevice *self, const GSList *specs)
-{
-	NMMatchSpecMatchType matched = NM_MATCH_SPEC_NO_MATCH, m;
-	const GSList *iter;
-	const char *hw_addr_perm;
-
-	for (iter = specs; iter; iter = g_slist_next (iter)) {
-		if (!strcmp ((const char *) iter->data, "*")) {
-			matched = NM_MATCH_SPEC_MATCH;
-			break;
-		}
-	}
-
-	hw_addr_perm = nm_device_get_permanent_hw_address (self);
-	if (hw_addr_perm) {
-		m = nm_match_spec_hwaddr (specs, hw_addr_perm);
-		matched = MAX (matched, m);
-	}
-	if (matched != NM_MATCH_SPEC_NEG_MATCH) {
-		m = nm_match_spec_interface_name (specs, nm_device_get_iface (self));
-		matched = MAX (matched, m);
-	}
-	if (matched != NM_MATCH_SPEC_NEG_MATCH) {
-		m = nm_match_spec_device_type (specs, nm_device_get_type_description (self));
-		matched = MAX (matched, m);
-	}
-	return matched;
+	m = nm_match_spec_device (specs,
+	                          nm_device_get_iface (self),
+	                          nm_device_get_type_description (self),
+	                          nm_device_get_permanent_hw_address (self),
+	                          klass->get_s390_subchannels ? klass->get_s390_subchannels (self) : NULL);
+	return m == NM_MATCH_SPEC_MATCH;
 }
 
 /*****************************************************************************/
@@ -13186,17 +13154,15 @@ set_property (GObject *object, guint prop_id,
 		priv->iface = g_value_dup_string (value);
 		break;
 	case PROP_DRIVER:
-		if (g_value_get_string (value)) {
-			g_free (priv->driver);
-			priv->driver = g_value_dup_string (value);
-		}
+		/* construct-only */
+		priv->driver = g_value_dup_string (value);
 		break;
 	case PROP_DRIVER_VERSION:
-		g_free (priv->driver_version);
+		/* construct-only */
 		priv->driver_version = g_value_dup_string (value);
 		break;
 	case PROP_FIRMWARE_VERSION:
-		g_free (priv->firmware_version);
+		/* construct-only */
 		priv->firmware_version = g_value_dup_string (value);
 		break;
 	case PROP_IP4_ADDRESS:
@@ -13230,22 +13196,25 @@ set_property (GObject *object, guint prop_id,
 		priv->nm_plugin_missing = g_value_get_boolean (value);
 		break;
 	case PROP_DEVICE_TYPE:
-		g_return_if_fail (priv->type == NM_DEVICE_TYPE_UNKNOWN);
+		/* construct-only */
+		nm_assert (priv->type == NM_DEVICE_TYPE_UNKNOWN);
 		priv->type = g_value_get_uint (value);
 		break;
 	case PROP_LINK_TYPE:
 		/* construct-only */
-		g_return_if_fail (priv->link_type == NM_LINK_TYPE_NONE);
+		nm_assert (priv->link_type == NM_LINK_TYPE_NONE);
 		priv->link_type = g_value_get_uint (value);
 		break;
 	case PROP_TYPE_DESC:
-		g_free (priv->type_desc);
+		/* construct-only */
 		priv->type_desc = g_value_dup_string (value);
 		break;
 	case PROP_RFKILL_TYPE:
+		/* construct-only */
 		priv->rfkill_type = g_value_get_uint (value);
 		break;
 	case PROP_IS_MASTER:
+		/* construct-only */
 		priv->is_master = g_value_get_boolean (value);
 		break;
 	case PROP_PERM_HW_ADDRESS:
@@ -13469,7 +13438,6 @@ nm_device_class_init (NMDeviceClass *klass)
 	klass->have_any_ready_slaves = have_any_ready_slaves;
 
 	klass->get_type_description = get_type_description;
-	klass->spec_match_list = spec_match_list;
 	klass->can_auto_connect = can_auto_connect;
 	klass->check_connection_compatible = check_connection_compatible;
 	klass->check_connection_available = check_connection_available;
