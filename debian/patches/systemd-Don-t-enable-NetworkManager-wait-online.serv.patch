@@ -14,10 +14,10 @@ This way the user can easily disable the service.
  1 file changed, 6 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 143050af..519b978a 100644
+index 33761182..7a4319a2 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -3306,12 +3306,6 @@ endif
+@@ -3309,12 +3309,6 @@ endif
  data/NetworkManager-dispatcher.service: $(srcdir)/data/NetworkManager-dispatcher.service.in
  	$(AM_V_GEN) $(data_edit) $< >$@
  
