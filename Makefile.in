@@ -5227,6 +5227,9 @@ src_devices_adsl_libnm_device_plugin_adsl_la_LIBADD = \
 @WITH_MODEM_MANAGER_1_TRUE@	$(LIBSYSTEMD_LIBS) \
 @WITH_MODEM_MANAGER_1_TRUE@	$(MM_GLIB_LIBS)
 
+@WITH_MODEM_MANAGER_1_TRUE@EXTRA_src_devices_wwan_libnm_wwan_la_DEPENDENCIES = \
+@WITH_MODEM_MANAGER_1_TRUE@	src/devices/wwan/libnm-wwan.ver
+
 @WITH_MODEM_MANAGER_1_TRUE@src_devices_wwan_libnm_device_plugin_wwan_la_SOURCES = \
 @WITH_MODEM_MANAGER_1_TRUE@	src/devices/wwan/nm-wwan-factory.c \
 @WITH_MODEM_MANAGER_1_TRUE@	src/devices/wwan/nm-device-modem.c \
