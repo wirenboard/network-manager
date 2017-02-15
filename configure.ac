@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [6])
-m4_define([nm_micro_version], [0])
+m4_define([nm_micro_version], [2])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -1119,6 +1119,8 @@ AM_CONDITIONAL(INSTALL_PREGEN_MANPAGES, test "x${install_pregen_manpages}" = "xy
 AM_PATH_PYTHON([], [], [PYTHON=python])
 AC_SUBST(PYTHON, [$PYTHON])
 AC_DEFINE_UNQUOTED(TEST_NM_PYTHON, "$PYTHON", [Define python path for test binary])
+
+AC_PATH_TOOL(BINUTILS_NM, nm, nm)
 
 # check if we can build setting property documentation
 build_setting_docs=no
