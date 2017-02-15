@@ -943,7 +943,7 @@ activate_data_free (ActivateData *data)
 {
 	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (data->policy);
 
-	nm_device_remove_pending_action (data->device, "autoactivate", TRUE);
+	nm_device_remove_pending_action (data->device, NM_PENDING_ACTION_AUTOACTIVATE, TRUE);
 	priv->pending_activation_checks = g_slist_remove (priv->pending_activation_checks, data);
 
 	if (data->autoactivate_id)
@@ -1253,7 +1253,7 @@ schedule_activate_check (NMPolicy *self, NMDevice *device)
 			return;
 	}
 
-	nm_device_add_pending_action (device, "autoactivate", TRUE);
+	nm_device_add_pending_action (device, NM_PENDING_ACTION_AUTOACTIVATE, TRUE);
 
 	data = g_slice_new0 (ActivateData);
 	data->policy = self;
@@ -2024,7 +2024,7 @@ _deactivate_if_active (NMManager *manager, NMSettingsConnection *connection)
 		if (nm_active_connection_get_settings_connection (ac) == connection &&
 		    (state <= NM_ACTIVE_CONNECTION_STATE_ACTIVATED)) {
 			if (!nm_manager_deactivate_connection (manager,
-			                                       nm_exported_object_get_path (NM_EXPORTED_OBJECT (ac)),
+			                                       ac,
 			                                       NM_DEVICE_STATE_REASON_CONNECTION_REMOVED,
 			                                       &error)) {
 				_LOGW (LOGD_DEVICE, "connection '%s' disappeared, but error deactivating it: (%d) %s",

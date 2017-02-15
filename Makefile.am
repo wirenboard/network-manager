@@ -1478,7 +1478,7 @@ src_libNetworkManagerTest_la_LIBADD = \
 ###############################################################################
 
 src/NetworkManager.ver: src/libNetworkManager.la $(core_plugins)
-	$(AM_V_GEN) "$(srcdir)/tools/create-exports-NetworkManager.sh" --called-from-make "$(srcdir)"
+	$(AM_V_GEN) BINUTILS_NM="$(BINUTILS_NM)" "$(srcdir)/tools/create-exports-NetworkManager.sh" --called-from-make "$(srcdir)"
 
 CLEANFILES += src/NetworkManager.ver
 
@@ -2291,6 +2291,7 @@ src_devices_adsl_libnm_device_plugin_adsl_la_CPPFLAGS = \
 	-I$(srcdir)/libnm-core \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
+	$(GLIB_CFLAGS) \
 	$(GUDEV_CFLAGS)
 
 src_devices_adsl_libnm_device_plugin_adsl_la_LDFLAGS = \
@@ -4188,8 +4189,13 @@ install-exec-hook: $(install_exec_hook)
 install-exec-local: $(install_exec_local)
 
 install-data-hook: $(install_data_hook)
-	$(mkinstalldirs) -m 0755 $(DESTDIR)$(rundir)
-	$(mkinstalldirs) -m 0700 $(DESTDIR)$(statedir)
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmconfdir)/conf.d
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmconfdir)/system-connections
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmconfdir)/dnsmasq.d
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmconfdir)/dnsmasq-shared.d
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmlibdir)/conf.d
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmlibdir)/VPN
+	$(mkinstalldirs) -m 0700 $(DESTDIR)$(nmstatedir)
 	$(mkinstalldirs) -m 0755 $(DESTDIR)$(pkglibdir)
 
 uninstall-hook: $(uninstall_hook)
