@@ -1,4 +1,4 @@
-network-manager (1.6.2-1) UNRELEASED; urgency=medium
+network-manager (1.6.2-1) unstable; urgency=medium
 
   * New upstream release
     - nm-online: return from quit_if_connected after setting retval.
@@ -8,7 +8,7 @@ network-manager (1.6.2-1) UNRELEASED; urgency=medium
       This fixes DNS resolution problems when using dhclient due to duplicated
       search domain strings in /etc/resolv.conf. (Closes: #854343)
 
- -- Michael Biebl <biebl@debian.org>  Thu, 16 Feb 2017 23:23:26 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 16 Feb 2017 23:24:17 +0100
 
 network-manager (1.6.0-1) unstable; urgency=medium
 
