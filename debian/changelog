@@ -1,8 +1,14 @@
 network-manager (1.6.2-1) UNRELEASED; urgency=medium
 
   * New upstream release
+    - nm-online: return from quit_if_connected after setting retval.
+      This fixes a regression introduced by 1.6.0 where  "nm-online -x -q"
+      always exits with status 1 (offline). (Closes: #852815)
+    - dhcp: dhclient: reset the request list if conf file contains 'request'.
+      This fixes DNS resolution problems when using dhclient due to duplicated
+      search domain strings in /etc/resolv.conf. (Closes: #854343)
 
- -- Michael Biebl <biebl@debian.org>  Thu, 16 Feb 2017 00:01:39 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 16 Feb 2017 23:23:26 +0100
 
 network-manager (1.6.0-1) unstable; urgency=medium
 
