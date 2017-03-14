@@ -1,0 +1,80 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Thu, 16 Feb 2017 18:48:38 +0100
+Subject: libnm: disconnect signal from D-Bus proxies on dispose
+
+https://bugzilla.gnome.org/show_bug.cgi?id=778615
+(cherry picked from commit 5ae3db75158b2a5d71ea7027fe12638a3d243a4e)
+(cherry picked from commit 0429753dab39c245f280c47ee269d88cf92d7061)
+---
+ libnm/nm-device.c |  2 ++
+ libnm/nm-object.c | 16 +++++++++++++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/libnm/nm-device.c b/libnm/nm-device.c
+index 02b5cad..85cd060 100644
+--- a/libnm/nm-device.c
++++ b/libnm/nm-device.c
+@@ -297,6 +297,8 @@ dispose (GObject *object)
+ 	g_clear_pointer (&priv->available_connections, g_ptr_array_unref);
+ 	g_clear_pointer (&priv->lldp_neighbors, g_ptr_array_unref);
+ 
++	if (priv->proxy)
++		g_signal_handlers_disconnect_by_func (priv->proxy, device_state_reason_changed, object);
+ 	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_parent_class)->dispose (object);
+diff --git a/libnm/nm-object.c b/libnm/nm-object.c
+index 6a47c65..91ced0e 100644
+--- a/libnm/nm-object.c
++++ b/libnm/nm-object.c
+@@ -85,6 +85,7 @@ typedef struct {
+ 	GError *reload_error;
+ 
+ 	GSList *pending;        /* ordered list of pending property updates. */
++	GPtrArray *proxies;
+ } NMObjectPrivate;
+ 
+ enum {
+@@ -939,7 +940,7 @@ _nm_object_register_properties (NMObject *object,
+ 	proxy = _nm_object_get_proxy (object, interface);
+ 	g_signal_connect (proxy, "g-properties-changed",
+ 		          G_CALLBACK (properties_changed), object);
+-	g_object_unref (proxy);
++	g_ptr_array_add (priv->proxies, proxy);
+ 
+ 	instance = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+ 	priv->property_tables = g_slist_prepend (priv->property_tables, instance);
+@@ -1188,6 +1189,7 @@ nm_object_async_initable_iface_init (GAsyncInitableIface *iface)
+ static void
+ nm_object_init (NMObject *object)
+ {
++	NM_OBJECT_GET_PRIVATE (object)->proxies = g_ptr_array_new ();
+ }
+ 
+ static void
+@@ -1240,6 +1242,7 @@ static void
+ dispose (GObject *object)
+ {
+ 	NMObjectPrivate *priv = NM_OBJECT_GET_PRIVATE (object);
++	guint i;
+ 
+ 	nm_clear_g_source (&priv->notify_id);
+ 
+@@ -1251,6 +1254,17 @@ dispose (GObject *object)
+ 	g_clear_object (&priv->object);
+ 	g_clear_object (&priv->object_manager);
+ 
++	if (priv->proxies) {
++		for (i = 0; i < priv->proxies->len; i++) {
++			g_signal_handlers_disconnect_by_func (priv->proxies->pdata[i],
++			                                      properties_changed,
++			                                      object);
++			g_object_unref (priv->proxies->pdata[i]);
++		}
++		g_ptr_array_free (priv->proxies, TRUE);
++		priv->proxies = NULL;
++	}
++
+ 	G_OBJECT_CLASS (nm_object_parent_class)->dispose (object);
+ }
+ 
