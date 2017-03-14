@@ -1,0 +1,205 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Mon, 27 Feb 2017 11:11:51 +0100
+Subject: dhcp/dhclient: parse "interface" statements
+
+Until now any "interface" statement was ignored and any enclosed
+statement for which we have a special handling was considered, even if
+belonging to a different interface. This can cause wrong options to be
+set in the generated dhclient configuration.
+
+Change the code to parse "interface" statements and skip the content
+if the interface doesn't match.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=778430
+(cherry picked from commit d405cfd9089f9552969e6a3e1a1c4550fc3c1695)
+(cherry picked from commit 7a05d2a228cd6f65e28ff71c9052e1ca55682ce0)
+---
+ src/dhcp/nm-dhcp-dhclient-utils.c   | 49 ++++++++++++++++++++
+ src/dhcp/tests/test-dhcp-dhclient.c | 91 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 140 insertions(+)
+
+diff --git a/src/dhcp/nm-dhcp-dhclient-utils.c b/src/dhcp/nm-dhcp-dhclient-utils.c
+index f36451b..d63aba4 100644
+--- a/src/dhcp/nm-dhcp-dhclient-utils.c
++++ b/src/dhcp/nm-dhcp-dhclient-utils.c
+@@ -232,6 +232,39 @@ nm_dhcp_dhclient_get_client_id_from_config_file (const char *path)
+ 	return NULL;
+ }
+ 
++static gboolean
++read_interface (const char *line, char *interface, guint size)
++{
++	gs_free char *dup = g_strdup (line + NM_STRLEN ("interface"));
++	char *ptr = dup, *end;
++
++	while (g_ascii_isspace (*ptr))
++		ptr++;
++
++	if (*ptr == '"') {
++		ptr++;
++		end = strchr (ptr, '"');
++		if (!end)
++			return FALSE;
++		*end = '\0';
++	} else {
++		end = strchr (ptr, ' ');
++		if (!end)
++			end = strchr (ptr, '{');
++		if (!end)
++			return FALSE;
++		*end = '\0';
++	}
++
++	if (   ptr[0] == '\0'
++	    || strlen (ptr) + 1 > size)
++		return FALSE;
++
++	snprintf (interface, size, "%s", ptr);
++
++	return TRUE;
++}
++
+ char *
+ nm_dhcp_dhclient_create_config (const char *interface,
+                                 gboolean is_ip6,
+@@ -258,8 +291,10 @@ nm_dhcp_dhclient_create_config (const char *interface,
+ 		char **lines, **line;
+ 		gboolean in_alsoreq = FALSE;
+ 		gboolean in_req = FALSE;
++		char intf[IFNAMSIZ];
+ 
+ 		g_string_append_printf (new_contents, _("# Merged from %s\n\n"), orig_path);
++		intf[0] = '\0';
+ 
+ 		lines = g_strsplit_set (orig_contents, "\n\r", 0);
+ 		for (line = lines; lines && *line; line++) {
+@@ -268,6 +303,20 @@ nm_dhcp_dhclient_create_config (const char *interface,
+ 			if (!strlen (g_strstrip (p)))
+ 				continue;
+ 
++			if (   !intf[0]
++			    && g_str_has_prefix (p, "interface")) {
++				if (read_interface (p, intf, sizeof (intf)))
++					continue;
++			}
++
++			if (intf[0] && strchr (p, '}')) {
++				intf[0] = '\0';
++				continue;
++			}
++
++			if (intf[0] && !nm_streq (intf, interface))
++				continue;
++
+ 			if (!strncmp (p, CLIENTID_TAG, strlen (CLIENTID_TAG))) {
+ 				/* Override config file "dhcp-client-id" and use one from the connection */
+ 				if (client_id)
+diff --git a/src/dhcp/tests/test-dhcp-dhclient.c b/src/dhcp/tests/test-dhcp-dhclient.c
+index f4cf9c9..361c733 100644
+--- a/src/dhcp/tests/test-dhcp-dhclient.c
++++ b/src/dhcp/tests/test-dhcp-dhclient.c
+@@ -744,6 +744,95 @@ test_write_existing_commented_duid (void)
+ 
+ /*****************************************************************************/
+ 
++static const char *interface1_orig = \
++	"interface \"eth0\" {\n"
++	"	also request my-option;\n"
++	"	initial-delay 5;\n"
++	"}\n"
++	"interface \"eth1\" {\n"
++	"	also request another-option;\n"
++	"	initial-delay 0;\n"
++	"}\n"
++	"\n"
++	"also request yet-another-option;\n";
++
++static const char *interface1_expected = \
++	"# Created by NetworkManager\n"
++	"# Merged from /path/to/dhclient.conf\n"
++	"\n"
++	"initial-delay 5;\n"
++	"\n"
++	"option rfc3442-classless-static-routes code 121 = array of unsigned integer 8;\n"
++	"option ms-classless-static-routes code 249 = array of unsigned integer 8;\n"
++	"option wpad code 252 = string;\n"
++	"\n"
++	"also request my-option;\n"
++	"also request yet-another-option;\n"
++	"also request rfc3442-classless-static-routes;\n"
++	"also request ms-classless-static-routes;\n"
++	"also request static-routes;\n"
++	"also request wpad;\n"
++	"also request ntp-servers;\n"
++	"\n";
++
++static void
++test_interface1 (void)
++{
++	test_config (interface1_orig, interface1_expected,
++	             FALSE, NULL, NULL,
++	             NULL,
++	             NULL,
++	             "eth0",
++	             NULL);
++}
++
++/*****************************************************************************/
++
++static const char *interface2_orig = \
++	"interface eth0 {\n"
++	"	also request my-option;\n"
++	"	initial-delay 5;\n"
++	" }\n"
++	"interface eth1 {\n"
++	"	initial-delay 0;\n"
++	"	request another-option;\n"
++	" } \n"
++	"\n"
++	"also request yet-another-option;\n";
++
++static const char *interface2_expected = \
++	"# Created by NetworkManager\n"
++	"# Merged from /path/to/dhclient.conf\n"
++	"\n"
++	"initial-delay 0;\n"
++	"\n"
++	"option rfc3442-classless-static-routes code 121 = array of unsigned integer 8;\n"
++	"option ms-classless-static-routes code 249 = array of unsigned integer 8;\n"
++	"option wpad code 252 = string;\n"
++	"\n"
++	"request; # override dhclient defaults\n"
++	"also request another-option;\n"
++	"also request yet-another-option;\n"
++	"also request rfc3442-classless-static-routes;\n"
++	"also request ms-classless-static-routes;\n"
++	"also request static-routes;\n"
++	"also request wpad;\n"
++	"also request ntp-servers;\n"
++	"\n";
++
++static void
++test_interface2 (void)
++{
++	test_config (interface2_orig, interface2_expected,
++	             FALSE, NULL, NULL,
++	             NULL,
++	             NULL,
++	             "eth1",
++	             NULL);
++}
++
++/*****************************************************************************/
++
+ static void
+ test_read_lease_ip4_config_basic (void)
+ {
+@@ -891,6 +980,8 @@ main (int argc, char **argv)
+ 	g_test_add_func ("/dhcp/dhclient/existing_alsoreq", test_existing_alsoreq);
+ 	g_test_add_func ("/dhcp/dhclient/existing_multiline_alsoreq", test_existing_multiline_alsoreq);
+ 	g_test_add_func ("/dhcp/dhclient/duids", test_duids);
++	g_test_add_func ("/dhcp/dhclient/interface/1", test_interface1);
++	g_test_add_func ("/dhcp/dhclient/interface/2", test_interface2);
+ 
+ 	g_test_add_func ("/dhcp/dhclient/read_duid_from_leasefile", test_read_duid_from_leasefile);
+ 	g_test_add_func ("/dhcp/dhclient/read_commented_duid_from_leasefile", test_read_commented_duid_from_leasefile);
