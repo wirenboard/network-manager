@@ -1,3 +1,14 @@
+network-manager (1.6.2-2) unstable; urgency=medium
+
+  * libnm: disconnect signal from D-Bus proxies on dispose (Closes: #854810)
+  * dhcp/dhclient: parse "interface" statements.
+    Until now any "interface" statement was ignored and any enclosed
+    statement for which we have a special handling was considered, even if
+    belonging to a different interface. This can cause wrong options to be
+    set in the generated dhclient configuration. (Closes: #855910)
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 14 Mar 2017 22:12:18 +0100
+
 network-manager (1.6.2-1) unstable; urgency=medium
 
   * New upstream release
