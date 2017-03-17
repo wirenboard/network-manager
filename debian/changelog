@@ -1,3 +1,12 @@
+network-manager (1.6.2-3) unstable; urgency=medium
+
+  * device/wifi: block autoconnect while scanning is in progress.
+    We should only start autoconnecting after the scan is complete.
+    Otherwise, we might activate a shared connection or pick a
+    connection based on an incomplete scan list. (Closes: #854078)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 18 Mar 2017 12:59:56 +0100
+
 network-manager (1.6.2-2) unstable; urgency=medium
 
   * libnm: disconnect signal from D-Bus proxies on dispose (Closes: #854810)
