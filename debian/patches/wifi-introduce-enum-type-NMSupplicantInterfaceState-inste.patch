@@ -1,0 +1,375 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 14 Feb 2017 01:30:25 +0100
+Subject: wifi: introduce enum type NMSupplicantInterfaceState instead of
+ plain int
+
+Also change the signature of the NM_SUPPLICANT_INTERFACE_STATE signal,
+to have three "int" type arguments. Thereby also fix the subscribers
+to this signal that wrongly had type guint32, instead of guint
+(which happens to be the same underlying type, so no real problem).
+
+https://mail.gnome.org/archives/networkmanager-list/2017-February/msg00021.html
+(cherry picked from commit 5a03de70518bd2f2ed3c6397d09fa9bbfac1608b)
+---
+ src/devices/nm-device-ethernet.c         |  6 ++-
+ src/devices/nm-device-macsec.c           |  6 ++-
+ src/devices/wifi/nm-device-wifi.c        | 40 +++++++--------
+ src/supplicant/nm-supplicant-interface.c | 83 ++++++++++++--------------------
+ src/supplicant/nm-supplicant-interface.h | 10 ++--
+ 5 files changed, 65 insertions(+), 80 deletions(-)
+
+diff --git a/src/devices/nm-device-ethernet.c b/src/devices/nm-device-ethernet.c
+index 5df16df..8dedd7e 100644
+--- a/src/devices/nm-device-ethernet.c
++++ b/src/devices/nm-device-ethernet.c
+@@ -596,8 +596,8 @@ build_supplicant_config (NMDeviceEthernet *self,
+ 
+ static void
+ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+-                           guint32 new_state,
+-                           guint32 old_state,
++                           int new_state_i,
++                           int old_state_i,
+                            int disconnect_reason,
+                            gpointer user_data)
+ {
+@@ -608,6 +608,8 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	gboolean success = FALSE;
+ 	NMDeviceState devstate;
+ 	GError *error = NULL;
++	NMSupplicantInterfaceState new_state = new_state_i;
++	NMSupplicantInterfaceState old_state = old_state_i;
+ 
+ 	if (new_state == old_state)
+ 		return;
+diff --git a/src/devices/nm-device-macsec.c b/src/devices/nm-device-macsec.c
+index c511a0e..58ee4fe 100644
+--- a/src/devices/nm-device-macsec.c
++++ b/src/devices/nm-device-macsec.c
+@@ -412,8 +412,8 @@ time_out:
+ 
+ static void
+ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+-                           guint32 new_state,
+-                           guint32 old_state,
++                           int new_state_i,
++                           int old_state_i,
+                            int disconnect_reason,
+                            gpointer user_data)
+ {
+@@ -424,6 +424,8 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	gboolean success = FALSE;
+ 	NMDeviceState devstate;
+ 	GError *error = NULL;
++	NMSupplicantInterfaceState new_state = new_state_i;
++	NMSupplicantInterfaceState old_state = old_state_i;
+ 
+ 	if (new_state == old_state)
+ 		return;
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index 188ed54..07dc36d 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -152,8 +152,8 @@ static void cleanup_association_attempt (NMDeviceWifi * self,
+                                          gboolean disconnect);
+ 
+ static void supplicant_iface_state_cb (NMSupplicantInterface *iface,
+-                                       guint32 new_state,
+-                                       guint32 old_state,
++                                       int new_state_i,
++                                       int old_state_i,
+                                        int disconnect_reason,
+                                        gpointer user_data);
+ 
+@@ -428,7 +428,7 @@ periodic_update (NMDeviceWifi *self)
+ 	guint32 new_rate;
+ 	int percent;
+ 	NMDeviceState state;
+-	guint32 supplicant_state;
++	NMSupplicantInterfaceState supplicant_state;
+ 
+ 	/* BSSID and signal strength have meaningful values only if the device
+ 	 * is activated and not scanning.
+@@ -955,7 +955,7 @@ is_available (NMDevice *device, NMDeviceCheckDevAvailableFlags flags)
+ {
+ 	NMDeviceWifi *self = NM_DEVICE_WIFI (device);
+ 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+-	guint32 state;
++	NMSupplicantInterfaceState supplicant_state;
+ 
+ 	if (!priv->enabled)
+ 		return FALSE;
+@@ -963,9 +963,9 @@ is_available (NMDevice *device, NMDeviceCheckDevAvailableFlags flags)
+ 	if (!priv->sup_iface)
+ 		return FALSE;
+ 
+-	state = nm_supplicant_interface_get_state (priv->sup_iface);
+-	if (   state < NM_SUPPLICANT_INTERFACE_STATE_READY
+-	    || state > NM_SUPPLICANT_INTERFACE_STATE_COMPLETED)
++	supplicant_state = nm_supplicant_interface_get_state (priv->sup_iface);
++	if (   supplicant_state < NM_SUPPLICANT_INTERFACE_STATE_READY
++	    || supplicant_state > NM_SUPPLICANT_INTERFACE_STATE_COMPLETED)
+ 		return FALSE;
+ 
+ 	return TRUE;
+@@ -1242,7 +1242,7 @@ static gboolean
+ scanning_allowed (NMDeviceWifi *self)
+ {
+ 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+-	guint32 sup_state;
++	NMSupplicantInterfaceState supplicant_state;
+ 	NMConnection *connection;
+ 
+ 	g_return_val_if_fail (priv->sup_iface != NULL, FALSE);
+@@ -1274,11 +1274,11 @@ scanning_allowed (NMDeviceWifi *self)
+ 	}
+ 
+ 	/* Don't scan if the supplicant is busy */
+-	sup_state = nm_supplicant_interface_get_state (priv->sup_iface);
+-	if (   sup_state == NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATING
+-	    || sup_state == NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATED
+-	    || sup_state == NM_SUPPLICANT_INTERFACE_STATE_4WAY_HANDSHAKE
+-	    || sup_state == NM_SUPPLICANT_INTERFACE_STATE_GROUP_HANDSHAKE
++	supplicant_state = nm_supplicant_interface_get_state (priv->sup_iface);
++	if (   supplicant_state == NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATING
++	    || supplicant_state == NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATED
++	    || supplicant_state == NM_SUPPLICANT_INTERFACE_STATE_4WAY_HANDSHAKE
++	    || supplicant_state == NM_SUPPLICANT_INTERFACE_STATE_GROUP_HANDSHAKE
+ 	    || nm_supplicant_interface_get_scanning (priv->sup_iface))
+ 		return FALSE;
+ 
+@@ -1893,7 +1893,7 @@ link_timeout_cb (gpointer user_data)
+ 
+ static gboolean
+ need_new_8021x_secrets (NMDeviceWifi *self,
+-                        guint32 old_state,
++                        NMSupplicantInterfaceState old_state,
+                         const char **setting_name)
+ {
+ 	NMSetting8021x *s_8021x;
+@@ -1947,7 +1947,7 @@ need_new_8021x_secrets (NMDeviceWifi *self,
+ 
+ static gboolean
+ need_new_wpa_psk (NMDeviceWifi *self,
+-                  guint32 old_state,
++                  NMSupplicantInterfaceState old_state,
+                   gint disconnect_reason,
+                   const char **setting_name)
+ {
+@@ -1988,8 +1988,8 @@ need_new_wpa_psk (NMDeviceWifi *self,
+ 
+ static gboolean
+ handle_8021x_or_psk_auth_fail (NMDeviceWifi *self,
+-                               guint32 new_state,
+-                               guint32 old_state,
++                               NMSupplicantInterfaceState new_state,
++                               NMSupplicantInterfaceState old_state,
+                                int disconnect_reason)
+ {
+ 	NMDevice *device = NM_DEVICE (self);
+@@ -2042,8 +2042,8 @@ reacquire_interface_cb (gpointer user_data)
+ 
+ static void
+ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+-                           guint32 new_state,
+-                           guint32 old_state,
++                           int new_state_i,
++                           int old_state_i,
+                            int disconnect_reason,
+                            gpointer user_data)
+ {
+@@ -2052,6 +2052,8 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	NMDevice *device = NM_DEVICE (self);
+ 	NMDeviceState devstate;
+ 	gboolean scanning;
++	NMSupplicantInterfaceState new_state = new_state_i;
++	NMSupplicantInterfaceState old_state = old_state_i;
+ 
+ 	if (new_state == old_state)
+ 		return;
+diff --git a/src/supplicant/nm-supplicant-interface.c b/src/supplicant/nm-supplicant-interface.c
+index f932fe8..334a8d2 100644
+--- a/src/supplicant/nm-supplicant-interface.c
++++ b/src/supplicant/nm-supplicant-interface.c
+@@ -71,7 +71,7 @@ typedef struct {
+ 	guint32        ready_count;
+ 
+ 	char *         object_path;
+-	guint32        state;
++	NMSupplicantInterfaceState state;
+ 	int            disconnect_reason;
+ 
+ 	gboolean       scanning;
+@@ -238,12 +238,10 @@ handle_new_bss (NMSupplicantInterface *self, const char *object_path)
+ }
+ 
+ static void
+-set_state (NMSupplicantInterface *self, guint32 new_state)
++set_state (NMSupplicantInterface *self, NMSupplicantInterfaceState new_state)
+ {
+ 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+-	guint32 old_state = priv->state;
+-
+-	g_return_if_fail (new_state < NM_SUPPLICANT_INTERFACE_STATE_LAST);
++	NMSupplicantInterfaceState old_state = priv->state;
+ 
+ 	if (new_state == priv->state)
+ 		return;
+@@ -286,12 +284,12 @@ set_state (NMSupplicantInterface *self, guint32 new_state)
+ 		priv->disconnect_reason = 0;
+ 
+ 	g_signal_emit (self, signals[STATE], 0,
+-	               priv->state,
+-	               old_state,
+-	               priv->disconnect_reason);
++	               (int) priv->state,
++	               (int) old_state,
++	               (int) priv->disconnect_reason);
+ }
+ 
+-static int
++static NMSupplicantInterfaceState
+ wpas_state_string_to_enum (const char *str_state)
+ {
+ 	if (!strcmp (str_state, "interface_disabled"))
+@@ -315,20 +313,20 @@ wpas_state_string_to_enum (const char *str_state)
+ 	else if (!strcmp (str_state, "completed"))
+ 		return NM_SUPPLICANT_INTERFACE_STATE_COMPLETED;
+ 
+-	return -1;
++	return NM_SUPPLICANT_INTERFACE_STATE_INVALID;
+ }
+ 
+ static void
+ set_state_from_string (NMSupplicantInterface *self, const char *new_state)
+ {
+-	int state;
++	NMSupplicantInterfaceState state;
+ 
+ 	state = wpas_state_string_to_enum (new_state);
+-	if (state == -1) {
++	if (state == NM_SUPPLICANT_INTERFACE_STATE_INVALID) {
+ 		_LOGW ("unknown supplicant state '%s'", new_state);
+ 		return;
+ 	}
+-	set_state (self, (guint32) state);
++	set_state (self, state);
+ }
+ 
+ static void
+@@ -1317,7 +1315,7 @@ nm_supplicant_interface_request_scan (NMSupplicantInterface *self, const GPtrArr
+ 	return TRUE;
+ }
+ 
+-guint32
++NMSupplicantInterfaceState
+ nm_supplicant_interface_get_state (NMSupplicantInterface * self)
+ {
+ 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), NM_SUPPLICANT_INTERFACE_STATE_DOWN);
+@@ -1325,43 +1323,24 @@ nm_supplicant_interface_get_state (NMSupplicantInterface * self)
+ 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->state;
+ }
+ 
+-const char *
+-nm_supplicant_interface_state_to_string (guint32 state)
+-{
+-	switch (state) {
+-	case NM_SUPPLICANT_INTERFACE_STATE_INIT:
+-		return "init";
+-	case NM_SUPPLICANT_INTERFACE_STATE_STARTING:
+-		return "starting";
+-	case NM_SUPPLICANT_INTERFACE_STATE_READY:
+-		return "ready";
+-	case NM_SUPPLICANT_INTERFACE_STATE_DISABLED:
+-		return "disabled";
+-	case NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED:
+-		return "disconnected";
+-	case NM_SUPPLICANT_INTERFACE_STATE_INACTIVE:
+-		return "inactive";
+-	case NM_SUPPLICANT_INTERFACE_STATE_SCANNING:
+-		return "scanning";
+-	case NM_SUPPLICANT_INTERFACE_STATE_AUTHENTICATING:
+-		return "authenticating";
+-	case NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATING:
+-		return "associating";
+-	case NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATED:
+-		return "associated";
+-	case NM_SUPPLICANT_INTERFACE_STATE_4WAY_HANDSHAKE:
+-		return "4-way handshake";
+-	case NM_SUPPLICANT_INTERFACE_STATE_GROUP_HANDSHAKE:
+-		return "group handshake";
+-	case NM_SUPPLICANT_INTERFACE_STATE_COMPLETED:
+-		return "completed";
+-	case NM_SUPPLICANT_INTERFACE_STATE_DOWN:
+-		return "down";
+-	default:
+-		break;
+-	}
+-	return "unknown";
+-}
++NM_UTILS_LOOKUP_STR_DEFINE (nm_supplicant_interface_state_to_string, NMSupplicantInterfaceState,
++	NM_UTILS_LOOKUP_DEFAULT_WARN ("unknown"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_INVALID,         "invalid"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_INIT,            "init"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_STARTING,        "starting"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_READY,           "ready"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_DISABLED,        "disabled"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED,    "disconnected"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_INACTIVE,        "inactive"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_SCANNING,        "scanning"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_AUTHENTICATING,  "authenticating"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATING,     "associating"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATED,      "associated"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_4WAY_HANDSHAKE,  "4-way handshake"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_GROUP_HANDSHAKE, "group handshake"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_COMPLETED,       "completed"),
++	NM_UTILS_LOOKUP_STR_ITEM (NM_SUPPLICANT_INTERFACE_STATE_DOWN,            "down"),
++);
+ 
+ const char *
+ nm_supplicant_interface_get_object_path (NMSupplicantInterface *self)
+@@ -1550,7 +1529,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
+ 	                  G_SIGNAL_RUN_LAST,
+ 	                  0,
+ 	                  NULL, NULL, NULL,
+-	                  G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INT);
++	                  G_TYPE_NONE, 3, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
+ 
+ 	signals[REMOVED] =
+ 	    g_signal_new (NM_SUPPLICANT_INTERFACE_REMOVED,
+diff --git a/src/supplicant/nm-supplicant-interface.h b/src/supplicant/nm-supplicant-interface.h
+index 2ef63d1..d78cd28 100644
+--- a/src/supplicant/nm-supplicant-interface.h
++++ b/src/supplicant/nm-supplicant-interface.h
+@@ -28,7 +28,8 @@
+  * Supplicant interface states
+  *   A mix of wpa_supplicant interface states and internal states.
+  */
+-enum {
++typedef enum {
++	NM_SUPPLICANT_INTERFACE_STATE_INVALID = -1,
+ 	NM_SUPPLICANT_INTERFACE_STATE_INIT = 0,
+ 	NM_SUPPLICANT_INTERFACE_STATE_STARTING,
+ 	NM_SUPPLICANT_INTERFACE_STATE_READY,
+@@ -43,8 +44,7 @@ enum {
+ 	NM_SUPPLICANT_INTERFACE_STATE_GROUP_HANDSHAKE,
+ 	NM_SUPPLICANT_INTERFACE_STATE_COMPLETED,
+ 	NM_SUPPLICANT_INTERFACE_STATE_DOWN,
+-	NM_SUPPLICANT_INTERFACE_STATE_LAST
+-};
++} NMSupplicantInterfaceState;
+ 
+ #define NM_TYPE_SUPPLICANT_INTERFACE            (nm_supplicant_interface_get_type ())
+ #define NM_SUPPLICANT_INTERFACE(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_SUPPLICANT_INTERFACE, NMSupplicantInterface))
+@@ -93,9 +93,9 @@ const char *nm_supplicant_interface_get_object_path (NMSupplicantInterface * ifa
+ 
+ gboolean nm_supplicant_interface_request_scan (NMSupplicantInterface * self, const GPtrArray *ssids);
+ 
+-guint32 nm_supplicant_interface_get_state (NMSupplicantInterface * self);
++NMSupplicantInterfaceState nm_supplicant_interface_get_state (NMSupplicantInterface * self);
+ 
+-const char *nm_supplicant_interface_state_to_string (guint32 state);
++const char *nm_supplicant_interface_state_to_string (NMSupplicantInterfaceState state);
+ 
+ gboolean nm_supplicant_interface_get_scanning (NMSupplicantInterface *self);
+ 

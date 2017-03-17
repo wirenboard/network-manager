@@ -1,0 +1,922 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 14 Feb 2017 19:30:21 +0100
+Subject: supplicant: rework nm_supplicant_interface_set_config() to invoke
+ result callback
+
+Instead of having a NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR signal to notify
+about failures during AddNetwork/SelectNetwork, accept a callback to report
+success/failure.
+
+Thereby, rename nm_supplicant_interface_set_config() to
+nm_supplicant_interface_assoc().
+
+The async callback is guaranteed to:
+
+ - be invoked exactly once, signalling success or failure
+ - always being invoked asyncronously.
+
+The pending request can be (synchronously) cancelled via
+nm_supplicant_interface_disconnect() or by disposing the
+interface instance. In those cases the callback will be invoked
+too, with error code cancelled/disposing.
+
+(cherry picked from commit 66c45d0fdcbd9e87b5164c5f77f914141cbb9419)
+---
+ src/devices/nm-device-ethernet.c         |  68 ++-----
+ src/devices/nm-device-macsec.c           |  56 ++----
+ src/devices/wifi/nm-device-wifi.c        |  63 ++-----
+ src/supplicant/nm-supplicant-interface.c | 312 ++++++++++++++++++-------------
+ src/supplicant/nm-supplicant-interface.h |  13 +-
+ 5 files changed, 236 insertions(+), 276 deletions(-)
+
+diff --git a/src/devices/nm-device-ethernet.c b/src/devices/nm-device-ethernet.c
+index 8dedd7e..1059c2b 100644
+--- a/src/devices/nm-device-ethernet.c
++++ b/src/devices/nm-device-ethernet.c
+@@ -71,7 +71,6 @@ typedef struct Supplicant {
+ 	NMSupplicantInterface *iface;
+ 
+ 	/* signal handler ids */
+-	gulong iface_error_id;
+ 	gulong iface_state_id;
+ 
+ 	/* Timeouts and idles */
+@@ -423,22 +422,12 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
+ /* 802.1X */
+ 
+ static void
+-supplicant_interface_clear_handlers (NMDeviceEthernet *self)
++supplicant_interface_release (NMDeviceEthernet *self)
+ {
+ 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
+ 
+ 	nm_clear_g_source (&priv->supplicant_timeout_id);
+ 	nm_clear_g_source (&priv->supplicant.con_timeout_id);
+-	nm_clear_g_signal_handler (priv->supplicant.iface, &priv->supplicant.iface_error_id);
+-}
+-
+-static void
+-supplicant_interface_release (NMDeviceEthernet *self)
+-{
+-	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
+-
+-	supplicant_interface_clear_handlers (self);
+-
+ 	nm_clear_g_signal_handler (priv->supplicant.iface, &priv->supplicant.iface_state_id);
+ 
+ 	if (priv->supplicant.iface) {
+@@ -595,6 +584,21 @@ build_supplicant_config (NMDeviceEthernet *self,
+ }
+ 
+ static void
++supplicant_iface_assoc_cb (NMSupplicantInterface *iface,
++                           GError *error,
++                           gpointer user_data)
++{
++	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (user_data);
++
++	if (error && !nm_utils_error_is_cancelled (error, TRUE)) {
++		supplicant_interface_release (self);
++		nm_device_queue_state (NM_DEVICE (self),
++		                       NM_DEVICE_STATE_FAILED,
++		                       NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
++	}
++}
++
++static void
+ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+                            int new_state_i,
+                            int old_state_i,
+@@ -605,7 +609,6 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
+ 	NMDevice *device = NM_DEVICE (self);
+ 	NMSupplicantConfig *config;
+-	gboolean success = FALSE;
+ 	NMDeviceState devstate;
+ 	GError *error = NULL;
+ 	NMSupplicantInterfaceState new_state = new_state_i;
+@@ -624,30 +627,23 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	case NM_SUPPLICANT_INTERFACE_STATE_READY:
+ 		config = build_supplicant_config (self, &error);
+ 		if (config) {
+-			success = nm_supplicant_interface_set_config (priv->supplicant.iface, config, &error);
++			nm_supplicant_interface_assoc (priv->supplicant.iface, config,
++			                               supplicant_iface_assoc_cb, self);
+ 			g_object_unref (config);
+-
+-			if (!success) {
+-				_LOGE (LOGD_DEVICE | LOGD_ETHER,
+-				       "Activation: (ethernet) couldn't send security configuration to the supplicant: %s",
+-				       error->message);
+-				g_clear_error (&error);
+-			}
+ 		} else {
+ 			_LOGE (LOGD_DEVICE | LOGD_ETHER,
+ 			       "Activation: (ethernet) couldn't build security configuration: %s",
+ 			       error->message);
+ 			g_clear_error (&error);
+-		}
+ 
+-		if (!success) {
+ 			nm_device_state_changed (device,
+ 			                         NM_DEVICE_STATE_FAILED,
+ 			                         NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
+ 		}
+ 		break;
+ 	case NM_SUPPLICANT_INTERFACE_STATE_COMPLETED:
+-		supplicant_interface_clear_handlers (self);
++		nm_clear_g_source (&priv->supplicant_timeout_id);
++		nm_clear_g_source (&priv->supplicant.con_timeout_id);
+ 
+ 		/* If this is the initial association during device activation,
+ 		 * schedule the next activation stage.
+@@ -679,24 +675,6 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	}
+ }
+ 
+-static void
+-supplicant_iface_connection_error_cb (NMSupplicantInterface *iface,
+-                                      const char *name,
+-                                      const char *message,
+-                                      gpointer user_data)
+-{
+-	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (user_data);
+-
+-	_LOGW (LOGD_DEVICE | LOGD_ETHER,
+-	       "Activation: (ethernet) association request to the supplicant failed: %s - %s",
+-	       name, message);
+-
+-	supplicant_interface_release (self);
+-	nm_device_queue_state (NM_DEVICE (self),
+-	                       NM_DEVICE_STATE_FAILED,
+-	                       NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
+-}
+-
+ static NMActStageReturn
+ handle_auth_or_fail (NMDeviceEthernet *self,
+                      NMActRequest *req,
+@@ -792,12 +770,6 @@ supplicant_interface_init (NMDeviceEthernet *self)
+ 	                                                    G_CALLBACK (supplicant_iface_state_cb),
+ 	                                                    self);
+ 
+-	/* Hook up error signal handler to capture association errors */
+-	priv->supplicant.iface_error_id = g_signal_connect (priv->supplicant.iface,
+-	                                                    NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR,
+-	                                                    G_CALLBACK (supplicant_iface_connection_error_cb),
+-	                                                    self);
+-
+ 	/* Set up a timeout on the connection attempt to fail it after 25 seconds */
+ 	priv->supplicant.con_timeout_id = g_timeout_add_seconds (25, supplicant_connection_timeout_cb, self);
+ 
+diff --git a/src/devices/nm-device-macsec.c b/src/devices/nm-device-macsec.c
+index 58ee4fe..e1a5a13 100644
+--- a/src/devices/nm-device-macsec.c
++++ b/src/devices/nm-device-macsec.c
+@@ -45,7 +45,6 @@ typedef struct Supplicant {
+ 	NMSupplicantInterface *iface;
+ 
+ 	/* signal handler ids */
+-	gulong iface_error_id;
+ 	gulong iface_state_id;
+ 
+ 	/* Timeouts and idles */
+@@ -248,22 +247,12 @@ build_supplicant_config (NMDeviceMacsec *self, GError **error)
+ }
+ 
+ static void
+-supplicant_interface_clear_handlers (NMDeviceMacsec *self)
++supplicant_interface_release (NMDeviceMacsec *self)
+ {
+ 	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
+ 
+ 	nm_clear_g_source (&priv->supplicant_timeout_id);
+ 	nm_clear_g_source (&priv->supplicant.con_timeout_id);
+-	nm_clear_g_signal_handler (priv->supplicant.iface, &priv->supplicant.iface_error_id);
+-}
+-
+-static void
+-supplicant_interface_release (NMDeviceMacsec *self)
+-{
+-	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
+-
+-	supplicant_interface_clear_handlers (self);
+-
+ 	nm_clear_g_signal_handler (priv->supplicant.iface, &priv->supplicant.iface_state_id);
+ 
+ 	if (priv->supplicant.iface) {
+@@ -273,21 +262,18 @@ supplicant_interface_release (NMDeviceMacsec *self)
+ }
+ 
+ static void
+-supplicant_iface_connection_error_cb (NMSupplicantInterface *iface,
+-                                      const char *name,
+-                                      const char *message,
+-                                      gpointer user_data)
++supplicant_iface_assoc_cb (NMSupplicantInterface *iface,
++                           GError *error,
++                           gpointer user_data)
+ {
+ 	NMDeviceMacsec *self = NM_DEVICE_MACSEC (user_data);
+ 
+-	_LOGW (LOGD_DEVICE,
+-	       "Activation: association request to the supplicant failed: %s - %s",
+-	       name, message);
+-
+-	supplicant_interface_release (self);
+-	nm_device_queue_state (NM_DEVICE (self),
+-	                       NM_DEVICE_STATE_FAILED,
+-	                       NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
++	if (error && !nm_utils_error_is_cancelled (error, TRUE)) {
++		supplicant_interface_release (self);
++		nm_device_queue_state (NM_DEVICE (self),
++		                       NM_DEVICE_STATE_FAILED,
++		                       NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
++	}
+ }
+ 
+ static void
+@@ -421,7 +407,6 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
+ 	NMDevice *device = NM_DEVICE (self);
+ 	NMSupplicantConfig *config;
+-	gboolean success = FALSE;
+ 	NMDeviceState devstate;
+ 	GError *error = NULL;
+ 	NMSupplicantInterfaceState new_state = new_state_i;
+@@ -440,30 +425,23 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 	case NM_SUPPLICANT_INTERFACE_STATE_READY:
+ 		config = build_supplicant_config (self, &error);
+ 		if (config) {
+-			success = nm_supplicant_interface_set_config (priv->supplicant.iface, config, &error);
++			nm_supplicant_interface_assoc (priv->supplicant.iface, config,
++			                               supplicant_iface_assoc_cb, self);
+ 			g_object_unref (config);
+-
+-			if (!success) {
+-				_LOGE (LOGD_DEVICE,
+-				       "Activation: couldn't send security configuration to the supplicant: %s",
+-				       error->message);
+-				g_clear_error (&error);
+-			}
+ 		} else {
+ 			_LOGE (LOGD_DEVICE,
+ 			       "Activation: couldn't build security configuration: %s",
+ 			       error->message);
+ 			g_clear_error (&error);
+-		}
+ 
+-		if (!success) {
+ 			nm_device_state_changed (device,
+ 			                         NM_DEVICE_STATE_FAILED,
+ 			                         NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
+ 		}
+ 		break;
+ 	case NM_SUPPLICANT_INTERFACE_STATE_COMPLETED:
+-		supplicant_interface_clear_handlers (self);
++		nm_clear_g_source (&priv->supplicant_timeout_id);
++		nm_clear_g_source (&priv->supplicant.con_timeout_id);
+ 		nm_device_bring_up (device, TRUE, NULL);
+ 
+ 		/* If this is the initial association during device activation,
+@@ -595,12 +573,6 @@ supplicant_interface_init (NMDeviceMacsec *self)
+ 	                                                    G_CALLBACK (supplicant_iface_state_cb),
+ 	                                                    self);
+ 
+-	/* Hook up error signal handler to capture association errors */
+-	priv->supplicant.iface_error_id = g_signal_connect (priv->supplicant.iface,
+-	                                                    NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR,
+-	                                                    G_CALLBACK (supplicant_iface_connection_error_cb),
+-	                                                    self);
+-
+ 	/* Set up a timeout on the connection attempt to fail it after 25 seconds */
+ 	priv->supplicant.con_timeout_id = g_timeout_add_seconds (25, supplicant_connection_timeout_cb, self);
+ 
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index 07dc36d..9586817 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -190,8 +190,6 @@ static void ap_add_remove (NMDeviceWifi *self,
+                            NMWifiAP *ap,
+                            gboolean recheck_available_connections);
+ 
+-static void remove_supplicant_interface_error_handler (NMDeviceWifi *self);
+-
+ static void _hw_addr_set_scanning (NMDeviceWifi *self, gboolean do_reset);
+ 
+ /*****************************************************************************/
+@@ -1761,21 +1759,12 @@ supplicant_iface_bss_removed_cb (NMSupplicantInterface *iface,
+ }
+ 
+ static void
+-remove_supplicant_timeouts (NMDeviceWifi *self)
++cleanup_association_attempt (NMDeviceWifi *self, gboolean disconnect)
+ {
+ 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+ 
+ 	nm_clear_g_source (&priv->sup_timeout_id);
+ 	nm_clear_g_source (&priv->link_timeout_id);
+-}
+-
+-static void
+-cleanup_association_attempt (NMDeviceWifi *self, gboolean disconnect)
+-{
+-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+-
+-	remove_supplicant_interface_error_handler (self);
+-	remove_supplicant_timeouts (self);
+ 	if (disconnect && priv->sup_iface)
+ 		nm_supplicant_interface_disconnect (priv->sup_iface);
+ }
+@@ -2082,8 +2071,8 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 			nm_device_remove_pending_action (device, NM_PENDING_ACTION_WAITING_FOR_SUPPLICANT, TRUE);
+ 		break;
+ 	case NM_SUPPLICANT_INTERFACE_STATE_COMPLETED:
+-		remove_supplicant_interface_error_handler (self);
+-		remove_supplicant_timeouts (self);
++		nm_clear_g_source (&priv->sup_timeout_id);
++		nm_clear_g_source (&priv->link_timeout_id);
+ 
+ 		/* If this is the initial association during device activation,
+ 		 * schedule the next activation stage.
+@@ -2173,36 +2162,21 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ }
+ 
+ static void
+-supplicant_iface_connection_error_cb (NMSupplicantInterface *iface,
+-                                      const char *name,
+-                                      const char *message,
+-                                      NMDeviceWifi *self)
++supplicant_iface_assoc_cb (NMSupplicantInterface *iface,
++                           GError *error,
++                           gpointer user_data)
+ {
++	NMDeviceWifi *self = NM_DEVICE_WIFI (user_data);
+ 	NMDevice *device = NM_DEVICE (self);
+ 
+-	if (nm_device_is_activating (device)) {
+-		_LOGW (LOGD_DEVICE | LOGD_WIFI,
+-		       "Activation: (wifi) supplicant association failed: %s - %s",
+-		       name, message);
+-
++	if (   error && !nm_utils_error_is_cancelled (error, TRUE)
++	    && nm_device_is_activating (device)) {
+ 		cleanup_association_attempt (self, TRUE);
+ 		nm_device_queue_state (device, NM_DEVICE_STATE_FAILED, NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
+ 	}
+ }
+ 
+ static void
+-remove_supplicant_interface_error_handler (NMDeviceWifi *self)
+-{
+-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+-
+-	if (priv->sup_iface) {
+-		g_signal_handlers_disconnect_by_func (priv->sup_iface,
+-		                                      supplicant_iface_connection_error_cb,
+-		                                      self);
+-	}
+-}
+-
+-static void
+ supplicant_iface_notify_scanning_cb (NMSupplicantInterface *iface,
+                                      GParamSpec *pspec,
+                                      NMDeviceWifi *self)
+@@ -2620,7 +2594,8 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+ 
+ 	g_return_val_if_fail (reason != NULL, NM_ACT_STAGE_RETURN_FAILURE);
+ 
+-	remove_supplicant_timeouts (self);
++	nm_clear_g_source (&priv->sup_timeout_id);
++	nm_clear_g_source (&priv->link_timeout_id);
+ 
+ 	req = nm_device_get_act_request (device);
+ 	g_assert (req);
+@@ -2684,20 +2659,8 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+ 		goto out;
+ 	}
+ 
+-	/* Hook up error signal handler to capture association errors */
+-	g_signal_connect (priv->sup_iface,
+-	                  NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR,
+-	                  G_CALLBACK (supplicant_iface_connection_error_cb),
+-	                  self);
+-
+-	if (!nm_supplicant_interface_set_config (priv->sup_iface, config, &error)) {
+-		_LOGE (LOGD_DEVICE | LOGD_WIFI,
+-		       "Activation: (wifi) couldn't send wireless configuration to the supplicant: %s",
+-		       error->message);
+-		g_clear_error (&error);
+-		*reason = NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED;
+-		goto out;
+-	}
++	nm_supplicant_interface_assoc (priv->sup_iface, config,
++	                               supplicant_iface_assoc_cb, self);
+ 
+ 	/* Set up a timeout on the association attempt to fail after 25 seconds */
+ 	priv->sup_timeout_id = g_timeout_add_seconds (25, supplicant_connection_timeout_cb, self);
+diff --git a/src/supplicant/nm-supplicant-interface.c b/src/supplicant/nm-supplicant-interface.c
+index 334a8d2..acbc605 100644
+--- a/src/supplicant/nm-supplicant-interface.c
++++ b/src/supplicant/nm-supplicant-interface.c
+@@ -39,6 +39,15 @@
+ 
+ /*****************************************************************************/
+ 
++typedef struct {
++	NMSupplicantConfig *cfg;
++	GCancellable *cancellable;
++	NMSupplicantInterfaceAssocCb callback;
++	gpointer user_data;
++	guint fail_on_idle_id;
++	guint blobs_left;
++} AssocData;
++
+ enum {
+ 	STATE,               /* change in the interface's state */
+ 	REMOVED,             /* interface was removed by the supplicant */
+@@ -46,7 +55,6 @@ enum {
+ 	BSS_UPDATED,         /* a BSS property changed */
+ 	BSS_REMOVED,         /* supplicant removed BSS from its scan list */
+ 	SCAN_DONE,           /* wifi scan is complete */
+-	CONNECTION_ERROR,    /* an error occurred during a connection request */
+ 	CREDENTIALS_REQUEST, /* 802.1x identity or password requested */
+ 	LAST_SIGNAL
+ };
+@@ -80,15 +88,15 @@ typedef struct {
+ 	GCancellable * init_cancellable;
+ 	GDBusProxy *   iface_proxy;
+ 	GCancellable * other_cancellable;
+-	GCancellable * assoc_cancellable;
++
++	AssocData *    assoc_data;
++
+ 	char *         net_path;
+-	guint32        blobs_left;
+ 	GHashTable *   bss_proxies;
+ 	char *         current_bss;
+ 
+ 	gint32         last_scan; /* timestamp as returned by nm_utils_get_monotonic_timestamp_s() */
+ 
+-	NMSupplicantConfig *cfg;
+ } NMSupplicantInterfacePrivate;
+ 
+ struct _NMSupplicantInterface {
+@@ -127,18 +135,6 @@ G_DEFINE_TYPE (NMSupplicantInterface, nm_supplicant_interface, G_TYPE_OBJECT)
+ /*****************************************************************************/
+ 
+ static void
+-emit_error_helper (NMSupplicantInterface *self, GError *error)
+-{
+-	char *name = NULL;
+-
+-	if (g_dbus_error_is_remote_error (error))
+-		name = g_dbus_error_get_remote_error (error);
+-
+-	g_signal_emit (self, signals[CONNECTION_ERROR], 0, name, error->message);
+-	g_free (name);
+-}
+-
+-static void
+ bss_props_changed_cb (GDBusProxy *proxy,
+                       GVariant *changed_properties,
+                       char **invalidated_properties,
+@@ -1007,6 +1003,34 @@ log_result_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ 	}
+ }
+ 
++/*****************************************************************************/
++
++static void
++assoc_return (NMSupplicantInterface *self, GError *error, const char *message)
++{
++	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
++	AssocData *assoc_data;
++
++	assoc_data = g_steal_pointer (&priv->assoc_data);
++	if (!assoc_data)
++		return;
++
++	if (error) {
++		g_dbus_error_strip_remote_error (error);
++		_LOGW ("assoc[%p]: %s: %s", assoc_data, message, error->message);
++	} else
++		_LOGD ("assoc[%p]: association request successful", assoc_data);
++
++	nm_clear_g_source (&assoc_data->fail_on_idle_id);
++	nm_clear_g_cancellable (&assoc_data->cancellable);
++
++	if (assoc_data->callback)
++		assoc_data->callback (self, error, assoc_data->user_data);
++
++	g_object_unref (assoc_data->cfg);
++	g_slice_free (AssocData, assoc_data);
++}
++
+ void
+ nm_supplicant_interface_disconnect (NMSupplicantInterface * self)
+ {
+@@ -1017,9 +1041,11 @@ nm_supplicant_interface_disconnect (NMSupplicantInterface * self)
+ 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+ 	/* Cancel all pending calls related to a prior connection attempt */
+-	if (priv->assoc_cancellable) {
+-		g_cancellable_cancel (priv->assoc_cancellable);
+-		g_clear_object (&priv->assoc_cancellable);
++	if (priv->assoc_data) {
++		gs_free GError *error = NULL;
++
++		nm_utils_error_set_cancelled (&error, FALSE, "NMSupplicantInterface");
++		assoc_return (self, error, "abort due to disconnect");
+ 	}
+ 
+ 	/* Don't do anything if there is no connection to the supplicant yet. */
+@@ -1055,42 +1081,40 @@ nm_supplicant_interface_disconnect (NMSupplicantInterface * self)
+ }
+ 
+ static void
+-select_network_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
++assoc_select_network_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ {
+ 	NMSupplicantInterface *self;
+ 	gs_unref_variant GVariant *reply = NULL;
+ 	gs_free_error GError *error = NULL;
+ 
+ 	reply = g_dbus_proxy_call_finish (proxy, result, &error);
+-	if (   !reply
+-	    && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+-		self = NM_SUPPLICANT_INTERFACE (user_data);
+-		g_dbus_error_strip_remote_error (error);
+-		_LOGW ("couldn't select network config: %s", error->message);
+-		emit_error_helper (self, error);
+-	}
++	if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
++		return;
++
++	self = NM_SUPPLICANT_INTERFACE (user_data);
++	if (error)
++		assoc_return (self, error, "failure to select network config");
++	else
++		assoc_return (self, NULL, NULL);
+ }
+ 
+ static void
+-call_select_network (NMSupplicantInterface *self)
++assoc_call_select_network (NMSupplicantInterface *self)
+ {
+ 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+-	/* We only select the network after all blobs (if any) have been set */
+-	if (priv->blobs_left == 0) {
+-		g_dbus_proxy_call (priv->iface_proxy,
+-		                   "SelectNetwork",
+-		                   g_variant_new ("(o)", priv->net_path),
+-		                   G_DBUS_CALL_FLAGS_NONE,
+-		                   -1,
+-		                   priv->assoc_cancellable,
+-		                   (GAsyncReadyCallback) select_network_cb,
+-		                   self);
+-	}
++	g_dbus_proxy_call (priv->iface_proxy,
++	                   "SelectNetwork",
++	                   g_variant_new ("(o)", priv->net_path),
++	                   G_DBUS_CALL_FLAGS_NONE,
++	                   -1,
++	                   priv->assoc_data->cancellable,
++	                   (GAsyncReadyCallback) assoc_select_network_cb,
++	                   self);
+ }
+ 
+ static void
+-add_blob_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
++assoc_add_blob_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ {
+ 	NMSupplicantInterface *self;
+ 	NMSupplicantInterfacePrivate *priv;
+@@ -1104,18 +1128,19 @@ add_blob_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ 	self = NM_SUPPLICANT_INTERFACE (user_data);
+ 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+-	priv->blobs_left--;
+-	if (reply)
+-		call_select_network (self);
+-	else {
+-		g_dbus_error_strip_remote_error (error);
+-		_LOGW ("couldn't set network certificates: %s", error->message);
+-		emit_error_helper (self, error);
++	if (error) {
++		assoc_return (self, error, "failure to set network certificates");
++		return;
+ 	}
++
++	priv->assoc_data->blobs_left--;
++	_LOGT ("assoc[%p]: blob added (%u left)", priv->assoc_data, priv->assoc_data->blobs_left);
++	if (priv->assoc_data->blobs_left == 0)
++		assoc_call_select_network (self);
+ }
+ 
+ static void
+-add_network_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
++assoc_add_network_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ {
+ 	NMSupplicantInterface *self;
+ 	NMSupplicantInterfacePrivate *priv;
+@@ -1135,57 +1160,43 @@ add_network_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ 	self = NM_SUPPLICANT_INTERFACE (user_data);
+ 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+-	g_free (priv->net_path);
+-	priv->net_path = NULL;
++	nm_clear_g_free (&priv->net_path);
+ 
+ 	if (error) {
+-		g_dbus_error_strip_remote_error (error);
+-		_LOGW ("adding network to supplicant failed: %s", error->message);
+-		emit_error_helper (self, error);
++		assoc_return (self, error, "failure to add network");
+ 		return;
+ 	}
+ 
+ 	g_variant_get (reply, "(o)", &priv->net_path);
+ 
+ 	/* Send blobs first; otherwise jump to selecting the network */
+-	blobs = nm_supplicant_config_get_blobs (priv->cfg);
+-	priv->blobs_left = g_hash_table_size (blobs);
++	blobs = nm_supplicant_config_get_blobs (priv->assoc_data->cfg);
++	priv->assoc_data->blobs_left = g_hash_table_size (blobs);
+ 
+-	g_hash_table_iter_init (&iter, blobs);
+-	while (g_hash_table_iter_next (&iter, (gpointer) &blob_name, (gpointer) &blob_data)) {
+-		g_dbus_proxy_call (priv->iface_proxy,
+-		                   "AddBlob",
+-		                   g_variant_new ("(s@ay)",
+-		                                  blob_name,
+-		                                  g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
+-		                                                             blob_data->data, blob_data->len, 1)),
+-		                   G_DBUS_CALL_FLAGS_NONE,
+-		                   -1,
+-		                   priv->assoc_cancellable,
+-		                   (GAsyncReadyCallback) add_blob_cb,
+-		                   self);
+-	}
+-
+-	call_select_network (self);
+-}
+-
+-static void
+-add_network (NMSupplicantInterface *self)
+-{
+-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
++	_LOGT ("assoc[%p]: network added (%s) (%u blobs left)", priv->assoc_data, priv->net_path, priv->assoc_data->blobs_left);
+ 
+-	g_dbus_proxy_call (priv->iface_proxy,
+-	                   "AddNetwork",
+-	                   g_variant_new ("(@a{sv})", nm_supplicant_config_to_variant (priv->cfg)),
+-	                   G_DBUS_CALL_FLAGS_NONE,
+-	                   -1,
+-	                   priv->assoc_cancellable,
+-	                   (GAsyncReadyCallback) add_network_cb,
+-	                   self);
++	if (priv->assoc_data->blobs_left == 0)
++		assoc_call_select_network (self);
++	else {
++		g_hash_table_iter_init (&iter, blobs);
++		while (g_hash_table_iter_next (&iter, (gpointer) &blob_name, (gpointer) &blob_data)) {
++			g_dbus_proxy_call (priv->iface_proxy,
++			                   "AddBlob",
++			                   g_variant_new ("(s@ay)",
++			                                  blob_name,
++			                                  g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
++			                                                             blob_data->data, blob_data->len, 1)),
++			                   G_DBUS_CALL_FLAGS_NONE,
++			                   -1,
++			                   priv->assoc_data->cancellable,
++			                   (GAsyncReadyCallback) assoc_add_blob_cb,
++			                   self);
++		}
++	}
+ }
+ 
+ static void
+-set_ap_scan_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
++assoc_set_ap_scan_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ {
+ 	NMSupplicantInterface *self;
+ 	NMSupplicantInterfacePrivate *priv;
+@@ -1199,62 +1210,103 @@ set_ap_scan_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ 	self = NM_SUPPLICANT_INTERFACE (user_data);
+ 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+-	if (!reply) {
+-		g_dbus_error_strip_remote_error (error);
+-		_LOGW ("couldn't send AP scan mode to the supplicant interface: %s",
+-		       error->message);
+-		emit_error_helper (self, error);
++	if (error) {
++		assoc_return (self, error, "failure to set AP scan mode");
+ 		return;
+ 	}
+ 
+-	_LOGI ("config: set interface ap_scan to %d",
+-	       nm_supplicant_config_get_ap_scan (priv->cfg));
++	_LOGT ("assoc[%p]: set interface ap_scan to %d",
++	       priv->assoc_data,
++	       nm_supplicant_config_get_ap_scan (priv->assoc_data->cfg));
++
++	g_dbus_proxy_call (priv->iface_proxy,
++	                   "AddNetwork",
++	                   g_variant_new ("(@a{sv})", nm_supplicant_config_to_variant (priv->assoc_data->cfg)),
++	                   G_DBUS_CALL_FLAGS_NONE,
++	                   -1,
++	                   priv->assoc_data->cancellable,
++	                   (GAsyncReadyCallback) assoc_add_network_cb,
++	                   self);
++}
++
++static gboolean
++assoc_fail_on_idle_cb (gpointer user_data)
++{
++	NMSupplicantInterface *self = user_data;
++	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
++	gs_free_error GError *error = NULL;
+ 
+-	add_network (self);
++	priv->assoc_data->fail_on_idle_id = 0;
++	g_set_error (&error, NM_SUPPLICANT_ERROR, NM_SUPPLICANT_ERROR_CONFIG,
++	             "EAP-FAST is not supported by the supplicant");
++	assoc_return (self, error, "failure due to missing supplicant support");
++	return G_SOURCE_REMOVE;
+ }
+ 
+-gboolean
+-nm_supplicant_interface_set_config (NMSupplicantInterface *self,
+-                                    NMSupplicantConfig *cfg,
+-                                    GError **error)
++/**
++ * nm_supplicant_interface_assoc:
++ * @self: the supplicant interface instance
++ * @cfg: the configuration with the data for the association
++ * @callback: callback invoked when the association completes or fails.
++ * @user_data: data for the callback.
++ *
++ * Calls AddNetwork and SelectNetwork to start associating according to @cfg.
++ *
++ * The callback is invoked exactly once (always) and always asynchronously.
++ * The pending association can be aborted via nm_supplicant_interface_disconnect()
++ * or by destroying @self. In that case, the @callback is invoked synchornously with
++ * an error reason indicating cancellation/disposing (see nm_utils_error_is_cancelled()).
++ */
++void
++nm_supplicant_interface_assoc (NMSupplicantInterface *self,
++                               NMSupplicantConfig *cfg,
++                               NMSupplicantInterfaceAssocCb callback,
++                               gpointer user_data)
+ {
+ 	NMSupplicantInterfacePrivate *priv;
++	AssocData *assoc_data;
+ 
+-	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), FALSE);
++	g_return_if_fail (NM_IS_SUPPLICANT_INTERFACE (self));
++	g_return_if_fail (NM_IS_SUPPLICANT_CONFIG (cfg));
+ 
+ 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+ 	nm_supplicant_interface_disconnect (self);
+ 
++	assoc_data = g_slice_new0 (AssocData);
++	priv->assoc_data = assoc_data;
++
++	assoc_data->cfg = g_object_ref (cfg);
++	assoc_data->callback = callback;
++	assoc_data->user_data = user_data;
++
++	_LOGD ("assoc[%p]: starting association...", assoc_data);
++
+ 	/* Make sure the supplicant supports EAP-FAST before trying to send
+ 	 * it an EAP-FAST configuration.
+ 	 */
+ 	if (   priv->fast_support == NM_SUPPLICANT_FEATURE_NO
+ 	    && nm_supplicant_config_fast_required (cfg)) {
+-		g_set_error (error, NM_SUPPLICANT_ERROR, NM_SUPPLICANT_ERROR_CONFIG,
+-		             "EAP-FAST is not supported by the supplicant");
+-		return FALSE;
++		assoc_data->fail_on_idle_id = g_idle_add (assoc_fail_on_idle_cb, self);
++		return;
+ 	}
+ 
+-	g_clear_object (&priv->cfg);
+-	if (cfg) {
+-		priv->assoc_cancellable = g_cancellable_new ();
+-		priv->cfg = g_object_ref (cfg);
+-		g_dbus_proxy_call (priv->iface_proxy,
+-		                   DBUS_INTERFACE_PROPERTIES ".Set",
+-		                   g_variant_new ("(ssv)",
+-		                                  WPAS_DBUS_IFACE_INTERFACE,
+-		                                  "ApScan",
+-		                                  g_variant_new_uint32 (nm_supplicant_config_get_ap_scan (priv->cfg))),
+-		                   G_DBUS_CALL_FLAGS_NONE,
+-		                   -1,
+-		                   priv->assoc_cancellable,
+-		                   (GAsyncReadyCallback) set_ap_scan_cb,
+-		                   self);
+-	}
+-	return TRUE;
++	assoc_data->cancellable = g_cancellable_new();
++	g_dbus_proxy_call (priv->iface_proxy,
++	                   DBUS_INTERFACE_PROPERTIES ".Set",
++	                   g_variant_new ("(ssv)",
++	                                  WPAS_DBUS_IFACE_INTERFACE,
++	                                  "ApScan",
++	                                  g_variant_new_uint32 (nm_supplicant_config_get_ap_scan (priv->assoc_data->cfg))),
++	                   G_DBUS_CALL_FLAGS_NONE,
++	                   -1,
++	                   priv->assoc_data->cancellable,
++	                   (GAsyncReadyCallback) assoc_set_ap_scan_cb,
++	                   self);
+ }
+ 
++/*****************************************************************************/
++
+ static void
+ scan_request_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ {
+@@ -1449,7 +1501,15 @@ get_property (GObject *object,
+ static void
+ dispose (GObject *object)
+ {
+-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE ((NMSupplicantInterface *) object);
++	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (object);
++	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
++
++	if (priv->assoc_data) {
++		gs_free GError *error = NULL;
++
++		nm_utils_error_set_cancelled (&error, TRUE, "NMSupplicantInterface");
++		assoc_return (self, error, "cancelled due to dispose of supplicant interface");
++	}
+ 
+ 	if (priv->iface_proxy)
+ 		g_signal_handlers_disconnect_by_data (priv->iface_proxy, object);
+@@ -1457,7 +1517,6 @@ dispose (GObject *object)
+ 
+ 	nm_clear_g_cancellable (&priv->init_cancellable);
+ 	nm_clear_g_cancellable (&priv->other_cancellable);
+-	nm_clear_g_cancellable (&priv->assoc_cancellable);
+ 
+ 	g_clear_object (&priv->wpas_proxy);
+ 	g_clear_pointer (&priv->bss_proxies, (GDestroyNotify) g_hash_table_destroy);
+@@ -1467,9 +1526,6 @@ dispose (GObject *object)
+ 	g_clear_pointer (&priv->object_path, g_free);
+ 	g_clear_pointer (&priv->current_bss, g_free);
+ 
+-	g_clear_object (&priv->cfg);
+-
+-	/* Chain up to the parent class */
+ 	G_OBJECT_CLASS (nm_supplicant_interface_parent_class)->dispose (object);
+ }
+ 
+@@ -1571,14 +1627,6 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
+ 	                  NULL, NULL, NULL,
+ 	                  G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+ 
+-	signals[CONNECTION_ERROR] =
+-	    g_signal_new (NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR,
+-	                  G_OBJECT_CLASS_TYPE (object_class),
+-	                  G_SIGNAL_RUN_LAST,
+-	                  0,
+-	                  NULL, NULL, NULL,
+-	                  G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+-
+ 	signals[CREDENTIALS_REQUEST] =
+ 	    g_signal_new (NM_SUPPLICANT_INTERFACE_CREDENTIALS_REQUEST,
+ 	                  G_OBJECT_CLASS_TYPE (object_class),
+diff --git a/src/supplicant/nm-supplicant-interface.h b/src/supplicant/nm-supplicant-interface.h
+index d78cd28..3498bb5 100644
+--- a/src/supplicant/nm-supplicant-interface.h
++++ b/src/supplicant/nm-supplicant-interface.h
+@@ -68,7 +68,6 @@ typedef enum {
+ #define NM_SUPPLICANT_INTERFACE_BSS_UPDATED      "bss-updated"
+ #define NM_SUPPLICANT_INTERFACE_BSS_REMOVED      "bss-removed"
+ #define NM_SUPPLICANT_INTERFACE_SCAN_DONE        "scan-done"
+-#define NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR "connection-error"
+ #define NM_SUPPLICANT_INTERFACE_CREDENTIALS_REQUEST "credentials-request"
+ 
+ typedef struct _NMSupplicantInterfaceClass NMSupplicantInterfaceClass;
+@@ -83,9 +82,15 @@ NMSupplicantInterface * nm_supplicant_interface_new (const char *ifname,
+ void nm_supplicant_interface_set_supplicant_available (NMSupplicantInterface *self,
+                                                        gboolean available);
+ 
+-gboolean nm_supplicant_interface_set_config (NMSupplicantInterface * iface,
+-                                             NMSupplicantConfig * cfg,
+-                                             GError **error);
++typedef void (*NMSupplicantInterfaceAssocCb) (NMSupplicantInterface *iface,
++                                              GError *error,
++                                              gpointer user_data);
++
++void
++nm_supplicant_interface_assoc (NMSupplicantInterface *self,
++                               NMSupplicantConfig *cfg,
++                               NMSupplicantInterfaceAssocCb callback,
++                               gpointer user_data);
+ 
+ void nm_supplicant_interface_disconnect (NMSupplicantInterface * iface);
+ 

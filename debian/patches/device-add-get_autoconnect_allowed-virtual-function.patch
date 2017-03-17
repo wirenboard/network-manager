@@ -1,0 +1,86 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 14 Feb 2017 12:45:38 +0100
+Subject: device: add get_autoconnect_allowed() virtual function
+
+It allows derived classes to override the autoconnect-allowed
+state.
+
+We already have
+
+- NM_DEVICE_AUTOCONNECT property, which is two parts:
+  - NMDevicePrivate::autoconnect_user, which is settable via
+    D-Bus by the use, to allow the device to autoconnect.
+  - NMDevicePrivate::autoconnect_intern, which is set by
+    internal decision.
+- NM_DEVICE_AUTOCONNECT_ALLOWED signal, where other devices can
+  subscribe to block autoconnect. Currently that is only used
+  by NMDeviceOlpcMesh.
+
+These two make up for nm_device_autoconnect_allowed().
+
+Add another way to allow derived classes to disable autoconnect
+temporarily. This could also be achieved by having the device
+subscribe to NM_DEVICE_AUTOCONNECT_ALLOWED of self, or by adding
+a signal slot. But a plain function pointer seems easier.
+
+(cherry picked from commit 6eaded9071fbf868476255adb8ee5f416e7ad134)
+---
+ src/devices/nm-device.c | 11 ++++++++++-
+ src/devices/nm-device.h |  5 +++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 7f015c3..96fa9af 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -3445,6 +3445,12 @@ nm_device_set_autoconnect_both (NMDevice *self, gboolean autoconnect)
+ }
+ 
+ static gboolean
++get_autoconnect_allowed (NMDevice *self)
++{
++	return TRUE;
++}
++
++static gboolean
+ autoconnect_allowed_accumulator (GSignalInvocationHint *ihint,
+                                  GValue *return_accu,
+                                  const GValue *handler_return, gpointer data)
+@@ -3466,10 +3472,12 @@ gboolean
+ nm_device_autoconnect_allowed (NMDevice *self)
+ {
+ 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
++	NMDeviceClass *klass = NM_DEVICE_GET_CLASS (self);
+ 	GValue instance = G_VALUE_INIT;
+ 	GValue retval = G_VALUE_INIT;
+ 
+-	if (!nm_device_get_autoconnect (self))
++	if (   !nm_device_get_autoconnect (self)
++	    || !klass->get_autoconnect_allowed (self))
+ 		return FALSE;
+ 
+ 	/* Unrealized devices can always autoconnect. */
+@@ -13499,6 +13507,7 @@ nm_device_class_init (NMDeviceClass *klass)
+ 	klass->have_any_ready_slaves = have_any_ready_slaves;
+ 
+ 	klass->get_type_description = get_type_description;
++	klass->get_autoconnect_allowed = get_autoconnect_allowed;
+ 	klass->can_auto_connect = can_auto_connect;
+ 	klass->check_connection_compatible = check_connection_compatible;
+ 	klass->check_connection_available = check_connection_available;
+diff --git a/src/devices/nm-device.h b/src/devices/nm-device.h
+index 1b239c2..eb527cc 100644
+--- a/src/devices/nm-device.h
++++ b/src/devices/nm-device.h
+@@ -243,6 +243,11 @@ typedef struct {
+ 
+ 	void        (* set_enabled) (NMDevice *self, gboolean enabled);
+ 
++	/* allow derived classes to override the result of nm_device_autoconnect_allowed().
++	 * If the value changes, the class should call nm_device_emit_recheck_auto_activate(),
++	 * which emits NM_DEVICE_RECHECK_AUTO_ACTIVATE signal. */
++	gboolean    (* get_autoconnect_allowed) (NMDevice *self);
++
+ 	gboolean    (* can_auto_connect) (NMDevice *self,
+ 	                                  NMConnection *connection,
+ 	                                  char **specific_object);

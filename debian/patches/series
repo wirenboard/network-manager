@@ -6,3 +6,17 @@ systemd-Don-t-enable-NetworkManager-wait-online.serv.patch
 Fix-iscsiadm-path.patch
 libnm-disconnect-signal-from-D-Bus-proxies-on-dispose.patch
 dhcp-dhclient-parse-interface-statements.patch
+wifi-introduce-enum-type-NMSupplicantInterfaceState-inste.patch
+supplicant-rework-nm_supplicant_interface_set_config-to-i.patch
+supplicant-trivial-move-code-around.patch
+supplicant-use-nm_clear_g_cancellable-helper.patch
+supplicant-remove-unused-return-value-from-nm_supplicant_.patch
+supplicant-cleanup-network-when-cancelling-AddNetwork-req.patch
+supplicant-merge-NEW_BSS-signal-with-BSS_UPDATED.patch
+wifi-check-for-invalid-BSSID-in-nm_wifi_ap_update_from_pr.patch
+supplicant-delay-SCAN_DONE-signal-until-all-BSS-are-initi.patch
+wifi-only-react-on-AP-update-signal-when-there-are-actual.patch
+wifi-also-show-the-NM-D-Bus-path-for-the-Wi-Fi-AP-in-nm_w.patch
+device-separately-handle-NMDevice-s-autoconnect-by-user-a.patch
+device-add-get_autoconnect_allowed-virtual-function.patch
+device-wifi-block-autoconnect-while-scanning-is-in-progre.patch

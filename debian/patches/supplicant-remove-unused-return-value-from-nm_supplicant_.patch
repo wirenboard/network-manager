@@ -1,0 +1,107 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Wed, 15 Feb 2017 00:22:46 +0100
+Subject: supplicant: remove unused return value from
+ nm_supplicant_interface_request_scan()
+
+It cannot fail, remove code that anticipates a failure of request-scan.
+
+(cherry picked from commit dce13b6f11105422d54ee3aa3781ae77c875ae0f)
+---
+ src/devices/wifi/nm-device-wifi.c        | 22 +++++++---------------
+ src/supplicant/nm-supplicant-interface.c |  5 ++---
+ src/supplicant/nm-supplicant-interface.h |  2 +-
+ 3 files changed, 10 insertions(+), 19 deletions(-)
+
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index 9586817..33daa26 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -1422,9 +1422,7 @@ static void
+ request_wireless_scan (NMDeviceWifi *self, gboolean force_if_scanning, GVariant *scan_options)
+ {
+ 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+-	gboolean backoff = FALSE;
+-	GPtrArray *ssids = NULL;
+-	gboolean new_scan_requested = FALSE;
++	gboolean request_started = FALSE;
+ 
+ 	nm_clear_g_source (&priv->pending_scan_id);
+ 
+@@ -1434,6 +1432,8 @@ request_wireless_scan (NMDeviceWifi *self, gboolean force_if_scanning, GVariant
+ 	}
+ 
+ 	if (check_scanning_allowed (self)) {
++		gs_unref_ptrarray GPtrArray *ssids = NULL;
++
+ 		_LOGD (LOGD_WIFI, "wifi-scan: scanning requested");
+ 
+ 		if (scan_options) {
+@@ -1471,22 +1471,14 @@ request_wireless_scan (NMDeviceWifi *self, gboolean force_if_scanning, GVariant
+ 
+ 		_hw_addr_set_scanning (self, FALSE);
+ 
+-		if (nm_supplicant_interface_request_scan (priv->sup_iface, ssids)) {
+-			/* success */
+-			backoff = TRUE;
+-			_requested_scan_set (self, TRUE);
+-			new_scan_requested = TRUE;
+-		}
+-
+-		if (ssids)
+-			g_ptr_array_unref (ssids);
++		nm_supplicant_interface_request_scan (priv->sup_iface, ssids);
++		request_started = TRUE;
+ 	} else
+ 		_LOGD (LOGD_WIFI, "wifi-scan: scanning requested but not allowed at this time");
+ 
+-	if (!new_scan_requested)
+-		_requested_scan_set (self, FALSE);
++	_requested_scan_set (self, request_started);
+ 
+-	schedule_scan (self, backoff);
++	schedule_scan (self, request_started);
+ }
+ 
+ static gboolean
+diff --git a/src/supplicant/nm-supplicant-interface.c b/src/supplicant/nm-supplicant-interface.c
+index 725f6d4..ebedad6 100644
+--- a/src/supplicant/nm-supplicant-interface.c
++++ b/src/supplicant/nm-supplicant-interface.c
+@@ -1340,14 +1340,14 @@ scan_request_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ 	}
+ }
+ 
+-gboolean
++void
+ nm_supplicant_interface_request_scan (NMSupplicantInterface *self, const GPtrArray *ssids)
+ {
+ 	NMSupplicantInterfacePrivate *priv;
+ 	GVariantBuilder builder;
+ 	guint i;
+ 
+-	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), FALSE);
++	g_return_if_fail (NM_IS_SUPPLICANT_INTERFACE (self));
+ 
+ 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+ 
+@@ -1375,7 +1375,6 @@ nm_supplicant_interface_request_scan (NMSupplicantInterface *self, const GPtrArr
+ 	                   priv->other_cancellable,
+ 	                   (GAsyncReadyCallback) scan_request_cb,
+ 	                   self);
+-	return TRUE;
+ }
+ 
+ /*****************************************************************************/
+diff --git a/src/supplicant/nm-supplicant-interface.h b/src/supplicant/nm-supplicant-interface.h
+index 3498bb5..97ee38e 100644
+--- a/src/supplicant/nm-supplicant-interface.h
++++ b/src/supplicant/nm-supplicant-interface.h
+@@ -96,7 +96,7 @@ void nm_supplicant_interface_disconnect (NMSupplicantInterface * iface);
+ 
+ const char *nm_supplicant_interface_get_object_path (NMSupplicantInterface * iface);
+ 
+-gboolean nm_supplicant_interface_request_scan (NMSupplicantInterface * self, const GPtrArray *ssids);
++void nm_supplicant_interface_request_scan (NMSupplicantInterface * self, const GPtrArray *ssids);
+ 
+ NMSupplicantInterfaceState nm_supplicant_interface_get_state (NMSupplicantInterface * self);
+ 

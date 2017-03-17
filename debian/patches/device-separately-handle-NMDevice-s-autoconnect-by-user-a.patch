@@ -1,0 +1,232 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 14 Feb 2017 13:57:57 +0100
+Subject: device: separately handle NMDevice's autoconnect by user and
+ internal decision
+
+The NMDevice's autoconnect property is settable via D-Bus and is is
+also modified by internal decision, like when no PIN is available.
+
+Certain internal actions cause clearing the internal autoconnect flag,
+but they should not override the user desicion.
+
+For example, when NM awaks from sleep it would reenable autoconnect,
+but it should not reenable it for devices where the user explicitly
+said that autoconnect is to be disabled.
+
+Similarly, activating a device alone is not yet an instruction to
+re-enable autoconnect. If the user consciously disables autoconnect,
+it should stay enabled. On the other hand, activating a device should
+reenable autoconnect if it was blocked by internal decision.
+
+We need to track these two flags separately, and set them accordingly.
+
+(cherry picked from commit 2f9166e6b9c18af4801fd5cc6c01f7eaaeb9d538)
+---
+ src/devices/bluetooth/nm-device-bt.c |  2 +-
+ src/devices/nm-device.c              | 56 +++++++++++++++++++++++++-----------
+ src/devices/nm-device.h              |  2 +-
+ src/devices/wwan/nm-device-modem.c   |  2 +-
+ src/nm-manager.c                     |  2 +-
+ 5 files changed, 44 insertions(+), 20 deletions(-)
+
+diff --git a/src/devices/bluetooth/nm-device-bt.c b/src/devices/bluetooth/nm-device-bt.c
+index 31b9bbf..1266070 100644
+--- a/src/devices/bluetooth/nm-device-bt.c
++++ b/src/devices/bluetooth/nm-device-bt.c
+@@ -483,8 +483,8 @@ modem_prepare_result (NMModem *modem,
+ 			 * the device to be auto-activated anymore, which would risk locking
+ 			 * the SIM if the incorrect PIN continues to be used.
+ 			 */
+-			nm_device_set_autoconnect (device, FALSE);
+ 			_LOGI (LOGD_MB, "disabling autoconnect due to failed SIM PIN");
++			nm_device_set_autoconnect_intern (device, FALSE);
+ 		}
+ 
+ 		nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, reason);
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 2a2d276..7f015c3 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -416,7 +416,8 @@ typedef struct _NMDevicePrivate {
+ 	gboolean needs_ip6_subnet;
+ 
+ 	/* allow autoconnect feature */
+-	bool autoconnect;
++	bool autoconnect_intern:1;
++	bool autoconnect_user:1;
+ 
+ 	/* master interface for bridge/bond/team slave */
+ 	NMDevice *      master;
+@@ -482,6 +483,9 @@ static NMActStageReturn linklocal6_start (NMDevice *self);
+ 
+ static void _carrier_wait_check_queued_act_request (NMDevice *self);
+ 
++static void nm_device_set_autoconnect_both (NMDevice *self, gboolean autoconnect);
++static void nm_device_set_autoconnect_full (NMDevice *self, int autoconnect_intern, int autoconnect_user);
++
+ static const char *_activation_func_to_string (ActivationHandleFunc func);
+ static void activation_source_handle_cb (NMDevice *self, int family);
+ 
+@@ -2652,6 +2656,8 @@ realize_start_setup (NMDevice *self, const NMPlatformLink *plink)
+ 	if (real_rate)
+ 		priv->stats.timeout_id = g_timeout_add (real_rate, _stats_timeout_cb, self);
+ 
++	nm_device_set_autoconnect_full (self, !!DEFAULT_AUTOCONNECT, TRUE);
++
+ 	klass->realize_start_notify (self, plink);
+ 
+ 	/* Do not manage externally created software devices until they are IFF_UP
+@@ -2846,7 +2852,7 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
+ 	priv->real = FALSE;
+ 	_notify (self, PROP_REAL);
+ 
+-	nm_device_set_autoconnect (self, DEFAULT_AUTOCONNECT);
++	nm_device_set_autoconnect_both (self, FALSE);
+ 
+ 	g_object_thaw_notify (G_OBJECT (self));
+ 
+@@ -3398,25 +3404,44 @@ nm_device_set_enabled (NMDevice *self, gboolean enabled)
+ gboolean
+ nm_device_get_autoconnect (NMDevice *self)
+ {
++	NMDevicePrivate *priv;
++
+ 	g_return_val_if_fail (NM_IS_DEVICE (self), FALSE);
+ 
+-	return NM_DEVICE_GET_PRIVATE (self)->autoconnect;
++	priv = NM_DEVICE_GET_PRIVATE (self);
++	return priv->autoconnect_intern && priv->autoconnect_user;
+ }
+ 
+-void
+-nm_device_set_autoconnect (NMDevice *self, gboolean autoconnect)
++static void
++nm_device_set_autoconnect_full (NMDevice *self, int autoconnect_intern, int autoconnect_user)
+ {
+ 	NMDevicePrivate *priv;
++	gboolean old_value;
+ 
+ 	g_return_if_fail (NM_IS_DEVICE (self));
+ 
+-	autoconnect = !!autoconnect;
+-
+ 	priv = NM_DEVICE_GET_PRIVATE (self);
+-	if (priv->autoconnect != autoconnect) {
+-		priv->autoconnect = autoconnect;
++
++	old_value = nm_device_get_autoconnect (self);
++	if (autoconnect_intern != -1)
++		priv->autoconnect_intern = autoconnect_intern;
++	if (autoconnect_user != -1)
++		priv->autoconnect_user = autoconnect_user;
++	if (old_value != nm_device_get_autoconnect (self))
+ 		_notify (self, PROP_AUTOCONNECT);
+-	}
++}
++
++void
++nm_device_set_autoconnect_intern (NMDevice *self, gboolean autoconnect)
++{
++	nm_device_set_autoconnect_full (self, !!autoconnect, -1);
++}
++
++static void
++nm_device_set_autoconnect_both (NMDevice *self, gboolean autoconnect)
++{
++	autoconnect = !!autoconnect;
++	nm_device_set_autoconnect_full (self, autoconnect, autoconnect);
+ }
+ 
+ static gboolean
+@@ -3444,7 +3469,7 @@ nm_device_autoconnect_allowed (NMDevice *self)
+ 	GValue instance = G_VALUE_INIT;
+ 	GValue retval = G_VALUE_INIT;
+ 
+-	if (!priv->autoconnect)
++	if (!nm_device_get_autoconnect (self))
+ 		return FALSE;
+ 
+ 	/* Unrealized devices can always autoconnect. */
+@@ -8832,7 +8857,7 @@ disconnect_cb (NMDevice *self,
+ 		nm_audit_log_device_op (NM_AUDIT_OP_DEVICE_DISCONNECT, self, FALSE, subject, local->message);
+ 		g_dbus_method_invocation_take_error (context, local);
+ 	} else {
+-		nm_device_set_autoconnect (self, FALSE);
++		nm_device_set_autoconnect_intern (self, FALSE);
+ 
+ 		nm_device_state_changed (self,
+ 		                         NM_DEVICE_STATE_DEACTIVATING,
+@@ -11996,7 +12021,7 @@ _set_state_full (NMDevice *self,
+ 	/* Reset autoconnect flag when the device is activating or connected. */
+ 	if (   state >= NM_DEVICE_STATE_PREPARE
+ 	    && state <= NM_DEVICE_STATE_ACTIVATED)
+-		nm_device_set_autoconnect (self, TRUE);
++		nm_device_set_autoconnect_intern  (self, TRUE);
+ 
+ 	_notify (self, PROP_STATE);
+ 	_notify (self, PROP_STATE_REASON);
+@@ -12950,7 +12975,6 @@ nm_device_init (NMDevice *self)
+ 	priv->state_reason = NM_DEVICE_STATE_REASON_NONE;
+ 	priv->dhcp_timeout = 0;
+ 	priv->rfkill_type = RFKILL_TYPE_UNKNOWN;
+-	priv->autoconnect = DEFAULT_AUTOCONNECT;
+ 	priv->unmanaged_flags = NM_UNMANAGED_PLATFORM_INIT;
+ 	priv->unmanaged_mask = priv->unmanaged_flags;
+ 	priv->available_connections = g_hash_table_new_full (g_direct_hash, g_direct_equal, g_object_unref, NULL);
+@@ -13222,7 +13246,7 @@ set_property (GObject *object, guint prop_id,
+ 		}
+ 		break;
+ 	case PROP_AUTOCONNECT:
+-		nm_device_set_autoconnect (self, g_value_get_boolean (value));
++		nm_device_set_autoconnect_both (self, g_value_get_boolean (value));
+ 		break;
+ 	case PROP_FIRMWARE_MISSING:
+ 		/* construct-only */
+@@ -13348,7 +13372,7 @@ get_property (GObject *object, guint prop_id,
+ 		g_value_set_boolean (value, nm_device_get_state (self) > NM_DEVICE_STATE_UNMANAGED);
+ 		break;
+ 	case PROP_AUTOCONNECT:
+-		g_value_set_boolean (value, priv->autoconnect);
++		g_value_set_boolean (value, nm_device_get_autoconnect (self));
+ 		break;
+ 	case PROP_FIRMWARE_MISSING:
+ 		g_value_set_boolean (value, priv->firmware_missing);
+diff --git a/src/devices/nm-device.h b/src/devices/nm-device.h
+index e512f2c..1b239c2 100644
+--- a/src/devices/nm-device.h
++++ b/src/devices/nm-device.h
+@@ -577,7 +577,7 @@ gboolean nm_device_unrealize          (NMDevice *device,
+                                        GError **error);
+ 
+ gboolean nm_device_get_autoconnect (NMDevice *device);
+-void nm_device_set_autoconnect (NMDevice *device, gboolean autoconnect);
++void nm_device_set_autoconnect_intern (NMDevice *device, gboolean autoconnect);
+ void nm_device_emit_recheck_auto_activate (NMDevice *device);
+ 
+ void nm_device_state_changed (NMDevice *device,
+diff --git a/src/devices/wwan/nm-device-modem.c b/src/devices/wwan/nm-device-modem.c
+index 7a70a0b..ee263d9 100644
+--- a/src/devices/wwan/nm-device-modem.c
++++ b/src/devices/wwan/nm-device-modem.c
+@@ -128,7 +128,7 @@ modem_prepare_result (NMModem *modem,
+ 			 * the device to be auto-activated anymore, which would risk locking
+ 			 * the SIM if the incorrect PIN continues to be used.
+ 			 */
+-			nm_device_set_autoconnect (device, FALSE);
++			nm_device_set_autoconnect_intern (device, FALSE);
+ 			_LOGI (LOGD_MB, "disabling autoconnect due to failed SIM PIN");
+ 		}
+ 
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index f433c32..cb3a679 100644
+--- a/src/nm-manager.c
++++ b/src/nm-manager.c
+@@ -4272,7 +4272,7 @@ do_sleep_wake (NMManager *self, gboolean sleeping_changed)
+ 					nm_device_set_enabled (device, enabled);
+ 			}
+ 
+-			nm_device_set_autoconnect (device, TRUE);
++			nm_device_set_autoconnect_intern (device, TRUE);
+ 
+ 			nm_device_set_unmanaged_by_flags (device, NM_UNMANAGED_SLEEPING, FALSE, NM_DEVICE_STATE_REASON_NOW_MANAGED);
+ 		}
