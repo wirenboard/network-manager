@@ -4,3 +4,4 @@ Fix-arping-path.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 systemd-Don-t-enable-NetworkManager-wait-online.serv.patch
 Fix-iscsiadm-path.patch
+core-fix-reading-device-state-file.patch

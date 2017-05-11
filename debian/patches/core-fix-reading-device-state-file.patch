@@ -1,0 +1,64 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Thu, 11 May 2017 19:40:55 +0200
+Subject: core: fix reading device state file
+
+For manged=unknown, we don't write the value to the
+device state keyfile. The results in an empty file,
+or at least, a keyfile that doesn't have device.managed
+set.
+
+On read, we must treat a missing device.managed flag as
+unknown, and not as unmanaged. Otherwise, on restart
+a device becomes marked as explicitly unmanaged.
+
+This was broken by commit 142ebb1 "core: only persist explicit managed
+state in device's state file", where we started conditionally
+to no longer write the managed state.
+
+Reported-by: Michael Biebl <mbiebl@debian.org>
+Fixes: 142ebb10376ec592593f15b0359f38be89c97620
+(cherry picked from commit 348ffdec183ee198499dad1365906e8d16ff4122)
+(cherry picked from commit 33d3ec3b3e5d2e737afc8db6c64850e67db5c12d)
+---
+ src/nm-config.c | 24 +++++++++++++-----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/src/nm-config.c b/src/nm-config.c
+index 2cdf855..5033d5c 100644
+--- a/src/nm-config.c
++++ b/src/nm-config.c
+@@ -1887,21 +1887,23 @@ _config_device_state_data_new (int ifindex, GKeyFile *kf)
+ 	nm_assert (ifindex > 0);
+ 
+ 	if (kf) {
+-		gboolean managed;
+-
+-		managed = nm_config_keyfile_get_boolean (kf,
+-		                                         DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+-		                                         DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED,
+-		                                         FALSE);
+-		managed_type = managed
+-		               ? NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED
+-		               : NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNMANAGED;
+-
+-		if (managed) {
++		switch (nm_config_keyfile_get_boolean (kf,
++		                                       DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
++		                                       DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED,
++		                                       -1)) {
++		case TRUE:
++			managed_type = NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED;
+ 			connection_uuid = nm_config_keyfile_get_value (kf,
+ 			                                               DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+ 			                                               DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_CONNECTION_UUID,
+ 			                                               NM_CONFIG_GET_VALUE_STRIP | NM_CONFIG_GET_VALUE_NO_EMPTY);
++			break;
++		case FALSE:
++			managed_type = NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNMANAGED;
++			break;
++		case -1:
++			/* missing property in keyfile. */
++			break;
+ 		}
+ 
+ 		perm_hw_addr_fake = nm_config_keyfile_get_value (kf,
