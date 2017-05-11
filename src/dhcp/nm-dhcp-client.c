@@ -68,7 +68,7 @@ typedef struct _NMDhcpClientPrivate {
 	GByteArray * duid;
 	GBytes *     client_id;
 	char *       hostname;
-	char *       fqdn;
+	gboolean     use_fqdn;
 
 	NMDhcpState  state;
 	pid_t        pid;
@@ -147,6 +147,14 @@ nm_dhcp_client_get_priority (NMDhcpClient *self)
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->priority;
 }
 
+guint32
+nm_dhcp_client_get_timeout (NMDhcpClient *self)
+{
+	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), 0);
+
+	return NM_DHCP_CLIENT_GET_PRIVATE (self)->timeout;
+}
+
 GBytes *
 nm_dhcp_client_get_client_id (NMDhcpClient *self)
 {
@@ -178,12 +186,12 @@ nm_dhcp_client_get_hostname (NMDhcpClient *self)
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->hostname;
 }
 
-const char *
-nm_dhcp_client_get_fqdn (NMDhcpClient *self)
+gboolean
+nm_dhcp_client_get_use_fqdn (NMDhcpClient *self)
 {
-	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
+	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 
-	return NM_DHCP_CLIENT_GET_PRIVATE (self)->fqdn;
+	return NM_DHCP_CLIENT_GET_PRIVATE (self)->use_fqdn;
 }
 
 /*****************************************************************************/
@@ -298,7 +306,6 @@ nm_dhcp_client_set_state (NMDhcpClient *self,
 		g_assert (   (priv->ipv6 && NM_IS_IP6_CONFIG (ip_config))
 		          || (!priv->ipv6 && NM_IS_IP4_CONFIG (ip_config)));
 		g_assert (options);
-		g_assert_cmpint (g_hash_table_size (options), >, 0);
 	} else {
 		g_assert (ip_config == NULL);
 		g_assert (options == NULL);
@@ -409,7 +416,7 @@ nm_dhcp_client_start_ip4 (NMDhcpClient *self,
                           const char *dhcp_client_id,
                           const char *dhcp_anycast_addr,
                           const char *hostname,
-                          const char *fqdn,
+                          gboolean use_fqdn,
                           const char *last_ip4_address)
 {
 	NMDhcpClientPrivate *priv;
@@ -430,8 +437,7 @@ nm_dhcp_client_start_ip4 (NMDhcpClient *self,
 
 	g_clear_pointer (&priv->hostname, g_free);
 	priv->hostname = g_strdup (hostname);
-	g_free (priv->fqdn);
-	priv->fqdn = g_strdup (fqdn);
+	priv->use_fqdn = use_fqdn;
 
 	return NM_DHCP_CLIENT_GET_CLASS (self)->ip4_start (self, dhcp_anycast_addr, last_ip4_address);
 }
@@ -571,7 +577,7 @@ nm_dhcp_client_stop_existing (const char *pid_file, const char *binary_name)
 	if (start_time == 0)
 		goto out;
 
-	nm_sprintf_buf (proc_path, "/proc/%lu/cmdline", (long unsigned) pid);
+	nm_sprintf_buf (proc_path, "/proc/%lu/cmdline", (unsigned long) pid);
 	if (!g_file_get_contents (proc_path, &proc_contents, NULL, NULL))
 		goto out;
 
@@ -904,7 +910,6 @@ dispose (GObject *object)
 
 	g_clear_pointer (&priv->iface, g_free);
 	g_clear_pointer (&priv->hostname, g_free);
-	g_clear_pointer (&priv->fqdn, g_free);
 	g_clear_pointer (&priv->uuid, g_free);
 	g_clear_pointer (&priv->client_id, g_bytes_unref);
 

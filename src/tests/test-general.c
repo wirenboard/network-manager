@@ -23,6 +23,9 @@
 #include <string.h>
 #include <errno.h>
 
+/* need math.h for isinf() and INFINITY. No need to link with -lm */
+#include <math.h>
+
 #include "NetworkManagerUtils.h"
 #include "nm-core-internal.h"
 
@@ -225,7 +228,7 @@ test_nm_utils_log_connection_diff (void)
 	 * early without doing anything. Hence, in the normal testing, this test does nothing.
 	 * It only gets interesting, when run verbosely with NMTST_DEBUG=debug ... */
 
-	nm_log (LOGL_DEBUG, LOGD_CORE, "START TEST test_nm_utils_log_connection_diff...");
+	nm_log (LOGL_DEBUG, LOGD_CORE, NULL, NULL, "START TEST test_nm_utils_log_connection_diff...");
 
 	connection = nm_simple_connection_new ();
 	nm_connection_add_setting (connection, nm_setting_connection_new ());
@@ -309,6 +312,30 @@ _match_connection_new (void)
 	return connection;
 }
 
+static NMConnection *
+_match_connection (GSList *connections,
+                   NMConnection *original,
+                   gboolean device_has_carrier,
+                   gint64 default_v4_metric,
+                   gint64 default_v6_metric)
+{
+	NMConnection **list;
+	guint i, len;
+
+	len = g_slist_length (connections);
+	g_assert (len < 10);
+
+	list = g_alloca ((len + 1) * sizeof (NMConnection *));
+	for (i = 0; i < len; i++, connections = connections->next) {
+		g_assert (connections);
+		g_assert (connections->data);
+		list[i] = connections->data;
+	}
+	list[i] = NULL;
+
+	return nm_utils_match_connection (list, original, device_has_carrier, default_v4_metric, default_v6_metric, NULL, NULL);
+}
+
 static void
 test_connection_match_basic (void)
 {
@@ -320,7 +347,7 @@ test_connection_match_basic (void)
 	copy = nm_simple_connection_new_clone (orig);
 	connections = g_slist_append (connections, copy);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	/* Now change a material property like IPv4 method and ensure matching fails */
@@ -329,7 +356,7 @@ test_connection_match_basic (void)
 	g_object_set (G_OBJECT (s_ip4),
 	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_LINK_LOCAL,
 	              NULL);
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == NULL);
 
 	g_slist_free (connections);
@@ -365,7 +392,7 @@ test_connection_match_ip6_method (void)
 	              NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE,
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	g_slist_free (connections);
@@ -399,7 +426,7 @@ test_connection_match_ip6_method_ignore (void)
 	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	g_slist_free (connections);
@@ -433,7 +460,7 @@ test_connection_match_ip6_method_ignore_auto (void)
 	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	g_slist_free (connections);
@@ -469,11 +496,11 @@ test_connection_match_ip4_method (void)
 	              NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE,
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, FALSE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, FALSE, 0, 0);
 	g_assert (matched == copy);
 
 	/* Ensure when carrier=true matching fails */
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == NULL);
 
 	g_slist_free (connections);
@@ -507,7 +534,7 @@ test_connection_match_interface_name (void)
 	              NM_SETTING_CONNECTION_INTERFACE_NAME, NULL,
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	g_slist_free (connections);
@@ -544,7 +571,7 @@ test_connection_match_wired (void)
 	              NM_SETTING_WIRED_S390_NETTYPE, "qeth",
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	g_slist_free (connections);
@@ -576,7 +603,7 @@ test_connection_match_wired2 (void)
 	 * the connections match. It can happen if assuming VLAN devices. */
 	nm_connection_remove_setting (orig, NM_TYPE_SETTING_WIRED);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == copy);
 
 	g_slist_free (connections);
@@ -601,7 +628,7 @@ test_connection_match_cloned_mac (void)
 	              NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "52:54:00:ab:db:23",
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == fuzzy);
 
 	exact = nm_simple_connection_new_clone (orig);
@@ -612,14 +639,14 @@ test_connection_match_cloned_mac (void)
 	              NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "52:54:00:ab:db:23",
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == exact);
 
 	g_object_set (G_OBJECT (s_wired),
 	              NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "52:54:00:ab:db:24",
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched == fuzzy);
 
 	g_slist_free (connections);
@@ -679,7 +706,7 @@ test_connection_no_match_ip4_addr (void)
 	nm_setting_ip_config_add_address (s_ip4, nm_addr);
 	nm_ip_address_unref (nm_addr);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched != copy);
 
 	g_slist_free (connections);
@@ -725,7 +752,7 @@ test_connection_no_match_vlan (void)
 	              NM_SETTING_VLAN_FLAGS, 0,
 	              NULL);
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched != copy);
 
 	/* Check that the connections do not match if VLAN priorities differ */
@@ -735,7 +762,7 @@ test_connection_no_match_vlan (void)
 	g_object_set (G_OBJECT (s_vlan_copy), NM_SETTING_VLAN_FLAGS, 0, NULL);
 	nm_setting_vlan_add_priority_str (s_vlan_copy, NM_VLAN_INGRESS_MAP, "4:2");
 
-	matched = nm_utils_match_connection (connections, orig, TRUE, 0, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, TRUE, 0, 0);
 	g_assert (matched != copy);
 
 	g_slist_free (connections);
@@ -775,7 +802,7 @@ test_connection_match_ip4_routes1 (void)
 	nmtst_setting_ip_config_add_route (s_ip4, "172.25.17.0", 24, "10.0.0.3", 20);
 
 	/* Try to match the connections */
-	matched = nm_utils_match_connection (connections, orig, FALSE, 100, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, FALSE, 100, 0);
 	g_assert (matched == NULL);
 }
 
@@ -812,9 +839,9 @@ test_connection_match_ip4_routes2 (void)
 	nmtst_setting_ip_config_add_route (s_ip4, "172.25.16.0", 24, "10.0.0.2", 100);
 
 	/* Try to match the connections using different default metrics */
-	matched = nm_utils_match_connection (connections, orig, FALSE, 100, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, FALSE, 100, 0);
 	g_assert (matched == copy);
-	matched = nm_utils_match_connection (connections, orig, FALSE, 500, 0, NULL, NULL);
+	matched = _match_connection (connections, orig, FALSE, 500, 0);
 	g_assert (matched == NULL);
 }
 
@@ -849,9 +876,9 @@ test_connection_match_ip6_routes (void)
 	nmtst_setting_ip_config_add_route (s_ip6, "2001:db8:a:b:0:0:0:0", 64, "fd01::16", 50);
 
 	/* Try to match the connections */
-	matched = nm_utils_match_connection (connections, orig, FALSE, 0, 100, NULL, NULL);
+	matched = _match_connection (connections, orig, FALSE, 0, 100);
 	g_assert (matched == NULL);
-	matched = nm_utils_match_connection (connections, orig, FALSE, 0, 50, NULL, NULL);
+	matched = _match_connection (connections, orig, FALSE, 0, 50);
 	g_assert (matched == copy);
 }
 
@@ -868,6 +895,12 @@ _create_connection_autoconnect (const char *id, gboolean autoconnect, int autoco
 	              NULL);
 	nmtst_connection_normalize (c);
 	return c;
+}
+
+static int
+_cmp_autoconnect_priority_p_with_data (gconstpointer pa, gconstpointer pb, gpointer user_data)
+{
+	return nm_utils_cmp_connection_by_autoconnect_priority (*((NMConnection **) pa), *((NMConnection **) pb));
 }
 
 static void
@@ -892,12 +925,12 @@ _test_connection_sort_autoconnect_priority_one (NMConnection **list, gboolean sh
 	}
 
 	/* sort it... */
-	g_ptr_array_sort (connections, (GCompareFunc) nm_utils_cmp_connection_by_autoconnect_priority);
+	g_ptr_array_sort_with_data (connections, _cmp_autoconnect_priority_p_with_data, NULL);
 
 	for (i = 0; i < count; i++) {
 		if (list[i] == connections->pdata[i])
 			continue;
-		if (shuffle && nm_utils_cmp_connection_by_autoconnect_priority (&list[i], (NMConnection **) &connections->pdata[i]) == 0)
+		if (shuffle && nm_utils_cmp_connection_by_autoconnect_priority (list[i], connections->pdata[i]) == 0)
 			continue;
 		g_message ("After sorting, the order of connections is not as expected!! Offending index: %d", i);
 		for (j = 0; j < count; j++)
@@ -956,13 +989,25 @@ test_connection_sort_autoconnect_priority (void)
 /*****************************************************************************/
 
 #define MATCH_S390 "S390:"
+#define MATCH_DRIVER "DRIVER:"
 
 static NMMatchSpecMatchType
 _test_match_spec_device (const GSList *specs, const char *match_str)
 {
 	if (match_str && g_str_has_prefix (match_str, MATCH_S390))
-		return nm_match_spec_device (specs, NULL, NULL, NULL, &match_str[NM_STRLEN (MATCH_S390)]);
-	return nm_match_spec_device (specs, match_str, NULL, NULL, NULL);
+		return nm_match_spec_device (specs, NULL, NULL, NULL, NULL, NULL, &match_str[NM_STRLEN (MATCH_S390)]);
+	if (match_str && g_str_has_prefix (match_str, MATCH_DRIVER)) {
+		gs_free char *s = g_strdup (&match_str[NM_STRLEN (MATCH_DRIVER)]);
+		char *t;
+
+		t = strchr (s, '|');
+		if (t) {
+			t[0] = '\0';
+			t++;
+		}
+		return nm_match_spec_device (specs, NULL, NULL, s, t, NULL, NULL);
+	}
+	return nm_match_spec_device (specs, match_str, NULL, NULL, NULL, NULL, NULL);
 }
 
 static void
@@ -1067,6 +1112,10 @@ test_match_spec_device (void)
 	                            S ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
 	                            NULL,
 	                            NULL);
+	_do_test_match_spec_device ("except:*",
+	                            NULL,
+	                            S (NULL),
+	                            S ("a"));
 	_do_test_match_spec_device ("interface-name:=em*",
 	                            S ("em*"),
 	                            NULL,
@@ -1108,6 +1157,23 @@ test_match_spec_device (void)
 	                            NULL,
 	                            S (NULL),
 	                            S (MATCH_S390"0.0.1000", MATCH_S390"0.0.1000,deadbeef", MATCH_S390"0.0.1000,0.0.1001", MATCH_S390"0.0.1000,0.0.1002"));
+
+	_do_test_match_spec_device ("driver:DRV",
+	                            S (MATCH_DRIVER"DRV", MATCH_DRIVER"DRV|1.6"),
+	                            S (MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NULL);
+	_do_test_match_spec_device ("driver:DRV//",
+	                            S (MATCH_DRIVER"DRV/"),
+	                            S (MATCH_DRIVER"DRV/|1.6", MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NULL);
+	_do_test_match_spec_device ("driver:DRV//*",
+	                            S (MATCH_DRIVER"DRV/", MATCH_DRIVER"DRV/|1.6"),
+	                            S (MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NULL);
+	_do_test_match_spec_device ("driver:DRV//1.5*",
+	                            S (MATCH_DRIVER"DRV/|1.5", MATCH_DRIVER"DRV/|1.5.2"),
+	                            S (MATCH_DRIVER"DRV/", MATCH_DRIVER"DRV/|1.6", MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NULL);
 #undef S
 }
 
@@ -1590,6 +1656,53 @@ test_stable_id_generated_complete (void)
 
 /*****************************************************************************/
 
+static void
+test_nm_utils_exp10 (void)
+{
+#define FLOAT_CMP(a, b) \
+	G_STMT_START { \
+		double _a = (a); \
+		double _b = (b); \
+		\
+		if (isinf (_b)) \
+			g_assert (isinf (_a)); \
+		else if (_b >= 0.0 && _b <= 0.0) \
+			g_assert (_a - _b < G_MINFLOAT); \
+		else { \
+			double _x = (_a) - (_b); \
+			g_assert (_b > 0.0); \
+			if (_x < 0.0) \
+				_x = -_x; \
+			g_assert (_x / _b <  1E-10); \
+		} \
+	} G_STMT_END
+
+	FLOAT_CMP (nm_utils_exp10 (G_MININT16),  0.0);
+	FLOAT_CMP (nm_utils_exp10 (-310),        0.0);
+	FLOAT_CMP (nm_utils_exp10 (-309),        0.0);
+	FLOAT_CMP (nm_utils_exp10 (-308),        1e-308);
+	FLOAT_CMP (nm_utils_exp10 (-307),        1e-307);
+	FLOAT_CMP (nm_utils_exp10 (-1),          1e-1);
+	FLOAT_CMP (nm_utils_exp10 (-2),          1e-2);
+	FLOAT_CMP (nm_utils_exp10 (0),           1e0);
+	FLOAT_CMP (nm_utils_exp10 (1),           1e1);
+	FLOAT_CMP (nm_utils_exp10 (2),           1e2);
+	FLOAT_CMP (nm_utils_exp10 (3),           1e3);
+	FLOAT_CMP (nm_utils_exp10 (4),           1e4);
+	FLOAT_CMP (nm_utils_exp10 (5),           1e5);
+	FLOAT_CMP (nm_utils_exp10 (6),           1e6);
+	FLOAT_CMP (nm_utils_exp10 (7),           1e7);
+	FLOAT_CMP (nm_utils_exp10 (122),         1e122);
+	FLOAT_CMP (nm_utils_exp10 (200),         1e200);
+	FLOAT_CMP (nm_utils_exp10 (307),         1e307);
+	FLOAT_CMP (nm_utils_exp10 (308),         1e308);
+	FLOAT_CMP (nm_utils_exp10 (309),         INFINITY);
+	FLOAT_CMP (nm_utils_exp10 (310),         INFINITY);
+	FLOAT_CMP (nm_utils_exp10 (G_MAXINT16),  INFINITY);
+}
+
+/*****************************************************************************/
+
 NMTST_DEFINE ();
 
 int
@@ -1602,6 +1715,8 @@ main (int argc, char **argv)
 	g_test_add_func ("/general/nm_utils_ip6_address_clear_host_address", test_nm_utils_ip6_address_clear_host_address);
 	g_test_add_func ("/general/nm_utils_ip6_address_same_prefix", test_nm_utils_ip6_address_same_prefix);
 	g_test_add_func ("/general/nm_utils_log_connection_diff", test_nm_utils_log_connection_diff);
+
+	g_test_add_func ("/general/exp10", test_nm_utils_exp10);
 
 	g_test_add_func ("/general/connection-match/basic", test_connection_match_basic);
 	g_test_add_func ("/general/connection-match/ip6-method", test_connection_match_ip6_method);

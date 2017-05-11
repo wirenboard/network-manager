@@ -5,7 +5,7 @@
 <refentry id="gdbus-org.freedesktop.NetworkManager.Device.Vlan">
   <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-freedesktop-NetworkManager-Device-Vlan.top_of_page">org.freedesktop.NetworkManager.Device.Vlan</refentrytitle>
   <indexterm zone="gdbus-interface-org-freedesktop-NetworkManager-Device-Vlan.top_of_page"><primary sortas=".Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</primary></indexterm>
-  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.Device.Vlan</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsect1 role="signal_proto">
+  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.Device.Vlan</refname>    <refpurpose>Virtual LAN Device</refpurpose>  </refnamediv>  <refsect1 role="signal_proto">
     <title role="signal_proto.title">Signals</title>
     <synopsis>
 <link linkend="gdbus-signal-org-freedesktop-NetworkManager-Device-Vlan.PropertiesChanged">PropertiesChanged</link> (a{sv} properties);

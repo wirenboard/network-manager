@@ -85,7 +85,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="property_type"><a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
+<td class="property_type"><span class="type">gint</span></td>
 <td class="property_name"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--addr-gen-mode" title="The “addr-gen-mode” property">addr-gen-mode</a></td>
 <td class="property_flags">Read / Write / Construct</td>
 </tr>
@@ -96,7 +96,7 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--token" title="The “token” property">token</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -168,10 +168,10 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingIP6Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NMSettingIP6ConfigAddrGenMode
     <span class="lineart">╰──</span> NMSettingIP6ConfigPrivacy
-    <a href="/usr/share/gtk-doc/html/gobjectgobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
             <span class="lineart">╰──</span> NMSettingIP6Config
@@ -460,13 +460,14 @@ specified by RFC7217.</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config-struct"></a><h3>NMSettingIP6Config</h3>
 <pre class="programlisting">typedef struct _NMSettingIP6Config NMSettingIP6Config;</pre>
+<p>IPv6 Settings</p>
 </div>
 </div>
 <div class="refsect1">
 <a name="NMSettingIP6Config.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingIP6Config--addr-gen-mode"></a><h3>The <code class="literal">“addr-gen-mode”</code> property</h3>
-<pre class="programlisting">  “addr-gen-mode”            <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
+<pre class="programlisting">  “addr-gen-mode”            <span class="type">gint</span></pre>
 <p>Configure method for creating the address for use with RFC4862 IPv6
 Stateless Address Autoconfiguration. The permitted values are: "eui64",
 or "stable-privacy".</p>
@@ -516,7 +517,7 @@ setting as another way of avoiding host tracking with IPv6 addresses.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--token"></a><h3>The <code class="literal">“token”</code> property</h3>
-<pre class="programlisting">  “token”                    <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “token”                    <span class="type">gchar</span> *</pre>
 <p>Configure the token for draft-chown-6man-tokenised-ipv6-identifiers-02
 IPv6 tokenized interface identifiers. Useful with eui64 addr-gen-mode.</p>
 <p>Flags: Read / Write</p>

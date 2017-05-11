@@ -33,6 +33,7 @@
 #include "nm-utils.h"
 #include "nm-setting-connection.h"
 #include "nm-setting-wired.h"
+#include "nm-setting-user.h"
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
 #include "nm-setting-ip4-config.h"
@@ -81,27 +82,170 @@
 		shvarFile *const _f = (f); \
 		const char *const _key = (key); \
 		\
-		_val_string = svGetValueString (_f, _key); \
+		_val_string = svGetValueStr_cp (_f, _key); \
 		_val = svGetValue (_f, _key, &_to_free); \
 		g_assert_cmpstr (_val, ==, (expected_value)); \
 		g_assert (   (!_val_string && (!_val || !_val[0])) \
 		          || ( _val_string && nm_streq0 (_val, _val_string))); \
 	} G_STMT_END
 
-#define _writer_update_connection(connection, ifcfg_dir, filename) \
+static void
+_assert_reread_same (NMConnection *connection, NMConnection *reread)
+{
+	nmtst_assert_connection_verifies_without_normalization (reread);
+	nmtst_assert_connection_equals (connection, TRUE, reread, FALSE);
+}
+
+static void
+_assert_reread_same_FIXME (NMConnection *connection, NMConnection *reread)
+{
+	gs_unref_object NMConnection *connection_normalized = NULL;
+	gs_unref_hashtable GHashTable *settings = NULL;
+
+	/* FIXME: these assertion failures should not happen as we expect
+	 * that re-reading a connection after write yields the same result.
+	 *
+	 * Needs investation and fixing. */
+	nmtst_assert_connection_verifies_without_normalization (reread);
+
+	connection_normalized = nmtst_connection_duplicate_and_normalize (connection);
+
+	g_assert (!nm_connection_compare (connection_normalized, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+	g_assert (!nm_connection_diff (connection_normalized, reread, NM_SETTING_COMPARE_FLAG_EXACT, &settings));
+}
+
+/* dummy path for an "expected" file, meaning: don't check for expected
+ * written ifcfg file. */
+static const char const NO_EXPECTED[1];
+
+static void
+_assert_expected_content (NMConnection *connection, const char *filename, const char *expected)
+{
+	gs_free char *content_expectd = NULL;
+	gs_free char *content_written = NULL;
+	GError *error = NULL;
+	gsize len_expectd = 0;
+	gsize len_written = 0;
+	gboolean success;
+	const char *uuid = NULL;
+
+	g_assert (NM_IS_CONNECTION (connection));
+	g_assert (filename);
+	g_assert (g_file_test (filename, G_FILE_TEST_EXISTS));
+
+	g_assert (expected);
+	if (expected == NO_EXPECTED)
+		return;
+
+	success = g_file_get_contents (filename, &content_written, &len_written, &error);
+	nmtst_assert_success (success, error);
+
+	success = g_file_get_contents (expected, &content_expectd, &len_expectd, &error);
+	nmtst_assert_success (success, error);
+
+	{
+		gsize i, j;
+
+		for (i = 0; i < len_expectd; ) {
+			if (content_expectd[i] != '$') {
+				i++;
+				continue;
+			}
+			if (g_str_has_prefix (&content_expectd[i], "${UUID}")) {
+				GString *str;
+
+				if (!uuid) {
+					uuid = nm_connection_get_uuid (connection);
+					g_assert (uuid);
+				}
+
+				j = strlen (uuid);
+
+				str = g_string_new_len (content_expectd, len_expectd);
+				g_string_erase (str, i, NM_STRLEN ("${UUID}"));
+				g_string_insert_len (str, i, uuid, j);
+
+				g_free (content_expectd);
+				len_expectd = str->len;
+				content_expectd = g_string_free (str, FALSE);
+				i += j;
+				continue;
+			}
+
+			/* other '$' is not supported. If need be, support escaping of
+			 * '$' via '$$'. */
+			g_assert_not_reached ();
+		}
+	}
+
+	if (   len_expectd != len_written
+	    || memcmp (content_expectd, content_written, len_expectd) != 0) {
+		if (g_getenv ("NMTST_IFCFG_RH_UPDATE_EXPECTED")) {
+			if (uuid) {
+				gs_free char *search = g_strdup_printf ("UUID=%s\n", uuid);
+				const char *s;
+				gsize i;
+				GString *str;
+
+				s = content_written;
+				while (TRUE) {
+					s = strstr (s, search);
+					g_assert (s);
+					if (   s == content_written
+					    || s[-1] == '\n')
+						break;
+					s += strlen (search);
+				}
+
+				i = s - content_written;
+
+				str = g_string_new_len (content_written, len_written);
+				g_string_erase (str, i, strlen (search));
+				g_string_insert (str, i, "UUID=${UUID}\n");
+
+				len_written = str->len;
+				content_written = g_string_free (str, FALSE);
+			}
+			success = g_file_set_contents (expected, content_written, len_written, &error);
+			nmtst_assert_success (success, error);
+		} else {
+			g_error ("The content of \"%s\" (%zu) differs from \"%s\" (%zu). Set NMTST_IFCFG_RH_UPDATE_EXPECTED=yes to update the files inplace\n\n>>>%s<<<\n\n>>>%s<<<\n",
+			         filename, len_written,
+			         expected, len_expectd,
+			         content_written,
+			         content_expectd);
+		}
+	}
+}
+
+#define _writer_update_connection_reread(connection, ifcfg_dir, filename, expected, out_reread, out_reread_same) \
 	G_STMT_START { \
-		NMConnection *_connection = (connection); \
+		gs_unref_object NMConnection *_connection = nmtst_connection_duplicate_and_normalize (connection); \
+		NMConnection **_out_reread = (out_reread); \
+		gboolean *_out_reread_same = (out_reread_same); \
 		const char *_ifcfg_dir = (ifcfg_dir); \
 		const char *_filename = (filename); \
+		const char *_expected = (expected); \
 		GError *_error = NULL; \
 		gboolean _success; \
 		\
-		g_assert (NM_IS_CONNECTION (connection)); \
 		g_assert (_ifcfg_dir && _ifcfg_dir[0]); \
 		g_assert (_filename && _filename[0]); \
 		\
-		_success = writer_update_connection (_connection, _ifcfg_dir, _filename, &_error); \
+		_success = writer_update_connection (_connection, _ifcfg_dir, _filename, _out_reread, _out_reread_same, &_error); \
 		nmtst_assert_success (_success, _error); \
+		_assert_expected_content (_connection, _filename, _expected); \
+	} G_STMT_END
+
+#define _writer_update_connection(connection, ifcfg_dir, filename, expected) \
+	G_STMT_START { \
+		gs_unref_object NMConnection *_reread = NULL; \
+		NMConnection *_c = (connection); \
+		gboolean _reread_same = FALSE; \
+		\
+		_writer_update_connection_reread (_c, ifcfg_dir, filename, expected, &_reread, &_reread_same); \
+		_assert_reread_same (_c, _reread); \
+		g_assert (_reread_same); \
 	} G_STMT_END
 
 static NMConnection *
@@ -147,14 +291,19 @@ _connection_from_file_fail (const char *filename,
 }
 
 static void
-_writer_new_connection (NMConnection *connection,
-                        const char *ifcfg_dir,
-                        char **out_filename)
+_writer_new_connection_reread (NMConnection *connection,
+                               const char *ifcfg_dir,
+                               char **out_filename,
+                               const char *expected,
+                               NMConnection **out_reread,
+                               gboolean *out_reread_same)
 {
 	gboolean success;
 	GError *error = NULL;
 	char *filename = NULL;
 	gs_unref_object NMConnection *con_verified = NULL;
+	gs_unref_object NMConnection *reread_copy = NULL;
+	NMConnection **reread = out_reread ?: ((nmtst_get_rand_int () % 2) ? &reread_copy : NULL);
 
 	g_assert (NM_IS_CONNECTION (connection));
 	g_assert (ifcfg_dir);
@@ -164,14 +313,59 @@ _writer_new_connection (NMConnection *connection,
 	success = writer_new_connection (con_verified,
 	                                 ifcfg_dir,
 	                                 &filename,
+	                                 reread,
+	                                 out_reread_same,
 	                                 &error);
 	nmtst_assert_success (success, error);
 	g_assert (filename && filename[0]);
+
+	if (reread)
+		nmtst_assert_connection_verifies_without_normalization (*reread);
+
+	_assert_expected_content (con_verified, filename, expected);
 
 	if (out_filename)
 		*out_filename = filename;
 	else
 		g_free (filename);
+
+}
+
+static void
+_writer_new_connec_exp (NMConnection *connection,
+                        const char *ifcfg_dir,
+                        const char *expected,
+                        char **out_filename)
+{
+	gs_unref_object NMConnection *reread = NULL;
+	gboolean reread_same = FALSE;
+
+	_writer_new_connection_reread (connection, ifcfg_dir, out_filename, expected, &reread, &reread_same);
+	_assert_reread_same (connection, reread);
+	g_assert (reread_same);
+}
+
+static void
+_writer_new_connection (NMConnection *connection,
+                        const char *ifcfg_dir,
+                        char **out_filename)
+{
+	_writer_new_connec_exp (connection, ifcfg_dir, NO_EXPECTED, out_filename);
+}
+
+static void
+_writer_new_connection_FIXME (NMConnection *connection,
+                              const char *ifcfg_dir,
+                              char **out_filename)
+{
+	gs_unref_object NMConnection *reread = NULL;
+	gboolean reread_same = FALSE;
+
+	/* FIXME: this should not happen. Fix it to use _writer_new_connection() instead. */
+
+	_writer_new_connection_reread (connection, ifcfg_dir, out_filename, NO_EXPECTED, &reread, &reread_same);
+	_assert_reread_same_FIXME (connection, reread);
+	g_assert (!reread_same);
 }
 
 static void
@@ -179,6 +373,8 @@ _writer_new_connection_fail (NMConnection *connection,
                              const char *ifcfg_dir,
                              GError **error)
 {
+	gs_unref_object NMConnection *connection_normalized = NULL;
+	gs_unref_object NMConnection *reread = NULL;
 	gboolean success;
 	GError *local = NULL;
 	char *filename = NULL;
@@ -186,12 +382,17 @@ _writer_new_connection_fail (NMConnection *connection,
 	g_assert (NM_IS_CONNECTION (connection));
 	g_assert (ifcfg_dir);
 
-	success = writer_new_connection (connection,
+	connection_normalized = nmtst_connection_duplicate_and_normalize (connection);
+
+	success = writer_new_connection (connection_normalized,
 	                                 ifcfg_dir,
 	                                 &filename,
+	                                 &reread,
+	                                 NULL,
 	                                 &local);
 	nmtst_assert_no_success (success, local);
 	g_assert (!filename);
+	g_assert (!reread);
 
 	g_propagate_error (error, local);
 }
@@ -897,6 +1098,62 @@ test_read_wired_obsolete_gateway_n (void)
 }
 
 static void
+test_user_1 (void)
+{
+	nmtst_auto_unlinkfile char *testfile = NULL;
+	gs_unref_object NMConnection *connection = NULL;
+	gs_unref_object NMConnection *reread = NULL;
+	NMSettingUser *s_user;
+
+	connection = nmtst_create_minimal_connection ("Test User 1", NULL, NM_SETTING_WIRED_SETTING_NAME, NULL);
+	s_user = NM_SETTING_USER (nm_setting_user_new ());
+
+#define _USER_SET_DATA(s_user, key, val) \
+	G_STMT_START { \
+		GError *_error = NULL; \
+		gboolean _success; \
+		\
+		_success = nm_setting_user_set_data ((s_user), (key), (val), &_error); \
+		nmtst_assert_success (_success, _error); \
+	} G_STMT_END
+
+#define _USER_SET_DATA_X(s_user, key) \
+	_USER_SET_DATA (s_user, key, "val="key"")
+
+	_USER_SET_DATA (s_user, "my.val1", "");
+	_USER_SET_DATA_X (s_user, "my.val2");
+	_USER_SET_DATA_X (s_user, "my.v__al3");
+	_USER_SET_DATA_X (s_user, "my._v");
+	_USER_SET_DATA_X (s_user, "my.v+");
+	_USER_SET_DATA_X (s_user, "my.Av");
+	_USER_SET_DATA_X (s_user, "MY.AV");
+	_USER_SET_DATA_X (s_user, "MY.8V");
+	_USER_SET_DATA_X (s_user, "MY.8-V");
+	_USER_SET_DATA_X (s_user, "MY.8_V");
+	_USER_SET_DATA_X (s_user, "MY.8+V");
+	_USER_SET_DATA_X (s_user, "MY.8/V");
+	_USER_SET_DATA_X (s_user, "MY.8=V");
+	_USER_SET_DATA_X (s_user, "MY.-");
+	_USER_SET_DATA_X (s_user, "MY._");
+	_USER_SET_DATA_X (s_user, "MY.+");
+	_USER_SET_DATA_X (s_user, "MY./");
+	_USER_SET_DATA_X (s_user, "MY.=");
+	_USER_SET_DATA_X (s_user, "my.keys.1");
+	_USER_SET_DATA_X (s_user, "my.other.KEY.42");
+
+	nm_connection_add_setting (connection, NM_SETTING (s_user));
+
+	_writer_new_connec_exp (connection,
+	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_User_1.cexpected",
+	                        &testfile);
+
+	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
+
+	nmtst_assert_connection_equals (connection, TRUE, reread, FALSE);
+}
+
+static void
 test_read_wired_never_default (void)
 {
 	NMConnection *connection;
@@ -1033,6 +1290,15 @@ test_read_wired_static_routes (void)
 	g_assert_cmpint (nm_ip_route_get_prefix (ip4_route), ==, 32);
 	g_assert_cmpstr (nm_ip_route_get_next_hop (ip4_route), ==, "192.168.1.7");
 	g_assert_cmpint (nm_ip_route_get_metric (ip4_route), ==, 3);
+	nmtst_assert_route_attribute_byte (ip4_route, NM_IP_ROUTE_ATTRIBUTE_TOS, 0x28);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_WINDOW, 30000);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_CWND, 12);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_INITCWND, 13);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_INITRWND, 14);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_MTU, 9000);
+	nmtst_assert_route_attribute_boolean (ip4_route, NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU, TRUE);
+	nmtst_assert_route_attribute_boolean (ip4_route, NM_IP_ROUTE_ATTRIBUTE_LOCK_INITCWND, TRUE);
+	nmtst_assert_route_attribute_string (ip4_route, NM_IP_ROUTE_ATTRIBUTE_SRC, "1.1.1.1");
 
 	g_object_unref (connection);
 }
@@ -1094,6 +1360,14 @@ test_read_wired_static_routes_legacy (void)
 	g_assert_cmpint (nm_ip_route_get_prefix (ip4_route), ==, 16);
 	g_assert_cmpstr (nm_ip_route_get_next_hop (ip4_route), ==, "7.7.7.7");
 	g_assert_cmpint (nm_ip_route_get_metric (ip4_route), ==, 3);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_WINDOW, 10000);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_CWND, 14);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_INITCWND, 42);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_INITRWND, 20);
+	nmtst_assert_route_attribute_uint32 (ip4_route, NM_IP_ROUTE_ATTRIBUTE_MTU, 9000);
+	nmtst_assert_route_attribute_boolean (ip4_route, NM_IP_ROUTE_ATTRIBUTE_LOCK_WINDOW, TRUE);
+	nmtst_assert_route_attribute_boolean (ip4_route, NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU, TRUE);
+	nmtst_assert_route_attribute_string (ip4_route, NM_IP_ROUTE_ATTRIBUTE_SRC, "1.2.3.4");
 
 	g_object_unref (connection);
 }
@@ -1234,7 +1508,7 @@ test_read_wired_ipv6_manual (void)
 	g_assert_cmpint (nm_ip_address_get_prefix (ip6_addr), ==, 96);
 
 	/* Routes */
-	g_assert_cmpint (nm_setting_ip_config_get_num_routes (s_ip6), ==, 2);
+	g_assert_cmpint (nm_setting_ip_config_get_num_routes (s_ip6), ==, 3);
 	/* Route #1 */
 	ip6_route = nm_setting_ip_config_get_route (s_ip6, 0);
 	g_assert (ip6_route);
@@ -1249,6 +1523,17 @@ test_read_wired_ipv6_manual (void)
 	g_assert_cmpint (nm_ip_route_get_prefix (ip6_route), ==, 64);
 	g_assert_cmpstr (nm_ip_route_get_next_hop (ip6_route), ==, NULL);
 	g_assert_cmpint (nm_ip_route_get_metric (ip6_route), ==, 777);
+	/* Route #3 */
+	ip6_route = nm_setting_ip_config_get_route (s_ip6, 2);
+	g_assert (ip6_route);
+	g_assert_cmpstr (nm_ip_route_get_dest (ip6_route), ==, "aaaa::cccc");
+	g_assert_cmpint (nm_ip_route_get_prefix (ip6_route), ==, 64);
+	g_assert_cmpstr (nm_ip_route_get_next_hop (ip6_route), ==, "3333::4444");
+	nmtst_assert_route_attribute_uint32 (ip6_route, NM_IP_ROUTE_ATTRIBUTE_CWND, 13);
+	nmtst_assert_route_attribute_uint32 (ip6_route, NM_IP_ROUTE_ATTRIBUTE_MTU, 1450);
+	nmtst_assert_route_attribute_boolean (ip6_route, NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU, TRUE);
+	nmtst_assert_route_attribute_string (ip6_route, NM_IP_ROUTE_ATTRIBUTE_FROM, "1111::2222/48");
+	nmtst_assert_route_attribute_string (ip6_route, NM_IP_ROUTE_ATTRIBUTE_SRC, "5555::6666");
 
 	/* DNS Addresses */
 	g_assert_cmpint (nm_setting_ip_config_get_num_dns (s_ip6), ==, 2);
@@ -1567,12 +1852,16 @@ test_read_write_802_1X_subj_matches (void)
 	g_assert_cmpstr (nm_setting_802_1x_get_phase2_altsubject_match (s_8021x, 0), ==, "x.yourdomain.tld");
 	g_assert_cmpstr (nm_setting_802_1x_get_phase2_altsubject_match (s_8021x, 1), ==, "y.yourdomain.tld");
 
-	_writer_new_connection (connection,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*missing IEEE_8021X_CA_CERT for EAP method 'peap'; this is insecure!");
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-System_test-wired-802-1X-subj-matches.cexpected",
 	                        &testfile);
+	g_test_assert_expected_messages ();
 
 	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
-	                       "*missing IEEE_8021X_CA_CERT*peap*");
+	                       "*missing IEEE_8021X_CA_CERT for EAP method 'peap'; this is insecure!");
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
 	g_test_assert_expected_messages ();
 
@@ -1624,24 +1913,38 @@ test_read_802_1x_ttls_eapgtc (void)
 }
 
 static void
-test_read_wired_aliases_good (void)
+test_read_wired_aliases_good (gconstpointer test_data)
 {
+	const int N = GPOINTER_TO_INT (test_data);
 	NMConnection *connection;
 	NMSettingConnection *s_con;
 	NMSettingIPConfig *s_ip4;
-	int expected_num_addresses = 4;
-	const char *expected_address[4] = { "192.168.1.5", "192.168.1.6", "192.168.1.9", "192.168.1.99" };
-	const char *expected_label[4] = { NULL, "aliasem0:1", "aliasem0:2", "aliasem0:99" };
+	int expected_num_addresses;
+	const char *expected_address_0[] = { "192.168.1.5", "192.168.1.6", "192.168.1.9", "192.168.1.99", NULL };
+	const char *expected_address_3[] = { "192.168.1.5", "192.168.1.6", NULL };
+	const char *expected_label_0[] = { NULL, "aliasem0:1", "aliasem0:2", "aliasem0:99", NULL, };
+	const char *expected_label_3[] = { NULL, "aliasem3:1", NULL, };
+	const char **expected_address;
+	const char **expected_label;
 	int i, j;
+	char path[256];
 
-	connection = _connection_from_file (TEST_IFCFG_DIR "/network-scripts/ifcfg-aliasem0",
-	                                    NULL, TYPE_ETHERNET, NULL);
+	expected_address = N == 0 ? expected_address_0 : expected_address_3;
+	expected_label   = N == 0 ? expected_label_0   : expected_label_3;
+	expected_num_addresses = g_strv_length ((char **) expected_address);
+
+	nm_sprintf_buf (path, TEST_IFCFG_DIR "/network-scripts/ifcfg-aliasem%d", N);
+
+	connection = _connection_from_file (path, NULL, TYPE_ETHERNET, NULL);
 
 	/* ===== CONNECTION SETTING ===== */
 
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
-	g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, "System aliasem0");
+	if (N == 0)
+		g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, "System aliasem0");
+	else
+		g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, "System aliasem3");
 
 	/* ===== IPv4 SETTING ===== */
 
@@ -1680,6 +1983,7 @@ test_read_wired_aliases_good (void)
 	}
 
 	/* Gateway */
+	g_assert (!nm_setting_ip_config_get_never_default (s_ip4));
 	g_assert_cmpstr (nm_setting_ip_config_get_gateway (s_ip4), ==, "192.168.1.1");
 
 	for (i = 0; i < expected_num_addresses; i++)
@@ -1803,8 +2107,9 @@ test_clear_master (void)
 	g_assert_cmpstr (nm_setting_connection_get_slave_type (s_con), ==, "bridge");
 
 	/* 2. write the connection to a new file */
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-System_test-bridge-component-a.cexpected",
 	                        &testfile);
 
 	/* 3. clear master and slave-type */
@@ -1816,10 +2121,13 @@ test_clear_master (void)
 	g_assert_cmpstr (nm_setting_connection_get_master (s_con), ==, NULL);
 	g_assert_cmpstr (nm_setting_connection_get_slave_type (s_con), ==, NULL);
 
+	nmtst_assert_connection_verifies_after_normalization (connection, 0, 0);
+
 	/* 4. update the connection on disk */
 	_writer_update_connection (connection,
 	                           TEST_SCRATCH_DIR "/network-scripts/",
-	                           testfile);
+	                           testfile,
+	                           TEST_IFCFG_DIR "/network-scripts/ifcfg-System_test-bridge-component-b.cexpected");
 	keyfile = utils_get_keys_path (testfile);
 	g_assert (!g_file_test (keyfile, G_FILE_TEST_EXISTS));
 
@@ -1902,9 +2210,9 @@ test_write_dns_options (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
-	                        TEST_SCRATCH_DIR "/network-scripts/",
-	                        &testfile);
+	_writer_new_connection_FIXME (connection,
+	                              TEST_SCRATCH_DIR "/network-scripts/",
+	                              &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
 
@@ -3120,8 +3428,9 @@ test_write_wifi_hidden (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_WiFi_Hidden.cexpected",
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
@@ -3169,6 +3478,7 @@ test_write_wifi_mac_random (gconstpointer user_data)
 	const char *name, *write_expected;
 	gpointer value_p;
 	NMSettingMacRandomization value;
+	char cexpected[NM_STRLEN (TEST_IFCFG_DIR) + 100];
 
 	nmtst_test_data_unpack (user_data, &name, &value_p, &write_expected);
 	value = GPOINTER_TO_INT (value_p);
@@ -3203,8 +3513,9 @@ test_write_wifi_mac_random (gconstpointer user_data)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        nm_sprintf_buf (cexpected, TEST_IFCFG_DIR"/network-scripts/ifcfg-Test_Write_WiFi_MAC_%s.cexpected", name),
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
@@ -3255,12 +3566,13 @@ test_write_wired_wake_on_lan (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Wired_Wake-on-LAN.cexpected",
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
-	val = svGetValueString (f, "ETHTOOL_OPTS");
+	val = svGetValueStr_cp (f, "ETHTOOL_OPTS");
 	g_assert (val);
 	g_assert (strstr (val, "wol"));
 	g_assert (strstr (val, "sopass 00:00:00:11:22:33"));
@@ -3290,12 +3602,13 @@ test_write_wired_auto_negotiate_off (void)
 	              NM_SETTING_WIRED_SPEED, 10,
 	              NULL);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Wired_Auto-Negotiate.cexpected",
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
-	val = svGetValueString (f, "ETHTOOL_OPTS");
+	val = svGetValueStr_cp (f, "ETHTOOL_OPTS");
 	g_assert (val);
 	g_assert (strstr (val, "autoneg off"));
 	g_assert (strstr (val, "speed 10"));
@@ -3329,7 +3642,7 @@ test_write_wired_auto_negotiate_on (void)
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
-	val = svGetValueString (f, "ETHTOOL_OPTS");
+	val = svGetValueStr_cp (f, "ETHTOOL_OPTS");
 	g_assert (val);
 	g_assert (strstr (val, "autoneg on"));
 	g_assert (!strstr (val, "speed"));
@@ -3403,8 +3716,9 @@ test_write_wifi_band_a (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_WiFi_Band_A.cexpected",
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
@@ -3753,6 +4067,12 @@ test_write_wired_static (void)
 
 	route6 = nm_ip_route_new (AF_INET6, "::", 128, "2222:aaaa::9999", 1, &error);
 	g_assert_no_error (error);
+	nm_ip_route_set_attribute (route6, NM_IP_ROUTE_ATTRIBUTE_TOS, g_variant_new_byte (0xb8));
+	nm_ip_route_set_attribute (route6, NM_IP_ROUTE_ATTRIBUTE_CWND, g_variant_new_uint32 (100));
+	nm_ip_route_set_attribute (route6, NM_IP_ROUTE_ATTRIBUTE_MTU, g_variant_new_uint32 (1280));
+	nm_ip_route_set_attribute (route6, NM_IP_ROUTE_ATTRIBUTE_LOCK_CWND, g_variant_new_boolean (TRUE));
+	nm_ip_route_set_attribute (route6, NM_IP_ROUTE_ATTRIBUTE_FROM, g_variant_new_string ("2222::bbbb/32"));
+	nm_ip_route_set_attribute (route6, NM_IP_ROUTE_ATTRIBUTE_SRC, g_variant_new_string ("::42"));
 	nm_setting_ip_config_add_route (s_ip6, route6);
 	nm_ip_route_unref (route6);
 
@@ -3766,9 +4086,9 @@ test_write_wired_static (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
-	                        TEST_SCRATCH_DIR "/network-scripts/",
-	                        &testfile);
+	_writer_new_connection_FIXME (connection,
+	                              TEST_SCRATCH_DIR "/network-scripts/",
+	                              &testfile);
 	route6file = utils_get_route6_path (testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
@@ -4082,7 +4402,7 @@ test_write_wired_static_ip6_only_gw (gconstpointer user_data)
 	nmtst_assert_connection_equals (connection, TRUE, reread, FALSE);
 
 	ifcfg = _svOpenFile (testfile);
-	written_ifcfg_gateway = svGetValueString (ifcfg, "IPV6_DEFAULTGW");
+	written_ifcfg_gateway = svGetValueStr_cp (ifcfg, "IPV6_DEFAULTGW");
 	svCloseFile (ifcfg);
 
 	/* access the gateway from the loaded connection. */
@@ -4147,8 +4467,9 @@ test_read_write_static_routes_legacy (void)
 	 * we can clean up after the written connection in both the original
 	 * source tree and for 'make distcheck'.
 	 */
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR_TMP,
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-test-static-routes-legacy.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
@@ -4436,9 +4757,9 @@ test_write_wired_8021x_tls (gconstpointer test_data)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
-	                        TEST_SCRATCH_DIR "/network-scripts/",
-	                        &testfile);
+	_writer_new_connection_FIXME (connection,
+	                              TEST_SCRATCH_DIR "/network-scripts/",
+	                              &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_WIRELESS, NULL);
 
@@ -4486,15 +4807,15 @@ test_write_wired_8021x_tls (gconstpointer test_data)
 	}
 
 	/* Clean up created certs and keys */
-	tmp = utils_cert_path (testfile, "ca-cert.der");
+	tmp = utils_cert_path (testfile, "ca-cert", "der");
 	nmtst_file_unlink_if_exists (tmp);
 	g_free (tmp);
 
-	tmp = utils_cert_path (testfile, "client-cert.der");
+	tmp = utils_cert_path (testfile, "client-cert", "der");
 	nmtst_file_unlink_if_exists (tmp);
 	g_free (tmp);
 
-	tmp = utils_cert_path (testfile, "private-key.pem");
+	tmp = utils_cert_path (testfile, "private-key", "pem");
 	nmtst_file_unlink_if_exists (tmp);
 	g_free (tmp);
 }
@@ -4562,22 +4883,22 @@ test_write_wired_aliases (void)
 
 	/* Create some pre-existing alias files, to make sure they get overwritten / deleted. */
 	ifcfg = svCreateFile (TEST_SCRATCH_ALIAS_BASE ":2");
-	svSetValueString (ifcfg, "DEVICE", "alias0:2");
-	svSetValueString (ifcfg, "IPADDR", "192.168.1.2");
+	svSetValueStr (ifcfg, "DEVICE", "alias0:2");
+	svSetValueStr (ifcfg, "IPADDR", "192.168.1.2");
 	svWriteFile (ifcfg, 0644, NULL);
 	svCloseFile (ifcfg);
 	g_assert (g_file_test (TEST_SCRATCH_ALIAS_BASE ":2", G_FILE_TEST_EXISTS));
 
 	ifcfg = svCreateFile (TEST_SCRATCH_ALIAS_BASE ":5");
-	svSetValueString (ifcfg, "DEVICE", "alias0:5");
-	svSetValueString (ifcfg, "IPADDR", "192.168.1.5");
+	svSetValueStr (ifcfg, "DEVICE", "alias0:5");
+	svSetValueStr (ifcfg, "IPADDR", "192.168.1.5");
 	svWriteFile (ifcfg, 0644, NULL);
 	svCloseFile (ifcfg);
 	g_assert (g_file_test (TEST_SCRATCH_ALIAS_BASE ":5", G_FILE_TEST_EXISTS));
 
-	_writer_new_connection (connection,
-	                        TEST_SCRATCH_DIR "/network-scripts/",
-	                        &testfile);
+	_writer_new_connection_FIXME (connection,
+	                              TEST_SCRATCH_DIR "/network-scripts/",
+	                              &testfile);
 
 	/* Re-check the alias files */
 	g_assert (g_file_test (TEST_SCRATCH_ALIAS_BASE ":2", G_FILE_TEST_EXISTS));
@@ -5263,8 +5584,9 @@ test_write_wifi_wep_104_ascii (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Wifi_WEP_104_ASCII.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_WIRELESS, NULL);
@@ -5347,8 +5669,9 @@ test_write_wifi_leap (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Wifi_LEAP.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_WIRELESS, NULL);
@@ -5429,9 +5752,9 @@ test_write_wifi_leap_secret_flags (gconstpointer data)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
-	                        TEST_SCRATCH_DIR "/network-scripts/",
-	                        &testfile);
+	_writer_new_connection_FIXME (connection,
+	                              TEST_SCRATCH_DIR "/network-scripts/",
+	                              &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_WIRELESS, NULL);
 
@@ -5701,6 +6024,11 @@ test_write_wifi_wpa_eap_tls (void)
 	nm_connection_add_setting (connection, NM_SETTING (s_8021x));
 
 	g_object_set (s_8021x, NM_SETTING_802_1X_IDENTITY, "Bill Smith", NULL);
+	g_object_set (s_8021x,
+	              NM_SETTING_802_1X_PHASE1_AUTH_FLAGS,
+	              (guint) (NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_0_DISABLE |
+	                       NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_1_DISABLE),
+	              NULL);
 
 	nm_setting_802_1x_add_eap_method (s_8021x, "tls");
 
@@ -6080,7 +6408,8 @@ test_write_wifi_wpa_then_open (void)
 	/* Write it back out */
 	_writer_update_connection (connection,
 	                           TEST_SCRATCH_DIR "/network-scripts/",
-	                           testfile);
+	                           testfile,
+	                           TEST_IFCFG_DIR "/network-scripts/ifcfg-random_wifi_connection.cexpected");
 	keyfile = utils_get_keys_path (testfile);
 	g_assert (!g_file_test (keyfile, G_FILE_TEST_EXISTS));
 
@@ -6199,7 +6528,8 @@ test_write_wifi_wpa_then_wep_with_perms (void)
 	/* Write it back out */
 	_writer_update_connection (connection,
 	                           TEST_SCRATCH_DIR "/network-scripts/",
-	                           testfile);
+	                           testfile,
+	                           TEST_IFCFG_DIR "/network-scripts/ifcfg-random_wifi_connection_2.cexpected");
 
 	reread = _connection_from_file (testfile, NULL, TYPE_WIRELESS, NULL);
 
@@ -6498,8 +6828,9 @@ test_write_permissions (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Permissions.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
@@ -6572,9 +6903,9 @@ test_write_wifi_wep_agent_keys (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
-	                        TEST_SCRATCH_DIR "/network-scripts/",
-	                        &testfile);
+	_writer_new_connection_FIXME (connection,
+	                              TEST_SCRATCH_DIR "/network-scripts/",
+	                              &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_WIRELESS, NULL);
 
@@ -6953,8 +7284,9 @@ test_write_bridge_component (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Bridge_Component.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
@@ -7198,8 +7530,9 @@ test_write_vlan (void)
 	connection = _connection_from_file (TEST_IFCFG_VLAN_INTERFACE,
 	                                    NULL, TYPE_VLAN, NULL);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Vlan_test-vlan-interface.cexpected",
 	                        &testfile);
 }
 
@@ -7278,8 +7611,9 @@ test_write_vlan_reorder_hdr (void)
 	              NM_SETTING_VLAN_FLAGS, 1,
 	              NULL);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_VLAN_reorder_hdr.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
@@ -7374,6 +7708,28 @@ test_read_bond_main (void)
 }
 
 static void
+test_read_bond_eth_type (void)
+{
+	NMConnection *connection;
+	NMSettingBond *s_bond;
+
+	connection = _connection_from_file (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-bond-eth-type",
+	                                    NULL, TYPE_ETHERNET,NULL);
+
+	g_assert_cmpstr (nm_connection_get_interface_name (connection), ==, "bond0");
+
+	/* ===== Bonding SETTING ===== */
+
+	s_bond = nm_connection_get_setting_bond (connection);
+	g_assert (s_bond);
+
+	g_assert_cmpstr (nm_setting_bond_get_option_by_name (s_bond, NM_SETTING_BOND_OPTION_MIIMON), ==, "213");
+	g_assert_cmpstr (nm_setting_bond_get_option_by_name (s_bond, NM_SETTING_BOND_OPTION_LACP_RATE), ==, "1");
+
+	g_object_unref (connection);
+}
+
+static void
 test_write_bond_main (void)
 {
 	nmtst_auto_unlinkfile char *testfile = NULL;
@@ -7436,8 +7792,9 @@ test_write_bond_main (void)
 
 	nmtst_assert_connection_verifies_without_normalization (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Bond_Main.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_BOND, NULL);
@@ -7830,8 +8187,9 @@ test_write_dcb_basic (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts//ifcfg-dcb-test.cexpected",
 	                        &testfile);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
@@ -8228,8 +8586,9 @@ test_write_team_port (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Team_Port.cexpected",
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
@@ -8266,6 +8625,69 @@ test_read_team_port_empty_config (void)
 	g_assert (!nm_setting_team_port_get_config (nm_connection_get_setting_team_port (connection)));
 
 	g_object_unref (connection);
+}
+
+static void
+test_team_reread_slave (void)
+{
+	nmtst_auto_unlinkfile char *testfile = NULL;
+	gs_unref_object NMConnection *connection_1 = NULL;
+	gs_unref_object NMConnection *connection_2 = NULL;
+	gs_unref_object NMConnection *reread = NULL;
+	gboolean reread_same = FALSE;
+	NMSettingConnection *s_con;
+
+	connection_1 = nmtst_create_connection_from_keyfile (
+	        "[connection]\n"
+	        "id=team-slave-enp31s0f1-142\n"
+	        "uuid=74f435bb-ede4-415a-9d48-f580b60eba04\n"
+	        "type=vlan\n"
+	        "autoconnect=false\n"
+	        "interface-name=enp31s0f1-142\n"
+	        "master=team142\n"
+	        "permissions=\n"
+	        "slave-type=team\n"
+	        "\n"
+	        "[vlan]\n"
+	        "egress-priority-map=\n"
+	        "flags=1\n"
+	        "id=142\n"
+	        "ingress-priority-map=\n"
+	        "parent=enp31s0f1\n"
+	        , "/test_team_reread_slave", NULL);
+
+	/* to double-check keyfile syntax, re-create the connection by hand. */
+	connection_2 = nmtst_create_minimal_connection ("team-slave-enp31s0f1-142", "74f435bb-ede4-415a-9d48-f580b60eba04", NM_SETTING_VLAN_SETTING_NAME, &s_con);
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, FALSE,
+	              NM_SETTING_CONNECTION_INTERFACE_NAME, "enp31s0f1-142",
+	              NM_SETTING_CONNECTION_MASTER, "team142",
+	              NM_SETTING_CONNECTION_SLAVE_TYPE, "team",
+	              NULL);
+	g_object_set (nm_connection_get_setting_vlan (connection_2),
+	              NM_SETTING_VLAN_FLAGS, 1,
+	              NM_SETTING_VLAN_ID, 142,
+	              NM_SETTING_VLAN_PARENT, "enp31s0f1",
+	              NULL);
+	nm_connection_add_setting (connection_2, nm_setting_team_port_new ());
+	nmtst_connection_normalize (connection_2);
+
+	nmtst_assert_connection_equals (connection_1, FALSE, connection_2, FALSE);
+
+	_writer_new_connection_reread ((nmtst_get_rand_int () % 2) ? connection_1 : connection_2,
+	                               TEST_SCRATCH_DIR "/network-scripts/",
+	                               &testfile,
+	                               TEST_IFCFG_DIR "/network-scripts/ifcfg-team-slave-enp31s0f1-142.cexpected",
+	                               &reread,
+	                               &reread_same);
+	_assert_reread_same ((nmtst_get_rand_int () % 2) ? connection_1 : connection_2, reread);
+	g_assert (reread_same);
+	g_clear_object (&reread);
+
+	reread = _connection_from_file (testfile, NULL, TYPE_VLAN,
+	                                NULL);
+	nmtst_assert_connection_equals ((nmtst_get_rand_int () % 2) ? connection_1 : connection_2, FALSE,
+	                                reread, FALSE);
 }
 
 static void
@@ -8327,8 +8749,9 @@ test_write_proxy_basic (void)
 
 	nmtst_assert_connection_verifies (connection);
 
-	_writer_new_connection (connection,
+	_writer_new_connec_exp (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
+	                        TEST_IFCFG_DIR "/network-scripts/ifcfg-Test_Write_Proxy_Basic.cexpected",
 	                        &testfile);
 
 	f = _svOpenFile (testfile);
@@ -8682,12 +9105,12 @@ test_write_unknown (gconstpointer test_data)
 
 	sv = _svOpenFile (testfile);
 
-	svFileSetName (sv, filename_tmp_1);
-	svFileSetModified (sv);
+	svFileSetName_test_only (sv, filename_tmp_1);
+	svFileSetModified_test_only (sv);
 
 	if (g_str_has_suffix (testfile, "ifcfg-test-write-unknown-4")) {
 		_svGetValue_check (sv, "NAME", "l4x");
-		_svGetValue_check (sv, "NAME2", NULL);
+		_svGetValue_check (sv, "NAME2", "");
 		_svGetValue_check (sv, "NAME3", "name3-value");
 
 		svSetValue (sv, "NAME", "set-by-test1");
@@ -8944,6 +9367,8 @@ int main (int argc, char **argv)
 	nmtst_add_test_func (TPATH "wired/read/manual/3", test_read_wired_ipv4_manual, TEST_IFCFG_DIR "/network-scripts/ifcfg-test-wired-ipv4-manual-3", "System test-wired-ipv4-manual-3");
 	nmtst_add_test_func (TPATH "wired/read/manual/4", test_read_wired_ipv4_manual, TEST_IFCFG_DIR "/network-scripts/ifcfg-test-wired-ipv4-manual-4", "System test-wired-ipv4-manual-4");
 
+	g_test_add_func (TPATH "user/1", test_user_1);
+
 	g_test_add_func (TPATH "wired/ipv6-manual", test_read_wired_ipv6_manual);
 
 	nmtst_add_test_func (TPATH "wired-ipv6-only/0", test_read_wired_ipv6_only, TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-ipv6-only",   "System test-wired-ipv6-only");
@@ -8960,7 +9385,8 @@ int main (int argc, char **argv)
 
 	g_test_add_func (TPATH "802-1x/subj-matches", test_read_write_802_1X_subj_matches);
 	g_test_add_func (TPATH "802-1x/ttls-eapgtc", test_read_802_1x_ttls_eapgtc);
-	g_test_add_func (TPATH "wired/read/aliases", test_read_wired_aliases_good);
+	g_test_add_data_func (TPATH "wired/read/aliases/good/0", GINT_TO_POINTER (0), test_read_wired_aliases_good);
+	g_test_add_data_func (TPATH "wired/read/aliases/good/3", GINT_TO_POINTER (3), test_read_wired_aliases_good);
 	g_test_add_func (TPATH "wired/read/aliases/bad1", test_read_wired_aliases_bad_1);
 	g_test_add_func (TPATH "wired/read/aliases/bad2", test_read_wired_aliases_bad_2);
 	g_test_add_func (TPATH "wifi/read/open", test_read_wifi_open);
@@ -9112,6 +9538,7 @@ int main (int argc, char **argv)
 	g_test_add_data_func (TPATH "fcoe/write-vn2vn", (gpointer) NM_SETTING_DCB_FCOE_MODE_VN2VN, test_write_fcoe_mode);
 
 	g_test_add_func (TPATH "bond/read-master", test_read_bond_main);
+	g_test_add_func (TPATH "bond/read-master-eth-type", test_read_bond_eth_type);
 	g_test_add_func (TPATH "bond/read-slave", test_read_bond_slave);
 	g_test_add_func (TPATH "bond/read-slave-ib", test_read_bond_slave_ib);
 	g_test_add_func (TPATH "bond/write-master", test_write_bond_main);
@@ -9133,6 +9560,7 @@ int main (int argc, char **argv)
 	g_test_add_data_func (TPATH "team/read-port-2", TEST_IFCFG_DIR"/network-scripts/ifcfg-test-team-port-2", test_read_team_port);
 	g_test_add_func (TPATH "team/write-port", test_write_team_port);
 	g_test_add_func (TPATH "team/read-port-empty-config", test_read_team_port_empty_config);
+	g_test_add_func (TPATH "team/reread-slave", test_team_reread_slave);
 
 	g_test_add_func (TPATH "proxy/read-proxy-basic", test_read_proxy_basic);
 	g_test_add_func (TPATH "proxy/write-proxy-basic", test_write_proxy_basic);

@@ -148,7 +148,7 @@ complete_connection (NMDevice *device,
 
 	}
 
-	nm_utils_complete_generic (NM_PLATFORM_GET,
+	nm_utils_complete_generic (nm_device_get_platform (device),
 	                           connection,
 	                           NM_SETTING_OLPC_MESH_SETTING_NAME,
 	                           existing_connections,
@@ -163,14 +163,14 @@ complete_connection (NMDevice *device,
 /*****************************************************************************/
 
 static NMActStageReturn
-act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
+act_stage1_prepare (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceOlpcMesh *self = NM_DEVICE_OLPC_MESH (device);
 	NMDeviceOlpcMeshPrivate *priv = NM_DEVICE_OLPC_MESH_GET_PRIVATE (self);
 	NMActStageReturn ret;
 	gboolean scanning;
 
-	ret = NM_DEVICE_CLASS (nm_device_olpc_mesh_parent_class)->act_stage1_prepare (device, reason);
+	ret = NM_DEVICE_CLASS (nm_device_olpc_mesh_parent_class)->act_stage1_prepare (device, out_failure_reason);
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
@@ -200,16 +200,18 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 static void
 _mesh_set_channel (NMDeviceOlpcMesh *self, guint32 channel)
 {
+	NMPlatform *platform;
 	int ifindex = nm_device_get_ifindex (NM_DEVICE (self));
 
-	if (nm_platform_mesh_get_channel (NM_PLATFORM_GET, ifindex) != channel) {
-		if (nm_platform_mesh_set_channel (NM_PLATFORM_GET, ifindex, channel))
+	platform = nm_device_get_platform (NM_DEVICE (self));
+	if (nm_platform_mesh_get_channel (platform, ifindex) != channel) {
+		if (nm_platform_mesh_set_channel (platform, ifindex, channel))
 			_notify (self, PROP_ACTIVE_CHANNEL);
 	}
 }
 
 static NMActStageReturn
-act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceOlpcMesh *self = NM_DEVICE_OLPC_MESH (device);
 	NMConnection *connection;
@@ -219,17 +221,17 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	const char *anycast_addr;
 
 	connection = nm_device_get_applied_connection (device);
-	g_assert (connection);
+	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
 
 	s_mesh = nm_connection_get_setting_olpc_mesh (connection);
-	g_assert (s_mesh);
+	g_return_val_if_fail (s_mesh, NM_ACT_STAGE_RETURN_FAILURE);
 
 	channel = nm_setting_olpc_mesh_get_channel (s_mesh);
 	if (channel != 0)
 		_mesh_set_channel (self, channel);
 
 	ssid = nm_setting_olpc_mesh_get_ssid (s_mesh);
-	nm_platform_mesh_set_ssid (NM_PLATFORM_GET,
+	nm_platform_mesh_set_ssid (nm_device_get_platform (device),
 	                           nm_device_get_ifindex (device),
 	                           g_bytes_get_data (ssid, NULL),
 	                           g_bytes_get_size (ssid));
@@ -429,15 +431,16 @@ static void
 get_property (GObject *object, guint prop_id,
               GValue *value, GParamSpec *pspec)
 {
-	NMDeviceOlpcMesh *device = NM_DEVICE_OLPC_MESH (object);
-	NMDeviceOlpcMeshPrivate *priv = NM_DEVICE_OLPC_MESH_GET_PRIVATE (device);
+	NMDeviceOlpcMesh *self = NM_DEVICE_OLPC_MESH (object);
+	NMDevice *device = NM_DEVICE (self);
+	NMDeviceOlpcMeshPrivate *priv = NM_DEVICE_OLPC_MESH_GET_PRIVATE (self);
 
 	switch (prop_id) {
 	case PROP_COMPANION:
 		nm_utils_g_value_set_object_path (value, priv->companion);
 		break;
 	case PROP_ACTIVE_CHANNEL:
-		g_value_set_uint (value, nm_platform_mesh_get_channel (NM_PLATFORM_GET, nm_device_get_ifindex (NM_DEVICE (device))));
+		g_value_set_uint (value, nm_platform_mesh_get_channel (nm_device_get_platform (device), nm_device_get_ifindex (device)));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);

@@ -5,9 +5,9 @@
 <title>org.freedesktop.NetworkManager: NetworkManager Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
-<link rel="up" href="spec.html#dbus-interfaces" title="Interfaces">
-<link rel="prev" href="spec.html" title="D-Bus API Reference">
-<link rel="next" href="gdbus-org.freedesktop.NetworkManager.Settings.html" title="org.freedesktop.NetworkManager.Settings">
+<link rel="up" href="ref-dbus-manager.html" title="The /org/freedesktop/NetworkManager object">
+<link rel="prev" href="ref-dbus-manager.html" title="The /org/freedesktop/NetworkManager object">
+<link rel="next" href="ref-dbus-agent-manager.html" title="The /org/freedesktop/NetworkManager/AgentManager object">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -20,16 +20,16 @@
                   <a href="#gdbus-org.freedesktop.NetworkManager.signals" class="shortcut">Signals</a></span>
 </td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
-<td><a accesskey="u" href="spec.html#dbus-interfaces"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="spec.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="gdbus-org.freedesktop.NetworkManager.Settings.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="u" href="ref-dbus-manager.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="ref-dbus-manager.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="ref-dbus-agent-manager.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="gdbus-org.freedesktop.NetworkManager"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
 <h2><span class="refentrytitle"><a name="gdbus-interface-org-freedesktop-NetworkManager.top_of_page"></a>org.freedesktop.NetworkManager</span></h2>
-<p>org.freedesktop.NetworkManager</p>
+<p>org.freedesktop.NetworkManager — Connection Manager</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
@@ -70,7 +70,7 @@
 </pre>
 </div>
 <div class="refsect1">
-<a name="id-1.3.3.2.4"></a><h2>Signals</h2>
+<a name="id-1.4.3.2.4"></a><h2>Signals</h2>
 <pre class="synopsis">
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-signal-org-freedesktop-NetworkManager.CheckPermissions" title='The "CheckPermissions" signal'>CheckPermissions</a>  ();
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-signal-org-freedesktop-NetworkManager.StateChanged" title='The "StateChanged" signal'>StateChanged</a>      (u     state);
@@ -80,7 +80,7 @@
 </pre>
 </div>
 <div class="refsect1">
-<a name="id-1.3.3.2.5"></a><h2>Properties</h2>
+<a name="id-1.4.3.2.5"></a><h2>Properties</h2>
 <pre class="synopsis">
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.Devices" title='The "Devices" property'>Devices</a>                  readable   ao
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-property-org-freedesktop-NetworkManager.AllDevices" title='The "AllDevices" property'>AllDevices</a>               readable   ao
@@ -831,6 +831,15 @@ State  readable   u
 </pre>
 <p>        The overall state of the NetworkManager daemon.
 </p>
+<p>        This takes state of all active connections and the connectivity state into account
+        to produce a single indicator of the network accessibility status.
+</p>
+<p>        The graphical shells may use this property to provide network connection status
+        indication and applications may use this to check if Internet connection is
+        accessible. Shell that is able to cope with captive portals should use the
+        "Connectivity" property to decide whether to present a captive portal authentication
+        dialog.
+</p>
 <p>        Returns: <a class="link" href="nm-dbus-types.html#NMState" title="enum NMState">NMState</a>
 </p>
 </div>
@@ -840,7 +849,19 @@ State  readable   u
 <pre class="programlisting">
 Connectivity  readable   u
 </pre>
-<p>        The network connectivity state.
+<p>        The result of the last connectivity check. The connectivity check is triggered
+        automatically when a default connection becomes available, periodically and by
+        calling a CheckConnectivity() method.
+</p>
+<p>        This property is in general useful for the graphical shell to determine whether
+        the Internet access is being hijacked by an authentication gateway (a "captive
+        portal"). In such case it would typically present a web browser window to give
+        the user a chance to authenticate and call CheckConnectivity() when the user
+        submits a form or dismisses the window.
+</p>
+<p>        To determine the whether the user is able to access the Internet without dealing
+        with captive portals (e.g. to provide a network connection indicator or disable
+        controls that require Internet access), the "State" property is more suitable.
 </p>
 <p>        Returns: <a class="link" href="nm-dbus-types.html#NMConnectivityState" title="enum NMConnectivityState">NMConnectivityState</a>
 </p>

@@ -72,7 +72,7 @@
 <tbody>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMVpnConnection.html#NMVpnConnection--banner" title="The “banner” property">banner</a></td>
 <td class="property_flags">Read</td>
 </tr>
@@ -95,7 +95,7 @@
 <tbody><tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="NMVpnConnection.html#NMVpnConnection-vpn-state-changed" title="The “vpn-state-changed” signal">vpn-state-changed</a></td>
-<td class="signal_flags"><a href="/usr/share/gtk-doc/html/gobjectgobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr></tbody>
 </table></div>
 </div>
@@ -124,7 +124,7 @@
 </div>
 <div class="refsect1">
 <a name="NMVpnConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobjectgobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+<pre class="screen">    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMObject.html" title="NMObject">NMObject</a>
         <span class="lineart">╰──</span> <a class="link" href="NMActiveConnection.html" title="NMActiveConnection">NMActiveConnection</a>
             <span class="lineart">╰──</span> NMVpnConnection
@@ -134,7 +134,7 @@
 <a name="NMVpnConnection.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
 <p>
 NMVpnConnection implements
- <a href="/usr/share/gtk-doc/html/gioGInitable.html#GInitable-struct">GInitable</a> and  <a href="/usr/share/gtk-doc/html/gioGAsyncInitable.html#GAsyncInitable-struct">GAsyncInitable</a>.</p>
+ GInitable and  GAsyncInitable.</p>
 </div>
 <div class="refsect1">
 <a name="NMVpnConnection.description"></a><h2>Description</h2>
@@ -217,7 +217,7 @@ string used by the connection, and must not be modified.</p>
 <a name="NMVpnConnection.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMVpnConnection--banner"></a><h3>The <code class="literal">“banner”</code> property</h3>
-<pre class="programlisting">  “banner”                   <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “banner”                   <span class="type">gchar</span> *</pre>
 <p>The VPN login banner of the active VPN connection.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
@@ -237,10 +237,10 @@ string used by the connection, and must not be modified.</p>
 <a name="NMVpnConnection-vpn-state-changed"></a><h3>The <code class="literal">“vpn-state-changed”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="NMVpnConnection.html" title="NMVpnConnection"><span class="type">NMVpnConnection</span></a> *nmvpnconnection,
-               <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a>            arg1,
-               <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#guint"><span class="type">guint</span></a>            arg2,
-               <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>         user_data)</pre>
-<p>Flags: <a href="/usr/share/gtk-doc/html/gobjectgobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+               <span class="type">guint</span>            arg1,
+               <span class="type">guint</span>            arg2,
+               <span class="type">gpointer</span>         user_data)</pre>
+<p>Flags: Run First</p>
 </div>
 </div>
 </div>

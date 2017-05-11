@@ -62,6 +62,7 @@ nm_active_connection_get_connection_type
 nm_active_connection_get_specific_object_path
 nm_active_connection_get_devices
 nm_active_connection_get_state
+nm_active_connection_get_state_reason
 nm_active_connection_get_master
 nm_active_connection_get_default
 nm_active_connection_get_ip4_config
@@ -247,6 +248,7 @@ nm_connection_get_setting_bridge_port
 nm_connection_get_setting_cdma
 nm_connection_get_setting_connection
 nm_connection_get_setting_dcb
+nm_connection_get_setting_dummy
 nm_connection_get_setting_generic
 nm_connection_get_setting_gsm
 nm_connection_get_setting_infiniband
@@ -285,6 +287,7 @@ NM_TYPE_802_11_AP_FLAGS
 NM_TYPE_802_11_AP_SECURITY_FLAGS
 NM_TYPE_802_11_MODE
 NM_TYPE_ACTIVE_CONNECTION_STATE
+NM_TYPE_ACTIVE_CONNECTION_STATE_REASON
 NM_TYPE_AGENT_MANAGER_ERROR
 NM_TYPE_BLUETOOTH_CAPABILITIES
 NM_TYPE_CAPABILITY
@@ -306,6 +309,7 @@ NM_TYPE_SECRET_AGENT_CAPABILITIES
 NM_TYPE_SECRET_AGENT_ERROR
 NM_TYPE_SECRET_AGENT_GET_SECRETS_FLAGS
 NM_TYPE_SETTINGS_ERROR
+NM_TYPE_SETTING_802_1X_AUTH_FLAGS
 NM_TYPE_SETTING_802_1X_CK_FORMAT
 NM_TYPE_SETTING_802_1X_CK_SCHEME
 NM_TYPE_SETTING_COMPARE_FLAGS
@@ -341,6 +345,7 @@ nm_802_11_ap_flags_get_type
 nm_802_11_ap_security_flags_get_type
 nm_802_11_mode_get_type
 nm_active_connection_state_get_type
+nm_active_connection_state_reason_get_type
 nm_agent_manager_error_get_type
 nm_bluetooth_capabilities_get_type
 nm_capability_get_type
@@ -361,6 +366,7 @@ nm_metered_get_type
 nm_secret_agent_capabilities_get_type
 nm_secret_agent_error_get_type
 nm_secret_agent_get_secrets_flags_get_type
+nm_setting_802_1x_auth_flags_get_type
 nm_setting_802_1x_ck_format_get_type
 nm_setting_802_1x_ck_scheme_get_type
 nm_setting_compare_flags_get_type
@@ -408,6 +414,7 @@ NMSettingBridgePort
 NMSettingCdma
 NMSettingConnection
 NMSettingDcb
+NMSettingDummy
 NMSettingGeneric
 NMSettingGsm
 NMSettingIP4Config
@@ -425,6 +432,7 @@ NMSettingSerial
 NMSettingTeam
 NMSettingTeamPort
 NMSettingTun
+NMSettingUser
 NMSettingVlan
 NMSettingVpn
 NMSettingVxlan
@@ -438,6 +446,7 @@ NMSimpleConnection
 <SECTION>
 <FILE>nm-dbus-interface</FILE>
 NM_AVAILABLE_IN_1_2
+NM_AVAILABLE_IN_1_8
 NM_DBUS_SERVICE
 NM_DBUS_PATH
 NM_DBUS_INTERFACE
@@ -460,6 +469,7 @@ NM_DBUS_INTERFACE_IP6_CONFIG
 NM_DBUS_INTERFACE_DHCP6_CONFIG
 NM_DBUS_INTERFACE_DEVICE_INFINIBAND
 NM_DBUS_INTERFACE_DEVICE_BOND
+NM_DBUS_INTERFACE_DEVICE_DUMMY
 NM_DBUS_INTERFACE_DEVICE_TEAM
 NM_DBUS_INTERFACE_DEVICE_VLAN
 NM_DBUS_INTERFACE_DEVICE_BRIDGE
@@ -499,6 +509,7 @@ NMDeviceState
 NMDeviceStateReason
 NMMetered
 NMActiveConnectionState
+NMActiveConnectionStateReason
 NMSecretAgentGetSecretsFlags
 NMSecretAgentCapabilities
 NM_LLDP_ATTR_DESTINATION
@@ -702,6 +713,21 @@ NM_IS_DEVICE_BT
 NM_IS_DEVICE_BT_CLASS
 NM_TYPE_DEVICE_BT
 nm_device_bt_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-device-dummy</FILE>
+<TITLE>NMDeviceDummy</TITLE>
+NMDeviceDummy
+<SUBSECTION Standard>
+NMDeviceDummyClass
+NM_DEVICE_DUMMY
+NM_DEVICE_DUMMY_CLASS
+NM_DEVICE_DUMMY_GET_CLASS
+NM_IS_DEVICE_DUMMY
+NM_IS_DEVICE_DUMMY_CLASS
+NM_TYPE_DEVICE_DUMMY
+nm_device_dummy_get_type
 </SECTION>
 
 <SECTION>
@@ -1322,28 +1348,38 @@ NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH
 NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PKCS11
 NMSetting8021xCKFormat
 NMSetting8021xCKScheme
+NMSetting8021xAuthFlags
 NM_SETTING_802_1X_SETTING_NAME
 NM_SETTING_802_1X_EAP
 NM_SETTING_802_1X_IDENTITY
 NM_SETTING_802_1X_ANONYMOUS_IDENTITY
 NM_SETTING_802_1X_PAC_FILE
 NM_SETTING_802_1X_CA_CERT
+NM_SETTING_802_1X_CA_CERT_PASSWORD
+NM_SETTING_802_1X_CA_CERT_PASSWORD_FLAGS
 NM_SETTING_802_1X_CA_PATH
 NM_SETTING_802_1X_SUBJECT_MATCH
 NM_SETTING_802_1X_ALTSUBJECT_MATCHES
 NM_SETTING_802_1X_DOMAIN_SUFFIX_MATCH
 NM_SETTING_802_1X_CLIENT_CERT
+NM_SETTING_802_1X_CLIENT_CERT_PASSWORD
+NM_SETTING_802_1X_CLIENT_CERT_PASSWORD_FLAGS
 NM_SETTING_802_1X_PHASE1_PEAPVER
 NM_SETTING_802_1X_PHASE1_PEAPLABEL
 NM_SETTING_802_1X_PHASE1_FAST_PROVISIONING
+NM_SETTING_802_1X_PHASE1_AUTH_FLAGS
 NM_SETTING_802_1X_PHASE2_AUTH
 NM_SETTING_802_1X_PHASE2_AUTHEAP
 NM_SETTING_802_1X_PHASE2_CA_CERT
+NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD
+NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD_FLAGS
 NM_SETTING_802_1X_PHASE2_CA_PATH
 NM_SETTING_802_1X_PHASE2_SUBJECT_MATCH
 NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES
 NM_SETTING_802_1X_PHASE2_DOMAIN_SUFFIX_MATCH
 NM_SETTING_802_1X_PHASE2_CLIENT_CERT
+NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD
+NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD_FLAGS
 NM_SETTING_802_1X_PASSWORD
 NM_SETTING_802_1X_PASSWORD_FLAGS
 NM_SETTING_802_1X_PASSWORD_RAW
@@ -1357,6 +1393,7 @@ NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD_FLAGS
 NM_SETTING_802_1X_PIN
 NM_SETTING_802_1X_PIN_FLAGS
 NM_SETTING_802_1X_SYSTEM_CA_CERTS
+NM_SETTING_802_1X_AUTH_TIMEOUT
 NMSetting8021x
 nm_setting_802_1x_new
 nm_setting_802_1x_check_cert_scheme
@@ -1377,6 +1414,8 @@ nm_setting_802_1x_get_ca_cert_blob
 nm_setting_802_1x_get_ca_cert_path
 nm_setting_802_1x_get_ca_cert_uri
 nm_setting_802_1x_set_ca_cert
+nm_setting_802_1x_get_ca_cert_password
+nm_setting_802_1x_get_ca_cert_password_flags
 nm_setting_802_1x_get_subject_match
 nm_setting_802_1x_get_num_altsubject_matches
 nm_setting_802_1x_get_altsubject_match
@@ -1390,6 +1429,8 @@ nm_setting_802_1x_get_client_cert_blob
 nm_setting_802_1x_get_client_cert_path
 nm_setting_802_1x_get_client_cert_uri
 nm_setting_802_1x_set_client_cert
+nm_setting_802_1x_get_client_cert_password
+nm_setting_802_1x_get_client_cert_password_flags
 nm_setting_802_1x_get_phase1_peapver
 nm_setting_802_1x_get_phase1_peaplabel
 nm_setting_802_1x_get_phase1_fast_provisioning
@@ -1400,6 +1441,8 @@ nm_setting_802_1x_get_phase2_ca_cert_blob
 nm_setting_802_1x_get_phase2_ca_cert_path
 nm_setting_802_1x_get_phase2_ca_cert_uri
 nm_setting_802_1x_set_phase2_ca_cert
+nm_setting_802_1x_get_phase2_ca_cert_password
+nm_setting_802_1x_get_phase2_ca_cert_password_flags
 nm_setting_802_1x_get_phase2_subject_match
 nm_setting_802_1x_get_num_phase2_altsubject_matches
 nm_setting_802_1x_get_phase2_altsubject_match
@@ -1413,6 +1456,8 @@ nm_setting_802_1x_get_phase2_client_cert_blob
 nm_setting_802_1x_get_phase2_client_cert_path
 nm_setting_802_1x_get_phase2_client_cert_uri
 nm_setting_802_1x_set_phase2_client_cert
+nm_setting_802_1x_get_phase2_client_cert_password
+nm_setting_802_1x_get_phase2_client_cert_password_flags
 nm_setting_802_1x_get_password
 nm_setting_802_1x_get_password_flags
 nm_setting_802_1x_get_password_raw
@@ -1435,6 +1480,8 @@ nm_setting_802_1x_set_phase2_private_key
 nm_setting_802_1x_get_phase2_private_key_password
 nm_setting_802_1x_get_phase2_private_key_password_flags
 nm_setting_802_1x_get_phase2_private_key_format
+nm_setting_802_1x_get_phase1_auth_flags
+nm_setting_802_1x_get_auth_timeout
 <SUBSECTION Standard>
 NMSetting8021xClass
 NM_IS_SETTING_802_1X
@@ -1622,12 +1669,14 @@ NM_SETTING_CDMA_NUMBER
 NM_SETTING_CDMA_USERNAME
 NM_SETTING_CDMA_PASSWORD
 NM_SETTING_CDMA_PASSWORD_FLAGS
+NM_SETTING_CDMA_MTU
 NMSettingCdma
 nm_setting_cdma_new
 nm_setting_cdma_get_number
 nm_setting_cdma_get_username
 nm_setting_cdma_get_password
 nm_setting_cdma_get_password_flags
+nm_setting_cdma_get_mtu
 <SUBSECTION Standard>
 NMSettingCdmaClass
 NM_IS_SETTING_CDMA
@@ -1766,6 +1815,23 @@ nm_setting_dcb_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-setting-dummy</FILE>
+<TITLE>NMSettingDummy</TITLE>
+NM_SETTING_DUMMY_SETTING_NAME
+NMSettingDummy
+nm_setting_dummy_new
+<SUBSECTION Standard>
+NMSettingDummyClass
+NM_IS_SETTING_DUMMY
+NM_IS_SETTING_DUMMY_CLASS
+NM_SETTING_DUMMY
+NM_SETTING_DUMMY_CLASS
+NM_SETTING_DUMMY_GET_CLASS
+NM_TYPE_SETTING_DUMMY
+nm_setting_dummy_get_type
+</SECTION>
+
+<SECTION>
 <FILE>nm-setting-generic</FILE>
 <TITLE>NMSettingGeneric</TITLE>
 NM_SETTING_GENERIC_SETTING_NAME
@@ -1798,6 +1864,7 @@ NM_SETTING_GSM_HOME_ONLY
 NM_SETTING_GSM_DEVICE_ID
 NM_SETTING_GSM_SIM_ID
 NM_SETTING_GSM_SIM_OPERATOR_ID
+NM_SETTING_GSM_MTU
 NMSettingGsm
 nm_setting_gsm_new
 nm_setting_gsm_get_number
@@ -1810,6 +1877,7 @@ nm_setting_gsm_get_home_only
 nm_setting_gsm_get_device_id
 nm_setting_gsm_get_sim_id
 nm_setting_gsm_get_sim_operator_id
+nm_setting_gsm_get_mtu
 nm_setting_gsm_get_pin_flags
 nm_setting_gsm_get_password_flags
 <SUBSECTION Standard>
@@ -1892,6 +1960,21 @@ nm_ip_route_set_metric
 nm_ip_route_get_attribute_names
 nm_ip_route_get_attribute
 nm_ip_route_set_attribute
+nm_ip_route_get_variant_attribute_spec
+nm_ip_route_attribute_validate
+NM_IP_ROUTE_ATTRIBUTE_SRC
+NM_IP_ROUTE_ATTRIBUTE_FROM
+NM_IP_ROUTE_ATTRIBUTE_TOS
+NM_IP_ROUTE_ATTRIBUTE_WINDOW
+NM_IP_ROUTE_ATTRIBUTE_CWND
+NM_IP_ROUTE_ATTRIBUTE_INITCWND
+NM_IP_ROUTE_ATTRIBUTE_INITRWND
+NM_IP_ROUTE_ATTRIBUTE_MTU
+NM_IP_ROUTE_ATTRIBUTE_LOCK_WINDOW
+NM_IP_ROUTE_ATTRIBUTE_LOCK_CWND
+NM_IP_ROUTE_ATTRIBUTE_LOCK_INITCWND
+NM_IP_ROUTE_ATTRIBUTE_LOCK_INITRWND
+NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU
 NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX
 NM_SETTING_IP_CONFIG_METHOD
 NM_SETTING_IP_CONFIG_DNS
@@ -2256,13 +2339,13 @@ NM_SETTING_PROXY_METHOD
 NM_SETTING_PROXY_BROWSER_ONLY
 NM_SETTING_PROXY_PAC_URL
 NM_SETTING_PROXY_PAC_SCRIPT
+NMSettingProxy
 nm_setting_proxy_new
 nm_setting_proxy_get_method
 nm_setting_proxy_get_browser_only
 nm_setting_proxy_get_pac_url
 nm_setting_proxy_get_pac_script
 <SUBSECTION Standard>
-NMSettingProxy
 NMSettingProxyClass
 NM_IS_SETTING_PROXY
 NM_IS_SETTING_PROXY_CLASS
@@ -2367,6 +2450,27 @@ NM_SETTING_TUN_CLASS
 NM_SETTING_TUN_GET_CLASS
 NM_TYPE_SETTING_TUN
 nm_setting_tun_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-setting-user</FILE>
+NM_SETTING_USER_SETTING_NAME
+NM_SETTING_USER_DATA
+nm_setting_user_new
+nm_setting_user_get_keys
+nm_setting_user_get_data
+nm_setting_user_set_data
+nm_setting_user_check_key
+nm_setting_user_check_val
+<SUBSECTION Standard>
+NMSettingUserClass
+NM_IS_SETTING_USER
+NM_IS_SETTING_USER_CLASS
+NM_SETTING_USER
+NM_SETTING_USER_CLASS
+NM_SETTING_USER_GET_CLASS
+NM_TYPE_SETTING_USER
+nm_setting_user_get_type
 </SECTION>
 
 <SECTION>
@@ -2725,6 +2829,7 @@ NMDeviceAdsl
 NMDeviceBond
 NMDeviceBridge
 NMDeviceBt
+NMDeviceDummy
 NMDeviceEthernet
 NMDeviceGeneric
 NMDeviceIPTunnel
@@ -2816,6 +2921,9 @@ nm_utils_enum_to_str
 nm_utils_enum_from_str
 nm_utils_enum_get_values
 nm_utils_version
+nm_utils_parse_variant_attributes
+nm_utils_format_variant_attributes
+NMVariantAttributeSpec
 stat
 </SECTION>
 
@@ -2838,6 +2946,9 @@ NM_AVAILABLE_IN_1_4
 NM_DEPRECATED_IN_1_6
 NM_DEPRECATED_IN_1_6_FOR
 NM_AVAILABLE_IN_1_6
+NM_DEPRECATED_IN_1_8
+NM_DEPRECATED_IN_1_8_FOR
+NM_AVAILABLE_IN_1_8
 </SECTION>
 
 <SECTION>
@@ -2861,6 +2972,7 @@ nm_vpn_connection_get_type
 
 <SECTION>
 <FILE>nm-vpn-dbus-interface</FILE>
+NM_DEPRECATED_IN_1_8_FOR
 NM_DBUS_PATH_VPN
 NM_DBUS_INTERFACE_VPN
 NM_DBUS_PATH_VPN_CONNECTION

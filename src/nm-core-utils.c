@@ -110,6 +110,10 @@ _nm_utils_set_testing (NMUtilsTestFlags flags)
 
 /*****************************************************************************/
 
+const NMIPAddr nm_ip_addr_zero = NMIPAddrInit;
+
+/*****************************************************************************/
+
 static GSList *_singletons = NULL;
 static gboolean _singletons_shutdown = FALSE;
 
@@ -151,6 +155,37 @@ _nm_singleton_instance_register_destruction (GObject *instance)
 	g_object_weak_ref (instance, _nm_singleton_instance_weak_cb, NULL);
 
 	_singletons = g_slist_prepend (_singletons, instance);
+}
+
+/*****************************************************************************/
+
+static double
+_exp10 (guint16 ex)
+{
+	double v;
+
+	if (ex == 0)
+		return 1.0;
+
+	v = _exp10 (ex / 2);
+	v = v * v;
+	if (ex % 2)
+		v *= 10;
+	return v;
+}
+
+/*
+ * nm_utils_exp10:
+ * @ex: the exponent
+ *
+ * Returns: 10^ex, or pow(10, ex), or exp10(ex).
+ */
+double
+nm_utils_exp10 (gint16 ex)
+{
+	if (ex >= 0)
+		return _exp10 (ex);
+	return 1.0 / _exp10 (- ((gint32) ex));
 }
 
 /*****************************************************************************/
@@ -367,30 +402,6 @@ nm_utils_array_remove_at_indexes (GArray *array, const guint *indexes_to_delete,
 	g_array_set_size (array, res_length);
 }
 
-int
-nm_spawn_process (const char *args, GError **error)
-{
-	GError *local = NULL;
-	gint num_args;
-	char **argv = NULL;
-	int status = -1;
-
-	g_return_val_if_fail (args != NULL, -1);
-	g_return_val_if_fail (!error || !*error, -1);
-
-	if (g_shell_parse_argv (args, &num_args, &argv, &local)) {
-		g_spawn_sync ("/", argv, NULL, 0, NULL, NULL, NULL, NULL, &status, &local);
-		g_strfreev (argv);
-	}
-
-	if (local) {
-		nm_log_warn (LOGD_CORE, "could not spawn process '%s': %s", args, local->message);
-		g_propagate_error (error, local);
-	}
-
-	return status;
-}
-
 static const char *
 _trunk_first_line (char *str)
 {
@@ -431,11 +442,11 @@ nm_utils_modprobe (GError **error, gboolean suppress_error_logging, const char *
 
 	nm_log_dbg (LOGD_CORE, "modprobe: '%s'", ARGV_TO_STR (argv));
 	if (!g_spawn_sync (NULL, (char **) argv->pdata, NULL, 0, NULL, NULL, &std_out, &std_err, &exit_status, &local)) {
-		nm_log (llevel, LOGD_CORE, "modprobe: '%s' failed: %s", ARGV_TO_STR (argv), local->message);
+		nm_log (llevel, LOGD_CORE, NULL, NULL, "modprobe: '%s' failed: %s", ARGV_TO_STR (argv), local->message);
 		g_propagate_error (error, local);
 		return -1;
 	} else if (exit_status != 0) {
-		nm_log (llevel, LOGD_CORE, "modprobe: '%s' exited with error %d%s%s%s%s%s%s", ARGV_TO_STR (argv), exit_status,
+		nm_log (llevel, LOGD_CORE, NULL, NULL, "modprobe: '%s' exited with error %d%s%s%s%s%s%s", ARGV_TO_STR (argv), exit_status,
 		        std_out&&*std_out ? " (" : "", std_out&&*std_out ? _trunk_first_line (std_out) : "", std_out&&*std_out ? ")" : "",
 		        std_err&&*std_err ? " (" : "", std_err&&*std_err ? _trunk_first_line (std_err) : "", std_err&&*std_err ? ")" : "");
 	}
@@ -1000,7 +1011,7 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 	}
 	if (start_time != 0 && start_time != start_time0) {
 		nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": don't kill process %ld because the start_time is unexpectedly %lu instead of %ld",
-		            LOG_NAME_ARGS, (long int) pid, (long unsigned) start_time0, (long unsigned) start_time);
+		            LOG_NAME_ARGS, (long int) pid, (unsigned long) start_time0, (unsigned long) start_time);
 		return;
 	}
 
@@ -1206,6 +1217,7 @@ nm_utils_read_link_absolute (const char *link_file, GError **error)
 #define MAC_TAG "mac:"
 #define INTERFACE_NAME_TAG "interface-name:"
 #define DEVICE_TYPE_TAG "type:"
+#define DRIVER_TAG "driver:"
 #define SUBCHAN_TAG "s390-subchannels:"
 #define EXCEPT_TAG "except:"
 #define MATCH_TAG_CONFIG_NM_VERSION             "nm-version:"
@@ -1216,6 +1228,8 @@ nm_utils_read_link_absolute (const char *link_file, GError **error)
 typedef struct {
 	const char *interface_name;
 	const char *device_type;
+	const char *driver;
+	const char *driver_version;
 	struct {
 		const char *value;
 		gboolean is_parsed;
@@ -1398,6 +1412,38 @@ match_device_eval (const char *spec_str,
 		return FALSE;
 	}
 
+	if (_MATCH_CHECK (spec_str, DRIVER_TAG)) {
+		const char *t;
+
+		if (!match_data->driver)
+			return FALSE;
+
+		/* support:
+		 * 1) "${DRIVER}"
+		 *   In this case, DRIVER may not contain a '/' character.
+		 *   It matches any driver version.
+		 * 2) "${DRIVER}/${DRIVER_VERSION}"
+		 *   In this case, DRIVER may contains '/' but DRIVER_VERSION
+		 *   may not. A '/' in DRIVER_VERSION may be replaced by '?'.
+		 *
+		 * It follows, that "${DRIVER}/""*" is like 1), but allows
+		 * '/' inside DRIVER.
+		 *
+		 * The fields match to what `nmcli -f GENERAL.DRIVER,GENERAL.DRIVER-VERSION device show`
+		 * gives. However, DRIVER matches literally, while DRIVER_VERSION is a glob
+		 * supporting ? and *.
+		 */
+
+		t = strrchr (spec_str, '/');
+
+		if (!t)
+			return nm_streq (spec_str, match_data->driver);
+
+		return    (strncmp (spec_str, match_data->driver, t - spec_str) == 0)
+		       && g_pattern_match_simple (&t[1],
+		                                  match_data->driver_version ?: "");
+	}
+
 	if (_MATCH_CHECK (spec_str, SUBCHAN_TAG))
 		return match_data_s390_subchannels_eval (spec_str, match_data);
 
@@ -1416,6 +1462,8 @@ NMMatchSpecMatchType
 nm_match_spec_device (const GSList *specs,
                       const char *interface_name,
                       const char *device_type,
+                      const char *driver,
+                      const char *driver_version,
                       const char *hwaddr,
                       const char *s390_subchannels)
 {
@@ -1426,6 +1474,8 @@ nm_match_spec_device (const GSList *specs,
 	MatchDeviceData match_data = {
 	    .interface_name = interface_name,
 	    .device_type = nm_str_not_empty (device_type),
+	    .driver = nm_str_not_empty (driver),
+	    .driver_version = nm_str_not_empty (driver_version),
 	    .hwaddr = {
 	        .value = hwaddr,
 	    },
@@ -1588,7 +1638,7 @@ nm_match_spec_config (const GSList *specs, guint cur_nm_version, const char *env
  * @value: the string of device specs
  *
  * Splits the specs from the string and returns them as individual
- * entires in a #GSList.
+ * entries in a #GSList.
  *
  * It does not validate any specs, it basically just does a special
  * strsplit with ',' or ';' as separators and supporting '\\' as
@@ -1999,27 +2049,57 @@ nm_utils_read_resolv_conf_dns_options (const char *rc_contents)
 	return options;
 }
 
+/*****************************************************************************/
+
+/**
+ * nm_utils_cmp_connection_by_autoconnect_priority:
+ * @a:
+ * @b:
+ *
+ * compare connections @a and @b for their autoconnect property
+ * (with sorting the connection that has autoconnect enabled before
+ * the other)
+ * If they both have autoconnect enabled, sort them depending on their
+ * autoconnect-priority (with the higher priority first).
+ *
+ * If their autoconnect/autoconnect-priority is the same, 0 is returned.
+ * That is, they compare equal.
+ *
+ * Returns: -1, 0, or 1
+ */
 int
-nm_utils_cmp_connection_by_autoconnect_priority (NMConnection **a, NMConnection **b)
+nm_utils_cmp_connection_by_autoconnect_priority (NMConnection *a, NMConnection *b)
 {
-	NMSettingConnection *a_s_con, *b_s_con;
-	gboolean a_ac, b_ac;
-	gint a_ap, b_ap;
+	NMSettingConnection *a_s_con;
+	NMSettingConnection *b_s_con;
+	int a_ap, b_ap;
+	gboolean can_autoconnect;
 
-	a_s_con = nm_connection_get_setting_connection (*a);
-	b_s_con = nm_connection_get_setting_connection (*b);
-
-	a_ac = !!nm_setting_connection_get_autoconnect (a_s_con);
-	b_ac = !!nm_setting_connection_get_autoconnect (b_s_con);
-	if (a_ac != b_ac)
-		return ((int) b_ac) - ((int) a_ac);
-	if (!a_ac)
+	if (a == b)
 		return 0;
+	if (!a)
+		return 1;
+	if (!b)
+		return -1;
 
-	a_ap = nm_setting_connection_get_autoconnect_priority (a_s_con);
-	b_ap = nm_setting_connection_get_autoconnect_priority (b_s_con);
-	if (a_ap != b_ap)
-		return (a_ap > b_ap) ? -1 : 1;
+	a_s_con = nm_connection_get_setting_connection (a);
+	b_s_con = nm_connection_get_setting_connection (b);
+
+	if (!a_s_con)
+		return !b_s_con ? 0 : 1;
+	if (!b_s_con)
+		return -1;
+
+	can_autoconnect = !!nm_setting_connection_get_autoconnect (a_s_con);
+	if (can_autoconnect != (!!nm_setting_connection_get_autoconnect (b_s_con)))
+		return can_autoconnect ? -1 : 1;
+
+	if (can_autoconnect) {
+		a_ap = nm_setting_connection_get_autoconnect_priority (a_s_con);
+		b_ap = nm_setting_connection_get_autoconnect_priority (b_s_con);
+		if (a_ap != b_ap)
+			return (a_ap > b_ap) ? -1 : 1;
+	}
 
 	return 0;
 }
@@ -2355,9 +2435,9 @@ nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base,
 	connection_diff_are_same = nm_connection_diff (connection, diff_base, NM_SETTING_COMPARE_FLAG_EXACT | NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT, &connection_diff);
 	if (connection_diff_are_same) {
 		if (diff_base)
-			nm_log (level, domain, "%sconnection '%s' (%p/%s and %p/%s): no difference", prefix, name, connection, G_OBJECT_TYPE_NAME (connection), diff_base, G_OBJECT_TYPE_NAME (diff_base));
+			nm_log (level, domain, NULL, NULL, "%sconnection '%s' (%p/%s and %p/%s): no difference", prefix, name, connection, G_OBJECT_TYPE_NAME (connection), diff_base, G_OBJECT_TYPE_NAME (diff_base));
 		else
-			nm_log (level, domain, "%sconnection '%s' (%p/%s): no properties set", prefix, name, connection, G_OBJECT_TYPE_NAME (connection));
+			nm_log (level, domain, NULL, NULL, "%sconnection '%s' (%p/%s): no properties set", prefix, name, connection, G_OBJECT_TYPE_NAME (connection));
 		g_assert (!connection_diff);
 		return;
 	}
@@ -2393,16 +2473,16 @@ nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base,
 				const char *path = nm_connection_get_path (connection);
 
 				if (diff_base) {
-					nm_log (level, domain, "%sconnection '%s' (%p/%s < %p/%s)%s%s%s:", prefix, name, connection, G_OBJECT_TYPE_NAME (connection), diff_base, G_OBJECT_TYPE_NAME (diff_base),
+					nm_log (level, domain, NULL, NULL, "%sconnection '%s' (%p/%s < %p/%s)%s%s%s:", prefix, name, connection, G_OBJECT_TYPE_NAME (connection), diff_base, G_OBJECT_TYPE_NAME (diff_base),
 					        NM_PRINT_FMT_QUOTED (path, " [", path, "]", ""));
 				} else {
-					nm_log (level, domain, "%sconnection '%s' (%p/%s):%s%s%s", prefix, name, connection, G_OBJECT_TYPE_NAME (connection),
+					nm_log (level, domain, NULL, NULL, "%sconnection '%s' (%p/%s):%s%s%s", prefix, name, connection, G_OBJECT_TYPE_NAME (connection),
 					        NM_PRINT_FMT_QUOTED (path, " [", path, "]", ""));
 				}
 				print_header = FALSE;
 
 				if (!nm_connection_verify (connection, &err_verify)) {
-					nm_log (level, domain, "%sconnection %p does not verify: %s", prefix, connection, err_verify->message);
+					nm_log (level, domain, NULL, NULL, "%sconnection %p does not verify: %s", prefix, connection, err_verify->message);
 					g_clear_error (&err_verify);
 				}
 			}
@@ -2415,21 +2495,21 @@ nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base,
 						g_string_printf (str1, "*missing* < %p", setting_data->diff_base_setting);
 					else
 						g_string_printf (str1, "%p < *missing*", setting_data->setting);
-					nm_log (level, domain, "%s%"_NM_LOG_ALIGN"s [ %s ]", prefix, setting_data->name, str1->str);
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s [ %s ]", prefix, setting_data->name, str1->str);
 				} else
-					nm_log (level, domain, "%s%"_NM_LOG_ALIGN"s [ %p ]", prefix, setting_data->name, setting_data->setting);
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s [ %p ]", prefix, setting_data->name, setting_data->setting);
 				print_setting_header = FALSE;
 			}
 			g_string_printf (str1, "%s.%s", setting_data->name, item->item_name);
 			switch (item->diff_result & (NM_SETTING_DIFF_RESULT_IN_A | NM_SETTING_DIFF_RESULT_IN_B)) {
 				case NM_SETTING_DIFF_RESULT_IN_B:
-					nm_log (level, domain, "%s%"_NM_LOG_ALIGN"s < %s", prefix, str1->str, str_diff ? str_diff : "NULL");
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s < %s", prefix, str1->str, str_diff ? str_diff : "NULL");
 					break;
 				case NM_SETTING_DIFF_RESULT_IN_A:
-					nm_log (level, domain, "%s%"_NM_LOG_ALIGN"s = %s", prefix, str1->str, str_conn ? str_conn : "NULL");
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s = %s", prefix, str1->str, str_conn ? str_conn : "NULL");
 					break;
 				default:
-					nm_log (level, domain, "%s%"_NM_LOG_ALIGN"s = %s < %s", prefix, str1->str, str_conn ? str_conn : "NULL", str_diff ? str_diff : "NULL");
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s = %s < %s", prefix, str1->str, str_conn ? str_conn : "NULL", str_diff ? str_diff : "NULL");
 					break;
 #undef _NM_LOG_ALIGN
 			}
@@ -3249,7 +3329,7 @@ nm_utils_ipv6_interface_identifier_get_from_addr (NMUtilsIPv6IfaceId *iid,
  */
 gboolean
 nm_utils_ipv6_interface_identifier_get_from_token (NMUtilsIPv6IfaceId *iid,
-                                                  const char *token)
+                                                   const char *token)
 {
 	struct in6_addr i6_token;
 
@@ -3469,11 +3549,36 @@ nm_utils_stable_id_parse (const char *stable_id,
 /*****************************************************************************/
 
 static gboolean
+_is_reserved_ipv6_iid (const guint8 *iid)
+{
+	/* https://tools.ietf.org/html/rfc5453 */
+	/* https://www.iana.org/assignments/ipv6-interface-ids/ipv6-interface-ids.xml */
+
+	/* 0000:0000:0000:0000 (Subnet-Router Anycast [RFC4291]) */
+	if (memcmp (iid, &nm_ip_addr_zero.addr6.s6_addr[8], 8) == 0)
+		return TRUE;
+
+	/* 0200:5EFF:FE00:0000 - 0200:5EFF:FE00:5212 (Reserved IPv6 Interface Identifiers corresponding to the IANA Ethernet Block [RFC4291])
+	 * 0200:5EFF:FE00:5213                       (Proxy Mobile IPv6 [RFC6543])
+	 * 0200:5EFF:FE00:5214 - 0200:5EFF:FEFF:FFFF (Reserved IPv6 Interface Identifiers corresponding to the IANA Ethernet Block [RFC4291]) */
+	if (memcmp (iid, (const guint8[]) { 0x02, 0x00, 0x5E, 0xFF, 0xFE }, 5) == 0)
+		return TRUE;
+
+	/* FDFF:FFFF:FFFF:FF80 - FDFF:FFFF:FFFF:FFFF (Reserved Subnet Anycast Addresses [RFC2526]) */
+	if (memcmp (iid, (const guint8[]) { 0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, 7) == 0) {
+		if (iid[7] & 0x80)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static gboolean
 _set_stable_privacy (NMUtilsStableType stable_type,
                      struct in6_addr *addr,
                      const char *ifname,
                      const char *network_id,
-                     guint dad_counter,
+                     guint32 dad_counter,
                      guint8 *secret_key,
                      gsize key_len,
                      GError **error)
@@ -3524,9 +3629,19 @@ _set_stable_privacy (NMUtilsStableType stable_type,
 	g_checksum_update (sum, (const guchar *) secret_key, key_len);
 
 	g_checksum_get_digest (sum, digest, &len);
-	g_checksum_free (sum);
 
-	g_return_val_if_fail (len == 32, FALSE);
+	nm_assert (len == sizeof (digest));
+
+	while (_is_reserved_ipv6_iid (digest)) {
+		g_checksum_reset (sum);
+		tmp[0] = htonl (++dad_counter);
+		g_checksum_update (sum, digest, len);
+		g_checksum_update (sum, (const guchar *) &tmp[0], sizeof (tmp[0]));
+		g_checksum_get_digest (sum, digest, &len);
+		nm_assert (len == sizeof (digest));
+	}
+
+	g_checksum_free (sum);
 
 	memcpy (addr->s6_addr + 8, &digest[0], 8);
 
@@ -3538,7 +3653,7 @@ nm_utils_ipv6_addr_set_stable_privacy_impl (NMUtilsStableType stable_type,
                                             struct in6_addr *addr,
                                             const char *ifname,
                                             const char *network_id,
-                                            guint dad_counter,
+                                            guint32 dad_counter,
                                             guint8 *secret_key,
                                             gsize key_len,
                                             GError **error)
@@ -3560,7 +3675,7 @@ nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType stable_type,
                                        struct in6_addr *addr,
                                        const char *ifname,
                                        const char *network_id,
-                                       guint dad_counter,
+                                       guint32 dad_counter,
                                        GError **error)
 {
 	gs_free guint8 *secret_key = NULL;
@@ -3795,7 +3910,7 @@ debug_key_matches (const gchar *key,
  * nm_utils_parse_debug_string:
  * @string: the string to parse
  * @keys: the debug keys
- * @nkeys: number of entires in @keys
+ * @nkeys: number of entries in @keys
  *
  * Similar to g_parse_debug_string(), but does not special
  * case "help" or "all".
@@ -4305,3 +4420,40 @@ skip:
 	return result;
 }
 
+char *
+nm_utils_format_con_diff_for_audit (GHashTable *diff)
+{
+	GHashTable *setting_diff;
+	char *setting_name, *prop_name;
+	GHashTableIter iter, iter2;
+	GString *str;
+
+	str = g_string_sized_new (32);
+	g_hash_table_iter_init (&iter, diff);
+
+	while (g_hash_table_iter_next (&iter,
+	                               (gpointer *) &setting_name,
+	                               (gpointer *) &setting_diff)) {
+		if (!setting_diff)
+			continue;
+
+		g_hash_table_iter_init (&iter2, setting_diff);
+
+		while (g_hash_table_iter_next (&iter2, (gpointer *) &prop_name, NULL))
+			g_string_append_printf (str, "%s.%s,", setting_name, prop_name);
+	}
+
+	if (str->len)
+		str->str[str->len - 1] = '\0';
+
+	return g_string_free (str, FALSE);
+}
+
+/*****************************************************************************/
+
+NM_UTILS_LOOKUP_STR_DEFINE (nm_activation_type_to_string, NMActivationType,
+	NM_UTILS_LOOKUP_DEFAULT_WARN ("(unknown)"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_ACTIVATION_TYPE_MANAGED,  "managed"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_ACTIVATION_TYPE_ASSUME,   "assume"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_ACTIVATION_TYPE_EXTERNAL, "external"),
+)

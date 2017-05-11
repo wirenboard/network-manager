@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2004 - 2005 Colin Walters <walters@redhat.com>
- * Copyright (C) 2004 - 2013 Red Hat, Inc.
+ * Copyright (C) 2004 - 2017 Red Hat, Inc.
  * Copyright (C) 2005 - 2008 Novell, Inc.
  *   and others
  */
@@ -35,6 +35,10 @@
 
 #include <linux/fs.h>
 
+#if WITH_LIBPSL
+#include <libpsl.h>
+#endif
+
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 #include "nm-dns-manager.h"
@@ -51,20 +55,6 @@
 #include "nm-dns-unbound.h"
 
 #include "introspection/org.freedesktop.NetworkManager.DnsManager.h"
-
-#if WITH_LIBSOUP
-#include <libsoup/soup.h>
-
-#ifdef SOUP_CHECK_VERSION
-#if SOUP_CHECK_VERSION (2, 40, 0)
-#define DOMAIN_IS_VALID(domain) (*(domain) && !soup_tld_domain_is_public_suffix (domain))
-#endif
-#endif
-#endif
-
-#ifndef DOMAIN_IS_VALID
-#define DOMAIN_IS_VALID(domain) (*(domain))
-#endif
 
 #define HASH_LEN 20
 
@@ -114,7 +104,7 @@ NM_DEFINE_SINGLETON_GETTER (NMDnsManager, nm_dns_manager_get, NM_TYPE_DNS_MANAGE
             char __prefix[20]; \
             const NMDnsManager *const __self = (self); \
             \
-            _nm_log (__level, _NMLOG_DOMAIN, 0, \
+            _nm_log (__level, _NMLOG_DOMAIN, 0, NULL, NULL, \
                      "%s%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                      _NMLOG_PREFIX_NAME, \
                      ((!__self || __self == singleton_instance) \
@@ -130,7 +120,10 @@ typedef struct {
 	GPtrArray *configs;
 	GVariant *config_variant;
 	NMDnsIPConfigData *best_conf4, *best_conf6;
-	gboolean need_sort;
+
+	bool need_sort:1;
+	bool dns_touched:1;
+	bool is_stopped:1;
 
 	char *hostname;
 	guint updates_queue;
@@ -143,8 +136,6 @@ typedef struct {
 	NMDnsPlugin *plugin;
 
 	NMConfig *config;
-
-	gboolean dns_touched;
 
 	struct {
 		guint64 ts;
@@ -165,6 +156,18 @@ struct _NMDnsManagerClass {
 G_DEFINE_TYPE (NMDnsManager, nm_dns_manager, NM_TYPE_EXPORTED_OBJECT)
 
 #define NM_DNS_MANAGER_GET_PRIVATE(self) _NM_GET_PRIVATE(self, NMDnsManager, NM_IS_DNS_MANAGER)
+
+static gboolean
+domain_is_valid (const gchar *domain)
+{
+	if (*domain == '\0')
+		return FALSE;
+#if WITH_LIBPSL
+	if (psl_is_public_suffix (psl_builtin (), domain))
+		return FALSE;
+#endif
+	return TRUE;
+}
 
 /*****************************************************************************/
 
@@ -305,7 +308,7 @@ merge_one_ip4_config (NMResolvConfData *rc, NMIP4Config *src)
 		const char *search;
 
 		search = nm_ip4_config_get_search (src, i);
-		if (!DOMAIN_IS_VALID (search))
+		if (!domain_is_valid (search))
 			continue;
 		add_string_item (rc->searches, search);
 	}
@@ -315,7 +318,7 @@ merge_one_ip4_config (NMResolvConfData *rc, NMIP4Config *src)
 			const char *domain;
 
 			domain = nm_ip4_config_get_domain (src, i);
-			if (!DOMAIN_IS_VALID (domain))
+			if (!domain_is_valid (domain))
 				continue;
 			add_string_item (rc->searches, domain);
 		}
@@ -375,7 +378,7 @@ merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src, const char *iface)
 		const char *search;
 
 		search = nm_ip6_config_get_search (src, i);
-		if (!DOMAIN_IS_VALID (search))
+		if (!domain_is_valid (search))
 			continue;
 		add_string_item (rc->searches, search);
 	}
@@ -385,7 +388,7 @@ merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src, const char *iface)
 			const char *domain;
 
 			domain = nm_ip6_config_get_domain (src, i);
-			if (!DOMAIN_IS_VALID (domain))
+			if (!domain_is_valid (domain))
 				continue;
 			add_string_item (rc->searches, domain);
 		}
@@ -606,6 +609,8 @@ dispatch_resolvconf (NMDnsManager *self,
 	FILE *f;
 	gboolean success = FALSE;
 	int errnosv, err;
+	char *argv[] = { RESOLVCONF_PATH, "-d", "NetworkManager", NULL };
+	int status;
 
 	if (!g_file_test (RESOLVCONF_PATH, G_FILE_TEST_IS_EXECUTABLE)) {
 		g_set_error_literal (error,
@@ -618,9 +623,17 @@ dispatch_resolvconf (NMDnsManager *self,
 	if (!searches && !nameservers) {
 		_LOGI ("Removing DNS information from %s", RESOLVCONF_PATH);
 
-		cmd = g_strconcat (RESOLVCONF_PATH, " -d ", "NetworkManager", NULL);
-		if (nm_spawn_process (cmd, error) != 0)
+		if (!g_spawn_sync ("/", argv, NULL, 0, NULL, NULL, NULL, NULL, &status, error))
 			return SR_ERROR;
+
+		if (status != 0) {
+			g_set_error (error,
+			             NM_MANAGER_ERROR,
+			             NM_MANAGER_ERROR_FAILED,
+			             "%s returned error code",
+			             RESOLVCONF_PATH);
+			return SR_ERROR;
+		}
 
 		return SR_SUCCESS;
 	}
@@ -657,6 +670,20 @@ dispatch_resolvconf (NMDnsManager *self,
 	return success ? SR_SUCCESS : SR_ERROR;
 }
 
+static const char *
+_read_link_cached (const char *path, gboolean *is_cached, char **cached)
+{
+	nm_assert (is_cached);
+	nm_assert (cached);
+
+	if (*is_cached)
+		return *cached;
+
+	nm_assert (!*cached);
+	*is_cached = TRUE;
+	return (*cached = g_file_read_link (path, NULL));
+}
+
 #define MY_RESOLV_CONF NMRUNDIR "/resolv.conf"
 #define MY_RESOLV_CONF_TMP MY_RESOLV_CONF ".tmp"
 #define RESOLV_CONF_TMP "/etc/.resolv.conf.NetworkManager"
@@ -670,13 +697,14 @@ update_resolv_conf (NMDnsManager *self,
                     NMDnsManagerResolvConfManager rc_manager)
 {
 	FILE *f;
-	struct stat st;
 	gboolean success;
 	gs_free char *content = NULL;
 	SpawnResult write_file_result = SR_SUCCESS;
 	int errsv;
 	const char *rc_path = _PATH_RESCONF;
 	nm_auto_free char *rc_path_real = NULL;
+	gboolean resconf_link_cached = FALSE;
+	gs_free char *resconf_link = NULL;
 
 	/* If we are not managing /etc/resolv.conf and it points to
 	 * MY_RESOLV_CONF, don't write the private DNS configuration to
@@ -686,9 +714,8 @@ update_resolv_conf (NMDnsManager *self,
 	 * This is the only situation, where we don't try to update our
 	 * internal resolv.conf file. */
 	if (rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_UNMANAGED) {
-		gs_free char *path = g_file_read_link (_PATH_RESCONF, NULL);
-
-		if (g_strcmp0 (path, MY_RESOLV_CONF) == 0) {
+		if (nm_streq0 (_read_link_cached (_PATH_RESCONF, &resconf_link_cached, &resconf_link),
+		               MY_RESOLV_CONF)) {
 			_LOGD ("update-resolv-conf: not updating " _PATH_RESCONF
 			       " since it points to " MY_RESOLV_CONF);
 			return SR_SUCCESS;
@@ -697,12 +724,16 @@ update_resolv_conf (NMDnsManager *self,
 
 	content = create_resolv_conf (searches, nameservers, options);
 
-	if (rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE) {
+	if (   rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE
+	    || (   rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_SYMLINK
+	        && !_read_link_cached (_PATH_RESCONF, &resconf_link_cached, &resconf_link))) {
 		GError *local = NULL;
 
-		rc_path_real = realpath (rc_path, NULL);
-		if (rc_path_real)
-			rc_path = rc_path_real;
+		if (rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE) {
+			rc_path_real = realpath (rc_path, NULL);
+			if (rc_path_real)
+				rc_path = rc_path_real;
+		}
 
 		/* we first write to /etc/resolv.conf directly. If that fails,
 		 * we still continue to write to runstatedir but remember the
@@ -777,60 +808,23 @@ update_resolv_conf (NMDnsManager *self,
 		return write_file_result;
 	}
 
-	if (rc_manager != NM_DNS_MANAGER_RESOLV_CONF_MAN_SYMLINK) {
+	if (   rc_manager != NM_DNS_MANAGER_RESOLV_CONF_MAN_SYMLINK
+	    || !_read_link_cached (_PATH_RESCONF, &resconf_link_cached, &resconf_link)) {
 		_LOGT ("update-resolv-conf: write internal file %s succeeded", MY_RESOLV_CONF);
 		return SR_SUCCESS;
 	}
 
-	/* A symlink pointing to NM's own resolv.conf (MY_RESOLV_CONF) is always
-	 * overwritten to ensure that changes are indicated with inotify.  Symlinks
-	 * pointing to any other file are never overwritten.
-	 */
-	if (lstat (_PATH_RESCONF, &st) != 0) {
-		errsv = errno;
-		if (errsv != ENOENT) {
-			/* NM cannot read /etc/resolv.conf */
-			_LOGT ("update-resolv-conf: write internal file %s succeeded but lstat(%s) failed (%s)",
-			       MY_RESOLV_CONF, _PATH_RESCONF, g_strerror (errsv));
-			g_set_error (error,
-			             NM_MANAGER_ERROR,
-			             NM_MANAGER_ERROR_FAILED,
-			             "Could not lstat %s: %s",
-			             _PATH_RESCONF,
-			             g_strerror (errsv));
-			return SR_ERROR;
-		}
-	} else {
-		if (S_ISLNK (st.st_mode)) {
-			if (stat (_PATH_RESCONF, &st) != -1) {
-				gs_free char *path = g_file_read_link (_PATH_RESCONF, NULL);
-
-				if (!path || !nm_streq (path, MY_RESOLV_CONF)) {
-					/* It's not NM's symlink; do nothing */
-					_LOGT ("update-resolv-conf: write internal file %s succeeded "
-					       "but don't update %s as it points to %s",
-					       MY_RESOLV_CONF, _PATH_RESCONF, path ?: "");
-					return SR_SUCCESS;
-				}
-
-				/* resolv.conf is a symlink owned by NM and the target is accessible
-				 */
-			} else {
-				/* resolv.conf is a symlink but the target is not accessible;
-				 * some other program is probably managing resolv.conf and
-				 * NM should not touch it.
-				 */
-				_LOGT ("update-resolv-conf: write internal file %s succeeded "
-				       "but don't update %s as the symlinks points somewhere else",
-				       MY_RESOLV_CONF, _PATH_RESCONF);
-				return SR_SUCCESS;
-			}
-		}
+	if (!nm_streq0 (_read_link_cached (_PATH_RESCONF, &resconf_link_cached, &resconf_link),
+	                MY_RESOLV_CONF)) {
+		_LOGT ("update-resolv-conf: write internal file %s succeeded (don't touch symlink %s linking to %s)",
+		       MY_RESOLV_CONF, _PATH_RESCONF,
+		       _read_link_cached (_PATH_RESCONF, &resconf_link_cached, &resconf_link));
+		return SR_SUCCESS;
 	}
 
-	/* By this point, either /etc/resolv.conf does not exist, is a regular
-	 * file, or is a symlink already owned by NM.  In all cases /etc/resolv.conf
-	 * is replaced with a symlink pointing to NM's resolv.conf in /var/run/.
+	/* By this point, /etc/resolv.conf exists and is a symlink to our internal
+	 * resolv.conf. We update the symlink so that applications get an inotify
+	 * notification.
 	 */
 	if (   unlink (RESOLV_CONF_TMP) != 0
 	    && ((errsv = errno) != ENOENT)) {
@@ -925,7 +919,7 @@ merge_global_dns_config (NMResolvConfData *rc, NMGlobalDnsConfig *global_conf)
 	options = nm_global_dns_config_get_options (global_conf);
 
 	for (i = 0; searches && searches[i]; i++) {
-		if (DOMAIN_IS_VALID (searches[i]))
+		if (domain_is_valid (searches[i]))
 			add_string_item (rc->searches, searches[i]);
 	}
 
@@ -1066,9 +1060,9 @@ _collect_resolv_conf_data (NMDnsManager *self, /* only for logging context, no o
 		if (   hostdomain
 		    && !nm_utils_ipaddr_valid (AF_UNSPEC, hostname)) {
 			hostdomain++;
-			if (DOMAIN_IS_VALID (hostdomain))
+			if (domain_is_valid (hostdomain))
 				add_string_item (rc.searches, hostdomain);
-			else if (DOMAIN_IS_VALID (hostname))
+			else if (domain_is_valid (hostname))
 				add_string_item (rc.searches, hostname);
 		}
 	}
@@ -1113,6 +1107,11 @@ update_dns (NMDnsManager *self,
 	g_return_val_if_fail (!error || !*error, FALSE);
 
 	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
+
+	if (priv->is_stopped) {
+		_LOGD ("update-dns: not updating resolv.conf (is stopped)");
+		return TRUE;
+	}
 
 	nm_clear_g_source (&priv->plugin_ratelimit.timer);
 
@@ -1187,6 +1186,10 @@ update_dns (NMDnsManager *self,
 		case NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE:
 			result = update_resolv_conf (self, searches, nameservers, options, error, priv->rc_manager);
 			resolv_conf_updated = TRUE;
+			/* If we have ended with no nameservers avoid updating again resolv.conf
+			 * on stop, as some external changes may be applied to it in the meanwhile */
+			if (!nameservers && !options)
+				priv->dns_touched = FALSE;
 			break;
 		case NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF:
 			result = dispatch_resolvconf (self, searches, nameservers, options, error);
@@ -1437,7 +1440,8 @@ nm_dns_manager_set_initial_hostname (NMDnsManager *self,
 
 void
 nm_dns_manager_set_hostname (NMDnsManager *self,
-                             const char *hostname)
+                             const char *hostname,
+                             gboolean skip_update)
 {
 	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	GError *error = NULL;
@@ -1458,6 +1462,8 @@ nm_dns_manager_set_hostname (NMDnsManager *self,
 	g_free (priv->hostname);
 	priv->hostname = g_strdup (filtered);
 
+	if (skip_update)
+		return;
 	if (!priv->updates_queue && !update_dns (self, FALSE, &error)) {
 		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
@@ -1534,6 +1540,35 @@ nm_dns_manager_end_updates (NMDnsManager *self, const char *func)
 	}
 
 	memset (priv->prev_hash, 0, sizeof (priv->prev_hash));
+}
+
+void
+nm_dns_manager_stop (NMDnsManager *self)
+{
+	NMDnsManagerPrivate *priv;
+	GError *error = NULL;
+
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
+
+	if (priv->is_stopped)
+		g_return_if_reached ();
+
+	_LOGT ("stopping...");
+
+	/* If we're quitting, leave a valid resolv.conf in place, not one
+	 * pointing to 127.0.0.1 if any plugins were active.  Thus update
+	 * DNS after disposing of all plugins.  But if we haven't done any
+	 * DNS updates yet, there's no reason to touch resolv.conf on shutdown.
+	 */
+	if (priv->dns_touched) {
+		if (!update_dns (self, TRUE, &error)) {
+			_LOGW ("could not commit DNS changes on shutdown: %s", error->message);
+			g_clear_error (&error);
+		}
+		priv->dns_touched = FALSE;
+	}
+
+	priv->is_stopped = TRUE;
 }
 
 /*****************************************************************************/
@@ -1624,9 +1659,9 @@ _resolvconf_resolved_managed (void)
 	                          NULL, NULL);
 
 	if (info && g_file_info_get_is_symlink (info)) {
-		ret = _nm_utils_strv_find_first ((gchar **) resolved_paths,
-		                                 G_N_ELEMENTS (resolved_paths),
-		                                 g_file_info_get_symlink_target (info)) >= 0;
+		ret = nm_utils_strv_find_first ((gchar **) resolved_paths,
+		                                G_N_ELEMENTS (resolved_paths),
+		                                g_file_info_get_symlink_target (info)) >= 0;
 	}
 
 	g_clear_object(&info);
@@ -2018,23 +2053,14 @@ dispose (GObject *object)
 	NMDnsManager *self = NM_DNS_MANAGER (object);
 	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	NMDnsIPConfigData *data;
-	GError *error = NULL;
 	guint i;
 
 	_LOGT ("disposing");
 
-	_clear_plugin (self);
+	if (!priv->is_stopped)
+		nm_dns_manager_stop (self);
 
-	/* If we're quitting, leave a valid resolv.conf in place, not one
-	 * pointing to 127.0.0.1 if any plugins were active.  Thus update
-	 * DNS after disposing of all plugins.  But if we haven't done any
-	 * DNS updates yet, there's no reason to touch resolv.conf on shutdown.
-	 */
-	if (priv->dns_touched && !update_dns (self, TRUE, &error)) {
-		_LOGW ("could not commit DNS changes on shutdown: %s", error->message);
-		g_clear_error (&error);
-		priv->dns_touched = FALSE;
-	}
+	_clear_plugin (self);
 
 	if (priv->config) {
 		g_signal_handlers_disconnect_by_func (priv->config, config_changed_cb, self);

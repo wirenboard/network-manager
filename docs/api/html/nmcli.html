@@ -5,9 +5,9 @@
 <title>nmcli: NetworkManager Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
-<link rel="up" href="manpages.html" title="Manual Pages">
-<link rel="prev" href="manpages.html" title="Manual Pages">
-<link rel="next" href="nmtui.html" title="nmtui">
+<link rel="up" href="manpages.html" title="Part I. Manual Pages">
+<link rel="prev" href="NetworkManager.conf.html" title="NetworkManager.conf">
+<link rel="next" href="nmcli-examples.html" title="nmcli-examples">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -16,8 +16,8 @@
 <td width="100%" align="left" class="shortcuts"></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="manpages.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="manpages.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="nmtui.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="p" href="NetworkManager.conf.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="nmcli-examples.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="nmcli"></a><div class="titlepage"></div>
@@ -121,10 +121,19 @@
           <code class="literal">all</code> is used to print all valid field values of the
           command. <code class="literal">common</code> is used to print common field values of
           the command.</p>
-<p>If omitted, default is <code class="literal">common</code>. The option is
-          mandatory when <code class="option">--terse</code> is used. In this case, generic values
-          <code class="literal">all</code> and <code class="literal">common</code> cannot be used. This
-          is to maintain compatibility when new fields are added in the future.</p>
+<p>If omitted, default is <code class="literal">common</code>.</p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term">  <code class="option">-g</code>  |   <code class="option">--get-values</code>  { <em class="replaceable"><code>field1</code></em>,<em class="replaceable"><code>field2</code></em>...  |   all  |   common } </span></p></td>
+<td>
+<p>This option is used to print values from specific fields. It is basically
+          a shortcut for <code class="literal">--mode tabular --terse --fields</code> and is a convenient
+          way to retrieve values for particular fields. The values are printed one per line
+          without headers.</p>
+<p>If a section is specified instead of a field, the section name will be printed
+          followed by colon separated values of the fields belonging to that section, all on
+          the same line.</p>
 </td>
 </tr>
 <tr>
@@ -646,6 +655,7 @@
 <li class="listitem"><p><code class="literal">ip-tunnel</code></p></li>
 <li class="listitem"><p><code class="literal">macvlan</code></p></li>
 <li class="listitem"><p><code class="literal">vxlan</code></p></li>
+<li class="listitem"><p><code class="literal">dummy</code></p></li>
 </ul></div>
 <p>The most typical uses are described in the <a class="link" href="nmcli.html#examples" title="Examples">Examples</a> section.</p>
 <p>Aside from the properties and values two special options are accepted:</p>
@@ -1201,7 +1211,7 @@
    disambiguate these options from the options of the same name that are valid for
    multiple connection types (such as <code class="option">mtu</code>).</p>
 <div class="table">
-<a name="id-1.2.2.14.4"></a><p class="title"><b>Table 1. Options for all connections</b></p>
+<a name="id-1.2.4.14.4"></a><p class="title"><b>Table 1. Options for all connections</b></p>
 <div class="table-contents"><table class="table" summary="Options for all connections" border="1">
 <colgroup>
 <col>
@@ -1256,7 +1266,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.5"></a><p class="title"><b>Table 2. PPPoE options</b></p>
+<a name="id-1.2.4.14.5"></a><p class="title"><b>Table 2. PPPoE options</b></p>
 <div class="table-contents"><table class="table" summary="PPPoE options" border="1">
 <colgroup>
 <col>
@@ -1283,7 +1293,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.6"></a><p class="title"><b>Table 3. Wired Ethernet options</b></p>
+<a name="id-1.2.4.14.6"></a><p class="title"><b>Table 3. Wired Ethernet options</b></p>
 <div class="table-contents"><table class="table" summary="Wired Ethernet options" border="1">
 <colgroup>
 <col>
@@ -1310,7 +1320,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.7"></a><p class="title"><b>Table 4. Infiniband options</b></p>
+<a name="id-1.2.4.14.7"></a><p class="title"><b>Table 4. Infiniband options</b></p>
 <div class="table-contents"><table class="table" summary="Infiniband options" border="1">
 <colgroup>
 <col>
@@ -1345,7 +1355,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.8"></a><p class="title"><b>Table 5. Wi-Fi options</b></p>
+<a name="id-1.2.4.14.8"></a><p class="title"><b>Table 5. Wi-Fi options</b></p>
 <div class="table-contents"><table class="table" summary="Wi-Fi options" border="1">
 <colgroup>
 <col>
@@ -1380,7 +1390,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.9"></a><p class="title"><b>Table 6. WiMax options</b></p>
+<a name="id-1.2.4.14.9"></a><p class="title"><b>Table 6. WiMax options</b></p>
 <div class="table-contents"><table class="table" summary="WiMax options" border="1">
 <colgroup>
 <col>
@@ -1403,7 +1413,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.10"></a><p class="title"><b>Table 7. GSM options</b></p>
+<a name="id-1.2.4.14.10"></a><p class="title"><b>Table 7. GSM options</b></p>
 <div class="table-contents"><table class="table" summary="GSM options" border="1">
 <colgroup>
 <col>
@@ -1430,7 +1440,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.11"></a><p class="title"><b>Table 8. CDMA options</b></p>
+<a name="id-1.2.4.14.11"></a><p class="title"><b>Table 8. CDMA options</b></p>
 <div class="table-contents"><table class="table" summary="CDMA options" border="1">
 <colgroup>
 <col>
@@ -1453,7 +1463,7 @@ or <code class="literal">id/</code> to disambiguate it.</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.12"></a><p class="title"><b>Table 9. Bluetooth options</b></p>
+<a name="id-1.2.4.14.12"></a><p class="title"><b>Table 9. Bluetooth options</b></p>
 <div class="table-contents"><table class="table" summary="Bluetooth options" border="1">
 <colgroup>
 <col>
@@ -1484,7 +1494,7 @@ appropriate <code class="literal">gsm.*</code> or <code class="literal">cdma.*</
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.13"></a><p class="title"><b>Table 10. VLAN options</b></p>
+<a name="id-1.2.4.14.13"></a><p class="title"><b>Table 10. VLAN options</b></p>
 <div class="table-contents"><table class="table" summary="VLAN options" border="1">
 <colgroup>
 <col>
@@ -1519,7 +1529,7 @@ appropriate <code class="literal">gsm.*</code> or <code class="literal">cdma.*</
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.14"></a><p class="title"><b>Table 11. Bonding options</b></p>
+<a name="id-1.2.4.14.14"></a><p class="title"><b>Table 11. Bonding options</b></p>
 <div class="table-contents"><table class="table" summary="Bonding options" border="1">
 <colgroup>
 <col>
@@ -1549,7 +1559,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.15"></a><p class="title"><b>Table 12. Team options</b></p>
+<a name="id-1.2.4.14.15"></a><p class="title"><b>Table 12. Team options</b></p>
 <div class="table-contents"><table class="table" summary="Team options" border="1">
 <colgroup>
 <col>
@@ -1569,7 +1579,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.16"></a><p class="title"><b>Table 13. Team port options</b></p>
+<a name="id-1.2.4.14.16"></a><p class="title"><b>Table 13. Team port options</b></p>
 <div class="table-contents"><table class="table" summary="Team port options" border="1">
 <colgroup>
 <col>
@@ -1589,7 +1599,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.17"></a><p class="title"><b>Table 14. Bridge options</b></p>
+<a name="id-1.2.4.14.17"></a><p class="title"><b>Table 14. Bridge options</b></p>
 <div class="table-contents"><table class="table" summary="Bridge options" border="1">
 <colgroup>
 <col>
@@ -1648,7 +1658,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.18"></a><p class="title"><b>Table 15. VPN options</b></p>
+<a name="id-1.2.4.14.18"></a><p class="title"><b>Table 15. VPN options</b></p>
 <div class="table-contents"><table class="table" summary="VPN options" border="1">
 <colgroup>
 <col>
@@ -1671,7 +1681,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.19"></a><p class="title"><b>Table 16. OLPC Mesh options</b></p>
+<a name="id-1.2.4.14.19"></a><p class="title"><b>Table 16. OLPC Mesh options</b></p>
 <div class="table-contents"><table class="table" summary="OLPC Mesh options" border="1">
 <colgroup>
 <col>
@@ -1698,7 +1708,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.20"></a><p class="title"><b>Table 17. ADSL options</b></p>
+<a name="id-1.2.4.14.20"></a><p class="title"><b>Table 17. ADSL options</b></p>
 <div class="table-contents"><table class="table" summary="ADSL options" border="1">
 <colgroup>
 <col>
@@ -1729,7 +1739,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.21"></a><p class="title"><b>Table 18. MACVLAN options</b></p>
+<a name="id-1.2.4.14.21"></a><p class="title"><b>Table 18. MACVLAN options</b></p>
 <div class="table-contents"><table class="table" summary="MACVLAN options" border="1">
 <colgroup>
 <col>
@@ -1756,7 +1766,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.22"></a><p class="title"><b>Table 19. VxLAN options</b></p>
+<a name="id-1.2.4.14.22"></a><p class="title"><b>Table 19. VxLAN options</b></p>
 <div class="table-contents"><table class="table" summary="VxLAN options" border="1">
 <colgroup>
 <col>
@@ -1799,7 +1809,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.23"></a><p class="title"><b>Table 20. Tun options</b></p>
+<a name="id-1.2.4.14.23"></a><p class="title"><b>Table 20. Tun options</b></p>
 <div class="table-contents"><table class="table" summary="Tun options" border="1">
 <colgroup>
 <col>
@@ -1838,7 +1848,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.24"></a><p class="title"><b>Table 21. IP tunneling options</b></p>
+<a name="id-1.2.4.14.24"></a><p class="title"><b>Table 21. IP tunneling options</b></p>
 <div class="table-contents"><table class="table" summary="IP tunneling options" border="1">
 <colgroup>
 <col>
@@ -1869,7 +1879,7 @@ It's equivalent of using the <code class="literal">+bond.options 'option=value'<
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.25"></a><p class="title"><b>Table 22. IPv4 options</b></p>
+<a name="id-1.2.4.14.25"></a><p class="title"><b>Table 22. IPv4 options</b></p>
 <div class="table-contents"><table class="table" summary="IPv4 options" border="1">
 <colgroup>
 <col>
@@ -1900,7 +1910,7 @@ It's equivalent of using <code class="literal">+ipv4.addresses</code> syntax and
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.26"></a><p class="title"><b>Table 23. IPv6 options</b></p>
+<a name="id-1.2.4.14.26"></a><p class="title"><b>Table 23. IPv6 options</b></p>
 <div class="table-contents"><table class="table" summary="IPv6 options" border="1">
 <colgroup>
 <col>
@@ -1931,7 +1941,7 @@ It's equivalent of using <code class="literal">+ipv6.addresses</code> syntax and
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.2.2.14.27"></a><p class="title"><b>Table 24. Proxy options</b></p>
+<a name="id-1.2.4.14.27"></a><p class="title"><b>Table 24. Proxy options</b></p>
 <div class="table-contents"><table class="table" summary="Proxy options" border="1">
 <colgroup>
 <col>

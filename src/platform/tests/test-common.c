@@ -783,6 +783,54 @@ nmtstp_ip6_address_add (NMPlatform *platform,
 	                 NULL);
 }
 
+void nmtstp_ip4_route_add (NMPlatform *platform,
+                           int ifindex,
+                           NMIPConfigSource source,
+                           in_addr_t network,
+                           guint8 plen,
+                           in_addr_t gateway,
+                           in_addr_t pref_src,
+                           guint32 metric,
+                           guint32 mss)
+{
+	NMPlatformIP4Route route = { };
+
+	route.ifindex = ifindex;
+	route.rt_source = source;
+	route.network = network;
+	route.plen = plen;
+	route.gateway = gateway;
+	route.pref_src = pref_src;
+	route.metric = metric;
+	route.mss = mss;
+
+	g_assert (nm_platform_ip4_route_add (platform, &route));
+}
+
+void nmtstp_ip6_route_add (NMPlatform *platform,
+                           int ifindex,
+                           NMIPConfigSource source,
+                           struct in6_addr network,
+                           guint8 plen,
+                           struct in6_addr gateway,
+                           struct in6_addr pref_src,
+                           guint32 metric,
+                           guint32 mss)
+{
+	NMPlatformIP6Route route = { };
+
+	route.ifindex = ifindex;
+	route.rt_source = source;
+	route.network = network;
+	route.plen = plen;
+	route.gateway = gateway;
+	route.pref_src = pref_src;
+	route.metric = metric;
+	route.mss = mss;
+
+	g_assert (nm_platform_ip6_route_add (platform, &route));
+}
+
 /*****************************************************************************/
 
 static void
@@ -1547,7 +1595,7 @@ nmtstp_namespace_get_fd_for_process (pid_t pid, const char *ns_name)
 	g_return_val_if_fail (pid > 0, 0);
 	g_return_val_if_fail (ns_name && ns_name[0] && strlen (ns_name) < 50, 0);
 
-	nm_sprintf_buf (p, "/proc/%lu/ns/%s", (long unsigned) pid, ns_name);
+	nm_sprintf_buf (p, "/proc/%lu/ns/%s", (unsigned long) pid, ns_name);
 
 	return open(p, O_RDONLY | O_CLOEXEC);
 }

@@ -27,6 +27,8 @@ bridge&apos;s interface name."/>
 </setting>
 <setting name="dcb">
 </setting>
+<setting name="dummy">
+</setting>
 <setting name="generic">
 </setting>
 <setting name="gsm">
@@ -132,6 +134,8 @@ be used for backward-compatibility with older daemons, to set the
 team&apos;s interface name."/>
 </setting>
 <setting name="tun">
+</setting>
+<setting name="user">
 </setting>
 <setting name="vlan">
 <property name="interface-name" variable="interface-name" format="string" values="" default="" example="" description="Deprecated in favor of connection.interface-name, but can

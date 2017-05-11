@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 02/15/2017
+.\"      Date: 05/10/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.6.2
+.\"    Source: NetworkManager 1.8.0
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.6\&.2" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.8\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -58,839 +58,9 @@ that allows direct configuration of the settings and properties according to a c
 connection editor has also a built\-in
 \fIdescribe\fR
 command that can display description of particular settings and properties of this page\&.
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&1.\ \&802\-1x setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l.
-T{
-altsubject\-matches
-T}:T{
-array of string
-T}:T{
-[]
-T}:T{
-List of strings to be matched against the altSubjectName of the certificate presented by the authentication server\&. If the list is empty, no verification of the server certificate\*(Aqs altSubjectName is performed\&.
-T}
-T{
-anonymous\-identity
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Anonymous identity string for EAP authentication methods\&.  Used as the unencrypted identity with EAP types that support different tunneled identity like EAP\-TTLS\&.
-T}
-T{
-ca\-cert
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Contains the CA certificate if used by the EAP method specified in the "eap" property\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
-T}
-T{
-ca\-path
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-UTF\-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "ca\-cert" property\&.
-T}
-T{
-client\-cert
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Contains the client certificate if used by the EAP method specified in the "eap" property\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&.
-T}
-T{
-domain\-suffix\-match
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Constraint for server domain name\&. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server\&.  If a matching dNSName is found, this constraint is met\&.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison\&.
-T}
-T{
-eap
-T}:T{
-array of string
-T}:T{
-[]
-T}:T{
-The allowed EAP method to be used when authenticating to the network with 802\&.1x\&.  Valid methods are: "leap", "md5", "tls", "peap", "ttls", "pwd", and "fast"\&.  Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations\&.
-T}
-T{
-identity
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Identity string for EAP authentication methods\&.  Often the user\*(Aqs user or login name\&.
-T}
-T{
-name
-T}:T{
-string
-T}:T{
-802\-1x
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-pac\-file
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-UTF\-8 encoded file path containing PAC for EAP\-FAST\&.
-T}
-T{
-password
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-UTF\-8 encoded password used for EAP authentication methods\&. If both the "password" property and the "password\-raw" property are specified, "password" is preferred\&.
-T}
-T{
-password\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-password\-raw
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Password used for EAP authentication methods, given as a byte array to allow passwords in other encodings than UTF\-8 to be used\&. If both the "password" property and the "password\-raw" property are specified, "password" is preferred\&.
-T}
-T{
-password\-raw\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "password\-raw" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-phase1\-fast\-provisioning
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Enables or disables in\-line provisioning of EAP\-FAST credentials when FAST is specified as the EAP method in the "eap" property\&. Recognized values are "0" (disabled), "1" (allow unauthenticated provisioning), "2" (allow authenticated provisioning), and "3" (allow both authenticated and unauthenticated provisioning)\&.  See the wpa_supplicant documentation for more details\&.
-T}
-T{
-phase1\-peaplabel
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Forces use of the new PEAP label during key derivation\&.  Some RADIUS servers may require forcing the new PEAP label to interoperate with PEAPv1\&.  Set to "1" to force use of the new PEAP label\&.  See the wpa_supplicant documentation for more details\&.
-T}
-T{
-phase1\-peapver
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Forces which PEAP version is used when PEAP is set as the EAP method in the "eap" property\&.  When unset, the version reported by the server will be used\&.  Sometimes when using older RADIUS servers, it is necessary to force the client to use a particular PEAP version\&.  To do so, this property may be set to "0" or "1" to force that specific PEAP version\&.
-T}
-T{
-phase2\-altsubject\-matches
-T}:T{
-array of string
-T}:T{
-[]
-T}:T{
-List of strings to be matched against the altSubjectName of the certificate presented by the authentication server during the inner "phase 2" authentication\&. If the list is empty, no verification of the server certificate\*(Aqs altSubjectName is performed\&.
-T}
-T{
-phase2\-auth
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Specifies the allowed "phase 2" inner non\-EAP authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property\&.  Recognized non\-EAP "phase 2" methods are "pap", "chap", "mschap", "mschapv2", "gtc", "otp", "md5", and "tls"\&. Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details\&.
-T}
-T{
-phase2\-autheap
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Specifies the allowed "phase 2" inner EAP\-based authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property\&.  Recognized EAP\-based "phase 2" methods are "md5", "mschapv2", "otp", "gtc", and "tls"\&. Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details\&.
-T}
-T{
-phase2\-ca\-cert
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Contains the "phase 2" CA certificate if used by the EAP method specified in the "phase2\-auth" or "phase2\-autheap" properties\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
-T}
-T{
-phase2\-ca\-path
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-UTF\-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "phase2\-ca\-cert" property\&.
-T}
-T{
-phase2\-client\-cert
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Contains the "phase 2" client certificate if used by the EAP method specified in the "phase2\-auth" or "phase2\-autheap" properties\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
-T}
-T{
-phase2\-domain\-suffix\-match
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Constraint for server domain name\&. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner "phase 2" authentication\&.  If a matching dNSName is found, this constraint is met\&.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison\&.
-T}
-T{
-phase2\-private\-key
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Contains the "phase 2" inner private key when the "phase2\-auth" or "phase2\-autheap" property is set to "tls"\&. Key data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme and private keys, this property should be set to the key\*(Aqs encrypted PEM encoded data\&. When using private keys with the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte\&. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "phase2\-private\-key\-password" property must be set to password used to decrypt the PKCS#12 certificate and key\&. When using PKCS#12 files and the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "phase2\-private\-key\-password" property must be set to the password used to decode the PKCS#12 private key and certificate\&.
-T}
-T{
-phase2\-private\-key\-password
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-The password used to decrypt the "phase 2" private key specified in the "phase2\-private\-key" property when the private key either uses the path scheme, or is a PKCS#12 format key\&.
-T}
-T{
-phase2\-private\-key\-password\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "phase2\-private\-key\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-phase2\-subject\-match
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2\-domain\-suffix\-match\&.
-T}
-T{
-pin
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-PIN used for EAP authentication methods\&.
-T}
-T{
-pin\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "pin" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-private\-key
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-Contains the private key when the "eap" property is set to "tls"\&. Key data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme and private keys, this property should be set to the key\*(Aqs encrypted PEM encoded data\&. When using private keys with the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte\&. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "private\-key\-password" property must be set to password used to decrypt the PKCS#12 certificate and key\&. When using PKCS#12 files and the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "private\-key\-password" property must be set to the password used to decode the PKCS#12 private key and certificate\&. WARNING: "private\-key" is not a "secret" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users\&.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data\&.
-T}
-T{
-private\-key\-password
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-The password used to decrypt the private key specified in the "private\-key" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key\&.
-T}
-T{
-private\-key\-password\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "private\-key\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-subject\-match
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Substring to be matched against the subject of the certificate presented by the authentication server\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain\-suffix\-match\&.
-T}
-T{
-system\-ca\-certs
-T}:T{
-boolean
-T}:T{
-FALSE
-T}:T{
-When TRUE, overrides the "ca\-path" and "phase2\-ca\-path" properties using the system CA directory specified at configure time with the \-\-system\-ca\-path switch\&.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the "ca\-cert" and "phase2\-ca\-cert" properties\&. If the path provided with \-\-system\-ca\-path is rather a file name (bundle of trusted CA certificates), it overrides "ca\-cert" and "phase2\-ca\-cert" properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant)\&.
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&2.\ \&adsl setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l.
-T{
-encapsulation
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Encapsulation of ADSL connection\&.  Can be "vcmux" or "llc"\&.
-T}
-T{
-name
-T}:T{
-string
-T}:T{
-adsl
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-password
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Password used to authenticate with the ADSL service\&.
-T}
-T{
-password\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-protocol
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-ADSL connection protocol\&.  Can be "pppoa", "pppoe" or "ipoatm"\&.
-T}
-T{
-username
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Username used to authenticate with the ADSL service\&.
-T}
-T{
-vci
-T}:T{
-uint32
-T}:T{
-0
-T}:T{
-VCI of ADSL connection
-T}
-T{
-vpi
-T}:T{
-uint32
-T}:T{
-0
-T}:T{
-VPI of ADSL connection
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&3.\ \&bluetooth setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l.
-T{
-bdaddr
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-The Bluetooth address of the device\&.
-T}
-T{
-name
-T}:T{
-string
-T}:T{
-bluetooth
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-type
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Either "dun" for Dial\-Up Networking connections or "panu" for Personal Area Networking connections to devices supporting the NAP profile\&.
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&4.\ \&bond setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l.
-T{
-interface\-name
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Deprecated in favor of connection\&.interface\-name, but can be used for backward\-compatibility with older daemons, to set the bond\*(Aqs interface name\&.
-T}
-T{
-name
-T}:T{
-string
-T}:T{
-bond
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-options
-T}:T{
-dict of string to string
-T}:T{
-{\*(Aqmode\*(Aq: \*(Aqbalance\-rr\*(Aq}
-T}:T{
-Dictionary of key/value pairs of bonding options\&.  Both keys and values must be strings\&. Option names must contain only alphanumeric characters (ie, [a\-zA\-Z0\-9])\&.
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&5.\ \&bridge setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l.
-T{
-ageing\-time
-T}:T{
-uint32
-T}:T{
-300
-T}:T{
-The Ethernet MAC address aging time, in seconds\&.
-T}
-T{
-forward\-delay
-T}:T{
-uint32
-T}:T{
-15
-T}:T{
-The Spanning Tree Protocol (STP) forwarding delay, in seconds\&.
-T}
-T{
-hello\-time
-T}:T{
-uint32
-T}:T{
-2
-T}:T{
-The Spanning Tree Protocol (STP) hello time, in seconds\&.
-T}
-T{
-interface\-name
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-Deprecated in favor of connection\&.interface\-name, but can be used for backward\-compatibility with older daemons, to set the bridge\*(Aqs interface name\&.
-T}
-T{
-mac\-address
-T}:T{
-byte array
-T}:T{
-\ \&
-T}:T{
-If specified, the MAC address of bridge\&. When creating a new bridge, this MAC address will be set\&. When matching an existing (outside NetworkManager created) bridge, this MAC address must match\&.
-T}
-T{
-max\-age
-T}:T{
-uint32
-T}:T{
-20
-T}:T{
-The Spanning Tree Protocol (STP) maximum message age, in seconds\&.
-T}
-T{
-multicast\-snooping
-T}:T{
-boolean
-T}:T{
-TRUE
-T}:T{
-Controls whether IGMP snooping is enabled for this bridge\&. Note that if snooping was automatically disabled due to hash collisions, the system may refuse to enable the feature until the collisions are resolved\&.
-T}
-T{
-name
-T}:T{
-string
-T}:T{
-bridge
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-priority
-T}:T{
-uint32
-T}:T{
-32768
-T}:T{
-Sets the Spanning Tree Protocol (STP) priority for this bridge\&.  Lower values are "better"; the lowest priority bridge will be elected the root bridge\&.
-T}
-T{
-stp
-T}:T{
-boolean
-T}:T{
-TRUE
-T}:T{
-Controls whether Spanning Tree Protocol (STP) is enabled for this bridge\&.
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&6.\ \&bridge\-port setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l
-l l l l.
-T{
-hairpin\-mode
-T}:T{
-boolean
-T}:T{
-FALSE
-T}:T{
-Enables or disabled "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on\&.
-T}
-T{
-name
-T}:T{
-string
-T}:T{
-bridge\-port
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-path\-cost
-T}:T{
-uint32
-T}:T{
-100
-T}:T{
-The Spanning Tree Protocol (STP) port cost for destinations via this port\&.
-T}
-T{
-priority
-T}:T{
-uint32
-T}:T{
-32
-T}:T{
-The Spanning Tree Protocol (STP) priority of this bridge port\&.
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&7.\ \&cdma setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Key Name
-T}:T{
-Value Type
-T}:T{
-Default Value
-T}:T{
-Value Description
-T}
-.T&
-l l l l
-l l l l
-l l l l
-l l l l
-l l l l.
-T{
-name
-T}:T{
-string
-T}:T{
-cdma
-T}:T{
-The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
-T}
-T{
-number
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-The number to dial to establish the connection to the CDMA\-based mobile broadband network, if any\&.  If not specified, the default number (#777) is used when required\&.
-T}
-T{
-password
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-The password used to authenticate with the network, if required\&.  Many providers do not require a password, or accept any password\&.  But if a password is required, it is specified here\&.
-T}
-T{
-password\-flags
-T}:T{
-NMSettingSecretFlags (uint32)
-T}:T{
-\ \&
-T}:T{
-Flags indicating how to handle the "password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
-T}
-T{
-username
-T}:T{
-string
-T}:T{
-\ \&
-T}:T{
-The username used to authenticate with the network, if required\&.  Many providers do not require a username, or accept any username\&.  But if a username is required, it is specified here\&.
-T}
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&8.\ \&connection setting
+.SS "connection setting"
+.PP
+General Connection Profile Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1106,12 +276,925 @@ The trust level of a the connection\&.  Free form case\-insensitive string (for 
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&9.\ \&dcb setting
+.SS "802\-1x setting"
+.PP
+AIEEE 802\&.1x Authentication Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+altsubject\-matches
+T}:T{
+array of string
+T}:T{
+[]
+T}:T{
+List of strings to be matched against the altSubjectName of the certificate presented by the authentication server\&. If the list is empty, no verification of the server certificate\*(Aqs altSubjectName is performed\&.
+T}
+T{
+anonymous\-identity
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Anonymous identity string for EAP authentication methods\&.  Used as the unencrypted identity with EAP types that support different tunneled identity like EAP\-TTLS\&.
+T}
+T{
+auth\-timeout
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+A timeout for the authentication\&. Zero means the global default; if the global default is not set, the authentication timeout is 25 seconds\&.
+T}
+T{
+ca\-cert
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Contains the CA certificate if used by the EAP method specified in the "eap" property\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
+T}
+T{
+ca\-cert\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to access the CA certificate stored in "ca\-cert" property\&. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login\&.
+T}
+T{
+ca\-cert\-password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "ca\-cert\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+ca\-path
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+UTF\-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "ca\-cert" property\&.
+T}
+T{
+client\-cert
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Contains the client certificate if used by the EAP method specified in the "eap" property\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&.
+T}
+T{
+client\-cert\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to access the client certificate stored in "client\-cert" property\&. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login\&.
+T}
+T{
+client\-cert\-password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "client\-cert\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+domain\-suffix\-match
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Constraint for server domain name\&. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server\&.  If a matching dNSName is found, this constraint is met\&.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison\&.
+T}
+T{
+eap
+T}:T{
+array of string
+T}:T{
+[]
+T}:T{
+The allowed EAP method to be used when authenticating to the network with 802\&.1x\&.  Valid methods are: "leap", "md5", "tls", "peap", "ttls", "pwd", and "fast"\&.  Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations\&.
+T}
+T{
+identity
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Identity string for EAP authentication methods\&.  Often the user\*(Aqs user or login name\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+802\-1x
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+pac\-file
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+UTF\-8 encoded file path containing PAC for EAP\-FAST\&.
+T}
+T{
+password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+UTF\-8 encoded password used for EAP authentication methods\&. If both the "password" property and the "password\-raw" property are specified, "password" is preferred\&.
+T}
+T{
+password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+password\-raw
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Password used for EAP authentication methods, given as a byte array to allow passwords in other encodings than UTF\-8 to be used\&. If both the "password" property and the "password\-raw" property are specified, "password" is preferred\&.
+T}
+T{
+password\-raw\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "password\-raw" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+phase1\-auth\-flags
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+Specifies authentication flags to use in "phase 1" outer authentication using NMSetting8021xAuthFlags options\&. The invidual TLS versions can be explicitly disabled\&. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it\&. The TLS options map to tls_disable_tlsv1_x settings\&. See the wpa_supplicant documentation for more details\&.
+T}
+T{
+phase1\-fast\-provisioning
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Enables or disables in\-line provisioning of EAP\-FAST credentials when FAST is specified as the EAP method in the "eap" property\&. Recognized values are "0" (disabled), "1" (allow unauthenticated provisioning), "2" (allow authenticated provisioning), and "3" (allow both authenticated and unauthenticated provisioning)\&.  See the wpa_supplicant documentation for more details\&.
+T}
+T{
+phase1\-peaplabel
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Forces use of the new PEAP label during key derivation\&.  Some RADIUS servers may require forcing the new PEAP label to interoperate with PEAPv1\&.  Set to "1" to force use of the new PEAP label\&.  See the wpa_supplicant documentation for more details\&.
+T}
+T{
+phase1\-peapver
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Forces which PEAP version is used when PEAP is set as the EAP method in the "eap" property\&.  When unset, the version reported by the server will be used\&.  Sometimes when using older RADIUS servers, it is necessary to force the client to use a particular PEAP version\&.  To do so, this property may be set to "0" or "1" to force that specific PEAP version\&.
+T}
+T{
+phase2\-altsubject\-matches
+T}:T{
+array of string
+T}:T{
+[]
+T}:T{
+List of strings to be matched against the altSubjectName of the certificate presented by the authentication server during the inner "phase 2" authentication\&. If the list is empty, no verification of the server certificate\*(Aqs altSubjectName is performed\&.
+T}
+T{
+phase2\-auth
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Specifies the allowed "phase 2" inner non\-EAP authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property\&.  Recognized non\-EAP "phase 2" methods are "pap", "chap", "mschap", "mschapv2", "gtc", "otp", "md5", and "tls"\&. Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details\&.
+T}
+T{
+phase2\-autheap
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Specifies the allowed "phase 2" inner EAP\-based authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property\&.  Recognized EAP\-based "phase 2" methods are "md5", "mschapv2", "otp", "gtc", and "tls"\&. Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details\&.
+T}
+T{
+phase2\-ca\-cert
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Contains the "phase 2" CA certificate if used by the EAP method specified in the "phase2\-auth" or "phase2\-autheap" properties\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
+T}
+T{
+phase2\-ca\-cert\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to access the "phase2" CA certificate stored in "phase2\-ca\-cert" property\&. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login\&.
+T}
+T{
+phase2\-ca\-cert\-password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "phase2\-ca\-cert\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+phase2\-ca\-path
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+UTF\-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "phase2\-ca\-cert" property\&.
+T}
+T{
+phase2\-client\-cert
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Contains the "phase 2" client certificate if used by the EAP method specified in the "phase2\-auth" or "phase2\-autheap" properties\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
+T}
+T{
+phase2\-client\-cert\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to access the "phase2" client certificate stored in "phase2\-client\-cert" property\&. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login\&.
+T}
+T{
+phase2\-client\-cert\-password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "phase2\-client\-cert\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+phase2\-domain\-suffix\-match
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Constraint for server domain name\&. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner "phase 2" authentication\&.  If a matching dNSName is found, this constraint is met\&.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison\&.
+T}
+T{
+phase2\-private\-key
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Contains the "phase 2" inner private key when the "phase2\-auth" or "phase2\-autheap" property is set to "tls"\&. Key data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme and private keys, this property should be set to the key\*(Aqs encrypted PEM encoded data\&. When using private keys with the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte\&. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "phase2\-private\-key\-password" property must be set to password used to decrypt the PKCS#12 certificate and key\&. When using PKCS#12 files and the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte, and as with the blob scheme the "phase2\-private\-key\-password" property must be set to the password used to decode the PKCS#12 private key and certificate\&.
+T}
+T{
+phase2\-private\-key\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to decrypt the "phase 2" private key specified in the "phase2\-private\-key" property when the private key either uses the path scheme, or is a PKCS#12 format key\&.
+T}
+T{
+phase2\-private\-key\-password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "phase2\-private\-key\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+phase2\-subject\-match
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2\-domain\-suffix\-match\&.
+T}
+T{
+pin
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+PIN used for EAP authentication methods\&.
+T}
+T{
+pin\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "pin" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+private\-key
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+Contains the private key when the "eap" property is set to "tls"\&. Key data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme and private keys, this property should be set to the key\*(Aqs encrypted PEM encoded data\&. When using private keys with the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte\&. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "private\-key\-password" property must be set to password used to decrypt the PKCS#12 certificate and key\&. When using PKCS#12 files and the path scheme, this property should be set to the full UTF\-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte, and as with the blob scheme the "private\-key\-password" property must be set to the password used to decode the PKCS#12 private key and certificate\&. WARNING: "private\-key" is not a "secret" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users\&.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data\&.
+T}
+T{
+private\-key\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to decrypt the private key specified in the "private\-key" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key\&.
+T}
+T{
+private\-key\-password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "private\-key\-password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+subject\-match
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Substring to be matched against the subject of the certificate presented by the authentication server\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain\-suffix\-match\&.
+T}
+T{
+system\-ca\-certs
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+When TRUE, overrides the "ca\-path" and "phase2\-ca\-path" properties using the system CA directory specified at configure time with the \-\-system\-ca\-path switch\&.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the "ca\-cert" and "phase2\-ca\-cert" properties\&. If the path provided with \-\-system\-ca\-path is rather a file name (bundle of trusted CA certificates), it overrides "ca\-cert" and "phase2\-ca\-cert" properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant)\&.
+T}
+.TE
+.sp 1
+.SS "adsl setting"
+.PP
+ADSL Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+encapsulation
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Encapsulation of ADSL connection\&.  Can be "vcmux" or "llc"\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+adsl
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Password used to authenticate with the ADSL service\&.
+T}
+T{
+password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+protocol
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+ADSL connection protocol\&.  Can be "pppoa", "pppoe" or "ipoatm"\&.
+T}
+T{
+username
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Username used to authenticate with the ADSL service\&.
+T}
+T{
+vci
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+VCI of ADSL connection
+T}
+T{
+vpi
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+VPI of ADSL connection
+T}
+.TE
+.sp 1
+.SS "bluetooth setting"
+.PP
+Bluetooth Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l.
+T{
+bdaddr
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+The Bluetooth address of the device\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+bluetooth
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+type
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Either "dun" for Dial\-Up Networking connections or "panu" for Personal Area Networking connections to devices supporting the NAP profile\&.
+T}
+.TE
+.sp 1
+.SS "bond setting"
+.PP
+Bonding Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l.
+T{
+interface\-name
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Deprecated in favor of connection\&.interface\-name, but can be used for backward\-compatibility with older daemons, to set the bond\*(Aqs interface name\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+bond
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+options
+T}:T{
+dict of string to string
+T}:T{
+{\*(Aqmode\*(Aq: \*(Aqbalance\-rr\*(Aq}
+T}:T{
+Dictionary of key/value pairs of bonding options\&.  Both keys and values must be strings\&. Option names must contain only alphanumeric characters (ie, [a\-zA\-Z0\-9])\&.
+T}
+.TE
+.sp 1
+.SS "bridge setting"
+.PP
+Bridging Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+ageing\-time
+T}:T{
+uint32
+T}:T{
+300
+T}:T{
+The Ethernet MAC address aging time, in seconds\&.
+T}
+T{
+forward\-delay
+T}:T{
+uint32
+T}:T{
+15
+T}:T{
+The Spanning Tree Protocol (STP) forwarding delay, in seconds\&.
+T}
+T{
+hello\-time
+T}:T{
+uint32
+T}:T{
+2
+T}:T{
+The Spanning Tree Protocol (STP) hello time, in seconds\&.
+T}
+T{
+interface\-name
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Deprecated in favor of connection\&.interface\-name, but can be used for backward\-compatibility with older daemons, to set the bridge\*(Aqs interface name\&.
+T}
+T{
+mac\-address
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+If specified, the MAC address of bridge\&. When creating a new bridge, this MAC address will be set\&. When matching an existing (outside NetworkManager created) bridge, this MAC address must match\&.
+T}
+T{
+max\-age
+T}:T{
+uint32
+T}:T{
+20
+T}:T{
+The Spanning Tree Protocol (STP) maximum message age, in seconds\&.
+T}
+T{
+multicast\-snooping
+T}:T{
+boolean
+T}:T{
+TRUE
+T}:T{
+Controls whether IGMP snooping is enabled for this bridge\&. Note that if snooping was automatically disabled due to hash collisions, the system may refuse to enable the feature until the collisions are resolved\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+bridge
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+priority
+T}:T{
+uint32
+T}:T{
+32768
+T}:T{
+Sets the Spanning Tree Protocol (STP) priority for this bridge\&.  Lower values are "better"; the lowest priority bridge will be elected the root bridge\&.
+T}
+T{
+stp
+T}:T{
+boolean
+T}:T{
+TRUE
+T}:T{
+Controls whether Spanning Tree Protocol (STP) is enabled for this bridge\&.
+T}
+.TE
+.sp 1
+.SS "bridge\-port setting"
+.PP
+Bridge Port Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+hairpin\-mode
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Enables or disabled "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+bridge\-port
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+path\-cost
+T}:T{
+uint32
+T}:T{
+100
+T}:T{
+The Spanning Tree Protocol (STP) port cost for destinations via this port\&.
+T}
+T{
+priority
+T}:T{
+uint32
+T}:T{
+32
+T}:T{
+The Spanning Tree Protocol (STP) priority of this bridge port\&.
+T}
+.TE
+.sp 1
+.SS "cdma setting"
+.PP
+CDMA\-based Mobile Broadband Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+mtu
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+If non\-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+cdma
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+number
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The number to dial to establish the connection to the CDMA\-based mobile broadband network, if any\&.  If not specified, the default number (#777) is used when required\&.
+T}
+T{
+password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The password used to authenticate with the network, if required\&.  Many providers do not require a password, or accept any password\&.  But if a password is required, it is specified here\&.
+T}
+T{
+password\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "password" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+T{
+username
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The username used to authenticate with the network, if required\&.  Many providers do not require a username, or accept any username\&.  But if a username is required, it is specified here\&.
+T}
+.TE
+.sp 1
+.SS "dcb setting"
+.PP
+Data Center Bridging Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1287,12 +1370,37 @@ An array of 8 uint values, where the array index corresponds to the User Priorit
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&10.\ \&generic setting
+.SS "dummy setting"
+.PP
+Dummy Link Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l.
+T{
+name
+T}:T{
+string
+T}:T{
+dummy
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+.TE
+.sp 1
+.SS "generic setting"
+.PP
+Generic Link Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1318,12 +1426,9 @@ The setting\*(Aqs name, which uniquely identifies the setting within the connect
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&11.\ \&gsm setting
+.SS "gsm setting"
+.PP
+GSM\-based Mobile Broadband Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1337,6 +1442,7 @@ T}:T{
 Value Description
 T}
 .T&
+l l l l
 l l l l
 l l l l
 l l l l
@@ -1376,6 +1482,15 @@ T}:T{
 FALSE
 T}:T{
 When TRUE, only connections to the home network will be allowed\&. Connections to roaming networks will not be made\&.
+T}
+T{
+mtu
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+If non\-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames\&.
 T}
 T{
 name
@@ -1469,12 +1584,9 @@ The username used to authenticate with the network, if required\&.  Many provide
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&12.\ \&infiniband setting
+.SS "infiniband setting"
+.PP
+Infiniband Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1550,12 +1662,9 @@ The IP\-over\-InfiniBand transport mode\&. Either "datagram" or "connected"\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&13.\ \&ipv4 setting
+.SS "ipv4 setting"
+.PP
+IPv4 Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1791,12 +1900,9 @@ Deprecated in favor of the \*(Aqroute\-data\*(Aq property, but this can be used 
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&14.\ \&ipv6 setting
+.SS "ipv6 setting"
+.PP
+IPv6 Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2042,12 +2148,9 @@ Configure the token for draft\-chown\-6man\-tokenised\-ipv6\-identifiers\-02 IPv
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&15.\ \&ip\-tunnel setting
+.SS "ip\-tunnel setting"
+.PP
+IP Tunneling Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2193,12 +2296,9 @@ The TTL to assign to tunneled packets\&. 0 is a special value meaning that packe
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&16.\ \&macsec setting
+.SS "macsec setting"
+.PP
+MACSec Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2304,12 +2404,9 @@ Specifies the validation mode for incoming frames\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&17.\ \&macvlan setting
+.SS "macvlan setting"
+.PP
+MAC VLAN Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2375,12 +2472,9 @@ Whether the interface should be a MACVTAP\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&18.\ \&802\-11\-olpc\-mesh setting
+.SS "802\-11\-olpc\-mesh setting"
+.PP
+OLPC Wireless Mesh Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2436,12 +2530,9 @@ SSID of the mesh network to join\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&19.\ \&ppp setting
+.SS "ppp setting"
+.PP
+Point\-to\-Point Protocol Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2647,12 +2738,9 @@ If TRUE, 128\-bit MPPE (Microsoft Point\-to\-Point Encrpytion) will be required 
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&20.\ \&pppoe setting
+.SS "pppoe setting"
+.PP
+PPP\-over\-Ethernet Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2718,12 +2806,9 @@ Username used to authenticate with the PPPoE service\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&21.\ \&proxy setting
+.SS "proxy setting"
+.PP
+WWW Proxy Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2789,12 +2874,9 @@ PAC URL for obtaining PAC file\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&22.\ \&serial setting
+.SS "serial setting"
+.PP
+Serial Link Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2870,12 +2952,9 @@ Number of stop bits for communication on the serial port\&.  Either 1 or 2\&. Th
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&23.\ \&team setting
+.SS "team setting"
+.PP
+Teaming Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2921,12 +3000,9 @@ The setting\*(Aqs name, which uniquely identifies the setting within the connect
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&24.\ \&team\-port setting
+.SS "team\-port setting"
+.PP
+Team Port Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2962,12 +3038,9 @@ The setting\*(Aqs name, which uniquely identifies the setting within the connect
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&25.\ \&tun setting
+.SS "tun setting"
+.PP
+Tunnel Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3053,12 +3126,47 @@ If TRUE the IFF_VNET_HDR the tunnel packets will include a virtio network header
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&26.\ \&vlan setting
+.SS "user setting"
+.PP
+General User Profile Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l.
+T{
+data
+T}:T{
+dict of string to string
+T}:T{
+{}
+T}:T{
+A dictionary of key/value pairs with user data\&. This data is ignored by NetworkManager and can be used at the users discretion\&. The keys only support a strict ascii format, but the values can be arbitrary UTF8 strings up to a certain length\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+user
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+.TE
+.sp 1
+.SS "vlan setting"
+.PP
+VLAN Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3144,12 +3252,9 @@ If given, specifies the parent interface name or parent connection UUID from whi
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&27.\ \&vpn setting
+.SS "vpn setting"
+.PP
+VPN Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3235,12 +3340,9 @@ If the VPN connection requires a user name for authentication, that name should 
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&28.\ \&vxlan setting
+.SS "vxlan setting"
+.PP
+VXLAN Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3426,12 +3528,9 @@ Specifies the time\-to\-live value to use in outgoing packets\&.
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&29.\ \&wimax setting
+.SS "wimax setting"
+.PP
+WiMax Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3477,12 +3576,9 @@ Network Service Provider (NSP) name of the WiMAX network this connection should 
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&30.\ \&802\-3\-ethernet setting
+.SS "802\-3\-ethernet setting"
+.PP
+Wired Ethernet Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3658,12 +3754,9 @@ If specified, the password used with magic\-packet\-based Wake\-on\-LAN, represe
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&31.\ \&802\-11\-wireless setting
+.SS "802\-11\-wireless setting"
+.PP
+Wi\-Fi Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -3869,12 +3962,9 @@ If non\-zero, directs the device to use the specified transmit power\&. Units ar
 T}
 .TE
 .sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&32.\ \&802\-11\-wireless\-security setting
+.SS "802\-11\-wireless\-security setting"
+.PP
+Wi\-Fi Security Settings\&.
 .TS
 allbox tab(:);
 lB lB lB lB.

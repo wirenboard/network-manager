@@ -84,7 +84,10 @@ gboolean      nm_manager_start                         (NMManager *manager,
 void          nm_manager_stop                          (NMManager *manager);
 NMState       nm_manager_get_state                     (NMManager *manager);
 const GSList *nm_manager_get_active_connections        (NMManager *manager);
-GSList *      nm_manager_get_activatable_connections   (NMManager *manager);
+
+NMSettingsConnection **nm_manager_get_activatable_connections (NMManager *manager,
+                                                               guint *out_len,
+                                                               gboolean sort);
 
 void          nm_manager_write_device_state (NMManager *manager);
 
@@ -112,6 +115,7 @@ NMActiveConnection *nm_manager_activate_connection     (NMManager *manager,
                                                         const char *specific_object,
                                                         NMDevice *device,
                                                         NMAuthSubject *subject,
+                                                        NMActivationType activation_type,
                                                         GError **error);
 
 gboolean            nm_manager_deactivate_connection   (NMManager *manager,

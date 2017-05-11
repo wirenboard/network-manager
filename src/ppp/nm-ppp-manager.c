@@ -57,7 +57,8 @@
 #include "introspection/org.freedesktop.NetworkManager.PPP.h"
 
 #define NM_PPPD_PLUGIN PPPD_PLUGIN_DIR "/nm-pppd-plugin.so"
-#define PPP_MANAGER_SECRET_TRIES "ppp-manager-secret-tries"
+
+static NM_CACHED_QUARK_FCN ("ppp-manager-secret-tries", ppp_manager_secret_tries_quark)
 
 /*****************************************************************************/
 
@@ -149,8 +150,8 @@ monitor_cb (gpointer user_data)
 			_LOGW ("could not read ppp stats: %s", strerror (errno));
 	} else {
 		g_signal_emit (manager, signals[STATS], 0,
-		               stats.p.ppp_ibytes,
-		               stats.p.ppp_obytes);
+		               (guint) stats.p.ppp_ibytes,
+		               (guint) stats.p.ppp_obytes);
 	}
 
 	return TRUE;
@@ -341,7 +342,7 @@ impl_ppp_manager_need_secrets (NMPPPManager *manager,
 	 * appear to ask a few times when they actually don't even care what you
 	 * pass back.
 	 */
-	tries = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (applied_connection), PPP_MANAGER_SECRET_TRIES));
+	tries = GPOINTER_TO_UINT (g_object_get_qdata (G_OBJECT (applied_connection), ppp_manager_secret_tries_quark()));
 	if (tries > 1)
 		flags |= NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW;
 
@@ -352,7 +353,7 @@ impl_ppp_manager_need_secrets (NMPPPManager *manager,
 	                                               hints ? g_ptr_array_index (hints, 0) : NULL,
 	                                               ppp_secrets_cb,
 	                                               manager);
-	g_object_set_data (G_OBJECT (applied_connection), PPP_MANAGER_SECRET_TRIES, GUINT_TO_POINTER (++tries));
+	g_object_set_qdata (G_OBJECT (applied_connection), ppp_manager_secret_tries_quark (), GUINT_TO_POINTER (++tries));
 	priv->pending_secrets_context = context;
 
 	if (hints)
@@ -389,7 +390,7 @@ set_ip_config_common (NMPPPManager *self,
 
 	/* Got successful IP config; obviously the secrets worked */
 	applied_connection = nm_act_request_get_applied_connection (priv->act_req);
-	g_object_set_data (G_OBJECT (applied_connection), PPP_MANAGER_SECRET_TRIES, NULL);
+	g_object_set_qdata (G_OBJECT (applied_connection), ppp_manager_secret_tries_quark (), NULL);
 
 	if (out_mtu) {
 		/* Get any custom MTU */
@@ -715,6 +716,8 @@ create_pppd_cmd_line (NMPPPManager *self,
                       NMSettingAdsl  *adsl,
                       const char *ppp_name,
                       guint baud_override,
+                      gboolean ip4_enabled,
+                      gboolean ip6_enabled,
                       GError **err)
 {
 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (self);
@@ -728,6 +731,14 @@ create_pppd_cmd_line (NMPPPManager *self,
 	if (!pppd_binary)
 		return NULL;
 
+	if (!ip4_enabled && !ip6_enabled) {
+		g_set_error_literal (err,
+		                     NM_MANAGER_ERROR,
+		                     NM_MANAGER_ERROR_FAILED,
+		                     "Neither IPv4 or IPv6 allowed.");
+		return NULL;
+	}
+
 	/* Create pppd command line */
 	cmd = nm_cmd_line_new ();
 	nm_cmd_line_add_string (cmd, pppd_binary);
@@ -738,9 +749,15 @@ create_pppd_cmd_line (NMPPPManager *self,
 	/* NM handles setting the default route */
 	nm_cmd_line_add_string (cmd, "nodefaultroute");
 
-	/* Allow IPv6 to be configured by IPV6CP */
-	nm_cmd_line_add_string (cmd, "ipv6");
-	nm_cmd_line_add_string (cmd, ",");
+	if (!ip4_enabled)
+		nm_cmd_line_add_string (cmd, "noip");
+
+	if (ip6_enabled) {
+		/* Allow IPv6 to be configured by IPV6CP */
+		nm_cmd_line_add_string (cmd, "ipv6");
+		nm_cmd_line_add_string (cmd, ",");
+	} else
+		nm_cmd_line_add_string (cmd, "noipv6");
 
 	ppp_debug = !!getenv ("NM_PPP_DEBUG");
 	if (nm_logging_enabled (LOGL_DEBUG, LOGD_PPP))
@@ -918,6 +935,9 @@ _ppp_manager_start (NMPPPManager *manager,
 	NMCmdLine *ppp_cmd;
 	char *cmd_str;
 	struct stat st;
+	const char *ip6_method, *ip4_method;
+	gboolean ip6_enabled = FALSE;
+	gboolean ip4_enabled = FALSE;
 
 	g_return_val_if_fail (NM_IS_PPP_MANAGER (manager), FALSE);
 	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), FALSE);
@@ -962,7 +982,21 @@ _ppp_manager_start (NMPPPManager *manager,
 
 	adsl_setting = (NMSettingAdsl *) nm_connection_get_setting (connection, NM_TYPE_SETTING_ADSL);
 
-	ppp_cmd = create_pppd_cmd_line (manager, s_ppp, pppoe_setting, adsl_setting, ppp_name, baud_override, err);
+	/* Figure out what address methods should be enabled */
+	ip4_method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
+	ip4_enabled = g_strcmp0 (ip4_method, NM_SETTING_IP4_CONFIG_METHOD_AUTO) == 0;
+	ip6_method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP6_CONFIG);
+	ip6_enabled = g_strcmp0 (ip6_method, NM_SETTING_IP6_CONFIG_METHOD_AUTO) == 0;
+
+	ppp_cmd = create_pppd_cmd_line (manager,
+	                                s_ppp,
+	                                pppoe_setting,
+	                                adsl_setting,
+	                                ppp_name,
+	                                baud_override,
+	                                ip4_enabled,
+	                                ip6_enabled,
+	                                err);
 	if (!ppp_cmd)
 		goto out;
 
@@ -1276,7 +1310,8 @@ nm_ppp_manager_class_init (NMPPPManagerClass *manager_class)
 	                  0,
 	                  NULL, NULL, NULL,
 	                  G_TYPE_NONE, 2,
-	                  G_TYPE_UINT, G_TYPE_UINT);
+	                  G_TYPE_UINT /*guint32 in_bytes*/,
+	                  G_TYPE_UINT /*guint32 out_bytes*/);
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (manager_class),
 	                                        NMDBUS_TYPE_PPP_MANAGER_SKELETON,

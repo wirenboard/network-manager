@@ -5,7 +5,7 @@
 <refentry id="gdbus-org.freedesktop.NetworkManager.Device.Generic">
   <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-freedesktop-NetworkManager-Device-Generic.top_of_page">org.freedesktop.NetworkManager.Device.Generic</refentrytitle>
   <indexterm zone="gdbus-interface-org-freedesktop-NetworkManager-Device-Generic.top_of_page"><primary sortas=".Device.Generic">org.freedesktop.NetworkManager.Device.Generic</primary></indexterm>
-  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.Device.Generic</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsect1 role="signal_proto">
+  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.Device.Generic</refname>    <refpurpose>Unrecognized Device</refpurpose>  </refnamediv>  <refsect1 role="signal_proto">
     <title role="signal_proto.title">Signals</title>
     <synopsis>
 <link linkend="gdbus-signal-org-freedesktop-NetworkManager-Device-Generic.PropertiesChanged">PropertiesChanged</link> (a{sv} properties);

@@ -63,7 +63,14 @@ typedef struct {
 
 /*****************************************************************************/
 
+enum {
+	IP4_ROUTES_CHANGED,
+	LAST_SIGNAL,
+};
+static guint signals[LAST_SIGNAL] = { 0 };
+
 NM_GOBJECT_PROPERTIES_DEFINE_BASE (
+	PROP_LOG_WITH_PTR,
 	PROP_PLATFORM,
 );
 
@@ -76,6 +83,8 @@ typedef struct {
 		GHashTable *entries;
 		guint gc_id;
 	} ip4_device_routes;
+
+	bool log_with_ptr;
 } NMRouteManagerPrivate;
 
 struct _NMRouteManager {
@@ -90,10 +99,6 @@ struct _NMRouteManagerClass {
 G_DEFINE_TYPE (NMRouteManager, nm_route_manager, G_TYPE_OBJECT);
 
 #define NM_ROUTE_MANAGER_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMRouteManager, NM_IS_ROUTE_MANAGER)
-
-/*****************************************************************************/
-
-NM_DEFINE_SINGLETON_GETTER (NMRouteManager, nm_route_manager_get, NM_TYPE_ROUTE_MANAGER);
 
 /*****************************************************************************/
 
@@ -150,11 +155,11 @@ static const VTableIP vtable_v4, vtable_v6;
             char __ch = __addr_family == AF_INET ? '4' : (__addr_family == AF_INET6 ? '6' : '-'); \
             char __prefix[30] = _NMLOG_PREFIX_NAME; \
             \
-            if ((self) != singleton_instance) \
+            if (NM_ROUTE_MANAGER_GET_PRIVATE (self)->log_with_ptr) \
                 g_snprintf (__prefix, sizeof (__prefix), "%s%c[%p]", _NMLOG_PREFIX_NAME, __ch, (self)); \
             else \
                 __prefix[NM_STRLEN (_NMLOG_PREFIX_NAME)] = __ch; \
-            _nm_log ((level), (__domain), 0, \
+            _nm_log ((level), (__domain), 0, NULL, NULL, \
                      "%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                      __prefix _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
         } \
@@ -167,7 +172,7 @@ static gboolean _ip4_device_routes_cancel (NMRouteManager *self);
 /*****************************************************************************/
 
 #if NM_MORE_ASSERTS && !defined (G_DISABLE_ASSERT)
-inline static void
+static inline void
 ASSERT_route_index_valid (const VTableIP *vtable, const GArray *entries, const RouteIndex *index, gboolean unique_ifindexes)
 {
 	guint i, j;
@@ -371,7 +376,7 @@ _route_equals_ignoring_ifindex (const VTableIP *vtable, const NMPlatformIPXRoute
 			r2_backup.rx.metric = (guint32) r2_metric;
 		r2 = &r2_backup;
 	}
-	return vtable->vt->route_cmp (r1, r2) == 0;
+	return vtable->vt->route_cmp (r1, r2, FALSE) == 0;
 }
 
 static NMPlatformIPXRoute *
@@ -530,6 +535,8 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 				memcpy (cur_ipx_route, cur_known_route, vtable->vt->sizeof_route);
 				cur_ipx_route->rx.ifindex = ifindex;
 				cur_ipx_route->rx.metric = vtable->vt->metric_normalize (cur_ipx_route->rx.metric);
+				nm_utils_ipx_address_clear_host_address (vtable->vt->addr_family, cur_ipx_route->rx.network_ptr,
+				                                         cur_ipx_route->rx.network_ptr, cur_ipx_route->rx.plen);
 				ipx_routes_changed = TRUE;
 				_LOGt (vtable->vt->addr_family, "%3d: STATE: update  #%u - %s", ifindex, i_ipx_routes,
 				       vtable->vt->route_to_string (cur_ipx_route, NULL, 0));
@@ -625,6 +632,8 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 				ipx_route = VTABLE_ROUTE_INDEX (vtable, ipx_routes->entries, ipx_routes->entries->len - 1);
 				ipx_route->rx.ifindex = ifindex;
 				ipx_route->rx.metric = vtable->vt->metric_normalize (ipx_route->rx.metric);
+				nm_utils_ipx_address_clear_host_address (vtable->vt->addr_family, ipx_route->rx.network_ptr,
+				                                         ipx_route->rx.network_ptr, ipx_route->rx.plen);
 
 				g_array_index (ipx_routes->effective_metrics_reverse, gint64, j++) = -1;
 
@@ -904,6 +913,9 @@ next:
 		}
 	}
 
+	if (vtable->vt->is_ip4 && ipx_routes_changed)
+		g_signal_emit (self, signals[IP4_ROUTES_CHANGED], 0);
+
 	g_free (known_routes_idx);
 	g_free (plat_routes_idx);
 	g_array_unref (plat_routes);
@@ -965,6 +977,33 @@ nm_route_manager_route_flush (NMRouteManager *self, int ifindex)
 	success &= (bool) nm_route_manager_ip4_route_sync (self, ifindex, NULL, FALSE, TRUE);
 	success &= (bool) nm_route_manager_ip6_route_sync (self, ifindex, NULL, FALSE, TRUE);
 	return success;
+}
+
+/**
+ * nm_route_manager_ip4_routes_shadowed:
+ * @ifindex: Interface index
+ *
+ * Returns: %TRUE if some other link has a route to the same destination
+ *   with a lower metric.
+ */
+gboolean
+nm_route_manager_ip4_routes_shadowed (NMRouteManager *self, int ifindex)
+{
+	NMRouteManagerPrivate *priv = NM_ROUTE_MANAGER_GET_PRIVATE (self);
+	RouteIndex *index = priv->ip4_routes.index;
+	const NMPlatformIP4Route *route;
+	guint i;
+
+	for (i = 1; i < index->len; i++) {
+		route = (const NMPlatformIP4Route *) index->entries[i];
+
+		if (route->ifindex != ifindex)
+			continue;
+		if (_v4_route_dest_cmp (route, (const NMPlatformIP4Route *) index->entries[i - 1]) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 /*****************************************************************************/
@@ -1167,6 +1206,10 @@ set_property (GObject *object, guint prop_id,
 	NMRouteManagerPrivate *priv = NM_ROUTE_MANAGER_GET_PRIVATE (self);
 
 	switch (prop_id) {
+	case PROP_LOG_WITH_PTR:
+		/* construct-only */
+		priv->log_with_ptr = g_value_get_boolean (value);
+		break;
 	case PROP_PLATFORM:
 		/* construct-only */
 		priv->platform = g_value_get_object (value) ? : NM_PLATFORM_GET;
@@ -1202,9 +1245,10 @@ nm_route_manager_init (NMRouteManager *self)
 }
 
 NMRouteManager *
-nm_route_manager_new (NMPlatform *platform)
+nm_route_manager_new (gboolean log_with_ptr, NMPlatform *platform)
 {
 	return g_object_new (NM_TYPE_ROUTE_MANAGER,
+	                     NM_ROUTE_MANAGER_LOG_WITH_PTR, log_with_ptr,
 	                     NM_ROUTE_MANAGER_PLATFORM, platform,
 	                     NULL);
 }
@@ -1251,6 +1295,13 @@ nm_route_manager_class_init (NMRouteManagerClass *klass)
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 
+	obj_properties[PROP_LOG_WITH_PTR] =
+	    g_param_spec_boolean (NM_ROUTE_MANAGER_LOG_WITH_PTR, "", "",
+	                          TRUE,
+	                          G_PARAM_WRITABLE |
+	                          G_PARAM_CONSTRUCT_ONLY |
+	                          G_PARAM_STATIC_STRINGS);
+
 	obj_properties[PROP_PLATFORM] =
 	    g_param_spec_object (NM_ROUTE_MANAGER_PLATFORM, "", "",
 	                         NM_TYPE_PLATFORM,
@@ -1258,4 +1309,11 @@ nm_route_manager_class_init (NMRouteManagerClass *klass)
 	                         G_PARAM_CONSTRUCT_ONLY |
 	                         G_PARAM_STATIC_STRINGS);
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
+
+	signals[IP4_ROUTES_CHANGED] =
+	    g_signal_new (NM_ROUTE_MANAGER_IP4_ROUTES_CHANGED,
+	                  G_OBJECT_CLASS_TYPE (object_class),
+	                  G_SIGNAL_RUN_FIRST,
+	                  0, NULL, NULL, NULL,
+	                  G_TYPE_NONE, 0);
 }

@@ -63,7 +63,7 @@ G_DEFINE_TYPE (NMSupplicantManager, nm_supplicant_manager, G_TYPE_OBJECT)
 
 /*****************************************************************************/
 
-G_DEFINE_QUARK (nm-supplicant-error-quark, nm_supplicant_error);
+NM_CACHED_QUARK_FCN ("nm-supplicant-error-quark", nm_supplicant_error_quark)
 
 /*****************************************************************************/
 
@@ -398,10 +398,7 @@ dispose (GObject *object)
 
 	nm_clear_g_source (&priv->die_count_reset_id);
 
-	if (priv->cancellable) {
-		g_cancellable_cancel (priv->cancellable);
-		g_clear_object (&priv->cancellable);
-	}
+	nm_clear_g_cancellable (&priv->cancellable);
 
 	if (priv->ifaces) {
 		for (ifaces = priv->ifaces; ifaces; ifaces = ifaces->next)

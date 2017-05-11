@@ -4,6 +4,7 @@ nm_802_11_mode_get_type
 nm_access_point_get_type
 nm_active_connection_get_type
 nm_active_connection_state_get_type
+nm_active_connection_state_reason_get_type
 nm_agent_manager_error_get_type
 nm_bluetooth_capabilities_get_type
 nm_capability_get_type
@@ -21,6 +22,7 @@ nm_device_bond_get_type
 nm_device_bridge_get_type
 nm_device_bt_get_type
 nm_device_capabilities_get_type
+nm_device_dummy_get_type
 nm_device_error_get_type
 nm_device_ethernet_get_type
 nm_device_generic_get_type
@@ -57,6 +59,7 @@ nm_secret_agent_capabilities_get_type
 nm_secret_agent_error_get_type
 nm_secret_agent_get_secrets_flags_get_type
 nm_secret_agent_old_get_type
+nm_setting_802_1x_auth_flags_get_type
 nm_setting_802_1x_ck_format_get_type
 nm_setting_802_1x_ck_scheme_get_type
 nm_setting_802_1x_get_type
@@ -73,6 +76,7 @@ nm_setting_connection_lldp_get_type
 nm_setting_dcb_flags_get_type
 nm_setting_dcb_get_type
 nm_setting_diff_result_get_type
+nm_setting_dummy_get_type
 nm_setting_generic_get_type
 nm_setting_get_type
 nm_setting_gsm_get_type
@@ -101,6 +105,7 @@ nm_setting_team_get_type
 nm_setting_team_port_get_type
 nm_setting_tun_get_type
 nm_setting_tun_mode_get_type
+nm_setting_user_get_type
 nm_setting_vlan_get_type
 nm_setting_vpn_get_type
 nm_setting_vxlan_get_type

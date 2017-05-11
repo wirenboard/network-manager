@@ -395,26 +395,20 @@ finish:
 /*
  * nmc_parse_and_build_route:
  * @family: AF_INET or AF_INET6
- * @first: the route destination in the form of "address/prefix"
-     (/prefix is optional)
- * @second: (allow-none): next hop address, if third is not NULL. Otherwise it could be
-     either next hop address or metric. (It can be NULL when @third is NULL).
- * @third: (allow-none): route metric
+ * @str: route string to be parsed
  * @error: location to store GError
  *
- * Parse route from strings and return an #NMIPRoute
+ * Parse route from string and return an #NMIPRoute
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: a new #NMIPRoute or %NULL on error
  */
 NMIPRoute *
 nmc_parse_and_build_route (int family,
-                           const char *first,
-                           const char *second,
-                           const char *third,
+                           const char *str,
                            GError **error)
 {
 	int max_prefix = (family == AF_INET) ? 32 : 128;
-	char *dest = NULL, *plen = NULL;
+	char *plen = NULL;
 	const char *next_hop = NULL;
 	const char *canon_dest;
 	long int prefix = max_prefix;
@@ -423,13 +417,28 @@ nmc_parse_and_build_route (int family,
 	gboolean success = FALSE;
 	GError *local = NULL;
 	gint64 metric = -1;
+	guint i, len;
+	gs_strfreev char **routev = NULL;
+	gs_free char *value = NULL;
+	gs_free char *dest = NULL;
+	gs_unref_hashtable GHashTable *attrs = NULL;
+	GHashTable *tmp_attrs;
+	const char *syntax = _("The valid syntax is: 'ip[/prefix] [next-hop] [metric] [attribute=val]... [,ip[/prefix] ...]'");
 
 	g_return_val_if_fail (family == AF_INET || family == AF_INET6, FALSE);
-	g_return_val_if_fail (first != NULL, FALSE);
-	g_return_val_if_fail (second || !third, FALSE);
+	g_return_val_if_fail (str, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	dest = g_strdup (first);
+	value = g_strdup (str);
+	routev = nmc_strsplit_set (g_strstrip (value), " \t", 0);
+	len = g_strv_length (routev);
+	if (len < 1) {
+		g_set_error (error, 1, 0, "%s", syntax);
+		g_prefix_error (error, "'%s' is not valid. ", str);
+		goto finish;
+	}
+
+	dest = g_strdup (routev[0]);
 	plen = strchr (dest, '/');  /* prefix delimiter */
 	if (plen)
 		*plen++ = '\0';
@@ -443,32 +452,56 @@ nmc_parse_and_build_route (int family,
 		}
 	}
 
-	if (second) {
-		if (third || nm_utils_ipaddr_valid (family, second))
-			next_hop = second;
-		else {
-			/* 'second' can be a metric */
-			if (!nmc_string_to_uint (second, TRUE, 0, G_MAXUINT32, &tmp_ulong)) {
-				g_set_error (error, 1, 0, _("the second component of route ('%s') is neither "
-				                            "a next hop address nor a metric"), second);
+	for (i = 1; i < len; i++) {
+		if (nm_utils_ipaddr_valid (family, routev[i])) {
+			if (metric != -1 || attrs) {
+				g_set_error (error, 1, 0, _("the next hop ('%s') must be first"), routev[i]);
+				goto finish;
+			}
+			next_hop = routev[i];
+		} else if (nmc_string_to_uint (routev[i], TRUE, 0, G_MAXUINT32, &tmp_ulong)) {
+			if (attrs) {
+				g_set_error (error, 1, 0, _("the metric ('%s') must be before attributes"), routev[i]);
 				goto finish;
 			}
 			metric = tmp_ulong;
-		}
-	}
+		} else if (strchr (routev[i], '=')) {
+			GHashTableIter iter;
+			char *iter_key;
+			GVariant *iter_value;
 
-	if (third) {
-		if (!nmc_string_to_uint (third, TRUE, 0, G_MAXUINT32, &tmp_ulong)) {
-			g_set_error (error, 1, 0, _("invalid metric '%s'"), third);
+			tmp_attrs = nm_utils_parse_variant_attributes (routev[i], ' ', '=', FALSE,
+			                                               nm_ip_route_get_variant_attribute_spec(),
+			                                               error);
+			if (!tmp_attrs) {
+				g_prefix_error (error, "invalid option '%s': ", routev[i]);
+				goto finish;
+			}
+
+			if (!attrs)
+				attrs = g_hash_table_new (g_str_hash, g_str_equal);
+
+			g_hash_table_iter_init (&iter, tmp_attrs);
+			while (g_hash_table_iter_next (&iter, (gpointer *) &iter_key, (gpointer *) &iter_value)) {
+				if (!nm_ip_route_attribute_validate (iter_key, iter_value, family, NULL, error)) {
+					g_prefix_error (error, "%s: ", iter_key);
+					g_hash_table_unref (tmp_attrs);
+					goto finish;
+				}
+				g_hash_table_insert (attrs, iter_key, iter_value);
+				g_hash_table_iter_steal (&iter);
+			}
+			g_hash_table_unref (tmp_attrs);
+		} else {
+			g_set_error (error, 1, 0, "%s", syntax);
 			goto finish;
 		}
-		metric = tmp_ulong;
 	}
 
 	route = nm_ip_route_new (family, dest, prefix, next_hop, metric, &local);
 	if (!route) {
-		g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
-		             _("invalid route: %s"), local->message);
+		g_set_error (error, 1, 0, "%s", syntax);
+		g_prefix_error (error, _("invalid route: %s. "), local->message);
 		g_clear_error (&local);
 		goto finish;
 	}
@@ -485,10 +518,19 @@ nmc_parse_and_build_route (int family,
 		goto finish;
 	}
 
+	if (attrs) {
+		GHashTableIter iter;
+		char *name;
+		GVariant *variant;
+
+		g_hash_table_iter_init (&iter, attrs);
+		while (g_hash_table_iter_next (&iter, (gpointer *) &name, (gpointer *) &variant))
+			nm_ip_route_set_attribute (route, name, variant);
+	}
+
 	success = TRUE;
 
 finish:
-	g_free (dest);
 	return route;
 }
 
@@ -1253,7 +1295,7 @@ nmc_unique_connection_name (const GPtrArray *connections, const char *try_name)
 	NMConnection *connection;
 	const char *name;
 	char *new_name;
-	unsigned int num = 1;
+	unsigned num = 1;
 	int i = 0;
 
 	new_name = g_strdup (try_name);
@@ -1643,6 +1685,14 @@ call_cmd (NmCli *nmc, GSimpleAsyncResult *simple, const NMCCommand *cmd, int arg
 	}
 }
 
+static void
+nmc_complete_help (const char *prefix)
+{
+	nmc_complete_strings (prefix, "help", NULL);
+	if (*prefix == '-')
+		nmc_complete_strings (prefix, "-help", "--help", NULL);
+}
+
 /**
  * nmc_do_cmd:
  * @nmc: Client instance
@@ -1681,27 +1731,32 @@ nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *cmd, int argc, char
 
 	if (argc == 1 && nmc->complete) {
 		for (c = cmds; c->cmd; ++c) {
-			if (!*cmd || matches (cmd, c->cmd) == 0)
+			if (!*cmd || matches (cmd, c->cmd))
 				g_print ("%s\n", c->cmd);
 		}
+		nmc_complete_help (cmd);
 		g_simple_async_result_complete_in_idle (simple);
 		g_object_unref (simple);
 		return;
 	}
 
 	for (c = cmds; c->cmd; ++c) {
-		if (cmd && matches (cmd, c->cmd) == 0)
+		if (cmd && matches (cmd, c->cmd))
 			break;
 	}
 
 	if (c->cmd) {
 		/* A valid command was specified. */
+		if (c->usage && argc == 2 && nmc->complete)
+			nmc_complete_help (*(argv+1));
 		if (c->usage && nmc_arg_is_help (*(argv+1))) {
-			c->usage ();
+			if (!nmc->complete)
+				c->usage ();
 			g_simple_async_result_complete_in_idle (simple);
 			g_object_unref (simple);
-		} else
-			call_cmd (nmc, simple, c, argc-1, argv+1);
+		} else {
+			call_cmd (nmc, simple, c, argc, argv);
+		}
 	} else if (cmd) {
 		/* Not a known command. */
 		if (nmc_arg_is_help (cmd) && c->usage) {
@@ -1742,7 +1797,7 @@ nmc_complete_strings (const char *prefix, ...)
 
 	va_start (args, prefix);
 	while ((candidate = va_arg (args, const char *))) {
-		if (!*prefix || matches (prefix, candidate) == 0)
+		if (!*prefix || matches (prefix, candidate))
 			g_print ("%s\n", candidate);
 	}
 	va_end (args);

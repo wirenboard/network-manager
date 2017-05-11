@@ -30,6 +30,7 @@
 #include <linux/if_packet.h>
 
 #include "macro.h"
+#include "missing.h"
 #include "util.h"
 
 union sockaddr_union {
@@ -40,6 +41,9 @@ union sockaddr_union {
         struct sockaddr_nl nl;
         struct sockaddr_storage storage;
         struct sockaddr_ll ll;
+#if 0 /* NM_IGNORED */
+        struct sockaddr_vm vm;
+#endif /* NM_IGNORED */
 };
 
 typedef struct SocketAddress {
@@ -100,7 +104,7 @@ const char* socket_address_get_path(const SocketAddress *a);
 
 bool socket_ipv6_is_supported(void);
 
-int sockaddr_port(const struct sockaddr *_sa) _pure_;
+int sockaddr_port(const struct sockaddr *_sa, unsigned *port);
 
 int sockaddr_pretty(const struct sockaddr *_sa, socklen_t salen, bool translate_ipv6, bool include_port, char **ret);
 int getpeername_pretty(int fd, bool include_port, char **ret);
@@ -124,6 +128,7 @@ int ip_tos_to_string_alloc(int i, char **s);
 int ip_tos_from_string(const char *s);
 
 bool ifname_valid(const char *p);
+bool address_label_valid(const char *p);
 
 int getpeercred(int fd, struct ucred *ucred);
 int getpeersec(int fd, char **ret);

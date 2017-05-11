@@ -27,7 +27,7 @@
 #error "Only <NetworkManager.h> can be included directly."
 #endif
 
-#include <nm-setting.h>
+#include "nm-setting.h"
 
 G_BEGIN_DECLS
 
@@ -96,6 +96,8 @@ typedef enum { /*< flags >*/
 
 /**
  * NMSettingWired:
+ *
+ * Wired Ethernet Settings
  */
 struct _NMSettingWired {
 	NMSetting parent;

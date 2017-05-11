@@ -1026,8 +1026,8 @@ device_ac_changed (GObject *object, GParamSpec *pspec, gpointer user_data)
 static void
 device_added (NMManager *self, NMDevice *device)
 {
-	g_signal_connect (device, "notify::" NM_DEVICE_ACTIVE_CONNECTION,
-	                  G_CALLBACK (device_ac_changed), self);
+	g_signal_connect_object (device, "notify::" NM_DEVICE_ACTIVE_CONNECTION,
+	                         G_CALLBACK (device_ac_changed), self, 0);
 }
 
 static void
@@ -1047,8 +1047,8 @@ ac_devices_changed (GObject *object, GParamSpec *pspec, gpointer user_data)
 static void
 active_connection_added (NMManager *self, NMActiveConnection *ac)
 {
-	g_signal_connect (ac, "notify::" NM_ACTIVE_CONNECTION_DEVICES,
-	                  G_CALLBACK (ac_devices_changed), self);
+	g_signal_connect_object (ac, "notify::" NM_ACTIVE_CONNECTION_DEVICES,
+	                         G_CALLBACK (ac_devices_changed), self, 0);
 	recheck_pending_activations (self);
 }
 
@@ -1274,11 +1274,7 @@ dispose (GObject *object)
 	NMManager *manager = NM_MANAGER (object);
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (object);
 
-	if (priv->perm_call_cancellable) {
-		g_cancellable_cancel (priv->perm_call_cancellable);
-		g_clear_object (&priv->perm_call_cancellable);
-	}
-
+	nm_clear_g_cancellable (&priv->perm_call_cancellable);
 
 	if (priv->devices) {
 		g_ptr_array_unref (priv->devices);

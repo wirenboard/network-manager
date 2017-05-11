@@ -83,7 +83,7 @@ G_DEFINE_TYPE (NMModemOfono, nm_modem_ofono, NM_TYPE_MODEM)
             char __prefix_name[128]; \
             const char *__uid; \
             \
-            _nm_log (_level, (_NMLOG_DOMAIN), 0, \
+            _nm_log (_level, (_NMLOG_DOMAIN), 0, NULL, NULL, \
                      "%s%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                      _NMLOG_PREFIX_NAME, \
                      (__self \
@@ -724,8 +724,8 @@ stage1_prepare_done (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data
 	if (error) {
 		_LOGW ("connection failed: %s", error->message);
 
-		g_signal_emit_by_name (self, NM_MODEM_PREPARE_RESULT, FALSE,
-		                       NM_DEVICE_STATE_REASON_MODEM_BUSY);
+		nm_modem_emit_prepare_result (NM_MODEM (self), FALSE,
+		                              NM_DEVICE_STATE_REASON_MODEM_BUSY);
 		/*
 		 * FIXME: add code to check for InProgress so that the
 		 * connection doesn't continue to try and activate,
@@ -745,7 +745,6 @@ context_property_changed (GDBusProxy *proxy,
 {
 	NMModemOfono *self = NM_MODEM_OFONO (user_data);
 	NMModemOfonoPrivate *priv = NM_MODEM_OFONO_GET_PRIVATE (self);
-	NMDeviceStateReason reason = NM_DEVICE_STATE_REASON_NONE;
 	NMPlatformIP4Address addr;
 	gboolean ret = FALSE;
 	GVariant *v_dict;
@@ -910,39 +909,40 @@ context_property_changed (GDBusProxy *proxy,
 out:
 	if (nm_modem_get_state (NM_MODEM (self)) != NM_MODEM_STATE_CONNECTED) {
 		_LOGI ("emitting PREPARE_RESULT: %s", ret ? "TRUE" : "FALSE");
-		if (!ret)
-			reason = NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE;
-		g_signal_emit_by_name (self, NM_MODEM_PREPARE_RESULT, ret, reason);
+		nm_modem_emit_prepare_result (NM_MODEM (self), ret,
+		                              ret
+		                                  ? NM_DEVICE_STATE_REASON_NONE
+		                                  : NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
 	} else {
 		_LOGW ("MODEM_PPP_FAILED");
-		g_signal_emit_by_name (self, NM_MODEM_PPP_FAILED, NM_DEVICE_STATE_REASON_PPP_FAILED);
+		nm_modem_emit_ppp_failed (NM_MODEM (self), NM_DEVICE_STATE_REASON_PPP_FAILED);
 	}
 }
 
 static NMActStageReturn
 static_stage3_ip4_config_start (NMModem *modem,
                                 NMActRequest *req,
-                                NMDeviceStateReason *reason)
+                                NMDeviceStateReason *out_failure_reason)
 {
 	NMModemOfono *self = NM_MODEM_OFONO (modem);
 	NMModemOfonoPrivate *priv = NM_MODEM_OFONO_GET_PRIVATE (self);
-	NMActStageReturn ret = NM_ACT_STAGE_RETURN_FAILURE;
 	GError *error = NULL;
 
-	if (priv->ip4_config) {
-		_LOGD ("IP4 config is done; setting modem_state -> CONNECTED");
-		g_signal_emit_by_name (self, NM_MODEM_IP4_CONFIG_RESULT, priv->ip4_config, error);
-
-		/* Signal listener takes ownership of the IP4Config */
-		priv->ip4_config = NULL;
-
-		nm_modem_set_state (NM_MODEM (self),
-		                    NM_MODEM_STATE_CONNECTED,
-		                    nm_modem_state_to_string (NM_MODEM_STATE_CONNECTED));
-		ret = NM_ACT_STAGE_RETURN_POSTPONE;
+	if (!priv->ip4_config) {
+		_LOGD ("IP4 config not ready(?)");
+		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
-	return ret;
+	_LOGD ("IP4 config is done; setting modem_state -> CONNECTED");
+	g_signal_emit_by_name (self, NM_MODEM_IP4_CONFIG_RESULT, priv->ip4_config, error);
+
+	/* Signal listener takes ownership of the IP4Config */
+	priv->ip4_config = NULL;
+
+	nm_modem_set_state (NM_MODEM (self),
+	                    NM_MODEM_STATE_CONNECTED,
+	                    nm_modem_state_to_string (NM_MODEM_STATE_CONNECTED));
+	return NM_ACT_STAGE_RETURN_POSTPONE;
 }
 
 static void
@@ -955,14 +955,14 @@ context_proxy_new_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_dat
 	priv->context_proxy = g_dbus_proxy_new_for_bus_finish (result, &error);
 	if (error) {
 		_LOGE ("failed to create ofono ConnectionContext DBus proxy: %s", error->message);
-		g_signal_emit_by_name (self, NM_MODEM_PREPARE_RESULT, FALSE,
-		                       NM_DEVICE_STATE_REASON_MODEM_BUSY);
+		nm_modem_emit_prepare_result (NM_MODEM (self), FALSE,
+		                              NM_DEVICE_STATE_REASON_MODEM_BUSY);
 		return;
 	}
 
 	if (!priv->gprs_attached) {
-		g_signal_emit_by_name (self, NM_MODEM_PREPARE_RESULT, FALSE,
-		                       NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER);
+		nm_modem_emit_prepare_result (NM_MODEM (self), FALSE,
+		                              NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER);
 		return;
 	}
 
@@ -1038,7 +1038,7 @@ create_connect_properties (NMConnection *connection)
 static NMActStageReturn
 act_stage1_prepare (NMModem *modem,
                     NMConnection *connection,
-                    NMDeviceStateReason *reason)
+                    NMDeviceStateReason *out_failure_reason)
 {
 	NMModemOfono *self = NM_MODEM_OFONO (modem);
 	NMModemOfonoPrivate *priv = NM_MODEM_OFONO_GET_PRIVATE (self);
@@ -1047,7 +1047,7 @@ act_stage1_prepare (NMModem *modem,
 
 	context_id = nm_connection_get_id (connection);
 	id = g_strsplit (context_id, "/", 0);
-	g_assert (id[2]);
+	g_return_val_if_fail (id[2], NM_ACT_STAGE_RETURN_FAILURE);
 
 	_LOGD ("trying %s %s", id[1], id[2]);
 
@@ -1058,8 +1058,8 @@ act_stage1_prepare (NMModem *modem,
 	g_strfreev (id);
 
 	if (!priv->context_path) {
-		*reason = NM_DEVICE_STATE_REASON_GSM_APN_FAILED;
-			return NM_ACT_STAGE_RETURN_FAILURE;
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_GSM_APN_FAILED);
+		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
 	if (priv->connect_properties)
@@ -1073,7 +1073,7 @@ act_stage1_prepare (NMModem *modem,
 		do_context_activate (self);
 	} else {
 		_LOGW ("could not activate context: modem is not registered.");
-		*reason = NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER;
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER);
 		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 

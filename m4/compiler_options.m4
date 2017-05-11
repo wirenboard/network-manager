@@ -119,8 +119,46 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
 		[int f () { int i = yolo; yolo; return i; }]
 	)
 
+	dnl clang 3.9 would like to see "{ { 0 } }" here, but that does not
+	dnl look too wise.
+	NM_COMPILER_WARNING([missing-braces],
+		[union { int a[1]; int b[2]; } c = { 0 }]
+	)
+
 	CFLAGS="$CFLAGS_MORE_WARNINGS $CFLAGS"
 else
 	AC_MSG_RESULT(no)
 fi
 ])
+
+AC_DEFUN([NM_LTO],
+[AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]))
+if (test "${enable_lto}" = "yes"); then
+	CC_CHECK_FLAG_APPEND([lto_flags], [CFLAGS], [-flto])
+	if (test -n "${lto_flags}"); then
+		CFLAGS="-flto $CFLAGS"
+	else
+		AC_MSG_ERROR([Link Time Optimization -flto is not supported.])
+	fi
+else
+	enable_lto='no'
+fi
+])
+
+AC_DEFUN([NM_LD_GC],
+[AC_ARG_ENABLE(ld-gc, AS_HELP_STRING([--enable-ld-gc], [Enable garbage collection of unused symbols on linking (default: auto)]))
+if (test "${enable_ld_gc}" != "no"); then
+	CC_CHECK_FLAG_APPEND([ld_gc_flags], [CFLAGS], [-fdata-sections -ffunction-sections -Wl,--gc-sections])
+	if (test -n "${ld_gc_flags}"); then
+		enable_ld_gc="yes"
+		CFLAGS="$ld_gc_flags $CFLAGS"
+	else
+		if (test "${enable_ld_gc}" = "yes"); then
+			AC_MSG_ERROR([Unused symbol eviction requested but not supported.])
+		else
+			enable_ld_gc="no"
+		fi
+	fi
+fi
+])
+

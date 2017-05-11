@@ -45,7 +45,6 @@ typedef struct Supplicant {
 	NMSupplicantInterface *iface;
 
 	/* signal handler ids */
-	gulong iface_error_id;
 	gulong iface_state_id;
 
 	/* Timeouts and idles */
@@ -90,8 +89,6 @@ G_DEFINE_TYPE (NMDeviceMacsec, nm_device_macsec, NM_TYPE_DEVICE)
 
 /******************************************************************/
 
-#define MACSEC_SECRETS_TRIES "macsec-secrets-tries"
-
 static void macsec_secrets_cancel (NMDeviceMacsec *self);
 
 /******************************************************************/
@@ -113,7 +110,7 @@ parent_state_changed (NMDevice *parent,
 	NMDeviceMacsec *self = NM_DEVICE_MACSEC (user_data);
 
 	/* We'll react to our own carrier state notifications. Ignore the parent's. */
-	if (reason == NM_DEVICE_STATE_REASON_CARRIER)
+	if (nm_device_state_reason_check (reason) == NM_DEVICE_STATE_REASON_CARRIER)
 		return;
 
 	nm_device_set_unmanaged_by_flags (NM_DEVICE (self), NM_UNMANAGED_PARENT, !nm_device_get_managed (parent, FALSE), reason);
@@ -176,7 +173,7 @@ update_properties (NMDevice *device)
 
 	ifindex = nm_device_get_ifindex (device);
 	g_return_if_fail (ifindex > 0);
-	props = nm_platform_link_get_lnk_macsec (NM_PLATFORM_GET, ifindex, &plink);
+	props = nm_platform_link_get_lnk_macsec (nm_device_get_platform (device), ifindex, &plink);
 
 	if (!props) {
 		_LOGW (LOGD_PLATFORM, "could not get macsec properties");
@@ -222,7 +219,7 @@ build_supplicant_config (NMDeviceMacsec *self, GError **error)
 	connection = nm_device_get_applied_connection (NM_DEVICE (self));
 	g_assert (connection);
 	con_uuid = nm_connection_get_uuid (connection);
-	mtu = nm_platform_link_get_mtu (NM_PLATFORM_GET,
+	mtu = nm_platform_link_get_mtu (nm_device_get_platform (NM_DEVICE (self)),
 	                                nm_device_get_ifindex (NM_DEVICE (self)));
 
 	config = nm_supplicant_config_new ();
@@ -248,22 +245,12 @@ build_supplicant_config (NMDeviceMacsec *self, GError **error)
 }
 
 static void
-supplicant_interface_clear_handlers (NMDeviceMacsec *self)
+supplicant_interface_release (NMDeviceMacsec *self)
 {
 	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
 
 	nm_clear_g_source (&priv->supplicant_timeout_id);
 	nm_clear_g_source (&priv->supplicant.con_timeout_id);
-	nm_clear_g_signal_handler (priv->supplicant.iface, &priv->supplicant.iface_error_id);
-}
-
-static void
-supplicant_interface_release (NMDeviceMacsec *self)
-{
-	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
-
-	supplicant_interface_clear_handlers (self);
-
 	nm_clear_g_signal_handler (priv->supplicant.iface, &priv->supplicant.iface_state_id);
 
 	if (priv->supplicant.iface) {
@@ -273,21 +260,18 @@ supplicant_interface_release (NMDeviceMacsec *self)
 }
 
 static void
-supplicant_iface_connection_error_cb (NMSupplicantInterface *iface,
-                                      const char *name,
-                                      const char *message,
-                                      gpointer user_data)
+supplicant_iface_assoc_cb (NMSupplicantInterface *iface,
+                           GError *error,
+                           gpointer user_data)
 {
 	NMDeviceMacsec *self = NM_DEVICE_MACSEC (user_data);
 
-	_LOGW (LOGD_DEVICE,
-	       "Activation: association request to the supplicant failed: %s - %s",
-	       name, message);
-
-	supplicant_interface_release (self);
-	nm_device_queue_state (NM_DEVICE (self),
-	                       NM_DEVICE_STATE_FAILED,
-	                       NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
+	if (error && !nm_utils_error_is_cancelled (error, TRUE)) {
+		supplicant_interface_release (self);
+		nm_device_queue_state (NM_DEVICE (self),
+		                       NM_DEVICE_STATE_FAILED,
+		                       NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
+	}
 }
 
 static void
@@ -412,8 +396,8 @@ time_out:
 
 static void
 supplicant_iface_state_cb (NMSupplicantInterface *iface,
-                           guint32 new_state,
-                           guint32 old_state,
+                           int new_state_i,
+                           int old_state_i,
                            int disconnect_reason,
                            gpointer user_data)
 {
@@ -421,9 +405,10 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
 	NMDevice *device = NM_DEVICE (self);
 	NMSupplicantConfig *config;
-	gboolean success = FALSE;
 	NMDeviceState devstate;
 	GError *error = NULL;
+	NMSupplicantInterfaceState new_state = new_state_i;
+	NMSupplicantInterfaceState old_state = old_state_i;
 
 	if (new_state == old_state)
 		return;
@@ -438,30 +423,23 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 	case NM_SUPPLICANT_INTERFACE_STATE_READY:
 		config = build_supplicant_config (self, &error);
 		if (config) {
-			success = nm_supplicant_interface_set_config (priv->supplicant.iface, config, &error);
+			nm_supplicant_interface_assoc (priv->supplicant.iface, config,
+			                               supplicant_iface_assoc_cb, self);
 			g_object_unref (config);
-
-			if (!success) {
-				_LOGE (LOGD_DEVICE,
-				       "Activation: couldn't send security configuration to the supplicant: %s",
-				       error->message);
-				g_clear_error (&error);
-			}
 		} else {
 			_LOGE (LOGD_DEVICE,
 			       "Activation: couldn't build security configuration: %s",
 			       error->message);
 			g_clear_error (&error);
-		}
 
-		if (!success) {
 			nm_device_state_changed (device,
 			                         NM_DEVICE_STATE_FAILED,
 			                         NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED);
 		}
 		break;
 	case NM_SUPPLICANT_INTERFACE_STATE_COMPLETED:
-		supplicant_interface_clear_handlers (self);
+		nm_clear_g_source (&priv->supplicant_timeout_id);
+		nm_clear_g_source (&priv->supplicant.con_timeout_id);
 		nm_device_bring_up (device, TRUE, NULL);
 
 		/* If this is the initial association during device activation,
@@ -500,14 +478,19 @@ handle_auth_or_fail (NMDeviceMacsec *self,
                      gboolean new_secrets)
 {
 	const char *setting_name;
-	guint32 tries;
+	int tries_left;
 	NMConnection *applied_connection;
+	NMSettingsConnection *settings_connection;
 
 	applied_connection = nm_act_request_get_applied_connection (req);
+	settings_connection = nm_act_request_get_settings_connection (req);
 
-	tries = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (applied_connection), MACSEC_SECRETS_TRIES));
-	if (tries > 3)
+	tries_left = nm_settings_connection_get_autoconnect_retries (settings_connection);
+	if (tries_left == 0)
 		return NM_ACT_STAGE_RETURN_FAILURE;
+
+	if (tries_left > 0)
+		nm_settings_connection_set_autoconnect_retries (settings_connection, tries_left - 1);
 
 	nm_device_state_changed (NM_DEVICE (self), NM_DEVICE_STATE_NEED_AUTH, NM_DEVICE_STATE_REASON_NONE);
 
@@ -518,7 +501,6 @@ handle_auth_or_fail (NMDeviceMacsec *self,
 		macsec_secrets_get_secrets (self, setting_name,
 		                            NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION
 		                             | (new_secrets ? NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW : 0));
-		g_object_set_data (G_OBJECT (applied_connection), MACSEC_SECRETS_TRIES, GUINT_TO_POINTER (++tries));
 	} else
 		_LOGI (LOGD_DEVICE, "Cleared secrets, but setting didn't need any secrets.");
 
@@ -571,6 +553,7 @@ supplicant_interface_init (NMDeviceMacsec *self)
 {
 	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
 	NMDevice *parent;
+	guint timeout;
 
 	parent = nm_device_parent_get_device (NM_DEVICE (self));
 	g_return_val_if_fail (parent, FALSE);
@@ -593,20 +576,16 @@ supplicant_interface_init (NMDeviceMacsec *self)
 	                                                    G_CALLBACK (supplicant_iface_state_cb),
 	                                                    self);
 
-	/* Hook up error signal handler to capture association errors */
-	priv->supplicant.iface_error_id = g_signal_connect (priv->supplicant.iface,
-	                                                    NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR,
-	                                                    G_CALLBACK (supplicant_iface_connection_error_cb),
-	                                                    self);
-
-	/* Set up a timeout on the connection attempt to fail it after 25 seconds */
-	priv->supplicant.con_timeout_id = g_timeout_add_seconds (25, supplicant_connection_timeout_cb, self);
-
+	/* Set up a timeout on the connection attempt  */
+	timeout = nm_device_get_supplicant_timeout (NM_DEVICE (self));
+	priv->supplicant.con_timeout_id = g_timeout_add_seconds (timeout,
+	                                                         supplicant_connection_timeout_cb,
+	                                                         self);
 	return TRUE;
 }
 
 static NMActStageReturn
-act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceMacsec *self = NM_DEVICE_MACSEC (device);
 	NMDeviceMacsecPrivate *priv = NM_DEVICE_MACSEC_GET_PRIVATE (self);
@@ -615,7 +594,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	const char *setting_name;
 
 	connection = nm_device_get_applied_connection (NM_DEVICE (self));
-	g_assert (connection);
+	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
 
 	if (!priv->supplicant.mgr)
 		priv->supplicant.mgr = g_object_ref (nm_supplicant_manager_get ());
@@ -631,7 +610,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 
 		ret = handle_auth_or_fail (self, req, FALSE);
 		if (ret != NM_ACT_STAGE_RETURN_POSTPONE)
-			*reason = NM_DEVICE_STATE_REASON_NO_SECRETS;
+			NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_NO_SECRETS);
 	} else {
 		_LOGI (LOGD_DEVICE | LOGD_ETHER,
 		       "Activation: connection '%s' requires no security. No secrets needed.",
@@ -640,7 +619,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 		if (supplicant_interface_init (self))
 			ret = NM_ACT_STAGE_RETURN_POSTPONE;
 		else
-			*reason = NM_DEVICE_STATE_REASON_CONFIG_FAILED;
+			NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_CONFIG_FAILED);
 	}
 
 	return ret;
@@ -735,7 +714,7 @@ create_and_realize (NMDevice *device,
 	parent_ifindex = nm_device_get_ifindex (parent);
 	g_warn_if_fail (parent_ifindex > 0);
 
-	plerr = nm_platform_link_macsec_add (NM_PLATFORM_GET, iface, parent_ifindex, &lnk, out_plink);
+	plerr = nm_platform_link_macsec_add (nm_device_get_platform (device), iface, parent_ifindex, &lnk, out_plink);
 	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create macsec interface '%s' for '%s': %s",
@@ -758,17 +737,19 @@ link_changed (NMDevice *device,
 	update_properties (device);
 }
 
+
 static void
-clear_secrets_tries (NMDevice *device)
+reset_autoconnect_retries (NMDevice *device)
 {
 	NMActRequest *req;
-	NMConnection *connection;
+	NMSettingsConnection *connection;
 
 	req = nm_device_get_act_request (device);
 	if (req) {
-		connection = nm_act_request_get_applied_connection (req);
-		/* Clear macsec secrets tries on success, failure, or when deactivating */
-		g_object_set_data (G_OBJECT (connection), MACSEC_SECRETS_TRIES, NULL);
+		connection = nm_act_request_get_settings_connection (req);
+		g_return_if_fail (connection);
+		/* Reset autoconnect retries on success, failure, or when deactivating */
+		nm_settings_connection_reset_autoconnect_retries (connection);
 	}
 }
 
@@ -784,7 +765,7 @@ device_state_changed (NMDevice *device,
 	if (   new_state == NM_DEVICE_STATE_ACTIVATED
 	    || new_state == NM_DEVICE_STATE_FAILED
 	    || new_state == NM_DEVICE_STATE_DISCONNECTED)
-		clear_secrets_tries (device);
+		reset_autoconnect_retries (device);
 }
 
 /******************************************************************/

@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 02/15/2017
+.\"      Date: 05/10/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.6.2
+.\"    Source: NetworkManager 1.8.0
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.6\&.2" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.8\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -381,6 +381,8 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
 T{
 eap
@@ -522,6 +524,19 @@ Enable in\-line provisioning of EAP\-FAST credentials\&.\fB
 Example: \fRIEEE_8021X_FAST_PROVISIONING="allow\-auth allow\-unauth"\fB
 
 Allowed values: \fRspace\-separated list of these values [allow\-auth, allow\-unauth]
+T}
+T{
+phase1\-auth\-flags
+T}:T{
+IEEE_8021X_PHASE1_AUTH_FLAGS\fI(+)\fR
+T}:T{
+\ \&
+T}:T{
+Authentication flags for the supplicant\fB
+
+Example: \fRIEEE_8021X_PHASE1_AUTH_FLAGS="tls\-1\-0\-disable tls\-1\-1\-disable"\fB
+
+Allowed values: \fRspace\-separated list of authentication flags names
 T}
 T{
 phase2\-auth
@@ -707,6 +722,15 @@ T}:T{
 \ \&
 T}:T{
 The property is not handled by ifcfg\-rh plugin\&.
+T}
+T{
+auth\-timeout
+T}:T{
+IEEE_8021X_AUTH_TIMEOUT\fI(+)\fR
+T}:T{
+0
+T}:T{
+Timeout in seconds for the 802\&.1X authentication\&. Zero means the global default or 25\&.
 T}
 .TE
 .sp 1
@@ -1328,7 +1352,29 @@ All DCB related configuration is a NetworkManager extension\&. DCB=yes must be u
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&7.\ \&infiniband setting
+.B Table\ \&7.\ \&dummy setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Property
+T}:T{
+Ifcfg\-rh Variable
+T}:T{
+Default
+T}:T{
+Description
+T}
+.T&
+.
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&8.\ \&infiniband setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1405,7 +1451,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&8.\ \&ipv4 setting
+.B Table\ \&9.\ \&ipv4 setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1493,7 +1539,7 @@ T}
 T{
 routes
 T}:T{
-ADDRESS1, NETMASK1, GATEWAY1, METRIC1, \&.\&.\&.
+ADDRESS1, NETMASK1, GATEWAY1, METRIC1, OPTIONS1, \&.\&.\&.
 T}:T{
 \ \&
 T}:T{
@@ -1624,7 +1670,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&9.\ \&ipv6 setting
+.B Table\ \&10.\ \&ipv6 setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1821,7 +1867,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&10.\ \&macsec setting
+.B Table\ \&11.\ \&macsec setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1843,7 +1889,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&11.\ \&proxy setting
+.B Table\ \&12.\ \&proxy setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1910,7 +1956,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&12.\ \&team\-port setting
+.B Table\ \&13.\ \&team\-port setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1941,7 +1987,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&13.\ \&team setting
+.B Table\ \&14.\ \&team setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1972,7 +2018,29 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&14.\ \&802\-3\-ethernet setting
+.B Table\ \&15.\ \&user setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Property
+T}:T{
+Ifcfg\-rh Variable
+T}:T{
+Default
+T}:T{
+Description
+T}
+.T&
+.
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&16.\ \&802\-3\-ethernet setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2121,7 +2189,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&15.\ \&802\-11\-wireless\-security setting
+.B Table\ \&17.\ \&802\-11\-wireless\-security setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2328,7 +2396,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&16.\ \&802\-11\-wireless setting
+.B Table\ \&18.\ \&802\-11\-wireless setting
 .TS
 allbox tab(:);
 lB lB lB lB.

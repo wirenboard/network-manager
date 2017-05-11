@@ -24,6 +24,7 @@
 
 #include <unistd.h>
 #include <linux/rtnetlink.h>
+#include <libudev.h>
 
 #include "nm-utils.h"
 
@@ -40,17 +41,13 @@
         if (nm_logging_enabled (__level, _NMLOG_DOMAIN)) { \
             const NMPObject *const __obj = (obj); \
             \
-            _nm_log (__level, _NMLOG_DOMAIN, 0, \
+            _nm_log (__level, _NMLOG_DOMAIN, 0, NULL, NULL, \
                      "nmp-object[%p/%s]: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                      __obj, \
                      (__obj ? NMP_OBJECT_GET_CLASS (__obj)->obj_type_name : "???") \
                      _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
         } \
     } G_STMT_END
-
-/* logging to trace object lifetime and references.
- * Disabled by default. */
-#define _LOGr(...) G_STMT_START { if (FALSE) { _LOGt (__VA_ARGS__); } } G_STMT_END
 
 /*****************************************************************************/
 
@@ -125,14 +122,14 @@ _vlan_xgress_qos_mappings_cpy (guint *dst_n_map,
 /*****************************************************************************/
 
 static const char *
-_link_get_driver (GUdevDevice *udev_device, const char *kind, int ifindex)
+_link_get_driver (struct udev_device *udevice, const char *kind, int ifindex)
 {
 	const char *driver = NULL;
 
 	nm_assert (kind == g_intern_string (kind));
 
-	if (udev_device) {
-		driver = nmp_utils_udev_get_driver (udev_device);
+	if (udevice) {
+		driver = nmp_utils_udev_get_driver (udevice);
 		if (driver)
 			return driver;
 	}
@@ -214,8 +211,6 @@ nmp_object_ref (NMPObject *obj)
 	g_return_val_if_fail (obj->_ref_count != NMP_REF_COUNT_STACKINIT, NULL);
 	obj->_ref_count++;
 
-	_LOGr (obj, "ref: %d", obj->_ref_count);
-
 	return obj;
 }
 
@@ -225,9 +220,6 @@ nmp_object_unref (NMPObject *obj)
 	if (obj) {
 		g_return_if_fail (obj->_ref_count > 0);
 		g_return_if_fail (obj->_ref_count != NMP_REF_COUNT_STACKINIT);
-		_LOGr (obj, "%s: %d",
-		       obj->_ref_count <= 1 ? "destroy" : "unref",
-		       obj->_ref_count - 1);
 		if (--obj->_ref_count <= 0) {
 			const NMPClass *klass = obj->_class;
 
@@ -242,7 +234,10 @@ nmp_object_unref (NMPObject *obj)
 static void
 _vt_cmd_obj_dispose_link (NMPObject *obj)
 {
-	g_clear_object (&obj->_link.udev.device);
+	if (obj->_link.udev.device) {
+		udev_device_unref (obj->_link.udev.device);
+		obj->_link.udev.device = NULL;
+	}
 	nmp_object_unref (obj->_link.netlink.lnk);
 }
 
@@ -265,7 +260,6 @@ _nmp_object_new_from_class (const NMPClass *klass)
 	obj = g_slice_alloc0 (klass->sizeof_data + G_STRUCT_OFFSET (NMPObject, object));
 	obj->_class = klass;
 	obj->_ref_count = 1;
-	_LOGr (obj, "new");
 	return obj;
 }
 
@@ -495,7 +489,7 @@ _vt_cmd_obj_to_string_link (const NMPObject *obj, NMPObjectToStringMode to_strin
 static const char *
 _vt_cmd_obj_to_string_lnk_vlan (const NMPObject *obj, NMPObjectToStringMode to_string_mode, char *buf, gsize buf_size)
 {
-	const NMPClass *klass = NMP_OBJECT_GET_CLASS (obj);
+	const NMPClass *klass;
 	char buf2[sizeof (_nm_utils_to_string_buffer)];
 	char *b;
 	gsize l;
@@ -619,8 +613,7 @@ _vt_cmd_obj_cmp_link (const NMPObject *obj1, const NMPObject *obj2)
 			return 1;
 
 		/* Only compare based on pointer values. That is ugly because it's not a
-		 * stable sort order, but probably udev gives us always the same GUdevDevice
-		 * instance.
+		 * stable sort order.
 		 *
 		 * Have this check as very last. */
 		return (obj1->_link.udev.device < obj2->_link.udev.device) ? -1 : 1;
@@ -687,15 +680,17 @@ _vt_cmd_obj_copy_link (NMPObject *dst, const NMPObject *src)
 {
 	if (dst->_link.udev.device != src->_link.udev.device) {
 		if (src->_link.udev.device)
-			g_object_ref (src->_link.udev.device);
+			udev_device_ref (src->_link.udev.device);
 		if (dst->_link.udev.device)
-			g_object_unref (dst->_link.udev.device);
+			udev_device_unref (dst->_link.udev.device);
+		dst->_link.udev.device = src->_link.udev.device;
 	}
 	if (dst->_link.netlink.lnk != src->_link.netlink.lnk) {
 		if (src->_link.netlink.lnk)
 			nmp_object_ref (src->_link.netlink.lnk);
 		if (dst->_link.netlink.lnk)
 			nmp_object_unref (dst->_link.netlink.lnk);
+		dst->_link.netlink.lnk = src->_link.netlink.lnk;
 	}
 	dst->_link = src->_link;
 }
@@ -810,12 +805,17 @@ _vt_cmd_plobj_id_equal (ip4_route, NMPlatformIP4Route,
                            obj1->ifindex == obj2->ifindex
                         && obj1->plen == obj2->plen
                         && obj1->metric == obj2->metric
-                        && obj1->network == obj2->network);
+                        && nm_utils_ip4_address_clear_host_address (obj1->network, obj1->plen) == nm_utils_ip4_address_clear_host_address (obj2->network, obj2->plen));
 _vt_cmd_plobj_id_equal (ip6_route, NMPlatformIP6Route,
                            obj1->ifindex == obj2->ifindex
                         && obj1->plen == obj2->plen
                         && obj1->metric == obj2->metric
-                        && IN6_ARE_ADDR_EQUAL( &obj1->network, &obj2->network));
+                        && ({
+                                struct in6_addr n1, n2;
+
+                                IN6_ARE_ADDR_EQUAL(nm_utils_ip6_address_clear_host_address (&n1, &obj1->network, obj1->plen),
+                                                   nm_utils_ip6_address_clear_host_address (&n2, &obj2->network, obj2->plen));
+                            }));
 
 guint
 nmp_object_id_hash (const NMPObject *obj)
@@ -869,14 +869,17 @@ _vt_cmd_plobj_id_hash (ip4_route, NMPlatformIP4Route, {
 	hash = hash      + ((guint) obj->ifindex);
 	hash = hash * 33 + ((guint) obj->plen);
 	hash = hash * 33 + ((guint) obj->metric);
-	hash = hash * 33 + ((guint) obj->network);
+	hash = hash * 33 + ((guint) nm_utils_ip4_address_clear_host_address (obj->network, obj->plen));
 })
 _vt_cmd_plobj_id_hash (ip6_route, NMPlatformIP6Route, {
 	hash = (guint) 3999787007u;
 	hash = hash      + ((guint) obj->ifindex);
 	hash = hash * 33 + ((guint) obj->plen);
 	hash = hash * 33 + ((guint) obj->metric);
-	hash = hash * 33 + _id_hash_ip6_addr (&obj->network);
+	hash = hash * 33 + ({
+	                        struct in6_addr n1;
+	                        _id_hash_ip6_addr (nm_utils_ip6_address_clear_host_address (&n1, &obj->network, obj->plen));
+	                    });
 })
 
 gboolean
@@ -985,11 +988,6 @@ nmp_cache_id_hash (const NMPCacheId *id)
 	guint hash = 5381;
 	guint i, n;
 
-	/* for hashing we only iterate over the actually set bytes and skip the
-	 * zero padding at the end (which depends on the type of the id).
-	 *
-	 * For the equal implementation, we don't care about that and compare the
-	 * entire NMPCacheId sized struct. */
 	n = _nmp_cache_id_size_by_type (id->_id_type);
 	for (i = 0; i < n; i++)
 		hash = ((hash << 5) + hash) + ((char *) id)[i]; /* hash * 33 + c */
@@ -1033,6 +1031,20 @@ _nmp_cache_id_init (NMPCacheId *id, NMPCacheIdType id_type)
 	 * all structs have the packed attribute, there are no holes
 	 * due to alignment, and it becomes simple for nmp_cache_id_init_*()
 	 * to ensure that all fields are set. */
+
+#if NM_MORE_ASSERTS
+	nm_assert (id);
+	{
+		guint i;
+
+		/* initialized with some bogus canary to hopefully detect when we miss
+		 * to initialize a field of the cache-id. */
+		for (i = 0; i < sizeof (*id); i++) {
+			((char *) id)[i] = GPOINTER_TO_UINT (id) ^ i;
+		}
+	}
+#endif
+
 	id->_id_type = id_type;
 }
 
@@ -1533,13 +1545,17 @@ nmp_cache_lookup_link_full (const NMPCache *cache,
 		    && strlen (ifname) <= sizeof (cache_id.link_by_ifname.ifname_short)) {
 			p_cache_id = nmp_cache_id_init_link_by_ifname (&cache_id, ifname);
 			ifname = NULL;
-		} else
+		} else {
 			p_cache_id = nmp_cache_id_init_object_type (&cache_id, NMP_OBJECT_TYPE_LINK, visible_only);
+			visible_only = FALSE;
+		}
 
 		list = nmp_cache_lookup_multi (cache, p_cache_id, &len);
 		for (i = 0; i < len; i++) {
 			obj = NMP_OBJECT_UP_CAST (list[i]);
 
+			if (visible_only && !nmp_object_is_visible (obj))
+				continue;
 			if (link_type != NM_LINK_TYPE_NONE && obj->link.type != link_type)
 				continue;
 			if (ifname && strcmp (ifname, obj->link.name))
@@ -1857,8 +1873,8 @@ nmp_cache_update_netlink (NMPCache *cache, NMPObject *obj, NMPObject **out_obj, 
 				_nmp_object_fixup_link_master_connected (obj, cache);
 
 				/* Merge the netlink parts with what we have from udev. */
-				g_clear_object (&obj->_link.udev.device);
-				obj->_link.udev.device = old->_link.udev.device ? g_object_ref (old->_link.udev.device) : NULL;
+				udev_device_unref (obj->_link.udev.device);
+				obj->_link.udev.device = old->_link.udev.device ? udev_device_ref (old->_link.udev.device) : NULL;
 				_nmp_object_fixup_link_udev_fields (obj, cache->use_udev);
 			}
 		} else
@@ -1883,7 +1899,7 @@ nmp_cache_update_netlink (NMPCache *cache, NMPObject *obj, NMPObject **out_obj, 
 }
 
 NMPCacheOpsType
-nmp_cache_update_link_udev (NMPCache *cache, int ifindex, GUdevDevice *udev_device, NMPObject **out_obj, gboolean *out_was_visible, NMPCachePreHook pre_hook, gpointer user_data)
+nmp_cache_update_link_udev (NMPCache *cache, int ifindex, struct udev_device *udevice, NMPObject **out_obj, gboolean *out_was_visible, NMPCachePreHook pre_hook, gpointer user_data)
 {
 	NMPObject *old;
 	nm_auto_nmpobj NMPObject *obj = NULL;
@@ -1896,12 +1912,12 @@ nmp_cache_update_link_udev (NMPCache *cache, int ifindex, GUdevDevice *udev_devi
 		*out_was_visible = FALSE;
 
 	if (!old) {
-		if (!udev_device)
+		if (!udevice)
 			return NMP_CACHE_OPS_UNCHANGED;
 
 		obj = nmp_object_new (NMP_OBJECT_TYPE_LINK, NULL);
 		obj->link.ifindex = ifindex;
-		obj->_link.udev.device = g_object_ref (udev_device);
+		obj->_link.udev.device = udev_device_ref (udevice);
 
 		_nmp_object_fixup_link_udev_fields (obj, cache->use_udev);
 
@@ -1922,10 +1938,10 @@ nmp_cache_update_link_udev (NMPCache *cache, int ifindex, GUdevDevice *udev_devi
 		if (out_was_visible)
 			*out_was_visible = nmp_object_is_visible (old);
 
-		if (old->_link.udev.device == udev_device)
+		if (old->_link.udev.device == udevice)
 			return NMP_CACHE_OPS_UNCHANGED;
 
-		if (!udev_device && !old->_link.netlink.is_in_netlink) {
+		if (!udevice && !old->_link.netlink.is_in_netlink) {
 			/* the update would make @old invalid. Remove it. */
 			if (pre_hook)
 				pre_hook (cache, old, NULL, NMP_CACHE_OPS_REMOVED, user_data);
@@ -1935,8 +1951,8 @@ nmp_cache_update_link_udev (NMPCache *cache, int ifindex, GUdevDevice *udev_devi
 
 		obj = nmp_object_clone (old, FALSE);
 
-		g_clear_object (&obj->_link.udev.device);
-		obj->_link.udev.device = udev_device ? g_object_ref (udev_device) : NULL;
+		udev_device_unref (obj->_link.udev.device);
+		obj->_link.udev.device = udevice ? udev_device_ref (udevice) : NULL;
 
 		_nmp_object_fixup_link_udev_fields (obj, cache->use_udev);
 

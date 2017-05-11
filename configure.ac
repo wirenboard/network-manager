@@ -2,8 +2,8 @@ AC_PREREQ([2.63])
 
 dnl The NM version number
 m4_define([nm_major_version], [1])
-m4_define([nm_minor_version], [6])
-m4_define([nm_micro_version], [2])
+m4_define([nm_minor_version], [8])
+m4_define([nm_micro_version], [0])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -33,6 +33,7 @@ AM_PROG_CC_C_O
 AC_PROG_CXX
 
 AC_PROG_LN_S
+AC_PROG_MKDIR_P
 
 # Prefer gcc-* variants; the ones libtool would choose don't work with LTO
 AC_CHECK_TOOLS(AR, [gcc-ar ar], false)
@@ -59,6 +60,13 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 dnl
 AC_TYPE_PID_T
 AC_CHECK_SIZEOF(dev_t)
+AC_CHECK_SIZEOF(time_t)
+
+AC_CHECK_DECLS([
+	explicit_bzero],
+	[], [], [[
+#include <string.h>
+]])
 
 dnl
 dnl translation support
@@ -231,7 +239,7 @@ if test "$with_wifi" = "yes"; then
                     #include <linux/types.h>
                     #include <sys/socket.h>
                     #include <linux/nl80211.h>]],
-                  [[unsigned int a = NL80211_CMD_CRIT_PROTOCOL_START; a++;]])],
+                  [[unsigned a = NL80211_CMD_CRIT_PROTOCOL_START; a++;]])],
 		[ac_have_nl80211_critproto=yes],
 		[ac_have_nl80211_critproto=no])
 	AC_MSG_RESULT($ac_have_nl80211_critproto)
@@ -256,7 +264,7 @@ AC_COMPILE_IFELSE(
                 #include <sys/types.h>
                 #include <linux/types.h>
                 #include <linux/if_vlan.h>]],
-              [[unsigned int a = VLAN_FLAG_LOOSE_BINDING;]])],
+              [[unsigned a = VLAN_FLAG_LOOSE_BINDING;]])],
 	[ac_have_vlan_flag_loose_binding=yes],
 	[ac_have_vlan_flag_loose_binding=no])
 AC_MSG_RESULT($ac_have_vlan_flag_loose_binding)
@@ -265,11 +273,6 @@ if test "$ac_have_vlan_flag_loose_binding" = yes; then
 else
 	AC_DEFINE(HAVE_VLAN_FLAG_LOOSE_BINDING, 0, [Define if you have VLAN_FLAG_LOOSE_BINDING])
 fi
-
-dnl
-dnl Checks for libm - needed for pow()
-dnl
-LT_LIB_M
 
 dnl
 dnl Checks for libdl - on certain platforms its part of libc
@@ -302,7 +305,7 @@ Configure with --without-libnm-glib if you do not need the legacy libraries])])
 fi
 AM_CONDITIONAL(WITH_LEGACY_LIBRARIES, test "$with_libnm_glib" != "no")
 
-PKG_CHECK_MODULES(GUDEV, gudev-1.0 >= 165)
+PKG_CHECK_MODULES([LIBUDEV], [libudev >= 175])
 
 GOBJECT_INTROSPECTION_CHECK([0.9.6])
 
@@ -426,14 +429,15 @@ AC_ARG_WITH(systemd-logind, AS_HELP_STRING([--with-systemd-logind=yes|no],
 	[Support systemd session tracking]))
 AC_ARG_WITH(consolekit, AS_HELP_STRING([--with-consolekit=yes|no],
 	[Support consolekit session tracking]))
-AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd|consolekit|no],
+AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd|elogind|consolekit|no],
 	[Compatibility option to choose one session tracking module]))
 # backwards compatibility
-AS_IF([test "$with_session_tracking" = "ck"], [use_consolekit="yes" use_systemd_logind="no"])
-AS_IF([test "$with_session_tracking" = "consolekit"], [use_consolekit="yes" use_systemd_logind="no"])
-AS_IF([test "$with_session_tracking" = "systemd"], [use_consolekit="no" use_systemd_logind="yes"])
-AS_IF([test "$with_session_tracking" = "no"], [use_consolekit="no" use_systemd_logind="no"])
-AS_IF([test "$with_session_tracking" = "none"], [use_consolekit="no" use_systemd_logind="no"])
+AS_IF([test "$with_session_tracking" = "ck"], [use_consolekit="yes" use_systemd_logind="no" use_elogind="no"])
+AS_IF([test "$with_session_tracking" = "consolekit"], [use_consolekit="yes" use_systemd_logind="no" use_elogind="no"])
+AS_IF([test "$with_session_tracking" = "systemd"], [use_consolekit="no" use_systemd_logind="yes" use_elogind="no"])
+AS_IF([test "$with_session_tracking" = "elogind"], [use_consolekit="no" use_systemd_logind="no" use_elogind="yes"])
+AS_IF([test "$with_session_tracking" = "no"], [use_consolekit="no" use_systemd_logind="no" use_elogind="no"])
+AS_IF([test "$with_session_tracking" = "none"], [use_consolekit="no" use_systemd_logind="no" use_elogind="no"])
 # current options
 AS_IF([test -n "$with_systemd_logind" ], [use_systemd_logind="$with_systemd_logind"])
 AS_IF([test -n "$with_consolekit" ], [use_consolekit="$with_consolekit"])
@@ -451,9 +455,26 @@ if test "$use_systemd_logind" = "yes" -a "$have_systemd_logind" = "no"; then
     AC_MSG_ERROR([You must have libsystemd installed to build with systemd-logind support.])
 fi
 if test "$have_systemd_logind" = "yes"; then
-	AC_DEFINE([SESSION_TRACKING_SYSTEMD], 1, [Define to 1 if libsystemd-login is available])
-	session_tracking="$session_tracking, systemd-logind"
+    AC_DEFINE([SESSION_TRACKING_SYSTEMD], 1, [Define to 1 if libsystemd-login is available])
+    session_tracking="$session_tracking, systemd-logind"
 fi
+
+if test "$use_elogind" = "yes" -a "$have_systemd_logind" = "yes"; then
+    AC_MSG_ERROR([Cannot enable systemd-logind together with elogind.])
+fi
+if test "$use_elogind" = "yes"; then
+    PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libelogind], [have_elogind=yes], [PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libelogind], [have_elogind=yes], [have_elogind=no])])
+else
+    have_elogind=no
+fi
+if test "$use_elogind" = "yes" -a "$have_elogind" = "no"; then
+    AC_MSG_ERROR([You must have libelogind installed to build with elogind support.])
+fi
+if test "$have_elogind" = "yes"; then
+    AC_DEFINE([SESSION_TRACKING_ELOGIND], 1, [Define to 1 if libelogin is available])
+    session_tracking="$session_tracking, elogind"
+fi
+
 if test "$use_consolekit" = "yes"; then
 	AC_DEFINE([SESSION_TRACKING_CONSOLEKIT], 1, [Define to 1 if ConsoleKit is available])
 	AC_DEFINE([CKDB_PATH], "/var/run/ConsoleKit/database", [Path to ConsoleKit database])
@@ -461,7 +482,7 @@ if test "$use_consolekit" = "yes"; then
 fi
 session_tracking="$(printf '%s' "${session_tracking}" | sed 's/^, //')"
 
-AC_ARG_WITH(suspend-resume, AS_HELP_STRING([--with-suspend-resume=upower|systemd|consolekit], [Build NetworkManager with specific suspend/resume support]))
+AC_ARG_WITH(suspend-resume, AS_HELP_STRING([--with-suspend-resume=upower|systemd|elogind|consolekit], [Build NetworkManager with specific suspend/resume support]))
 if test "z$with_suspend_resume" = "z"; then
     PKG_CHECK_EXISTS([libsystemd >= 209], [have_systemd_inhibit=yes],
                      [PKG_CHECK_EXISTS([libsystemd-login >= 183], [have_systemd_inhibit=yes], [have_systemd_inhibit=no])])
@@ -469,6 +490,12 @@ if test "z$with_suspend_resume" = "z"; then
         # Use systemd if it's new enough
         with_suspend_resume="systemd"
     else
+        PKG_CHECK_EXISTS([libelogind >= 219], [have_elogind_inhibit=yes],
+                        [PKG_CHECK_EXISTS([libelogind >= 219], [have_elogind_inhibit=yes], [have_elogind_inhibit=no])])
+        if test "z${have_elogind_inhibit}" = "zyes"; then
+            # Use elogind if it's new enough
+            with_suspend_resume="elogind"
+        else
         if test "$use_consolekit" = "yes"; then
                 # Use consolekit suspend if session tracking is consolekit
                 with_suspend_resume="consolekit"
@@ -477,6 +504,7 @@ if test "z$with_suspend_resume" = "z"; then
                 with_suspend_resume="upower"
         fi
     fi
+fi
 fi
 
 case $with_suspend_resume in
@@ -488,11 +516,16 @@ case $with_suspend_resume in
                           [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
         AC_DEFINE([SUSPEND_RESUME_SYSTEMD], 1, [Define to 1 to use systemd suspend api])
         ;;
+    elogind)
+        PKG_CHECK_MODULES(ELOGIND_INHIBIT, [libelogind >= 219],,
+                          [PKG_CHECK_MODULES(ELOGIND_INHIBIT, [libelogind >= 219])])
+        AC_DEFINE([SUSPEND_RESUME_ELOGIND], 1, [Define to 1 to use elogind suspend api])
+        ;;
     consolekit)
         AC_DEFINE([SUSPEND_RESUME_CONSOLEKIT], 1, [Define to 1 to use ConsoleKit2 suspend api])
         ;;
     *)
-        AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd, consolekit])
+        AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd, elogind, consolekit])
         ;;
 esac
 
@@ -545,12 +578,23 @@ PKG_CHECK_MODULES(LIBNL, libnl-3.0 >= 3.2.8)
 PKG_CHECK_MODULES(UUID, uuid)
 
 # Teamd control checks
+
+PKG_CHECK_MODULES(JANSSON, [jansson], [have_jansson=yes], [have_jansson=no])
 PKG_CHECK_MODULES(LIBTEAMDCTL, [libteamdctl >= 1.9], [have_teamdctl=yes],[have_teamdctl=no])
+if test "$have_jansson" = "yes" -a "$have_teamdctl" = "yes"; then
+	have_team_prereq=yes
+else
+	have_team_prereq=no
+fi
+
 AC_ARG_ENABLE(teamdctl, AS_HELP_STRING([--enable-teamdctl], [enable Teamd control support]),
-                     [enable_teamdctl=${enableval}], [enable_teamdctl=${have_teamdctl}])
+                     [enable_teamdctl=${enableval}], [enable_teamdctl=${have_team_prereq}])
 if (test "${enable_teamdctl}" = "yes"); then
-	if test x"$have_teamdctl" = x"no"; then
-		AC_MSG_ERROR(Teamd control is required)
+	if test "$have_teamdctl" = "no"; then
+		AC_MSG_ERROR(Libteamdctl is required for team support)
+	fi
+	if test "$have_jansson" = "no"; then
+		AC_MSG_ERROR(Jansson is required for team support)
 	fi
 	# temporary bug workaround
 	LIBTEAMDCTL_CFLAGS=`echo $LIBTEAMDCTL_CFLAGS | sed -e 's:/teamdctl.h::'`
@@ -561,14 +605,18 @@ fi
 AM_CONDITIONAL(WITH_TEAMDCTL, test "${enable_teamdctl}" = "yes")
 
 # Jansson for team configuration validation
-AC_ARG_ENABLE(json-validation, AS_HELP_STRING([--enable-json-validation], [Enable JSON validation in libnm]))
+AC_ARG_ENABLE(json-validation, AS_HELP_STRING([--enable-json-validation], [Enable JSON validation in libnm]),
+			       [enable_json_validation=${enableval}],
+			       [enable_json_validation=${have_jansson}])
 if (test "${enable_json_validation}" == "no"); then
     AC_DEFINE(WITH_JANSSON, 0, [Define if JANSSON is enabled])
 else
-    PKG_CHECK_MODULES(JANSSON, jansson,,
-                      AC_MSG_ERROR([jansson is needed for team configuration validation. Use --disable-json-validation to build without it.]))
+    if test "$have_jansson" = "no"; then
+        AC_MSG_ERROR([jansson is needed for team configuration validation. Use --disable-json-validation to build without it.])
+    fi
     AC_DEFINE(WITH_JANSSON, 1, [Define if JANSSON is enabled])
 fi
+AM_CONDITIONAL(WITH_JANSSON, test "${enable_json_validation}" != "no")
 
 # we usually compile with polkit support. --enable-polkit=yes|no only sets the
 # default configuration for main.auth-polkit. User can always enable/disable polkit
@@ -912,28 +960,30 @@ fi
 AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path of the kernel firmware directory])
 AC_SUBST(KERNEL_FIRMWARE_DIR)
 
-PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.40], [have_libsoup=yes],[have_libsoup=no])
-AC_ARG_WITH(libsoup, AS_HELP_STRING([--with-libsoup=yes|no], [Link against libsoup]), [], [with_libsoup=${have_libsoup}])
-if test "$with_libsoup" != "no"; then
-	if test "$have_libsoup" != "yes"; then
-		AC_MSG_ERROR(libsoup library not found)
+PKG_CHECK_MODULES(LIBPSL, [libpsl >= 0.1], [have_libpsl=yes],[have_libpsl=no])
+AC_ARG_WITH(libpsl, AS_HELP_STRING([--with-libpsl=yes|no], [Link against libpsl]), [], [with_libpsl=${have_libpsl}])
+if test "$with_libpsl" != "no"; then
+	if test "$have_libpsl" != "yes"; then
+		AC_MSG_ERROR(libpsl library not found)
 	fi
-	with_libsoup='yes'
-	AC_DEFINE(WITH_LIBSOUP, 1, [Define if you have libsoup])
+	with_libpsl='yes'
+	AC_DEFINE(WITH_LIBPSL, 1, [Define if you have libpsl])
 else
-	AC_DEFINE(WITH_LIBSOUP, 0, [Define if you have libsoup])
+	AC_DEFINE(WITH_LIBPSL, 0, [Define if you have libpsl])
 fi
-AM_CONDITIONAL(WITH_LIBSOUP, test "$with_libsoup" != "no")
-LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS -DSOUP_VERSION_MIN_REQUIRED=SOUP_VERSION_2_40 -DSOUP_VERSION_MAX_ALLOWED=SOUP_VERSION_2_40"
+AM_CONDITIONAL(WITH_LIBPSL, test "$with_libpsl" != "no")
 
-AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
-                     [enable_concheck=${enableval}], [enable_concheck=${with_libsoup}])
-if (test "${enable_concheck}" = "yes"); then
-	if test x"$with_libsoup" = x"no"; then
-		AC_MSG_ERROR(Connectivity checking requires libsoup)
+AC_ARG_ENABLE(concheck,
+              AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
+              [enable_concheck=${enableval}], [enable_concheck=yes])
+if test "${enable_concheck}" = "yes"; then
+	PKG_CHECK_MODULES(LIBCURL, [libcurl >= 7.24.0], [have_libcurl=yes], [have_libcurl=no])
+	if test "$have_libcurl" != "yes"; then
+		AC_MSG_ERROR(--enable-concheck requires libcurl library.)
 	fi
 	AC_DEFINE(WITH_CONCHECK, 1, [Define if you want connectivity checking support])
 else
+	enable_concheck=no
 	AC_DEFINE(WITH_CONCHECK, 0, [Define if you want connectivity checking support])
 fi
 AM_CONDITIONAL(WITH_CONCHECK, test "${enable_concheck}" = "yes")
@@ -1009,27 +1059,8 @@ if test "${enable_more_logging}" = "yes"; then
     AC_DEFINE(NM_MORE_LOGGING, [1], [Define if more debug logging is enabled])
 fi
 
-AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]))
-if (test "${enable_lto}" = "yes"); then
-    CFLAGS="-flto $CFLAGS"
-else
-    enable_lto='no'
-fi
-
-AC_ARG_ENABLE(ld-gc, AS_HELP_STRING([--enable-ld-gc], [Enable garbage collection of unused symbols on linking (default: auto)]))
-if (test "${enable_ld_gc}" != "no"); then
-	CC_CHECK_FLAG_APPEND([ld_gc_flags], [CFLAGS], [-fdata-sections -ffunction-sections -Wl,--gc-sections])
-	if (test -n "${ld_gc_flags}"); then
-		enable_ld_gc="yes"
-		CFLAGS="$CFLAGS $ld_gc_flags"
-	else
-		if (test "${enable_ld_gc}" = "yes"); then
-			AC_MSG_ERROR([Unused symbol eviction requested but not supported.])
-		else
-			enable_ld_gc="no"
-		fi
-	fi
-fi
+NM_LTO
+NM_LD_GC
 
 AC_ARG_ENABLE(address-sanitizer, AS_HELP_STRING([--enable-address-sanitizer],
 	[Compile with address sanitizer (default: no)]))
@@ -1098,44 +1129,34 @@ else
 fi
 AC_SUBST(NM_LOG_COMPILER, 'LOG_COMPILER = "$(top_srcdir)/tools/run-nm-test.sh" --called-from-make "$(LIBTOOL)" "$(with_valgrind)" "'"$with_valgrind_suppressions"'" --launch-dbus=auto')
 
-GTK_DOC_CHECK(1.0)
-
-# check for pregenerated manpages to be installed
-install_pregen_manpages=no
-if test "$enable_gtk_doc" != "yes" \
-	-a -f man/nmcli.1 \
-	-a -f man/nmtui.1 \
-	-a -f man/nm-online.1 \
-	-a -f man/NetworkManager.conf.5 \
-	-a -f man/nm-settings.5 \
-	-a -f man/nm-settings-keyfile.5 \
-	-a -f man/nm-settings-ifcfg-rh.5 \
-	-a -f man/nmcli-examples.7 \
-	-a -f man/NetworkManager.8; then
-	install_pregen_manpages=yes
-fi
-AM_CONDITIONAL(INSTALL_PREGEN_MANPAGES, test "x${install_pregen_manpages}" = "xyes")
+AC_PATH_TOOL(BINUTILS_NM, nm, nm)
 
 AM_PATH_PYTHON([], [], [PYTHON=python])
 AC_SUBST(PYTHON, [$PYTHON])
 AC_DEFINE_UNQUOTED(TEST_NM_PYTHON, "$PYTHON", [Define python path for test binary])
 
-AC_PATH_TOOL(BINUTILS_NM, nm, nm)
+GTK_DOC_CHECK(1.0)
 
 # check if we can build setting property documentation
-build_setting_docs=no
+build_docs=no
 if test -n "$INTROSPECTION_MAKEFILE"; then
     # If g-i is installed we know we have python, but we might not have pygobject
     if ! "$PYTHON" -c 'from gi.repository import GObject' >& /dev/null; then
         AC_MSG_ERROR(["--enable-introspection aims to build the settings documentation. This requires GObject introspection for python (pygobject)])
     fi
 
-    AC_PATH_PROG(PERL, perl, no)
-    AC_PATH_PROG(XSLTPROC, xsltproc, no)
+    AC_PATH_PROG(PERL, perl)
+    if test -z "$PERL"; then
+        AC_MSG_ERROR([--enable-introspection requires perl])
+    fi
+    AC_PATH_PROG(XSLTPROC, xsltproc)
+    if test -z "$XSLTPROC"; then
+        AC_MSG_ERROR([--enable-introspection requires xsltproc])
+    fi
 
     have_introspection=yes
     if test "$enable_gtk_doc" = "yes"; then
-        build_setting_docs=yes
+        build_docs=yes
     fi
 else
     if test "$enable_gtk_doc" = "yes"; then
@@ -1146,17 +1167,31 @@ else
     have_introspection=no
 fi
 
-# check for pre-built setting docs
-if test "$build_setting_docs" != "yes" \
-	-a -f man/nm-settings.xml \
-	-a -f man/nm-settings-keyfile.xml \
-	-a -f man/nm-settings-ifcfg-rh.xml \
-	-a -f docs/api/settings-spec.xml; then
-    have_setting_docs=yes
+# check for pregenerated manpages and documentation to be installed
+use_pregen_docs=no
+if test "$build_docs" != "yes" \
+    -a -f man/NetworkManager.8 \
+    -a -f man/NetworkManager.conf.5 \
+    -a -f man/nm-online.1 \
+    -a -f man/nmcli-examples.7 \
+    -a -f man/nmcli.1 \
+    -a -f man/nmtui.1 \
+    \
+    -a -f man/nm-settings-ifcfg-rh.5 \
+    -a -f man/nm-settings-keyfile.5 \
+    -a -f man/nm-settings.5 \
+    \
+    -a -f man/nm-settings.xml \
+    -a -f man/nm-settings-keyfile.xml \
+    -a -f man/nm-settings-ifcfg-rh.xml \
+    \
+    -a -f docs/api/settings-spec.xml \
+    ; then
+	use_pregen_docs=yes
 fi
 
-AM_CONDITIONAL(BUILD_SETTING_DOCS, test "$build_setting_docs" = "yes")
-AM_CONDITIONAL(SETTING_DOCS_AVAILABLE, test "$build_setting_docs" = "yes" -o "$have_setting_docs" = "yes")
+AM_CONDITIONAL(BUILD_DOCS, test "$build_docs" = "yes")
+AM_CONDITIONAL(HAVE_DOCS, test "$build_docs" = "yes" -o "$use_pregen_docs" = "yes")
 
 AC_CONFIG_FILES([
 Makefile
@@ -1165,7 +1200,6 @@ libnm/libnm.pc
 libnm-util/libnm-util.pc
 libnm-glib/libnm-glib.pc
 libnm-glib/libnm-glib-vpn.pc
-man/common.ent
 po/Makefile.in
 data/org.freedesktop.NetworkManager.policy.in
 docs/api/Makefile
@@ -1246,9 +1280,9 @@ echo "  dhcpcd-supports-ipv6: $with_dhcpcd_supports_ipv6"
 echo
 
 echo "Miscellaneous:"
-echo "  documentation: $enable_gtk_doc"
-echo "  documentation-settings: $build_setting_docs"
-echo "  introspection: $have_introspection"
+echo "  have introspection: $have_introspection"
+echo "  build documentation and manpages: $build_docs"
+echo "  install pregenerated documentation and manpages: $use_pregen_docs"
 echo "  tests: $enable_tests"
 echo "  more-asserts: $more_asserts"
 echo "  more-logging: $enable_more_logging"
@@ -1257,6 +1291,7 @@ echo "  valgrind: $with_valgrind   $with_valgrind_suppressions"
 echo "  code coverage: $enable_code_coverage"
 echo "  LTO: $enable_lto"
 echo "  linker garbage collection: $enable_ld_gc"
-echo "  JSON validation: $enable_json_validation"
+echo "  JSON validation for libnm: $enable_json_validation"
 echo "  sanitizers: $sanitizers"
+echo "  Mozilla Public Suffix List: $with_libpsl"
 echo

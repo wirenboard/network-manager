@@ -35,6 +35,8 @@
 #include "nm-core-internal.h"
 #include "nm-keyfile-utils.h"
 
+#include "nm-setting-user.h"
+
 typedef struct {
 	NMConnection *connection;
 	GKeyFile *keyfile;
@@ -429,6 +431,31 @@ read_one_ip_address_or_route (KeyfileReaderInfo *info,
 }
 
 static void
+fill_route_attributes (GKeyFile *kf, NMIPRoute *route, const char *setting, const char *key, int family)
+{
+	gs_free char *value = NULL;
+	gs_unref_hashtable GHashTable *hash = NULL;
+	GHashTableIter iter;
+	char *name;
+	GVariant *variant;
+
+	value = nm_keyfile_plugin_kf_get_string (kf, setting, key, NULL);
+	if (!value || !value[0])
+		return;
+
+	hash = nm_utils_parse_variant_attributes (value, ',', '=', TRUE,
+	                                          nm_ip_route_get_variant_attribute_spec (),
+	                                          NULL);
+	if (hash) {
+		g_hash_table_iter_init (&iter, hash);
+		while (g_hash_table_iter_next (&iter, (gpointer *) &name, (gpointer *) &variant)) {
+			if (nm_ip_route_attribute_validate (name, variant, family, NULL, NULL))
+				nm_ip_route_set_attribute (route, name, g_variant_ref (variant));
+		}
+	}
+}
+
+static void
 ip_address_or_route_parser (KeyfileReaderInfo *info, NMSetting *setting, const char *key)
 {
 	const char *setting_name = nm_setting_get_name (setting);
@@ -454,6 +481,7 @@ ip_address_or_route_parser (KeyfileReaderInfo *info, NMSetting *setting, const c
 		for (key_basename = key_names; *key_basename; key_basename++) {
 			char *key_name;
 			gpointer item;
+			char options_key[128];
 
 			/* -1 means no suffix */
 			if (i >= 0)
@@ -463,6 +491,11 @@ ip_address_or_route_parser (KeyfileReaderInfo *info, NMSetting *setting, const c
 
 			item = read_one_ip_address_or_route (info, key, setting_name, key_name, ipv6, routes,
 			                                     gateway ? NULL : &gateway, setting);
+			if (item && routes) {
+				nm_sprintf_buf (options_key, "%s_options", key_name);
+				fill_route_attributes (info->keyfile, item, setting_name, options_key, ipv6 ? AF_INET6 : AF_INET);
+			}
+
 			g_free (key_name);
 
 			if (info->error) {
@@ -637,7 +670,6 @@ mac_address_parser (KeyfileReaderInfo *info, NMSetting *setting, const char *key
 			buf_arr = g_new (guint8, buf_len);
 			for (i = 0; i < length; i++) {
 				int val = tmp_list[i];
-				const guint8 v = (guint8) (val & 0xFF);
 
 				if (val < 0 || val > 255) {
 					handle_warn (info, key, NM_KEYFILE_WARN_SEVERITY_WARN,
@@ -645,7 +677,7 @@ mac_address_parser (KeyfileReaderInfo *info, NMSetting *setting, const char *key
 					             val);
 					return;
 				}
-				buf_arr[i] = v;
+				buf_arr[i] = (guint8) val;
 			}
 		}
 	}
@@ -684,31 +716,59 @@ mac_address_parser_INFINIBAND (KeyfileReaderInfo *info, NMSetting *setting, cons
 static void
 read_hash_of_string (GKeyFile *file, NMSetting *setting, const char *key)
 {
-	char **keys, **iter;
-	char *value;
+	gs_strfreev char **keys = NULL;
+	const char *const*iter;
 	const char *setting_name = nm_setting_get_name (setting);
+	gboolean is_vpn;
 
 	keys = nm_keyfile_plugin_kf_get_keys (file, setting_name, NULL, NULL);
 	if (!keys || !*keys)
 		return;
 
-	for (iter = keys; *iter; iter++) {
-		value = nm_keyfile_plugin_kf_get_string (file, setting_name, *iter, NULL);
-		if (!value)
-			continue;
+	if (   (is_vpn = NM_IS_SETTING_VPN (setting))
+	    || NM_IS_SETTING_BOND (setting)) {
+		for (iter = (const char *const*) keys; *iter; iter++) {
+			gs_free char *to_free = NULL;
+			gs_free char *value = NULL;
+			const char *name;
 
-		if (NM_IS_SETTING_VPN (setting)) {
-			/* Add any item that's not a class property to the data hash */
-			if (!g_object_class_find_property (G_OBJECT_GET_CLASS (setting), *iter))
-				nm_setting_vpn_add_data_item (NM_SETTING_VPN (setting), *iter, value);
+			value = nm_keyfile_plugin_kf_get_string (file, setting_name, *iter, NULL);
+			if (!value)
+				continue;
+
+			name = nm_keyfile_key_decode (*iter, &to_free);
+
+			if (is_vpn) {
+				/* Add any item that's not a class property to the data hash */
+				if (!g_object_class_find_property (G_OBJECT_GET_CLASS (setting), name))
+					nm_setting_vpn_add_data_item (NM_SETTING_VPN (setting), name, value);
+			} else {
+				if (strcmp (name, "interface-name"))
+					nm_setting_bond_add_option (NM_SETTING_BOND (setting), name, value);
+			}
 		}
-		if (NM_IS_SETTING_BOND (setting)) {
-			if (strcmp (*iter, "interface-name"))
-				nm_setting_bond_add_option (NM_SETTING_BOND (setting), *iter, value);
-		}
-		g_free (value);
+		return;
 	}
-	g_strfreev (keys);
+
+	if (NM_IS_SETTING_USER (setting)) {
+		gs_unref_hashtable GHashTable *data = NULL;
+
+		data = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+		for (iter = (const char *const*) keys; *iter; iter++) {
+			gs_free char *to_free = NULL;
+			char *value = NULL;
+			const char *name;
+
+			value = nm_keyfile_plugin_kf_get_string (file, setting_name, *iter, NULL);
+			if (!value)
+				continue;
+			name = nm_keyfile_key_decode (*iter, &to_free);
+			g_hash_table_insert (data,
+			                     g_steal_pointer (&to_free) ?: g_strdup (name),
+			                     value);
+		}
+		g_object_set (setting, NM_SETTING_USER_DATA, data, NULL);
+	}
 }
 
 static gsize
@@ -1425,6 +1485,9 @@ read_one_setting_value (NMSetting *setting,
 	if (NM_IS_SETTING_VPN (setting))
 		check_for_key = FALSE;
 
+	if (NM_IS_SETTING_USER (setting))
+		check_for_key = FALSE;
+
 	/* Bonding 'options' don't have the exact key name. The options are right under [bond] group. */
 	if (NM_IS_SETTING_BOND (setting))
 		check_for_key = FALSE;
@@ -1574,7 +1637,7 @@ read_one_setting_value (NMSetting *setting,
 			else {
 				if (!handle_warn (info, key, NM_KEYFILE_WARN_SEVERITY_WARN,
 				                  _("too large FLAGS property '%s' (%llu)"),
-				                  G_VALUE_TYPE_NAME (value), (long long unsigned) uint_val))
+				                  G_VALUE_TYPE_NAME (value), (unsigned long long) uint_val))
 					goto out_error;
 			}
 		}

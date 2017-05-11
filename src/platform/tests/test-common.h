@@ -26,7 +26,7 @@
         if (nm_logging_enabled (__level, __domain)) { \
             gint64 _ts = nm_utils_get_monotonic_timestamp_ns (); \
             \
-            _nm_log (__level, __domain, 0, \
+            _nm_log (__level, __domain, 0, NULL, NULL, \
                      "%s[%ld.%09ld]: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                      _NMLOG_PREFIX_NAME, \
                      (long) (_ts / NM_UTILS_NS_PER_SECOND), \
@@ -166,6 +166,26 @@ void nmtstp_ip6_address_del (NMPlatform *platform,
                              int ifindex,
                              struct in6_addr address,
                              int plen);
+
+void nmtstp_ip4_route_add (NMPlatform *platform,
+                           int ifindex,
+                           NMIPConfigSource source,
+                           in_addr_t network,
+                           guint8 plen,
+                           in_addr_t gateway,
+                           in_addr_t pref_src,
+                           guint32 metric,
+                           guint32 mss);
+
+void nmtstp_ip6_route_add (NMPlatform *platform,
+                           int ifindex,
+                           NMIPConfigSource source,
+                           struct in6_addr network,
+                           guint8 plen,
+                           struct in6_addr gateway,
+                           struct in6_addr pref_src,
+                           guint32 metric,
+                           guint32 mss);
 
 /*****************************************************************************/
 

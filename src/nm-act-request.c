@@ -397,6 +397,7 @@ device_state_changed (NMActiveConnection *active,
 {
 	NMActiveConnectionState cur_ac_state = nm_active_connection_get_state (active);
 	NMActiveConnectionState ac_state = NM_ACTIVE_CONNECTION_STATE_UNKNOWN;
+	NMActiveConnectionStateReason ac_state_reason = NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN;
 
 	/* Decide which device state changes to handle when this active connection
 	 * is not the device's current request.  Two cases here: (a) the AC is
@@ -451,6 +452,7 @@ device_state_changed (NMActiveConnection *active,
 	case NM_DEVICE_STATE_UNMANAGED:
 	case NM_DEVICE_STATE_UNAVAILABLE:
 		ac_state = NM_ACTIVE_CONNECTION_STATE_DEACTIVATED;
+		ac_state_reason = NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED;
 
 		g_signal_handlers_disconnect_by_func (device, G_CALLBACK (device_notify), active);
 		break;
@@ -464,7 +466,7 @@ device_state_changed (NMActiveConnection *active,
 		nm_active_connection_set_default6 (active, FALSE);
 	}
 
-	nm_active_connection_set_state (active, ac_state);
+	nm_active_connection_set_state (active, ac_state, ac_state_reason);
 }
 
 static void
@@ -486,7 +488,9 @@ master_failed (NMActiveConnection *self)
 	}
 
 	/* If no device, or the device wasn't active, just move to deactivated state */
-	nm_active_connection_set_state (self, NM_ACTIVE_CONNECTION_STATE_DEACTIVATED);
+	nm_active_connection_set_state (self,
+	                                NM_ACTIVE_CONNECTION_STATE_DEACTIVATED,
+	                                NM_ACTIVE_CONNECTION_STATE_REASON_DEPENDENCY_FAILED);
 }
 
 /*****************************************************************************/
@@ -543,6 +547,7 @@ nm_act_request_init (NMActRequest *req)
  * @specific_object: the object path of the specific object (ie, WiFi access point,
  *    etc) that will be used to activate @connection and @device
  * @subject: the #NMAuthSubject representing the requestor of the activation
+ * @activation_type: the #NMActivationType.
  * @device: the device/interface to configure according to @connection
  *
  * Creates a new device-based activation request. If an applied connection is
@@ -555,6 +560,7 @@ nm_act_request_new (NMSettingsConnection *settings_connection,
                     NMConnection *applied_connection,
                     const char *specific_object,
                     NMAuthSubject *subject,
+                    NMActivationType activation_type,
                     NMDevice *device)
 {
 	g_return_val_if_fail (!settings_connection || NM_IS_SETTINGS_CONNECTION (settings_connection), NULL);
@@ -567,6 +573,7 @@ nm_act_request_new (NMSettingsConnection *settings_connection,
 	                                      NM_ACTIVE_CONNECTION_INT_DEVICE, device,
 	                                      NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT, specific_object,
 	                                      NM_ACTIVE_CONNECTION_INT_SUBJECT, subject,
+	                                      NM_ACTIVE_CONNECTION_INT_ACTIVATION_TYPE, (int) activation_type,
 	                                      NULL);
 }
 

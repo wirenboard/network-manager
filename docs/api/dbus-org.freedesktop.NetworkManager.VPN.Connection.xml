@@ -5,7 +5,7 @@
 <refentry id="gdbus-org.freedesktop.NetworkManager.VPN.Connection">
   <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-freedesktop-NetworkManager-VPN-Connection.top_of_page">org.freedesktop.NetworkManager.VPN.Connection</refentrytitle>
   <indexterm zone="gdbus-interface-org-freedesktop-NetworkManager-VPN-Connection.top_of_page"><primary sortas="VpnConnection">org.freedesktop.NetworkManager.VPN.Connection</primary></indexterm>
-  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.VPN.Connection</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsect1 role="signal_proto">
+  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.VPN.Connection</refname>    <refpurpose>Active VPN Connection</refpurpose>  </refnamediv>  <refsect1 role="signal_proto">
     <title role="signal_proto.title">Signals</title>
     <synopsis>
 <link linkend="gdbus-signal-org-freedesktop-NetworkManager-VPN-Connection.PropertiesChanged">PropertiesChanged</link> (a{sv} properties);
@@ -58,7 +58,7 @@ VpnStateChanged (u state,
 </varlistentry>
 <varlistentry>
   <term><literal>u <parameter>reason</parameter></literal>:</term>
-  <listitem><para>(<link linkend="NMVpnConnectionStateReason">NMVpnConnectionStateReason</link>) Reason code describing the change to the new state.</para></listitem>
+  <listitem><para>(<link linkend="NMActiveConnectionStateReason">NMActiveConnectionStateReason</link>) Reason code describing the change to the new state.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>

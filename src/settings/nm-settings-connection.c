@@ -69,17 +69,24 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 typedef struct _NMSettingsConnectionPrivate {
-	gboolean removed;
 
 	NMAgentManager *agent_mgr;
 	NMSessionMonitor *session_monitor;
 	gulong session_changed_id;
 
 	NMSettingsConnectionFlags flags;
-	gboolean ready;
+
+	bool removed:1;
+	bool ready:1;
+
+	/* Is this connection visible by some session? */
+	bool visible:1;
+
+	bool timestamp_set:1;
+
+	NMSettingsAutoconnectBlockedReason autoconnect_blocked_reason:3;
 
 	GSList *pending_auths; /* List of pending authentication requests */
-	gboolean visible; /* Is this connection is visible by some session? */
 
 	GSList *get_secret_requests;  /* in-progress secrets requests */
 
@@ -99,12 +106,10 @@ typedef struct _NMSettingsConnectionPrivate {
 	NMConnection *agent_secrets;
 
 	guint64 timestamp;   /* Up-to-date timestamp of connection use */
-	gboolean timestamp_set;
 	GHashTable *seen_bssids; /* Up-to-date BSSIDs that's been seen for the connection */
 
 	int autoconnect_retries;
 	gint32 autoconnect_retry_time;
-	NMDeviceStateReason autoconnect_blocked_reason;
 
 	char *filename;
 } NMSettingsConnectionPrivate;
@@ -126,14 +131,13 @@ G_DEFINE_TYPE_WITH_CODE (NMSettingsConnection, nm_settings_connection, NM_TYPE_E
         if (nm_logging_enabled (__level, _NMLOG_DOMAIN)) { \
             char __prefix[128]; \
             const char *__p_prefix = _NMLOG_PREFIX_NAME; \
+            const char *__uuid = (self) ? nm_settings_connection_get_uuid (self) : NULL; \
             \
             if (self) { \
-                const char *__uuid = nm_settings_connection_get_uuid (self); \
-                \
                 g_snprintf (__prefix, sizeof (__prefix), "%s[%p%s%s]", _NMLOG_PREFIX_NAME, self, __uuid ? "," : "", __uuid ? __uuid : ""); \
                 __p_prefix = __prefix; \
             } \
-            _nm_log (__level, _NMLOG_DOMAIN, 0, \
+            _nm_log (__level, _NMLOG_DOMAIN, 0, NULL, __uuid, \
                      "%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                      __p_prefix _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
         } \
@@ -493,7 +497,7 @@ set_unsaved (NMSettingsConnection *self, gboolean now_unsaved)
 		else {
 			flags &= ~(NM_SETTINGS_CONNECTION_FLAGS_UNSAVED |
 			           NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED |
-			           NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED_ASSUMED);
+			           NM_SETTINGS_CONNECTION_FLAGS_VOLATILE);
 		}
 		nm_settings_connection_set_flags_all (self, flags);
 	}
@@ -556,7 +560,7 @@ nm_settings_connection_replace_settings (NMSettingsConnection *self,
 	_LOGD ("replace settings from connection %p (%s)", new_connection, nm_connection_get_id (NM_CONNECTION (self)));
 
 	nm_settings_connection_set_flags (self,
-	                                  NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED | NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED_ASSUMED,
+	                                  NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED | NM_SETTINGS_CONNECTION_FLAGS_VOLATILE,
 	                                  FALSE);
 
 	/* Cache the just-updated system secrets in case something calls
@@ -1648,49 +1652,6 @@ con_update_cb (NMSettingsConnection *self,
 	update_complete (self, info, error);
 }
 
-static char *
-con_list_changed_props (NMConnection *old, NMConnection *new)
-{
-	gs_unref_hashtable GHashTable *diff = NULL;
-	GHashTable *setting_diff;
-	char *setting_name, *prop_name;
-	GHashTableIter iter, iter2;
-	gboolean same;
-	GString *str;
-
-	same = nm_connection_diff (old, new,
-	                           NM_SETTING_COMPARE_FLAG_EXACT |
-	                           NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT,
-	                           &diff);
-
-	if (same || !diff)
-		return NULL;
-
-	str = g_string_sized_new (32);
-	g_hash_table_iter_init (&iter, diff);
-
-	while (g_hash_table_iter_next (&iter,
-	                               (gpointer *) &setting_name,
-	                               (gpointer *) &setting_diff)) {
-		if (!setting_diff)
-			continue;
-
-		g_hash_table_iter_init (&iter2, setting_diff);
-
-		while (g_hash_table_iter_next (&iter2, (gpointer *) &prop_name, NULL)) {
-			g_string_append (str, setting_name);
-			g_string_append_c (str, '.');
-			g_string_append (str, prop_name);
-			g_string_append_c (str, ',');
-		}
-	}
-
-	if (str->len)
-		str->str[str->len - 1] = '\0';
-
-	return g_string_free (str, FALSE);
-}
-
 static void
 update_auth_cb (NMSettingsConnection *self,
                 GDBusMethodInvocation *context,
@@ -1703,6 +1664,17 @@ update_auth_cb (NMSettingsConnection *self,
 
 	if (error) {
 		update_complete (self, info, error);
+		return;
+	}
+
+	if (!info->new_settings) {
+		/* We're just calling Save(). Just commit the existing connection. */
+		if (info->save_to_disk) {
+			nm_settings_connection_commit_changes (self,
+			                                       NM_SETTINGS_CONNECTION_COMMIT_REASON_USER_ACTION,
+			                                       con_update_cb,
+			                                       info);
+		}
 		return;
 	}
 
@@ -1720,8 +1692,17 @@ update_auth_cb (NMSettingsConnection *self,
 		update_agent_secrets_cache (self, info->new_settings);
 	}
 
-	if (nm_audit_manager_audit_enabled (nm_audit_manager_get ()))
-		info->audit_args = con_list_changed_props (NM_CONNECTION (self), info->new_settings);
+	if (nm_audit_manager_audit_enabled (nm_audit_manager_get ())) {
+		gs_unref_hashtable GHashTable *diff = NULL;
+		gboolean same;
+
+		same = nm_connection_diff (NM_CONNECTION (self), info->new_settings,
+		                           NM_SETTING_COMPARE_FLAG_EXACT |
+		                           NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT,
+		                           &diff);
+		if (!same && diff)
+			info->audit_args = nm_utils_format_con_diff_for_audit (diff);
+	}
 
 	if (info->save_to_disk) {
 		nm_settings_connection_replace_and_commit (self,
@@ -1855,11 +1836,7 @@ static void
 impl_settings_connection_save (NMSettingsConnection *self,
                                GDBusMethodInvocation *context)
 {
-	/* Do nothing if the connection is already synced with disk */
-	if (nm_settings_connection_get_unsaved (self))
-		settings_connection_update_helper (self, context, NULL, TRUE);
-	else
-		g_dbus_method_invocation_return_value (context, NULL);
+	settings_connection_update_helper (self, context, NULL, TRUE);
 }
 
 static void
@@ -2158,6 +2135,96 @@ nm_settings_connection_set_flags_all (NMSettingsConnection *self, NMSettingsConn
 			_notify (self, PROP_UNSAVED);
 	}
 	return old_flags;
+}
+
+/*****************************************************************************/
+
+static int
+_cmp_timestamp (NMSettingsConnection *a, NMSettingsConnection *b)
+{
+	gboolean a_has_ts, b_has_ts;
+	guint64 ats = 0, bts = 0;
+
+	nm_assert (NM_IS_SETTINGS_CONNECTION (a));
+	nm_assert (NM_IS_SETTINGS_CONNECTION (b));
+
+	a_has_ts = !!nm_settings_connection_get_timestamp (a, &ats);
+	b_has_ts = !!nm_settings_connection_get_timestamp (b, &bts);
+	if (a_has_ts != b_has_ts)
+		return a_has_ts ? -1 : 1;
+	if (a_has_ts && ats != bts)
+		return (ats > bts) ? -1 : 1;
+	return 0;
+}
+
+static int
+_cmp_last_resort (NMSettingsConnection *a, NMSettingsConnection *b)
+{
+	int c;
+
+	nm_assert (NM_IS_SETTINGS_CONNECTION (a));
+	nm_assert (NM_IS_SETTINGS_CONNECTION (b));
+
+	c = g_strcmp0 (nm_connection_get_uuid (NM_CONNECTION (a)),
+	               nm_connection_get_uuid (NM_CONNECTION (b)));
+	if (c)
+		return c;
+
+	/* hm, same UUID. Use their pointer value to give them a stable
+	 * order. */
+	return (a > b) ? -1 : 1;
+}
+
+/* sorting for "best" connections.
+ * The function sorts connections in descending timestamp order.
+ * That means an older connection (lower timestamp) goes after
+ * a newer one.
+ */
+int
+nm_settings_connection_cmp_timestamp (NMSettingsConnection *a, NMSettingsConnection *b)
+{
+	int c;
+
+	if (a == b)
+		return 0;
+	if (!a)
+		return 1;
+	if (!b)
+		return -1;
+
+	if ((c = _cmp_timestamp (a, b)))
+		return c;
+	if ((c = nm_utils_cmp_connection_by_autoconnect_priority (NM_CONNECTION (a), NM_CONNECTION (b))))
+		return c;
+	return _cmp_last_resort (a, b);
+}
+
+int
+nm_settings_connection_cmp_timestamp_p_with_data (gconstpointer pa, gconstpointer pb, gpointer user_data)
+{
+	return nm_settings_connection_cmp_timestamp (*((NMSettingsConnection **) pa),
+	                                             *((NMSettingsConnection **) pb));
+}
+
+int
+nm_settings_connection_cmp_autoconnect_priority (NMSettingsConnection *a, NMSettingsConnection *b)
+{
+	int c;
+
+	if (a == b)
+		return 0;
+	if ((c = nm_utils_cmp_connection_by_autoconnect_priority (NM_CONNECTION (a), NM_CONNECTION (b))))
+		return c;
+	if ((c = _cmp_timestamp (a, b)))
+		return c;
+	return _cmp_last_resort (a, b);
+}
+
+int
+nm_settings_connection_cmp_autoconnect_priority_p_with_data (gconstpointer pa, gconstpointer pb, gpointer user_data)
+{
+	return nm_settings_connection_cmp_autoconnect_priority (*((NMSettingsConnection **) pa),
+	                                                        *((NMSettingsConnection **) pb));
 }
 
 /*****************************************************************************/
@@ -2483,7 +2550,7 @@ nm_settings_connection_get_autoconnect_retries (NMSettingsConnection *self)
 		priv->autoconnect_retries = retries;
 	}
 
-	return NM_SETTINGS_CONNECTION_GET_PRIVATE (self)->autoconnect_retries;
+	return priv->autoconnect_retries;
 }
 
 void
@@ -2492,7 +2559,10 @@ nm_settings_connection_set_autoconnect_retries (NMSettingsConnection *self,
 {
 	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (self);
 
-	priv->autoconnect_retries = retries;
+	if (priv->autoconnect_retries != retries) {
+		_LOGT ("autoconnect-retries: set %d", retries);
+		priv->autoconnect_retries = retries;
+	}
 	if (retries)
 		priv->autoconnect_retry_time = 0;
 	else
@@ -2511,7 +2581,7 @@ nm_settings_connection_get_autoconnect_retry_time (NMSettingsConnection *self)
 	return NM_SETTINGS_CONNECTION_GET_PRIVATE (self)->autoconnect_retry_time;
 }
 
-NMDeviceStateReason
+NMSettingsAutoconnectBlockedReason
 nm_settings_connection_get_autoconnect_blocked_reason (NMSettingsConnection *self)
 {
 	return NM_SETTINGS_CONNECTION_GET_PRIVATE (self)->autoconnect_blocked_reason;
@@ -2519,8 +2589,12 @@ nm_settings_connection_get_autoconnect_blocked_reason (NMSettingsConnection *sel
 
 void
 nm_settings_connection_set_autoconnect_blocked_reason (NMSettingsConnection *self,
-                                                       NMDeviceStateReason reason)
+                                                       NMSettingsAutoconnectBlockedReason reason)
 {
+	g_return_if_fail (NM_IN_SET (reason,
+	                             NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_UNBLOCKED,
+	                             NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_BLOCKED,
+	                             NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_NO_SECRETS));
 	NM_SETTINGS_CONNECTION_GET_PRIVATE (self)->autoconnect_blocked_reason = reason;
 }
 
@@ -2533,7 +2607,7 @@ nm_settings_connection_can_autoconnect (NMSettingsConnection *self)
 
 	if (   !priv->visible
 	    || priv->autoconnect_retries == 0
-	    || priv->autoconnect_blocked_reason != NM_DEVICE_STATE_REASON_NONE)
+	    || priv->autoconnect_blocked_reason != NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_UNBLOCKED)
 		return FALSE;
 
 	s_con = nm_connection_get_setting_connection (NM_CONNECTION (self));
@@ -2566,18 +2640,18 @@ nm_settings_connection_get_nm_generated (NMSettingsConnection *self)
 }
 
 /**
- * nm_settings_connection_get_nm_generated_assumed:
+ * nm_settings_connection_get_volatile:
  * @self: an #NMSettingsConnection
  *
- * Gets the "nm-generated-assumed" flag on @self.
+ * Gets the "volatile" flag on @self.
  *
- * The connection is a generated connection especially
- * generated for connection assumption.
+ * The connection is marked as volatile and will be removed when
+ * it disconnects.
  */
 gboolean
-nm_settings_connection_get_nm_generated_assumed (NMSettingsConnection *self)
+nm_settings_connection_get_volatile (NMSettingsConnection *self)
 {
-	return NM_FLAGS_HAS (nm_settings_connection_get_flags (self), NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED_ASSUMED);
+	return NM_FLAGS_HAS (nm_settings_connection_get_flags (self), NM_SETTINGS_CONNECTION_FLAGS_VOLATILE);
 }
 
 gboolean
@@ -2673,7 +2747,6 @@ nm_settings_connection_init (NMSettingsConnection *self)
 	priv->seen_bssids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	priv->autoconnect_retries = AUTOCONNECT_RETRIES_UNSET;
-	priv->autoconnect_blocked_reason = NM_DEVICE_STATE_REASON_NONE;
 
 	g_signal_connect (self, NM_CONNECTION_SECRETS_CLEARED, G_CALLBACK (secrets_cleared_cb), NULL);
 	g_signal_connect (self, NM_CONNECTION_CHANGED, G_CALLBACK (connection_changed_cb), NULL);
@@ -2772,13 +2845,8 @@ set_property (GObject *object, guint prop_id,
 	NMSettingsConnection *self = NM_SETTINGS_CONNECTION (object);
 
 	switch (prop_id) {
-	case PROP_READY:
-		nm_settings_connection_set_ready (self, g_value_get_boolean (value));
-		break;
-	case PROP_FLAGS:
-		nm_settings_connection_set_flags_all (self, g_value_get_uint (value));
-		break;
 	case PROP_FILENAME:
+		/* construct-only */
 		nm_settings_connection_set_filename (self, g_value_get_string (value));
 		break;
 	default:
@@ -2822,7 +2890,7 @@ nm_settings_connection_class_init (NMSettingsConnectionClass *class)
 	obj_properties[PROP_READY] =
 	     g_param_spec_boolean (NM_SETTINGS_CONNECTION_READY, "", "",
 	                           TRUE,
-	                           G_PARAM_READWRITE |
+	                           G_PARAM_READABLE |
 	                           G_PARAM_STATIC_STRINGS);
 
 	obj_properties[PROP_FLAGS] =
@@ -2830,13 +2898,14 @@ nm_settings_connection_class_init (NMSettingsConnectionClass *class)
 	                        NM_SETTINGS_CONNECTION_FLAGS_NONE,
 	                        NM_SETTINGS_CONNECTION_FLAGS_ALL,
 	                        NM_SETTINGS_CONNECTION_FLAGS_NONE,
-	                        G_PARAM_READWRITE |
+	                        G_PARAM_READABLE |
 	                        G_PARAM_STATIC_STRINGS);
 
 	obj_properties[PROP_FILENAME] =
 	     g_param_spec_string (NM_SETTINGS_CONNECTION_FILENAME, "", "",
 	                          NULL,
 	                          G_PARAM_READWRITE |
+	                          G_PARAM_CONSTRUCT_ONLY |
 	                          G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);

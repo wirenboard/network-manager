@@ -443,52 +443,6 @@ nm_utils_same_ssid (const guint8 *ssid1, gsize len1,
 	return memcmp (ssid1, ssid2, len1) == 0 ? TRUE : FALSE;
 }
 
-/**
- * _nm_utils_strv_find_first:
- * @list: the strv list to search
- * @len: the length of the list, or a negative value if @list is %NULL terminated.
- * @needle: the value to search for. The search is done using strcmp().
- *
- * Searches @list for @needle and returns the index of the first match (based
- * on strcmp()).
- *
- * For convenience, @list has type 'char**' instead of 'const char **'.
- *
- * Returns: index of first occurrence or -1 if @needle is not found in @list.
- */
-gssize
-_nm_utils_strv_find_first (char **list, gssize len, const char *needle)
-{
-	gssize i;
-
-	if (len > 0) {
-		g_return_val_if_fail (list, -1);
-
-		if (!needle) {
-			/* if we search a list with known length, %NULL is a valid @needle. */
-			for (i = 0; i < len; i++) {
-				if (!list[i])
-					return i;
-			}
-		} else {
-			for (i = 0; i < len; i++) {
-				if (list[i] && !strcmp (needle, list[i]))
-					return i;
-			}
-		}
-	} else if (len < 0) {
-		g_return_val_if_fail (needle, -1);
-
-		if (list) {
-			for (i = 0; list[i]; i++) {
-				if (strcmp (needle, list[i]) == 0)
-					return i;
-			}
-		}
-	}
-	return -1;
-}
-
 char **
 _nm_utils_strv_cleanup (char **strv,
                         gboolean strip_whitespace,
@@ -509,7 +463,7 @@ _nm_utils_strv_cleanup (char **strv,
 	j = 0;
 	for (i = 0; strv[i]; i++) {
 		if (   (skip_empty && !*strv[i])
-		    || (skip_repeated && _nm_utils_strv_find_first (strv, j, strv[i]) >= 0))
+		    || (skip_repeated && nm_utils_strv_find_first (strv, j, strv[i]) >= 0))
 			g_free (strv[i]);
 		else
 			strv[j++] = strv[i];
@@ -3791,7 +3745,7 @@ nm_utils_is_valid_iface_name (const char *name, GError **error)
  *
  * Validate the network interface name.
  *
- * Deprecated: 1.6: use nm_utils_is_valid_iface_name() insteead, with better error reporting.
+ * Deprecated: 1.6: use nm_utils_is_valid_iface_name() instead, with better error reporting.
  *
  * Returns: %TRUE if interface name is valid, otherwise %FALSE is returned.
  */
@@ -4295,6 +4249,83 @@ int _nm_utils_dns_option_find_idx (GPtrArray *array, const char *option)
 	return -1;
 }
 
+#define IS_FLAGS_SEPARATOR(ch)  (NM_IN_SET ((ch), ' ', '\t', ',', '\n', '\r'))
+
+static gboolean
+_is_hex_string (const char *str)
+{
+	return    str[0] == '0'
+	       && str[1] == 'x'
+	       && str[2]
+	       && NM_STRCHAR_ALL (&str[2], ch, g_ascii_isxdigit (ch));
+}
+
+static gboolean
+_enum_is_valid_enum_nick (const char *str)
+{
+	return    str[0]
+	       && !NM_STRCHAR_ANY (str, ch, g_ascii_isspace (ch))
+	       && !NM_STRCHAR_ALL (str, ch, g_ascii_isdigit (ch));
+}
+
+static gboolean
+_enum_is_valid_flags_nick (const char *str)
+{
+	return    str[0]
+	       && !NM_STRCHAR_ANY (str, ch, IS_FLAGS_SEPARATOR (ch))
+	       && !_is_hex_string (str);
+}
+
+char *
+_nm_utils_enum_to_str_full (GType type,
+                            int value,
+                            const char *flags_separator)
+{
+	GTypeClass *class;
+	char *ret;
+
+	if (   flags_separator
+	    && (   !flags_separator[0]
+	        || NM_STRCHAR_ANY (flags_separator, ch, !IS_FLAGS_SEPARATOR (ch))))
+		g_return_val_if_reached (NULL);
+
+	class = g_type_class_ref (type);
+
+	if (G_IS_ENUM_CLASS (class)) {
+		GEnumValue *enum_value;
+
+		enum_value = g_enum_get_value (G_ENUM_CLASS (class), value);
+		if (   !enum_value
+		    || !_enum_is_valid_enum_nick (enum_value->value_nick))
+			ret = g_strdup_printf ("%d", value);
+		else
+			ret = strdup (enum_value->value_nick);
+	} else if (G_IS_FLAGS_CLASS (class)) {
+		GFlagsValue *flags_value;
+		GString *str = g_string_new ("");
+
+		flags_separator = flags_separator ?: " ";
+
+		while (value) {
+			flags_value = g_flags_get_first_value (G_FLAGS_CLASS (class), value);
+			if (str->len)
+				g_string_append (str, flags_separator);
+			if (   !flags_value
+			    || !_enum_is_valid_flags_nick (flags_value->value_nick)) {
+				g_string_append_printf (str, "0x%x", (unsigned) value);
+				break;
+			}
+			g_string_append (str, flags_value->value_nick);
+			value &= ~flags_value->value;
+		}
+		ret = g_string_free (str, FALSE);
+	} else
+		g_return_val_if_reached (NULL);
+
+	g_type_class_unref (class);
+	return ret;
+}
+
 /**
  * nm_utils_enum_to_str:
  * @type: the %GType of the enum
@@ -4309,41 +4340,10 @@ int _nm_utils_dns_option_find_idx (GPtrArray *array, const char *option)
  *
  * Since: 1.2
  */
-char *nm_utils_enum_to_str (GType type, int value)
+char *
+nm_utils_enum_to_str (GType type, int value)
 {
-	GTypeClass *class;
-	char *ret;
-
-	class = g_type_class_ref (type);
-
-	if (G_IS_ENUM_CLASS (class)) {
-		GEnumValue *enum_value;
-
-		enum_value = g_enum_get_value (G_ENUM_CLASS (class), value);
-		ret = enum_value ? strdup (enum_value->value_nick) : NULL;
-	} else if (G_IS_FLAGS_CLASS (class)) {
-		GFlagsValue *flags_value;
-		GString *str = g_string_new ("");
-		gboolean first = TRUE;
-
-		while (value) {
-			flags_value = g_flags_get_first_value (G_FLAGS_CLASS (class), value);
-			if (!flags_value)
-				break;
-
-			if (!first)
-				g_string_append (str, ", ");
-			g_string_append (str, flags_value->value_nick);
-
-			value &= ~flags_value->value;
-			first = FALSE;
-		}
-		ret = g_string_free (str, FALSE);
-	} else
-		g_return_val_if_reached (NULL);
-
-	g_type_class_unref (class);
-	return ret;
+	return _nm_utils_enum_to_str_full (type, value, ", ");
 }
 
 /**
@@ -4351,7 +4351,7 @@ char *nm_utils_enum_to_str (GType type, int value)
  * @type: the %GType of the enum
  * @str: the input string
  * @out_value: (out) (allow-none): the output value
- * @err_token: (out) (allow-none): location to store the first unrecognized token
+ * @err_token: (out) (allow-none) (transfer full): location to store the first unrecognized token
  *
  * Converts a string to the matching enum value.
  *
@@ -4364,55 +4364,83 @@ char *nm_utils_enum_to_str (GType type, int value)
  *
  * Since: 1.2
  */
-gboolean nm_utils_enum_from_str (GType type, const char *str,
-                                 int *out_value, char **err_token)
+gboolean
+nm_utils_enum_from_str (GType type, const char *str,
+                        int *out_value, char **err_token)
 {
 	GTypeClass *class;
 	gboolean ret = FALSE;
 	int value = 0;
-	gs_free char *stripped = NULL;
+	gs_free char *str_clone = NULL;
+	char *s;
+	gint64 v64;
 
 	g_return_val_if_fail (str, FALSE);
-	stripped = g_strstrip (strdup (str));
+
+	str_clone = strdup (str);
+	s = nm_str_skip_leading_spaces (str_clone);
+	g_strchomp (s);
+
 	class = g_type_class_ref (type);
 
 	if (G_IS_ENUM_CLASS (class)) {
 		GEnumValue *enum_value;
 
-		enum_value = g_enum_get_value_by_nick (G_ENUM_CLASS (class), stripped);
-		if (enum_value) {
-			value = enum_value->value;
-			ret = TRUE;
+		if (s[0]) {
+			if (NM_STRCHAR_ALL (s, ch, g_ascii_isdigit (ch))) {
+				v64 = _nm_utils_ascii_str_to_int64 (s, 10, 0, G_MAXINT, -1);
+				if (v64 != -1) {
+					value = (int) v64;
+					ret = TRUE;
+				}
+			} else {
+				enum_value = g_enum_get_value_by_nick (G_ENUM_CLASS (class), s);
+				if (enum_value) {
+					value = enum_value->value;
+					ret = TRUE;
+				}
+			}
 		}
 	} else if (G_IS_FLAGS_CLASS (class)) {
 		GFlagsValue *flags_value;
-		gs_strfreev char **strv = NULL;
-		int i;
 
-		strv = g_strsplit_set (stripped, " \t,", 0);
-		for (i = 0; strv[i]; i++) {
-			if (!strv[i][0])
-				continue;
+		ret = TRUE;
+		while (s[0]) {
+			char *s_end;
 
-			flags_value = g_flags_get_value_by_nick (G_FLAGS_CLASS (class), strv[i]);
-			if (!flags_value)
-				break;
+			for (s_end = s; s_end[0]; s_end++) {
+				if (IS_FLAGS_SEPARATOR (s_end[0])) {
+					s_end[0] = '\0';
+					s_end++;
+					break;
+				}
+			}
 
-			value |= flags_value->value;
+			if (s[0]) {
+				if (_is_hex_string (s)) {
+					v64 = _nm_utils_ascii_str_to_int64 (&s[2], 16, 0, G_MAXUINT, -1);
+					if (v64 == -1) {
+						ret = FALSE;
+						break;
+					}
+					value |= (int) v64;
+				} else {
+					flags_value = g_flags_get_value_by_nick (G_FLAGS_CLASS (class), s);
+					if (!flags_value) {
+						ret = FALSE;
+						break;
+					}
+					value |= flags_value->value;
+				}
+			}
+
+			s = s_end;
 		}
-
-		if (strv[i]) {
-			if (err_token)
-				*err_token = strdup (strv[i]);
-			value = 0;
-		} else
-			ret = TRUE;
 	} else
 		g_return_val_if_reached (FALSE);
 
-	if (out_value)
-		*out_value = value;
-
+	NM_SET_OUT (err_token, !ret && s[0] ? g_strdup (s) : NULL);
+	NM_SET_OUT (out_value, ret ? value : 0);
 	g_type_class_unref (class);
 	return ret;
 }
@@ -4425,7 +4453,7 @@ gboolean nm_utils_enum_from_str (GType type, const char *str,
  *
  * Returns the list of possible values for a given enum.
  *
- * Returns: (transfer full): a NULL-terminated dynamically-allocated array of static strings
+ * Returns: (transfer container): a NULL-terminated dynamically-allocated array of static strings
  * or %NULL on error
  *
  * Since: 1.2
@@ -4435,6 +4463,7 @@ const char **nm_utils_enum_get_values (GType type, gint from, gint to)
 	GTypeClass *class;
 	GPtrArray *array;
 	gint i;
+	char sbuf[64];
 
 	class = g_type_class_ref (type);
 	array = g_ptr_array_new ();
@@ -4445,8 +4474,12 @@ const char **nm_utils_enum_get_values (GType type, gint from, gint to)
 
 		for (i = 0; i < enum_class->n_values; i++) {
 			enum_value = &enum_class->values[i];
-			if (enum_value->value >= from && enum_value->value <= to)
-				g_ptr_array_add (array, (gpointer) enum_value->value_nick);
+			if (enum_value->value >= from && enum_value->value <= to) {
+				if (_enum_is_valid_enum_nick (enum_value->value_nick))
+					g_ptr_array_add (array, (gpointer) enum_value->value_nick);
+				else
+					g_ptr_array_add (array, (gpointer) g_intern_string (nm_sprintf_buf (sbuf, "%d", enum_value->value)));
+			}
 		}
 	} else if (G_IS_FLAGS_CLASS (class)) {
 		GFlagsClass *flags_class = G_FLAGS_CLASS (class);
@@ -4454,8 +4487,12 @@ const char **nm_utils_enum_get_values (GType type, gint from, gint to)
 
 		for (i = 0; i < flags_class->n_values; i++) {
 			flags_value = &flags_class->values[i];
-			if (flags_value->value >= from && flags_value->value <= to)
-				g_ptr_array_add (array, (gpointer) flags_value->value_nick);
+			if (flags_value->value >= from && flags_value->value <= to) {
+				if (_enum_is_valid_flags_nick (flags_value->value_nick))
+					g_ptr_array_add (array, (gpointer) flags_value->value_nick);
+				else
+					g_ptr_array_add (array, (gpointer) g_intern_string (nm_sprintf_buf (sbuf, "0x%x", (unsigned) flags_value->value)));
+			}
 		}
 	} else {
 		g_type_class_unref (class);
@@ -4659,6 +4696,261 @@ _nm_utils_team_config_equal (const char *conf1,
 	return nm_streq0 (conf1, conf2);
 }
 #endif
+
+static char *
+attribute_escape (const char *src, char c1, char c2)
+{
+	char *ret, *dest;
+
+	dest = ret = malloc (strlen (src) * 2 + 1);
+
+	while (*src) {
+		if (*src == c1 || *src == c2 || *src == '\\')
+			*dest++ = '\\';
+		*dest++ = *src++;
+	}
+	*dest++ = '\0';
+
+	return ret;
+}
+
+static char *
+attribute_unescape (const char *start, const char *end)
+{
+	char *ret, *dest;
+
+	nm_assert (start <= end);
+	dest = ret = g_malloc (end - start + 1);
+
+	for (; start < end && *start; start++) {
+		if (*start == '\\') {
+			start++;
+			if (!*start)
+				break;
+		}
+		*dest++ = *start;
+	}
+	*dest = '\0';
+
+	return ret;
+}
+
+/**
+ * nm_utils_parse_variant_attributes:
+ * @string: the input string
+ * @attr_separator: the attribute separator character
+ * @key_value_separator: character separating key and values
+ * @ignore_unknown: whether unknown attributes should be ignored
+ * @spec: the attribute format specifiers
+ * @error: (out) (allow-none): location to store the error on failure
+ *
+ * Parse attributes from a string.
+ *
+ * Returns: (transfer full): a #GHashTable mapping attribute names to #GVariant values.
+ *
+ * Since: 1.8
+ */
+GHashTable *
+nm_utils_parse_variant_attributes (const char *string,
+                                   char attr_separator,
+                                   char key_value_separator,
+                                   gboolean ignore_unknown,
+                                   const NMVariantAttributeSpec *const *spec,
+                                   GError **error)
+{
+	gs_unref_hashtable GHashTable *ht = NULL;
+	const char *ptr = string, *start = NULL, *sep;
+	GVariant *variant;
+	const NMVariantAttributeSpec * const *s;
+
+	g_return_val_if_fail (string, NULL);
+	g_return_val_if_fail (attr_separator, NULL);
+	g_return_val_if_fail (key_value_separator, NULL);
+	g_return_val_if_fail (!error || !*error, NULL);
+
+	ht = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_variant_unref);
+
+	while (TRUE) {
+		gs_free char *name = NULL, *value = NULL;
+
+		if (!start)
+			start = ptr;
+		if (*ptr == '\\') {
+			ptr++;
+			if (!*ptr) {
+				g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+				             _("unterminated escape sequence"));
+				return NULL;
+			}
+			goto next;
+		}
+		if (*ptr == attr_separator || *ptr == '\0') {
+			if (ptr == start) {
+				/* multiple separators */
+				start = NULL;
+				goto next;
+			}
+
+			/* Find the key-value separator */
+			for (sep = start; sep != ptr; sep++) {
+				if (*sep == '\\') {
+					sep++;
+					if (!*sep) {
+						g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+						             _("unterminated escape sequence"));
+						return NULL;
+					}
+				}
+				if (*sep == key_value_separator)
+					break;
+			}
+
+			if (*sep != key_value_separator) {
+				g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+				             _("missing key-value separator '%c'"), key_value_separator);
+				return NULL;
+			}
+
+			name = attribute_unescape (start, sep);
+			value = attribute_unescape (sep + 1, ptr);
+
+			for (s = spec; *s; s++) {
+				if (nm_streq (name, (*s)->name))
+					break;
+			}
+
+			if (!*s) {
+				if (ignore_unknown)
+					goto next;
+				else {
+					g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+					             _("unknown attribute '%s'"), name);
+					return NULL;
+				}
+			}
+
+			if (g_variant_type_equal ((*s)->type, G_VARIANT_TYPE_UINT32)) {
+				gint64 num = _nm_utils_ascii_str_to_int64 (value, 10, 0, G_MAXUINT32, -1);
+
+				if (num == -1) {
+					g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+					             _("invalid uint32 value '%s' for attribute '%s'"), value, name);
+					return NULL;
+				}
+				variant = g_variant_new_uint32 (num);
+			} else if (g_variant_type_equal ((*s)->type, G_VARIANT_TYPE_BYTE)) {
+				gint64 num = _nm_utils_ascii_str_to_int64 (value, 10, 0, G_MAXUINT8, -1);
+
+				if (num == -1) {
+					g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+					             _("invalid uint8 value '%s' for attribute '%s'"), value, name);
+					return NULL;
+				}
+				variant = g_variant_new_byte ((guchar) num);
+			} else if (g_variant_type_equal ((*s)->type, G_VARIANT_TYPE_BOOLEAN)) {
+				gboolean b;
+
+				if (nm_streq (value, "true"))
+					b = TRUE;
+				else if (nm_streq (value, "false"))
+					b = FALSE;
+				else {
+					g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+					             _("invalid boolean value '%s' for attribute '%s'"), value, name);
+					return NULL;
+				}
+				variant = g_variant_new_boolean (b);
+			} else if (g_variant_type_equal ((*s)->type, G_VARIANT_TYPE_STRING)) {
+				variant = g_variant_new_take_string (g_steal_pointer (&value));
+			} else {
+				g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
+				             _("unsupported attribute '%s' of type '%s'"), name,
+				             (char *) (*s)->type);
+				return NULL;
+			}
+
+			g_hash_table_insert (ht, g_steal_pointer (&name), variant);
+			start = NULL;
+		}
+next:
+		if (*ptr == '\0')
+			break;
+		ptr++;
+	}
+
+	return g_steal_pointer (&ht);
+}
+
+/*
+ * nm_utils_format_variant_attributes:
+ * @attributes:  a #GHashTable mapping attribute names to #GVariant values
+ * @attr_separator: the attribute separator character
+ * @key_value_separator: character separating key and values
+ *
+ * Format attributes to a string.
+ *
+ * Returns: (transfer full): the string representing attributes, or %NULL
+ *    in case there are no attributes
+ *
+ * Since: 1.8
+ */
+char *
+nm_utils_format_variant_attributes (GHashTable *attributes,
+                                    char attr_separator,
+                                    char key_value_separator)
+{
+	GString *str = NULL;
+	GVariant *variant;
+	char sep = 0;
+	const char *name, *value;
+	char *escaped;
+	char buf[64];
+	gs_free_list GList *keys = NULL;
+	GList *iter;
+
+	g_return_val_if_fail (attr_separator, NULL);
+	g_return_val_if_fail (key_value_separator, NULL);
+
+	if (!attributes || !g_hash_table_size (attributes))
+		return NULL;
+
+	keys = g_list_sort (g_hash_table_get_keys (attributes), (GCompareFunc) g_strcmp0);
+	str = g_string_new ("");
+
+	for (iter = keys; iter; iter = g_list_next (iter)) {
+		name = iter->data;
+		variant = g_hash_table_lookup (attributes, name);
+		value = NULL;
+
+		if (g_variant_is_of_type (variant, G_VARIANT_TYPE_UINT32))
+			value = nm_sprintf_buf (buf, "%u", g_variant_get_uint32 (variant));
+		else if (g_variant_is_of_type (variant, G_VARIANT_TYPE_BYTE))
+			value = nm_sprintf_buf (buf, "%hhu", g_variant_get_byte (variant));
+		else if (g_variant_is_of_type (variant, G_VARIANT_TYPE_BOOLEAN))
+			value = g_variant_get_boolean (variant) ? "true" : "false";
+		else if (g_variant_is_of_type (variant, G_VARIANT_TYPE_STRING))
+			value = g_variant_get_string (variant, NULL);
+		else
+			continue;
+
+		if (sep)
+			g_string_append_c (str, sep);
+
+		escaped = attribute_escape (name, attr_separator, key_value_separator);
+		g_string_append (str, escaped);
+		g_free (escaped);
+
+		g_string_append_c (str, key_value_separator);
+
+		escaped = attribute_escape (value, attr_separator, key_value_separator);
+		g_string_append (str, escaped);
+		g_free (escaped);
+
+		sep = attr_separator;
+	}
+
+	return g_string_free (str, FALSE);
+}
 
 /*****************************************************************************/
 

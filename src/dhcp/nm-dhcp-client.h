@@ -19,10 +19,10 @@
 #ifndef __NETWORKMANAGER_DHCP_CLIENT_H__
 #define __NETWORKMANAGER_DHCP_CLIENT_H__
 
-#include <nm-setting-ip4-config.h>
-#include <nm-setting-ip6-config.h>
-#include <nm-ip4-config.h>
-#include <nm-ip6-config.h>
+#include "nm-setting-ip4-config.h"
+#include "nm-setting-ip6-config.h"
+#include "nm-ip4-config.h"
+#include "nm-ip6-config.h"
 
 #define NM_TYPE_DHCP_CLIENT            (nm_dhcp_client_get_type ())
 #define NM_DHCP_CLIENT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_DHCP_CLIENT, NMDhcpClient))
@@ -117,17 +117,19 @@ const GByteArray *nm_dhcp_client_get_hw_addr (NMDhcpClient *self);
 
 guint32 nm_dhcp_client_get_priority (NMDhcpClient *self);
 
+guint32 nm_dhcp_client_get_timeout (NMDhcpClient *self);
+
 GBytes *nm_dhcp_client_get_client_id (NMDhcpClient *self);
 
 const char *nm_dhcp_client_get_hostname (NMDhcpClient *self);
 
-const char *nm_dhcp_client_get_fqdn (NMDhcpClient *self);
+gboolean nm_dhcp_client_get_use_fqdn (NMDhcpClient *self);
 
 gboolean nm_dhcp_client_start_ip4 (NMDhcpClient *self,
                                    const char *dhcp_client_id,
                                    const char *dhcp_anycast_addr,
                                    const char *hostname,
-                                   const char *fqdn,
+                                   gboolean use_fqdn,
                                    const char *last_ip4_address);
 
 gboolean nm_dhcp_client_start_ip6 (NMDhcpClient *self,

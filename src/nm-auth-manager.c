@@ -79,7 +79,7 @@ NM_DEFINE_SINGLETON_REGISTER (NMAuthManager);
             \
             if ((self) != singleton_instance) \
                 g_snprintf (__prefix, sizeof (__prefix), ""_NMLOG_PREFIX_NAME"[%p]", (self)); \
-            _nm_log ((level), (_NMLOG_DOMAIN), 0, \
+            _nm_log ((level), (_NMLOG_DOMAIN), 0, NULL, NULL, \
                      "%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                      __prefix _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
         } \
@@ -595,10 +595,7 @@ dispose (GObject *object)
 	/* since we take a reference for each queued call, we don't expect to have any queued calls in dispose() */
 	g_assert (!priv->queued_calls);
 
-	if (priv->new_proxy_cancellable) {
-		g_cancellable_cancel (priv->new_proxy_cancellable);
-		g_clear_object (&priv->new_proxy_cancellable);
-	}
+	nm_clear_g_cancellable (&priv->new_proxy_cancellable);
 
 	if (priv->proxy) {
 		g_signal_handlers_disconnect_by_data (priv->proxy, self);

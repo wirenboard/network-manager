@@ -30,6 +30,7 @@
 
 #ifndef NM_VERSION_H
 #define NM_AVAILABLE_IN_1_2
+#define NM_AVAILABLE_IN_1_8
 #endif
 
 /*
@@ -58,6 +59,7 @@
 #define NM_DBUS_INTERFACE_DHCP6_CONFIG      NM_DBUS_INTERFACE ".DHCP6Config"
 #define NM_DBUS_INTERFACE_DEVICE_INFINIBAND NM_DBUS_INTERFACE_DEVICE ".Infiniband"
 #define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
+#define NM_DBUS_INTERFACE_DEVICE_DUMMY      NM_DBUS_INTERFACE_DEVICE ".Dummy"
 #define NM_DBUS_INTERFACE_DEVICE_TEAM       NM_DBUS_INTERFACE_DEVICE ".Team"
 #define NM_DBUS_INTERFACE_DEVICE_VLAN       NM_DBUS_INTERFACE_DEVICE ".Vlan"
 #define NM_DBUS_INTERFACE_DEVICE_BRIDGE     NM_DBUS_INTERFACE_DEVICE ".Bridge"
@@ -105,14 +107,32 @@ typedef enum {
 
 /**
  * NMState:
- * @NM_STATE_UNKNOWN: networking state is unknown
- * @NM_STATE_ASLEEP: networking is not enabled
- * @NM_STATE_DISCONNECTED: there is no active network connection
- * @NM_STATE_DISCONNECTING: network connections are being cleaned up
- * @NM_STATE_CONNECTING: a network connection is being started
- * @NM_STATE_CONNECTED_LOCAL: there is only local IPv4 and/or IPv6 connectivity
- * @NM_STATE_CONNECTED_SITE: there is only site-wide IPv4 and/or IPv6 connectivity
- * @NM_STATE_CONNECTED_GLOBAL: there is global IPv4 and/or IPv6 Internet connectivity
+ * @NM_STATE_UNKNOWN: Networking state is unknown. This indicates a daemon error
+ *    that makes it unable to reasonably assess the state. In such event the
+ *    applications are expected to assume Internet connectivity might be present
+ *    and not disable controls that require network access.
+ *    The graphical shells may hide the network accessibility indicator altogether
+ *    since no meaningful status indication can be provided.
+ * @NM_STATE_ASLEEP: Networking is not enabled, the system is being suspended or
+ *    resumed from suspend.
+ * @NM_STATE_DISCONNECTED: There is no active network connection.
+ *    The graphical shell should indicate  no network connectivity and the
+ *    applications should not attempt to access the network.
+ * @NM_STATE_DISCONNECTING: Network connections are being cleaned up.
+ *    The applications should tear down their network sessions.
+ * @NM_STATE_CONNECTING: A network connection is being started
+ *    The graphical shell should indicate the network is being connected while
+ *    the applications should still make no attempts to connect the network.
+ * @NM_STATE_CONNECTED_LOCAL: There is only local IPv4 and/or IPv6 connectivity,
+ *    but no default route to access the Internet. The graphical shell should
+ *    indicate no network connectivity.
+ * @NM_STATE_CONNECTED_SITE: There is only site-wide IPv4 and/or IPv6 connectivity.
+ *    This means a default route is available, but the Internet connectivity check
+ *    (see "Connectivity" property) did not succeed. The graphical shell should
+ *    indicate limited network connectivity.
+ * @NM_STATE_CONNECTED_GLOBAL: There is global IPv4 and/or IPv6 Internet connectivity
+ *    This means the Internet connectivity check succeeded, the graphical shell should
+ *    indicate full network connectivity.
  *
  * #NMState values indicate the current overall networking state.
  **/
@@ -129,12 +149,23 @@ typedef enum {
 
 /**
  * NMConnectivityState:
- * @NM_CONNECTIVITY_UNKNOWN: Network connectivity is unknown.
- * @NM_CONNECTIVITY_NONE: The host is not connected to any network.
- * @NM_CONNECTIVITY_PORTAL: The host is behind a captive portal and
- *   cannot reach the full Internet.
- * @NM_CONNECTIVITY_LIMITED: The host is connected to a network, but
- *   does not appear to be able to reach the full Internet.
+ * @NM_CONNECTIVITY_UNKNOWN: Network connectivity is unknown. This means the
+ *   connectivity checks are disabled (e.g. on server installations) or has
+ *   not run yet. The graphical shell should assume the Internet connection
+ *   might be available and not present a captive portal window.
+ * @NM_CONNECTIVITY_NONE: The host is not connected to any network. There's
+ *   no active connection that contains a default route to the internet and
+ *   thus it makes no sense to even attempt a connectivity check. The graphical
+ *   shell should use this state to indicate the network connection is unavailable.
+ * @NM_CONNECTIVITY_PORTAL: The Internet connection is hijacked by a captive
+ *   portal gateway. The graphical shell may open a sandboxed web browser window
+ *   (because the captive portals typically attempt a man-in-the-middle attacks
+ *   agains the https connections) for the purpose of authenticating to a gateway
+ *   and retrigger the connectivity check with CheckConnectivity() when the
+ *   browser window is dismissed.
+ * @NM_CONNECTIVITY_LIMITED: The host is connected to a network, does not appear
+ *   to be able to reach the full Internet, but a captive portal has not been
+ *   detected.
  * @NM_CONNECTIVITY_FULL: The host is connected to a network, and
  *   appears to be able to reach the full Internet.
  */
@@ -171,6 +202,7 @@ typedef enum {
  * @NM_DEVICE_TYPE_VXLAN: a VXLAN interface
  * @NM_DEVICE_TYPE_VETH: a VETH interface
  * @NM_DEVICE_TYPE_MACSEC: a MACsec interface
+ * @NM_DEVICE_TYPE_DUMMY: a dummy interface
  *
  * #NMDeviceType values indicate the type of hardware represented by a
  * device object.
@@ -198,6 +230,7 @@ typedef enum {
 	NM_DEVICE_TYPE_VXLAN      = 19,
 	NM_DEVICE_TYPE_VETH       = 20,
 	NM_DEVICE_TYPE_MACSEC     = 21,
+	NM_DEVICE_TYPE_DUMMY      = 22,
 } NMDeviceType;
 
 /**
@@ -206,6 +239,7 @@ typedef enum {
  * @NM_DEVICE_CAP_NM_SUPPORTED: NetworkManager supports this device
  * @NM_DEVICE_CAP_CARRIER_DETECT: this device can indicate carrier status
  * @NM_DEVICE_CAP_IS_SOFTWARE: this device is a software device
+ * @NM_DEVICE_CAP_SRIOV: this device supports single-root I/O virtualization
  *
  * General device capability flags.
  **/
@@ -214,8 +248,8 @@ typedef enum { /*< flags >*/
 	NM_DEVICE_CAP_NM_SUPPORTED   = 0x00000001,
 	NM_DEVICE_CAP_CARRIER_DETECT = 0x00000002,
 	NM_DEVICE_CAP_IS_SOFTWARE    = 0x00000004,
+	NM_DEVICE_CAP_SRIOV          = 0x00000008,
 } NMDeviceCapabilities;
-
 
 /**
  * NMDeviceWifiCapabilities:
@@ -609,6 +643,62 @@ typedef enum {
 } NMActiveConnectionState;
 
 /**
+ * NMActiveConnectionStateReason:
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN: The reason for the active connection
+ *   state change is unknown.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_NONE: No reason was given for the active
+ *   connection state change.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_USER_DISCONNECTED: The active connection changed
+ *   state because the user disconnected it.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED: The active connection
+ *   changed state because the device it was using was disconnected.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_STOPPED: The service providing the
+ *   VPN connection was stopped.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_IP_CONFIG_INVALID: The IP config of the active
+ *   connection was invalid.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_CONNECT_TIMEOUT: The connection attempt to
+ *   the VPN service timed out.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT: A timeout occurred
+ *   while starting the service providing the VPN connection.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_START_FAILED: Starting the service
+ *   providing the VPN connection failed.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_NO_SECRETS: Necessary secrets for the
+ *   connection were not provided.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_LOGIN_FAILED: Authentication to the
+ *   server failed.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_CONNECTION_REMOVED: The connection was
+ *   deleted from settings.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_DEPENDENCY_FAILED: Master connection of this
+ *   connection failed to activate.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_REALIZE_FAILED: Could not create the
+ *   software device link.
+ * @NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_REMOVED: The device this connection
+ *   depended on disappeared.
+ *
+ * Active connection state reasons.
+ *
+ * Since: 1.8
+ */
+NM_AVAILABLE_IN_1_8
+typedef enum {
+	NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN                  = 0,
+	NM_ACTIVE_CONNECTION_STATE_REASON_NONE                     = 1,
+	NM_ACTIVE_CONNECTION_STATE_REASON_USER_DISCONNECTED        = 2,
+	NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED      = 3,
+	NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_STOPPED          = 4,
+	NM_ACTIVE_CONNECTION_STATE_REASON_IP_CONFIG_INVALID        = 5,
+	NM_ACTIVE_CONNECTION_STATE_REASON_CONNECT_TIMEOUT          = 6,
+	NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT    = 7,
+	NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_START_FAILED     = 8,
+	NM_ACTIVE_CONNECTION_STATE_REASON_NO_SECRETS               = 9,
+	NM_ACTIVE_CONNECTION_STATE_REASON_LOGIN_FAILED             = 10,
+	NM_ACTIVE_CONNECTION_STATE_REASON_CONNECTION_REMOVED       = 11,
+	NM_ACTIVE_CONNECTION_STATE_REASON_DEPENDENCY_FAILED        = 12,
+	NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_REALIZE_FAILED    = 13,
+	NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_REMOVED           = 14,
+} NMActiveConnectionStateReason;
+
+/**
  * NMSecretAgentGetSecretsFlags:
  * @NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE: no special behavior; by default no
  *   user interaction is allowed and requests for secrets are fulfilled from
@@ -661,6 +751,7 @@ typedef enum /*< flags >*/ {
 
 #ifndef NM_VERSION_H
 #undef NM_AVAILABLE_IN_1_2
+#undef NM_AVAILABLE_IN_1_8
 #endif
 
 #define NM_LLDP_ATTR_DESTINATION             "destination"

@@ -113,13 +113,25 @@ assert_reread_and_unlink (NMConnection *connection, gboolean normalize_connectio
 }
 
 static void
-write_test_connection (NMConnection *connection, char **testfile)
+assert_reread_same (NMConnection *connection,
+                    NMConnection *reread)
+{
+	nmtst_assert_connection_verifies_without_normalization (reread);
+	nmtst_assert_connection_equals (connection, TRUE, reread, FALSE);
+}
+
+static void
+write_test_connection_reread (NMConnection *connection,
+                              char **testfile,
+                              NMConnection **out_reread,
+                              gboolean *out_reread_same)
 {
 	uid_t owner_uid;
 	gid_t owner_grp;
 	gboolean success;
 	GError *error = NULL;
 	GError **p_error = (nmtst_get_rand_int () % 2) ? &error : NULL;
+	gs_unref_object NMConnection *connection_normalized = NULL;
 
 	g_assert (NM_IS_CONNECTION (connection));
 	g_assert (testfile && !*testfile);
@@ -127,10 +139,30 @@ write_test_connection (NMConnection *connection, char **testfile)
 	owner_uid = geteuid ();
 	owner_grp = getegid ();
 
-	success = nms_keyfile_writer_test_connection (connection, TEST_SCRATCH_DIR, owner_uid, owner_grp, testfile, p_error);
+	connection_normalized = nmtst_connection_duplicate_and_normalize (connection);
+
+	success = nms_keyfile_writer_test_connection (connection_normalized,
+	                                              TEST_SCRATCH_DIR,
+	                                              owner_uid,
+	                                              owner_grp,
+	                                              testfile,
+	                                              out_reread,
+	                                              out_reread_same,
+	                                              p_error);
 	g_assert_no_error (error);
 	g_assert (success);
 	g_assert (*testfile && (*testfile)[0]);
+}
+
+static void
+write_test_connection (NMConnection *connection, char **testfile)
+{
+	gs_unref_object NMConnection *reread = NULL;
+	gboolean reread_same = FALSE;
+
+	write_test_connection_reread (connection, testfile, &reread, &reread_same);
+	assert_reread_same (connection, reread);
+	g_assert (reread_same);
 }
 
 static void
@@ -161,6 +193,27 @@ keyfile_load_from_file (const char *testfile)
 	return keyfile;
 }
 
+static void
+_setting_copy_property_gbytes (NMConnection *src, NMConnection *dst, const char *setting_name, const char *property_name)
+{
+	gs_unref_bytes GBytes *blob = NULL;
+	NMSetting *s_src;
+	NMSetting *s_dst;
+
+	g_assert (NM_IS_CONNECTION (src));
+	g_assert (NM_IS_CONNECTION (dst));
+	g_assert (setting_name);
+	g_assert (property_name);
+
+	s_src = nm_connection_get_setting_by_name (src, setting_name);
+	g_assert (NM_IS_SETTING (s_src));
+	s_dst = nm_connection_get_setting_by_name (dst, setting_name);
+	g_assert (NM_IS_SETTING (s_dst));
+
+	g_object_get (s_src, property_name, &blob, NULL);
+	g_object_set (s_dst, property_name, blob, NULL);
+}
+
 /*****************************************************************************/
 
 static void
@@ -171,6 +224,7 @@ test_read_valid_wired_connection (void)
 	NMSettingWired *s_wired;
 	NMSettingIPConfig *s_ip4;
 	NMSettingIPConfig *s_ip6;
+	NMIPRoute *route;
 	gs_free_error GError *error = NULL;
 	const char *mac;
 	char expected_mac_address[ETH_ALEN] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55 };
@@ -265,6 +319,15 @@ test_read_valid_wired_connection (void)
 	check_ip_route (s_ip4, 10, "1.1.1.10", 20, NULL, -1);
 	check_ip_route (s_ip4, 11, "1.1.1.11", 21, NULL, 21);
 
+	/* Route attributes */
+	route = nm_setting_ip_config_get_route (s_ip4, 11);
+	g_assert (route);
+
+	nmtst_assert_route_attribute_uint32  (route, NM_IP_ROUTE_ATTRIBUTE_CWND, 10);
+	nmtst_assert_route_attribute_uint32  (route, NM_IP_ROUTE_ATTRIBUTE_MTU, 1430);
+	nmtst_assert_route_attribute_boolean (route, NM_IP_ROUTE_ATTRIBUTE_LOCK_CWND, TRUE);
+	nmtst_assert_route_attribute_string  (route, NM_IP_ROUTE_ATTRIBUTE_SRC, "7.7.7.7");
+
 	/* ===== IPv6 SETTING ===== */
 	s_ip6 = nm_connection_get_setting_ip6_config (connection);
 	g_assert (s_ip6);
@@ -304,6 +367,11 @@ test_read_valid_wired_connection (void)
 	check_ip_route (s_ip6, 4, "7:8:9:0:1:2:3:4", 125, NULL, 5);
 	check_ip_route (s_ip6, 5, "8:9:0:1:2:3:4:5", 124, NULL, 6);
 	check_ip_route (s_ip6, 6, "8:9:0:1:2:3:4:6", 123, NULL, -1);
+
+	/* Route attributes */
+	route = nm_setting_ip_config_get_route (s_ip6, 6);
+	g_assert (route);
+	nmtst_assert_route_attribute_string (route, NM_IP_ROUTE_ATTRIBUTE_FROM, "abce::/63");
 }
 
 static void
@@ -349,6 +417,7 @@ test_write_wired_connection (void)
 	NMSettingWired *s_wired;
 	NMSettingIPConfig *s_ip4;
 	NMSettingIPConfig *s_ip6;
+	NMIPRoute *rt;
 	const char *mac = "99:88:77:66:55:44";
 	const char *dns1 = "4.2.2.1";
 	const char *dns2 = "4.2.2.2";
@@ -376,6 +445,7 @@ test_write_wired_connection (void)
 	const char *route6_4 = "5:6:7:8:9:0:1:2";
 	const char *route6_4_nh = "::";
 	guint64 timestamp = 0x12345678L;
+	GError *error = NULL;
 
 	connection = nm_simple_connection_new ();
 
@@ -420,7 +490,14 @@ test_write_wired_connection (void)
 	add_one_ip_route (s_ip4, route1, route1_nh, 24, 3);
 	add_one_ip_route (s_ip4, route2, route2_nh, 8, 1);
 	add_one_ip_route (s_ip4, route3, route3_nh, 7, -1);
-	add_one_ip_route (s_ip4, route4, route4_nh, 6, 4);
+
+	rt = nm_ip_route_new (AF_INET, route4, 6, route4_nh, 4, &error);
+	g_assert_no_error (error);
+	nm_ip_route_set_attribute (rt, NM_IP_ROUTE_ATTRIBUTE_CWND, g_variant_new_uint32 (10));
+	nm_ip_route_set_attribute (rt, NM_IP_ROUTE_ATTRIBUTE_MTU, g_variant_new_uint32 (1492));
+	nm_ip_route_set_attribute (rt, NM_IP_ROUTE_ATTRIBUTE_SRC, g_variant_new_string ("1.2.3.4"));
+	g_assert (nm_setting_ip_config_add_route (s_ip4, rt));
+	nm_ip_route_unref (rt);
 
 	/* DNS servers */
 	nm_setting_ip_config_add_dns (s_ip4, dns1);
@@ -1639,11 +1716,18 @@ test_write_wired_8021x_tls_connection_path (void)
 	gs_free_error GError *error = NULL;
 	gs_unref_keyfile GKeyFile *keyfile = NULL;
 	gboolean relative = FALSE;
+	gboolean reread_same = FALSE;
 
 	connection = create_wired_tls_connection (NM_SETTING_802_1X_CK_SCHEME_PATH);
 	g_assert (connection != NULL);
 
-	write_test_connection (connection, &testfile);
+	write_test_connection_reread (connection, &testfile, &reread, &reread_same);
+	nmtst_assert_connection_verifies_without_normalization (reread);
+	_setting_copy_property_gbytes (connection, reread, NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CA_CERT);
+	_setting_copy_property_gbytes (connection, reread, NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
+	_setting_copy_property_gbytes (connection, reread, NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PRIVATE_KEY);
+	assert_reread_same (connection, reread);
+	g_clear_object (&reread);
 
 	/* Read the connection back in and compare it to the one we just wrote out */
 	reread = nms_keyfile_reader_from_file (testfile, &error);
@@ -1716,6 +1800,7 @@ test_write_wired_8021x_tls_connection_blob (void)
 	char *new_client_cert;
 	char *new_priv_key;
 	const char *uuid;
+	gboolean reread_same = FALSE;
 	gs_free_error GError *error = NULL;
 	GBytes *password_raw = NULL;
 #define PASSWORD_RAW "password-raw\0test"
@@ -1733,7 +1818,13 @@ test_write_wired_8021x_tls_connection_blob (void)
 	              NULL);
 	g_bytes_unref (password_raw);
 
-	write_test_connection (connection, &testfile);
+	write_test_connection_reread (connection, &testfile, &reread, &reread_same);
+	nmtst_assert_connection_verifies_without_normalization (reread);
+	_setting_copy_property_gbytes (connection, reread, NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CA_CERT);
+	_setting_copy_property_gbytes (connection, reread, NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
+	_setting_copy_property_gbytes (connection, reread, NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PRIVATE_KEY);
+	assert_reread_same (connection, reread);
+	g_clear_object (&reread);
 
 	/* Check that the new certs got written out */
 	s_con = nm_connection_get_setting_connection (connection);
