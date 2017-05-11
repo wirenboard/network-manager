@@ -1,3 +1,20 @@
+network-manager (1.8.0-1) experimental; urgency=medium
+
+  * New upstream version 1.8.0
+  * Switch URLs to https
+  * Update Build-Depends
+    - Use libudev instead of libgudev
+    - Use libpsl and libcurl instead of libsoup
+  * Rebase patches
+  * Update symbols file for libnm0
+  * Drop obsolete ifblacklist_migrate.sh script.
+    It's been unused since wheezy.
+  * Drop obsolete migration code from pre-jessie
+  * Install empty directories for dispatcher scripts, conf.d snippets and VPN
+    plugins
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 11 May 2017 18:25:14 +0200
+
 network-manager (1.6.2-3) unstable; urgency=medium
 
   * device/wifi: block autoconnect while scanning is in progress.
