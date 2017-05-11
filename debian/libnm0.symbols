@@ -6,6 +6,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_2_4@libnm_1_2_4 1.2.4
  libnm_1_4_0@libnm_1_4_0 1.4.0
  libnm_1_6_0@libnm_1_6_0 1.5.90
+ libnm_1_8_0@libnm_1_8_0 1.8.0
  nm_802_11_ap_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_ap_security_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_mode_get_type@libnm_1_0_0 1.0.0
@@ -36,10 +37,12 @@ libnm.so.0 libnm0 #MINVER#
  nm_active_connection_get_master@libnm_1_0_0 1.0.0
  nm_active_connection_get_specific_object_path@libnm_1_0_0 1.0.0
  nm_active_connection_get_state@libnm_1_0_0 1.0.0
+ nm_active_connection_get_state_reason@libnm_1_8_0 1.8.0
  nm_active_connection_get_type@libnm_1_0_0 1.0.0
  nm_active_connection_get_uuid@libnm_1_0_0 1.0.0
  nm_active_connection_get_vpn@libnm_1_0_0 1.0.0
  nm_active_connection_state_get_type@libnm_1_0_0 1.0.0
+ nm_active_connection_state_reason_get_type@libnm_1_8_0 1.8.0
  nm_agent_manager_error_get_type@libnm_1_0_0 1.0.0
  nm_agent_manager_error_quark@libnm_1_0_0 1.0.0
  nm_bluetooth_capabilities_get_type@libnm_1_0_0 1.0.0
@@ -131,6 +134,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_setting_cdma@libnm_1_0_0 1.0.0
  nm_connection_get_setting_connection@libnm_1_0_0 1.0.0
  nm_connection_get_setting_dcb@libnm_1_0_0 1.0.0
+ nm_connection_get_setting_dummy@libnm_1_8_0 1.8.0
  nm_connection_get_setting_generic@libnm_1_0_0 1.0.0
  nm_connection_get_setting_gsm@libnm_1_0_0 1.0.0
  nm_connection_get_setting_infiniband@libnm_1_0_0 1.0.0
@@ -196,6 +200,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_disconnect@libnm_1_0_0 1.0.0
  nm_device_disconnect_async@libnm_1_0_0 1.0.0
  nm_device_disconnect_finish@libnm_1_0_0 1.0.0
+ nm_device_dummy_get_type@libnm_1_8_0 1.8.0
  nm_device_error_get_type@libnm_1_0_0 1.0.0
  nm_device_error_quark@libnm_1_0_0 1.0.0
  nm_device_ethernet_get_carrier@libnm_1_0_0 1.0.0
@@ -393,6 +398,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_ip_config_get_searches@libnm_1_0_0 1.0.0
  nm_ip_config_get_type@libnm_1_0_0 1.0.0
  nm_ip_config_get_wins_servers@libnm_1_0_0 1.0.0
+ nm_ip_route_attribute_validate@libnm_1_8_0 1.8.0
  nm_ip_route_equal@libnm_1_0_0 1.0.0
  nm_ip_route_get_attribute@libnm_1_0_0 1.0.0
  nm_ip_route_get_attribute_names@libnm_1_0_0 1.0.0
@@ -404,6 +410,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_ip_route_get_next_hop_binary@libnm_1_0_0 1.0.0
  nm_ip_route_get_prefix@libnm_1_0_0 1.0.0
  nm_ip_route_get_type@libnm_1_0_0 1.0.0
+ nm_ip_route_get_variant_attribute_spec@libnm_1_8_0 1.8.0
  nm_ip_route_new@libnm_1_0_0 1.0.0
  nm_ip_route_new_binary@libnm_1_0_0 1.0.0
  nm_ip_route_ref@libnm_1_0_0 1.0.0
@@ -463,6 +470,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_802_1x_add_altsubject_match@libnm_1_0_0 1.0.0
  nm_setting_802_1x_add_eap_method@libnm_1_0_0 1.0.0
  nm_setting_802_1x_add_phase2_altsubject_match@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_auth_flags_get_type@libnm_1_8_0 1.8.0
  nm_setting_802_1x_check_cert_scheme@libnm_1_2_0 1.1.90
  nm_setting_802_1x_ck_format_get_type@libnm_1_0_0 1.0.0
  nm_setting_802_1x_ck_scheme_get_type@libnm_1_0_0 1.0.0
@@ -471,12 +479,17 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_802_1x_clear_phase2_altsubject_matches@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_altsubject_match@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_anonymous_identity@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_auth_timeout@libnm_1_8_0 1.8.0
  nm_setting_802_1x_get_ca_cert_blob@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_ca_cert_password@libnm_1_8_0 1.8.0
+ nm_setting_802_1x_get_ca_cert_password_flags@libnm_1_8_0 1.8.0
  nm_setting_802_1x_get_ca_cert_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_ca_cert_scheme@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_ca_cert_uri@libnm_1_6_0 1.5.90
  nm_setting_802_1x_get_ca_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_client_cert_blob@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_client_cert_password@libnm_1_8_0 1.8.0
+ nm_setting_802_1x_get_client_cert_password_flags@libnm_1_8_0 1.8.0
  nm_setting_802_1x_get_client_cert_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_client_cert_scheme@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_client_cert_uri@libnm_1_6_0 1.5.90
@@ -491,6 +504,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_802_1x_get_password_flags@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_password_raw@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_password_raw_flags@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_phase1_auth_flags@libnm_1_8_0 1.8.0
  nm_setting_802_1x_get_phase1_fast_provisioning@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase1_peaplabel@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase1_peapver@libnm_1_0_0 1.0.0
@@ -498,11 +512,15 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_802_1x_get_phase2_auth@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_autheap@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_ca_cert_blob@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_phase2_ca_cert_password@libnm_1_8_0 1.8.0
+ nm_setting_802_1x_get_phase2_ca_cert_password_flags@libnm_1_8_0 1.8.0
  nm_setting_802_1x_get_phase2_ca_cert_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_ca_cert_scheme@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_ca_cert_uri@libnm_1_6_0 1.5.90
  nm_setting_802_1x_get_phase2_ca_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_client_cert_blob@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_phase2_client_cert_password@libnm_1_8_0 1.8.0
+ nm_setting_802_1x_get_phase2_client_cert_password_flags@libnm_1_8_0 1.8.0
  nm_setting_802_1x_get_phase2_client_cert_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_client_cert_scheme@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_client_cert_uri@libnm_1_6_0 1.5.90
@@ -578,6 +596,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_bridge_port_get_priority@libnm_1_0_0 1.0.0
  nm_setting_bridge_port_get_type@libnm_1_0_0 1.0.0
  nm_setting_bridge_port_new@libnm_1_0_0 1.0.0
+ nm_setting_cdma_get_mtu@libnm_1_8_0 1.8.0
  nm_setting_cdma_get_number@libnm_1_0_0 1.0.0
  nm_setting_cdma_get_password@libnm_1_0_0 1.0.0
  nm_setting_cdma_get_password_flags@libnm_1_0_0 1.0.0
@@ -648,6 +667,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_dcb_set_priority_traffic_class@libnm_1_0_0 1.0.0
  nm_setting_diff@libnm_1_0_0 1.0.0
  nm_setting_diff_result_get_type@libnm_1_0_0 1.0.0
+ nm_setting_dummy_get_type@libnm_1_8_0 1.8.0
+ nm_setting_dummy_new@libnm_1_8_0 1.8.0
  nm_setting_duplicate@libnm_1_0_0 1.0.0
  nm_setting_enumerate_values@libnm_1_0_0 1.0.0
  nm_setting_generic_get_type@libnm_1_0_0 1.0.0
@@ -659,6 +680,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_gsm_get_apn@libnm_1_0_0 1.0.0
  nm_setting_gsm_get_device_id@libnm_1_2_0 1.1.90
  nm_setting_gsm_get_home_only@libnm_1_0_0 1.0.0
+ nm_setting_gsm_get_mtu@libnm_1_8_0 1.8.0
  nm_setting_gsm_get_network_id@libnm_1_0_0 1.0.0
  nm_setting_gsm_get_number@libnm_1_0_0 1.0.0
  nm_setting_gsm_get_password@libnm_1_0_0 1.0.0
@@ -831,6 +853,13 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_tun_get_vnet_hdr@libnm_1_2_0 1.1.90
  nm_setting_tun_mode_get_type@libnm_1_2_0 1.1.90
  nm_setting_tun_new@libnm_1_2_0 1.1.90
+ nm_setting_user_check_key@libnm_1_8_0 1.8.0
+ nm_setting_user_check_val@libnm_1_8_0 1.8.0
+ nm_setting_user_get_data@libnm_1_8_0 1.8.0
+ nm_setting_user_get_keys@libnm_1_8_0 1.8.0
+ nm_setting_user_get_type@libnm_1_8_0 1.8.0
+ nm_setting_user_new@libnm_1_8_0 1.8.0
+ nm_setting_user_set_data@libnm_1_8_0 1.8.0
  nm_setting_verify@libnm_1_0_0 1.0.0
  nm_setting_verify_secrets@libnm_1_2_0 1.1.90
  nm_setting_vlan_add_priority@libnm_1_0_0 1.0.0
@@ -996,6 +1025,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_utils_file_is_pkcs12@libnm_1_0_0 1.0.0
  nm_utils_file_is_private_key@libnm_1_0_0 1.0.0
  nm_utils_file_search_in_paths@libnm_1_0_0 1.0.0
+ nm_utils_format_variant_attributes@libnm_1_8_0 1.8.0
  nm_utils_hexstr2bin@libnm_1_0_0 1.0.0
  nm_utils_hwaddr_atoba@libnm_1_0_0 1.0.0
  nm_utils_hwaddr_aton@libnm_1_0_0 1.0.0
@@ -1027,6 +1057,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_utils_is_json_object@libnm_1_6_0 1.5.90
  nm_utils_is_uuid@libnm_1_0_0 1.0.0
  nm_utils_is_valid_iface_name@libnm_1_6_0 1.5.90
+ nm_utils_parse_variant_attributes@libnm_1_8_0 1.8.0
  nm_utils_same_ssid@libnm_1_0_0 1.0.0
  nm_utils_security_type_get_type@libnm_1_0_0 1.0.0
  nm_utils_security_valid@libnm_1_0_0 1.0.0
