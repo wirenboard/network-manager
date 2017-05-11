@@ -53,8 +53,6 @@ override_dh_install:
 	dh_install -X.la --list-missing
 	install -m 755 debian/network-manager-dispatcher.script \
 		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
-	install -m 755 debian/ifblacklist_migrate.sh \
-		debian/network-manager/usr/lib/NetworkManager
 
 override_dh_makeshlibs:
 	dh_makeshlibs -X/usr/lib/$(DEB_HOST_MULTIARCH)/NetworkManager/ -X/usr/lib/pppd/
