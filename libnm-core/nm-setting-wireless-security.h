@@ -27,7 +27,7 @@
 #error "Only <NetworkManager.h> can be included directly."
 #endif
 
-#include <nm-setting.h>
+#include "nm-setting.h"
 
 G_BEGIN_DECLS
 
@@ -91,6 +91,8 @@ typedef enum {
 
 /**
  * NMSettingWirelessSecurity:
+ *
+ * Wi-Fi Security Settings
  */
 struct _NMSettingWirelessSecurity {
 	NMSetting parent;

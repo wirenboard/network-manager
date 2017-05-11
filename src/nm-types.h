@@ -46,6 +46,7 @@ typedef struct _NMProxyConfig        NMProxyConfig;
 typedef struct _NMIP4Config          NMIP4Config;
 typedef struct _NMIP6Config          NMIP6Config;
 typedef struct _NMManager            NMManager;
+typedef struct _NMNetns              NMNetns;
 typedef struct _NMPolicy             NMPolicy;
 typedef struct _NMRfkillManager      NMRfkillManager;
 typedef struct _NMPacrunnerManager   NMPacrunnerManager;
@@ -54,6 +55,22 @@ typedef struct _NMSessionMonitor     NMSessionMonitor;
 typedef struct _NMSleepMonitor       NMSleepMonitor;
 typedef struct _NMLldpListener       NMLldpListener;
 typedef struct _NMConfigDeviceStateData NMConfigDeviceStateData;
+
+/*****************************************************************************/
+
+typedef enum {
+	/* Do a full activation. */
+	NM_ACTIVATION_TYPE_MANAGED = 0,
+
+	/* gracefully/seamlessly take over the device. This leaves additional
+	 * IP addresses and does not restore missing manual addresses. */
+	NM_ACTIVATION_TYPE_ASSUME = 1,
+
+	/* external activation. This device is not managed by NM, instead
+	 * a in-memory connection is generated and NM pretends the device
+	 * to be active, but it doesn't do anything really. */
+	NM_ACTIVATION_TYPE_EXTERNAL = 2,
+} NMActivationType;
 
 typedef enum {
 	/* In priority order; higher number == higher priority */
@@ -83,7 +100,7 @@ typedef enum {
 	NM_IP_CONFIG_SOURCE_USER,
 } NMIPConfigSource;
 
-inline static gboolean
+static inline gboolean
 NM_IS_IP_CONFIG_SOURCE_RTPROT (NMIPConfigSource source)
 {
 	return source > NM_IP_CONFIG_SOURCE_UNKNOWN && source <= _NM_IP_CONFIG_SOURCE_RTPROT_LAST;

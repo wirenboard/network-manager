@@ -37,7 +37,7 @@
 static gboolean debug = FALSE;
 #define dbgmsg(f,...) if (G_UNLIKELY (debug)) { g_message (f, ## __VA_ARGS__ ); }
 
-G_DEFINE_QUARK (nm-obj-nm, _nm_object_obj_nm);
+NM_CACHED_QUARK_FCN ("nm-obj-nm", _nm_object_obj_nm_quark)
 
 static void nm_object_initable_iface_init (GInitableIface *iface);
 static void nm_object_async_initable_iface_init (GAsyncInitableIface *iface);
@@ -85,6 +85,7 @@ typedef struct {
 	GError *reload_error;
 
 	GSList *pending;        /* ordered list of pending property updates. */
+	GPtrArray *proxies;
 } NMObjectPrivate;
 
 enum {
@@ -128,11 +129,16 @@ GDBusProxy *
 _nm_object_get_proxy (NMObject   *object,
                       const char *interface)
 {
+	NMObjectPrivate *priv;
 	GDBusInterface *proxy;
 
 	g_return_val_if_fail (NM_IS_OBJECT (object), NULL);
 
-	proxy = g_dbus_object_get_interface (NM_OBJECT_GET_PRIVATE (object)->object, interface);
+	priv = NM_OBJECT_GET_PRIVATE (object);
+	if (priv->object == NULL)
+		return NULL;
+
+	proxy = g_dbus_object_get_interface (priv->object, interface);
 	g_return_val_if_fail (proxy != NULL, NULL);
 
 	return G_DBUS_PROXY (proxy);
@@ -939,7 +945,7 @@ _nm_object_register_properties (NMObject *object,
 	proxy = _nm_object_get_proxy (object, interface);
 	g_signal_connect (proxy, "g-properties-changed",
 		          G_CALLBACK (properties_changed), object);
-	g_object_unref (proxy);
+	g_ptr_array_add (priv->proxies, proxy);
 
 	instance = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	priv->property_tables = g_slist_prepend (priv->property_tables, instance);
@@ -1053,7 +1059,7 @@ init_if (GDBusInterface *interface, gpointer user_data)
 
 	props = g_dbus_proxy_get_cached_property_names (proxy);
 
-	for (prop = props; *prop; prop++) {
+	for (prop = props; prop && *prop; prop++) {
 		val = g_dbus_proxy_get_cached_property (proxy, *prop);
 		str = g_variant_print (val, TRUE);
 		handle_property_changed (self, *prop, val);
@@ -1188,6 +1194,7 @@ nm_object_async_initable_iface_init (GAsyncInitableIface *iface)
 static void
 nm_object_init (NMObject *object)
 {
+	NM_OBJECT_GET_PRIVATE (object)->proxies = g_ptr_array_new ();
 }
 
 static void
@@ -1198,11 +1205,13 @@ set_property (GObject *object, guint prop_id,
 
 	switch (prop_id) {
 	case PROP_DBUS_OBJECT:
-		/* Construct only */
+		/* construct-only */
 		priv->object = g_value_dup_object (value);
+		if (!priv->object)
+			g_return_if_reached ();
 		break;
 	case PROP_DBUS_OBJECT_MANAGER:
-		/* Construct only */
+		/* construct-only */
 		priv->object_manager = g_value_dup_object (value);
 		break;
 	default:
@@ -1240,6 +1249,7 @@ static void
 dispose (GObject *object)
 {
 	NMObjectPrivate *priv = NM_OBJECT_GET_PRIVATE (object);
+	guint i;
 
 	nm_clear_g_source (&priv->notify_id);
 
@@ -1250,6 +1260,17 @@ dispose (GObject *object)
 
 	g_clear_object (&priv->object);
 	g_clear_object (&priv->object_manager);
+
+	if (priv->proxies) {
+		for (i = 0; i < priv->proxies->len; i++) {
+			g_signal_handlers_disconnect_by_func (priv->proxies->pdata[i],
+			                                      properties_changed,
+			                                      object);
+			g_object_unref (priv->proxies->pdata[i]);
+		}
+		g_ptr_array_free (priv->proxies, TRUE);
+		priv->proxies = NULL;
+	}
 
 	G_OBJECT_CLASS (nm_object_parent_class)->dispose (object);
 }

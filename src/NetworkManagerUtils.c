@@ -217,7 +217,7 @@ nm_utils_complete_generic (NMPlatform *platform,
                            gboolean default_enable_ipv6)
 {
 	NMSettingConnection *s_con;
-	char *id, *uuid, *ifname;
+	char *id, *ifname;
 	GHashTable *parameters;
 
 	g_assert (fallback_id_prefix);
@@ -230,9 +230,9 @@ nm_utils_complete_generic (NMPlatform *platform,
 	g_object_set (G_OBJECT (s_con), NM_SETTING_CONNECTION_TYPE, ctype, NULL);
 
 	if (!nm_setting_connection_get_uuid (s_con)) {
-		uuid = nm_utils_uuid_generate ();
-		g_object_set (G_OBJECT (s_con), NM_SETTING_CONNECTION_UUID, uuid, NULL);
-		g_free (uuid);
+		char uuid[37];
+
+		g_object_set (G_OBJECT (s_con), NM_SETTING_CONNECTION_UUID, nm_utils_uuid_generate_buf (uuid), NULL);
 	}
 
 	/* Add a connection ID if absent */
@@ -342,18 +342,19 @@ static int
 route_compare (NMIPRoute *route1, NMIPRoute *route2, gint64 default_metric)
 {
 	gint64 r, metric1, metric2;
+	int family;
+	guint plen;
+	NMIPAddr a1 = { 0 }, a2 = { 0 };
 
-	r = g_strcmp0 (nm_ip_route_get_dest (route1), nm_ip_route_get_dest (route2));
-	if (r)
-		return r;
-
-	r = nm_ip_route_get_prefix (route1) - nm_ip_route_get_prefix (route2);
+	family = nm_ip_route_get_family (route1);
+	r = family - nm_ip_route_get_family (route2);
 	if (r)
 		return r > 0 ? 1 : -1;
 
-	r = g_strcmp0 (nm_ip_route_get_next_hop (route1), nm_ip_route_get_next_hop (route2));
+	plen = nm_ip_route_get_prefix (route1);
+	r = plen - nm_ip_route_get_prefix (route2);
 	if (r)
-		return r;
+		return r > 0 ? 1 : -1;
 
 	metric1 = nm_ip_route_get_metric (route1) == -1 ? default_metric : nm_ip_route_get_metric (route1);
 	metric2 = nm_ip_route_get_metric (route2) == -1 ? default_metric : nm_ip_route_get_metric (route2);
@@ -362,17 +363,26 @@ route_compare (NMIPRoute *route1, NMIPRoute *route2, gint64 default_metric)
 	if (r)
 		return r > 0 ? 1 : -1;
 
-	r = nm_ip_route_get_family (route1) - nm_ip_route_get_family (route2);
+	r = g_strcmp0 (nm_ip_route_get_next_hop (route1), nm_ip_route_get_next_hop (route2));
 	if (r)
-		return r > 0 ? 1 : -1;
+		return r;
+
+	/* NMIPRoute validates family and dest. inet_pton() is not expected to fail. */
+	inet_pton (family, nm_ip_route_get_dest (route1), &a1);
+	inet_pton (family, nm_ip_route_get_dest (route2), &a2);
+	nm_utils_ipx_address_clear_host_address (family, &a1, &a1, plen);
+	nm_utils_ipx_address_clear_host_address (family, &a2, &a2, plen);
+	r = memcmp (&a1, &a2, sizeof (a1));
+	if (r)
+		return r;
 
 	return 0;
 }
 
 static int
-route_ptr_compare (const void *a, const void *b)
+route_ptr_compare (const void *a, const void *b, gpointer metric)
 {
-	return route_compare (*(NMIPRoute **) a, *(NMIPRoute **) b, -1);
+	return route_compare (*(NMIPRoute **) a, *(NMIPRoute **) b, *((gint64 *) metric));
 }
 
 static gboolean
@@ -384,6 +394,7 @@ check_ip_routes (NMConnection *orig,
 {
 	gs_free NMIPRoute **routes1 = NULL, **routes2 = NULL;
 	NMSettingIPConfig *s_ip1, *s_ip2;
+	gint64 m;
 	const char *s_name;
 	GHashTable *props;
 	guint i, num;
@@ -415,8 +426,12 @@ check_ip_routes (NMConnection *orig,
 		routes2[i] = nm_setting_ip_config_get_route (s_ip2, i);
 	}
 
-	qsort (routes1, num, sizeof (NMIPRoute *), route_ptr_compare);
-	qsort (routes2, num, sizeof (NMIPRoute *), route_ptr_compare);
+	m = nm_setting_ip_config_get_route_metric (s_ip2);
+	if (m != -1)
+		default_metric = m;
+
+	g_qsort_with_data (routes1, num, sizeof (NMIPRoute *), route_ptr_compare, &default_metric);
+	g_qsort_with_data (routes2, num, sizeof (NMIPRoute *), route_ptr_compare, &default_metric);
 
 	for (i = 0; i < num; i++) {
 		if (route_compare (routes1[i], routes2[i], default_metric))
@@ -584,7 +599,7 @@ check_connection_cloned_mac_address (NMConnection *orig,
 	if (s_wired_cand)
 		cand_mac = nm_setting_wired_get_cloned_mac_address (s_wired_cand);
 
-	/* special cloned mac address entires are accepted. */
+	/* special cloned mac address entries are accepted. */
 	if (NM_CLONED_MAC_IS_SPECIAL (orig_mac))
 		orig_mac = NULL;
 	if (NM_CLONED_MAC_IS_SPECIAL (cand_mac))
@@ -710,7 +725,7 @@ check_possible_match (NMConnection *orig,
  * matches well enough.
  */
 NMConnection *
-nm_utils_match_connection (GSList *connections,
+nm_utils_match_connection (NMConnection *const*connections,
                            NMConnection *original,
                            gboolean device_has_carrier,
                            gint64 default_v4_metric,
@@ -719,10 +734,12 @@ nm_utils_match_connection (GSList *connections,
                            gpointer match_filter_data)
 {
 	NMConnection *best_match = NULL;
-	GSList *iter;
 
-	for (iter = connections; iter; iter = iter->next) {
-		NMConnection *candidate = NM_CONNECTION (iter->data);
+	if (!connections)
+		return NULL;
+
+	for (; *connections; connections++) {
+		NMConnection *candidate = NM_CONNECTION (*connections);
 		GHashTable *diffs = NULL;
 
 		if (match_filter_func) {

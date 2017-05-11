@@ -27,7 +27,7 @@
 #error "Only <NetworkManager.h> can be included directly."
 #endif
 
-#include <nm-setting.h>
+#include "nm-setting.h"
 
 G_BEGIN_DECLS
 
@@ -47,6 +47,8 @@ G_BEGIN_DECLS
 
 /**
  * NMSettingPppoe:
+ *
+ * PPP-over-Ethernet Settings
  */
 struct _NMSettingPppoe {
 	NMSetting parent;

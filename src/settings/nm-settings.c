@@ -104,7 +104,7 @@ EXPORT(nm_settings_connection_replace_and_commit)
 #define IFCFG_DIR                    SYSCONFDIR "/sysconfig/network"
 #define CONF_DHCP                    IFCFG_DIR "/dhcp"
 
-#define PLUGIN_MODULE_PATH      "plugin-module-path"
+static NM_CACHED_QUARK_FCN ("plugin-module-path", plugin_module_path_quark)
 
 #if (defined(HOSTNAME_PERSIST_SUSE) + defined(HOSTNAME_PERSIST_SLACKWARE) + defined(HOSTNAME_PERSIST_GENTOO)) > 1
 #error "Can only define one of HOSTNAME_PERSIST_*"
@@ -119,6 +119,9 @@ EXPORT(nm_settings_connection_replace_and_commit)
 #else
 #define HOSTNAME_FILE           HOSTNAME_FILE_DEFAULT
 #endif
+
+static NM_CACHED_QUARK_FCN ("default-wired-connection", _default_wired_connection_quark)
+static NM_CACHED_QUARK_FCN ("default-wired-device", _default_wired_device_quark)
 
 /*****************************************************************************/
 
@@ -390,35 +393,6 @@ error:
 	g_clear_object (&subject);
 }
 
-static int
-connection_sort (gconstpointer pa, gconstpointer pb)
-{
-	NMConnection *a = NM_CONNECTION (pa);
-	NMSettingConnection *con_a;
-	NMConnection *b = NM_CONNECTION (pb);
-	NMSettingConnection *con_b;
-	guint64 ts_a = 0, ts_b = 0;
-	gboolean can_ac_a, can_ac_b;
-
-	con_a = nm_connection_get_setting_connection (a);
-	g_assert (con_a);
-	con_b = nm_connection_get_setting_connection (b);
-	g_assert (con_b);
-
-	can_ac_a = !!nm_setting_connection_get_autoconnect (con_a);
-	can_ac_b = !!nm_setting_connection_get_autoconnect (con_b);
-	if (can_ac_a != can_ac_b)
-		return can_ac_a ? -1 : 1;
-
-	nm_settings_connection_get_timestamp (NM_SETTINGS_CONNECTION (pa), &ts_a);
-	nm_settings_connection_get_timestamp (NM_SETTINGS_CONNECTION (pb), &ts_b);
-	if (ts_a > ts_b)
-		return -1;
-	else if (ts_a == ts_b)
-		return 0;
-	return 1;
-}
-
 /**
  * nm_settings_get_connections:
  * @self: the #NMSettings
@@ -444,46 +418,98 @@ nm_settings_get_connections (NMSettings *self, guint *out_len)
 
 	priv = NM_SETTINGS_GET_PRIVATE (self);
 
-	if (priv->connections_cached_list) {
+	if (G_LIKELY (priv->connections_cached_list)) {
 		NM_SET_OUT (out_len, g_hash_table_size (priv->connections));
 		return priv->connections_cached_list;
 	}
 
 	l = g_hash_table_size (priv->connections);
 
-	v = g_new (NMSettingsConnection *, l + 1);
+	v = g_new (NMSettingsConnection *, (gsize) l + 1);
 
 	i = 0;
 	g_hash_table_iter_init (&iter, priv->connections);
-	while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &con))
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &con)) {
+		nm_assert (i < l);
 		v[i++] = con;
-	v[i] = NULL;
-
+	}
 	nm_assert (i == l);
+	v[i] = NULL;
 
 	NM_SET_OUT (out_len, l);
 	priv->connections_cached_list = v;
 	return v;
 }
 
-/* Returns a list of NMSettingsConnections.
- * The list is sorted in the order suitable for auto-connecting, i.e.
- * first go connections with autoconnect=yes and most recent timestamp.
- * Caller must free the list with g_slist_free().
+/**
+ * nm_settings_get_connections_clone:
+ * @self: the #NMSetting
+ * @out_len: (allow-none): optional output argument
+ * @func: caller-supplied function for filtering connections
+ * @func_data: caller-supplied data passed to @func
+ *
+ * Returns: (transfer container) (element-type NMSettingsConnection):
+ *   an NULL terminated array of #NMSettingsConnection objects that were
+ *   filtered by @func (or all connections if no filter was specified).
+ *   The order is arbitrary.
+ *   Caller is responsible for freeing the returned array with free(),
+ *   the contained values do not need to be unrefed.
  */
-GSList *
-nm_settings_get_connections_sorted (NMSettings *self)
+NMSettingsConnection **
+nm_settings_get_connections_clone (NMSettings *self,
+                                   guint *out_len,
+                                   NMSettingsConnectionFilterFunc func,
+                                   gpointer func_data)
 {
-	GHashTableIter iter;
-	gpointer data = NULL;
-	GSList *list = NULL;
+	NMSettingsConnection *const*list_cached;
+	NMSettingsConnection **list;
+	guint len, i, j;
 
 	g_return_val_if_fail (NM_IS_SETTINGS (self), NULL);
 
-	g_hash_table_iter_init (&iter, NM_SETTINGS_GET_PRIVATE (self)->connections);
-	while (g_hash_table_iter_next (&iter, NULL, &data))
-		list = g_slist_insert_sorted (list, data, connection_sort);
+	list_cached = nm_settings_get_connections (self, &len);
+
+#if NM_MORE_ASSERTS
+	nm_assert (list_cached);
+	for (i = 0; i < len; i++)
+		nm_assert (NM_IS_SETTINGS_CONNECTION (list_cached[i]));
+	nm_assert (!list_cached[i]);
+#endif
+
+	list = g_new (NMSettingsConnection *, ((gsize) len + 1));
+	if (func) {
+		for (i = 0, j = 0; i < len; i++) {
+			if (func (self, list_cached[i], func_data))
+				list[j++] = list_cached[i];
+		}
+		list[j] = NULL;
+		len = j;
+	} else
+		memcpy (list, list_cached, sizeof (list[0]) * ((gsize) len + 1));
+
+	NM_SET_OUT (out_len, len);
 	return list;
+}
+
+/* Returns a list of NMSettingsConnections.
+ * The list is sorted in the order suitable for auto-connecting, i.e.
+ * first go connections with autoconnect=yes and most recent timestamp.
+ * Caller must free the list with g_free(), but not the list items.
+ */
+NMSettingsConnection **
+nm_settings_get_connections_sorted (NMSettings *self, guint *out_len)
+{
+	NMSettingsConnection **connections;
+	guint len;
+
+	g_return_val_if_fail (NM_IS_SETTINGS (self), NULL);
+
+	connections = nm_settings_get_connections_clone (self, &len, NULL, NULL);
+	if (len > 1)
+		g_qsort_with_data (connections, len, sizeof (NMSettingsConnection *), nm_settings_connection_cmp_autoconnect_priority_p_with_data, NULL);
+
+	NM_SET_OUT (out_len, len);
+	return connections;
 }
 
 NMSettingsConnection *
@@ -753,7 +779,7 @@ add_plugin (NMSettings *self, NMSettingsPlugin *plugin)
 	              NM_SETTINGS_PLUGIN_INFO, &pinfo,
 	              NULL);
 
-	path = g_object_get_data (G_OBJECT (plugin), PLUGIN_MODULE_PATH);
+	path = g_object_get_qdata (G_OBJECT (plugin), plugin_module_path_quark ());
 
 	_LOGI ("loaded plugin %s: %s%s%s%s", pname, pinfo,
 	       NM_PRINT_FMT_QUOTED (path, " (", path, ")", ""));
@@ -809,8 +835,8 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 	gboolean has_no_ibft;
 	gssize idx_no_ibft, idx_ibft;
 
-	idx_ibft    = _nm_utils_strv_find_first ((char **) plugins, -1, "ibft");
-	idx_no_ibft = _nm_utils_strv_find_first ((char **) plugins, -1, "no-ibft");
+	idx_ibft    = nm_utils_strv_find_first ((char **) plugins, -1, "ibft");
+	idx_no_ibft = nm_utils_strv_find_first ((char **) plugins, -1, "no-ibft");
 	has_no_ibft = idx_no_ibft >= 0 && idx_no_ibft > idx_ibft;
 #if WITH_SETTINGS_PLUGIN_IBFT
 	add_ibft = idx_no_ibft < 0 && idx_ibft < 0;
@@ -844,9 +870,9 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 			continue;
 		}
 
-		if (_nm_utils_strv_find_first ((char **) plugins,
-		                               iter - plugins,
-		                               pname) >= 0) {
+		if (nm_utils_strv_find_first ((char **) plugins,
+		                              iter - plugins,
+		                              pname) >= 0) {
 			/* the plugin is already mentioned in the list previously.
 			 * Don't load a duplicate. */
 			continue;
@@ -916,7 +942,7 @@ load_plugin:
 				break;
 			}
 
-			g_object_set_data_full (obj, PLUGIN_MODULE_PATH, path, g_free);
+			g_object_set_qdata_full (obj, plugin_module_path_quark (), path, g_free);
 			path = NULL;
 			if (add_plugin (self, NM_SETTINGS_PLUGIN (obj)))
 				list = g_slist_append (list, obj);
@@ -1659,6 +1685,28 @@ nm_settings_set_transient_hostname (NMSettings *self,
 	                   info);
 }
 
+gboolean
+nm_settings_get_transient_hostname (NMSettings *self, char **hostname)
+{
+	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+	GVariant *v_hostname;
+
+	if (!priv->hostname.hostnamed_proxy)
+		return FALSE;
+
+	v_hostname = g_dbus_proxy_get_cached_property (priv->hostname.hostnamed_proxy,
+	                                               "Hostname");
+	if (!v_hostname) {
+		_LOGT ("transient hostname retrieval failed");
+		return FALSE;
+	}
+
+	*hostname = g_variant_dup_string (v_hostname, NULL);
+	g_variant_unref (v_hostname);
+
+	return TRUE;
+}
+
 static gboolean
 write_hostname (NMSettingsPrivate *priv, const char *hostname)
 {
@@ -1935,9 +1983,6 @@ have_connection_for_device (NMSettings *self, NMDevice *device)
 	return FALSE;
 }
 
-#define DEFAULT_WIRED_CONNECTION_TAG "default-wired-connection"
-#define DEFAULT_WIRED_DEVICE_TAG     "default-wired-device"
-
 static void default_wired_clear_tag (NMSettings *self,
                                      NMDevice *device,
                                      NMSettingsConnection *connection,
@@ -1953,7 +1998,7 @@ default_wired_connection_removed_cb (NMSettingsConnection *connection, NMSetting
 	 * wired device to the config file and don't create a new default wired
 	 * connection for that device again.
 	 */
-	device = g_object_get_data (G_OBJECT (connection), DEFAULT_WIRED_DEVICE_TAG);
+	device = g_object_get_qdata (G_OBJECT (connection), _default_wired_device_quark ());
 	if (device)
 		default_wired_clear_tag (self, device, connection, TRUE);
 }
@@ -1970,7 +2015,7 @@ default_wired_connection_updated_by_user_cb (NMSettingsConnection *connection, g
 	 * considered a default wired connection, and should no longer affect
 	 * the no-auto-default configuration option.
 	 */
-	device = g_object_get_data (G_OBJECT (connection), DEFAULT_WIRED_DEVICE_TAG);
+	device = g_object_get_qdata (G_OBJECT (connection), _default_wired_device_quark ());
 	if (device)
 		default_wired_clear_tag (self, device, connection, FALSE);
 }
@@ -1984,11 +2029,11 @@ default_wired_clear_tag (NMSettings *self,
 	g_return_if_fail (NM_IS_SETTINGS (self));
 	g_return_if_fail (NM_IS_DEVICE (device));
 	g_return_if_fail (NM_IS_CONNECTION (connection));
-	g_return_if_fail (device == g_object_get_data (G_OBJECT (connection), DEFAULT_WIRED_DEVICE_TAG));
-	g_return_if_fail (connection == g_object_get_data (G_OBJECT (device), DEFAULT_WIRED_CONNECTION_TAG));
+	g_return_if_fail (device == g_object_get_qdata (G_OBJECT (connection), _default_wired_device_quark ()));
+	g_return_if_fail (connection == g_object_get_qdata (G_OBJECT (device), _default_wired_connection_quark ()));
 
-	g_object_set_data (G_OBJECT (connection), DEFAULT_WIRED_DEVICE_TAG, NULL);
-	g_object_set_data (G_OBJECT (device), DEFAULT_WIRED_CONNECTION_TAG, NULL);
+	g_object_set_qdata (G_OBJECT (connection), _default_wired_device_quark (), NULL);
+	g_object_set_qdata (G_OBJECT (device), _default_wired_connection_quark (), NULL);
 
 	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (default_wired_connection_removed_cb), self);
 	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (default_wired_connection_updated_by_user_cb), self);
@@ -2015,7 +2060,7 @@ device_realized (NMDevice *device, GParamSpec *pspec, NMSettings *self)
 	 * ignore it.
 	 */
 	if (   !nm_device_get_managed (device, FALSE)
-	    || g_object_get_data (G_OBJECT (device), DEFAULT_WIRED_CONNECTION_TAG)
+	    || g_object_get_qdata (G_OBJECT (device), _default_wired_connection_quark ())
 	    || have_connection_for_device (self, device))
 		return;
 
@@ -2037,8 +2082,8 @@ device_realized (NMDevice *device, GParamSpec *pspec, NMSettings *self)
 		return;
 	}
 
-	g_object_set_data (G_OBJECT (added), DEFAULT_WIRED_DEVICE_TAG, device);
-	g_object_set_data (G_OBJECT (device), DEFAULT_WIRED_CONNECTION_TAG, added);
+	g_object_set_qdata (G_OBJECT (added), _default_wired_device_quark (), device);
+	g_object_set_qdata (G_OBJECT (device), _default_wired_connection_quark (), added);
 
 	g_signal_connect (added, NM_SETTINGS_CONNECTION_UPDATED_INTERNAL,
 	                  G_CALLBACK (default_wired_connection_updated_by_user_cb), self);
@@ -2071,7 +2116,7 @@ nm_settings_device_removed (NMSettings *self, NMDevice *device, gboolean quittin
 	                                      G_CALLBACK (device_realized),
 	                                      self);
 
-	connection = g_object_get_data (G_OBJECT (device), DEFAULT_WIRED_CONNECTION_TAG);
+	connection = g_object_get_qdata (G_OBJECT (device), _default_wired_connection_quark ());
 	if (connection) {
 		default_wired_clear_tag (self, device, connection, FALSE);
 
@@ -2081,107 +2126,6 @@ nm_settings_device_removed (NMSettings *self, NMDevice *device, gboolean quittin
 		if (quitting == FALSE)
 			nm_settings_connection_delete (connection, NULL, NULL);
 	}
-}
-
-/*****************************************************************************/
-
-/* GCompareFunc helper for sorting "best" connections.
- * The function sorts connections in ascending timestamp order.
- * That means an older connection (lower timestamp) goes before
- * a newer one.
- */
-gint
-nm_settings_sort_connections (gconstpointer a, gconstpointer b)
-{
-	NMSettingsConnection *ac = (NMSettingsConnection *) a;
-	NMSettingsConnection *bc = (NMSettingsConnection *) b;
-	guint64 ats = 0, bts = 0;
-
-	if (ac == bc)
-		return 0;
-	if (!ac)
-		return -1;
-	if (!bc)
-		return 1;
-
-	/* In the future we may use connection priorities in addition to timestamps */
-	nm_settings_connection_get_timestamp (ac, &ats);
-	nm_settings_connection_get_timestamp (bc, &bts);
-
-	if (ats < bts)
-		return -1;
-	else if (ats > bts)
-		return 1;
-	return 0;
-}
-
-/**
- * nm_settings_get_best_connections:
- * @self: the #NMSetting
- * @max_requested: if non-zero, the maximum number of connections to return
- * @ctype1: an #NMSetting base type (eg NM_SETTING_WIRELESS_SETTING_NAME) to
- *   filter connections against
- * @ctype2: a second #NMSetting base type (eg NM_SETTING_WIRELESS_SETTING_NAME)
- *   to filter connections against
- * @func: caller-supplied function for filtering connections
- * @func_data: caller-supplied data passed to @func
- *
- * Returns: a #GSList of #NMConnection objects in sorted order representing the
- *   "best" or highest-priority connections filtered by @ctype1 and/or @ctype2,
- *   and/or @func.  Caller is responsible for freeing the returned #GSList, but
- *   the contained values do not need to be unreffed.
- */
-GSList *
-nm_settings_get_best_connections (NMSettings *self,
-                                  guint max_requested,
-                                  const char *ctype1,
-                                  const char *ctype2,
-                                  NMConnectionFilterFunc func,
-                                  gpointer func_data)
-{
-	NMSettingsPrivate *priv;
-	GSList *sorted = NULL;
-	GHashTableIter iter;
-	NMSettingsConnection *connection;
-	guint added = 0;
-	guint64 oldest = 0;
-
-	g_return_val_if_fail (NM_IS_SETTINGS (self), NULL);
-
-	priv = NM_SETTINGS_GET_PRIVATE (self);
-
-	g_hash_table_iter_init (&iter, priv->connections);
-	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &connection)) {
-		guint64 cur_ts = 0;
-
-		if (ctype1 && !nm_connection_is_type (NM_CONNECTION (connection), ctype1))
-			continue;
-		if (ctype2 && !nm_connection_is_type (NM_CONNECTION (connection), ctype2))
-			continue;
-		if (func && !func (self, NM_CONNECTION (connection), func_data))
-			continue;
-
-		/* Don't bother with a connection that's older than the oldest one in the list */
-		if (max_requested && added >= max_requested) {
-		    nm_settings_connection_get_timestamp (connection, &cur_ts);
-		    if (cur_ts <= oldest)
-				continue;
-		}
-
-		/* List is sorted with oldest first */
-		sorted = g_slist_insert_sorted (sorted, connection, nm_settings_sort_connections);
-		added++;
-
-		if (max_requested && added > max_requested) {
-			/* Over the limit, remove the oldest one */
-			sorted = g_slist_delete_link (sorted, sorted);
-			added--;
-		}
-
-		nm_settings_connection_get_timestamp (NM_SETTINGS_CONNECTION (sorted->data), &oldest);
-	}
-
-	return g_slist_reverse (sorted);
 }
 
 /*****************************************************************************/
@@ -2221,7 +2165,7 @@ hostnamed_properties_changed (GDBusProxy *proxy,
 		g_free (priv->hostname.value);
 		priv->hostname.value = g_strdup (hostname);
 		_notify (self, PROP_HOSTNAME);
-		nm_dispatcher_call (DISPATCHER_ACTION_HOSTNAME, NULL, NULL, NULL, NULL, NULL, NULL);
+		nm_dispatcher_call_hostname (NULL, NULL, NULL);
 	}
 
 	g_variant_unref (v_hostname);

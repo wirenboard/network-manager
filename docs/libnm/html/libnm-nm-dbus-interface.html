@@ -46,6 +46,10 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-AVAILABLE-IN-1-8:CAPS" title="NM_AVAILABLE_IN_1_8">NM_AVAILABLE_IN_1_8</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-SERVICE:CAPS" title="NM_DBUS_SERVICE">NM_DBUS_SERVICE</a></td>
 </tr>
 <tr>
@@ -131,6 +135,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-BOND:CAPS" title="NM_DBUS_INTERFACE_DEVICE_BOND">NM_DBUS_INTERFACE_DEVICE_BOND</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-DUMMY:CAPS" title="NM_DBUS_INTERFACE_DEVICE_DUMMY">NM_DBUS_INTERFACE_DEVICE_DUMMY</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -290,6 +298,10 @@
 </tr>
 <tr>
 <td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionStateReason" title="enum NMActiveConnectionStateReason">NMActiveConnectionStateReason</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentGetSecretsFlags" title="enum NMSecretAgentGetSecretsFlags">NMSecretAgentGetSecretsFlags</a></td>
 </tr>
 <tr>
@@ -381,9 +393,10 @@
 </div>
 <div class="refsect1">
 <a name="libnm-nm-dbus-interface.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NM80211Mode
     <span class="lineart">├──</span> NMActiveConnectionState
+    <span class="lineart">├──</span> NMActiveConnectionStateReason
     <span class="lineart">├──</span> NMCapability
     <span class="lineart">├──</span> NMConnectivityState
     <span class="lineart">├──</span> NMDeviceState
@@ -393,7 +406,7 @@
     <span class="lineart">├──</span> NMMetered
     <span class="lineart">├──</span> NMState
     <span class="lineart">╰──</span> NMWimaxNspNetworkType
-    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
     <span class="lineart">├──</span> NM80211ApFlags
     <span class="lineart">├──</span> NM80211ApSecurityFlags
     <span class="lineart">├──</span> NMBluetoothCapabilities
@@ -416,6 +429,11 @@
 <div class="refsect2">
 <a name="NM-AVAILABLE-IN-1-2:CAPS"></a><h3>NM_AVAILABLE_IN_1_2</h3>
 <pre class="programlisting">#define             NM_AVAILABLE_IN_1_2</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-AVAILABLE-IN-1-8:CAPS"></a><h3>NM_AVAILABLE_IN_1_8</h3>
+<pre class="programlisting">#define             NM_AVAILABLE_IN_1_8</pre>
 </div>
 <hr>
 <div class="refsect2">
@@ -547,6 +565,12 @@
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-BOND:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BOND</h3>
 <pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-DUMMY:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_DUMMY</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_DUMMY      NM_DBUS_INTERFACE_DEVICE ".Dummy"
 </pre>
 </div>
 <hr>
@@ -730,56 +754,74 @@ extensions.</p>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-UNKNOWN:CAPS"></a>NM_STATE_UNKNOWN</p></td>
 <td class="enum_member_description">
-<p>networking state is unknown</p>
+<p>Networking state is unknown. This indicates a daemon error
+   that makes it unable to reasonably assess the state. In such event the
+   applications are expected to assume Internet connectivity might be present
+   and not disable controls that require network access.
+   The graphical shells may hide the network accessibility indicator altogether
+   since no meaningful status indication can be provided.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-ASLEEP:CAPS"></a>NM_STATE_ASLEEP</p></td>
 <td class="enum_member_description">
-<p>networking is not enabled</p>
+<p>Networking is not enabled, the system is being suspended or
+   resumed from suspend.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-DISCONNECTED:CAPS"></a>NM_STATE_DISCONNECTED</p></td>
 <td class="enum_member_description">
-<p>there is no active network connection</p>
+<p>There is no active network connection.
+   The graphical shell should indicate  no network connectivity and the
+   applications should not attempt to access the network.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-DISCONNECTING:CAPS"></a>NM_STATE_DISCONNECTING</p></td>
 <td class="enum_member_description">
-<p>network connections are being cleaned up</p>
+<p>Network connections are being cleaned up.
+   The applications should tear down their network sessions.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-CONNECTING:CAPS"></a>NM_STATE_CONNECTING</p></td>
 <td class="enum_member_description">
-<p>a network connection is being started</p>
+<p>A network connection is being started
+   The graphical shell should indicate the network is being connected while
+   the applications should still make no attempts to connect the network.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-CONNECTED-LOCAL:CAPS"></a>NM_STATE_CONNECTED_LOCAL</p></td>
 <td class="enum_member_description">
-<p>there is only local IPv4 and/or IPv6 connectivity</p>
+<p>There is only local IPv4 and/or IPv6 connectivity,
+   but no default route to access the Internet. The graphical shell should
+   indicate no network connectivity.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-CONNECTED-SITE:CAPS"></a>NM_STATE_CONNECTED_SITE</p></td>
 <td class="enum_member_description">
-<p>there is only site-wide IPv4 and/or IPv6 connectivity</p>
+<p>There is only site-wide IPv4 and/or IPv6 connectivity.
+   This means a default route is available, but the Internet connectivity check
+   (see "Connectivity" property) did not succeed. The graphical shell should
+   indicate limited network connectivity.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-STATE-CONNECTED-GLOBAL:CAPS"></a>NM_STATE_CONNECTED_GLOBAL</p></td>
 <td class="enum_member_description">
-<p>there is global IPv4 and/or IPv6 Internet connectivity</p>
+<p>There is global IPv4 and/or IPv6 Internet connectivity
+   This means the Internet connectivity check succeeded, the graphical shell should
+   indicate full network connectivity.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -802,30 +844,41 @@ extensions.</p>
 <tr>
 <td class="enum_member_name"><p><a name="NM-CONNECTIVITY-UNKNOWN:CAPS"></a>NM_CONNECTIVITY_UNKNOWN</p></td>
 <td class="enum_member_description">
-<p>Network connectivity is unknown.</p>
+<p>Network connectivity is unknown. This means the
+  connectivity checks are disabled (e.g. on server installations) or has
+  not run yet. The graphical shell should assume the Internet connection
+  might be available and not present a captive portal window.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-CONNECTIVITY-NONE:CAPS"></a>NM_CONNECTIVITY_NONE</p></td>
 <td class="enum_member_description">
-<p>The host is not connected to any network.</p>
+<p>The host is not connected to any network. There's
+  no active connection that contains a default route to the internet and
+  thus it makes no sense to even attempt a connectivity check. The graphical
+  shell should use this state to indicate the network connection is unavailable.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-CONNECTIVITY-PORTAL:CAPS"></a>NM_CONNECTIVITY_PORTAL</p></td>
 <td class="enum_member_description">
-<p>The host is behind a captive portal and
-  cannot reach the full Internet.</p>
+<p>The Internet connection is hijacked by a captive
+  portal gateway. The graphical shell may open a sandboxed web browser window
+  (because the captive portals typically attempt a man-in-the-middle attacks
+  agains the https connections) for the purpose of authenticating to a gateway
+  and retrigger the connectivity check with <code class="function">CheckConnectivity()</code> when the
+  browser window is dismissed.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-CONNECTIVITY-LIMITED:CAPS"></a>NM_CONNECTIVITY_LIMITED</p></td>
 <td class="enum_member_description">
-<p>The host is connected to a network, but
-  does not appear to be able to reach the full Internet.</p>
+<p>The host is connected to a network, does not appear
+  to be able to reach the full Internet, but a captive portal has not been
+  detected.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -1010,6 +1063,13 @@ GSM/UMTS, or LTE network access protocols</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-DUMMY:CAPS"></a>NM_DEVICE_TYPE_DUMMY</p></td>
+<td class="enum_member_description">
+<p>a dummy interface</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -1052,6 +1112,13 @@ GSM/UMTS, or LTE network access protocols</p>
 <td class="enum_member_name"><p><a name="NM-DEVICE-CAP-IS-SOFTWARE:CAPS"></a>NM_DEVICE_CAP_IS_SOFTWARE</p></td>
 <td class="enum_member_description">
 <p>this device is a software device</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-CAP-SRIOV:CAPS"></a>NM_DEVICE_CAP_SRIOV</p></td>
+<td class="enum_member_description">
+<p>this device supports single-root I/O virtualization</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -2182,6 +2249,144 @@ network.</p>
 </tbody>
 </table></div>
 </div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMActiveConnectionStateReason"></a><h3>enum NMActiveConnectionStateReason</h3>
+<p>Active connection state reasons.</p>
+<div class="refsect3">
+<a name="NMActiveConnectionStateReason.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-UNKNOWN:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>The reason for the active connection
+  state change is unknown.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-NONE:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_NONE</p></td>
+<td class="enum_member_description">
+<p>No reason was given for the active
+  connection state change.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-USER-DISCONNECTED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_USER_DISCONNECTED</p></td>
+<td class="enum_member_description">
+<p>The active connection changed
+  state because the user disconnected it.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-DEVICE-DISCONNECTED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED</p></td>
+<td class="enum_member_description">
+<p>The active connection
+  changed state because the device it was using was disconnected.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-SERVICE-STOPPED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_STOPPED</p></td>
+<td class="enum_member_description">
+<p>The service providing the
+  VPN connection was stopped.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-IP-CONFIG-INVALID:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_IP_CONFIG_INVALID</p></td>
+<td class="enum_member_description">
+<p>The IP config of the active
+  connection was invalid.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-CONNECT-TIMEOUT:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_CONNECT_TIMEOUT</p></td>
+<td class="enum_member_description">
+<p>The connection attempt to
+  the VPN service timed out.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-SERVICE-START-TIMEOUT:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT</p></td>
+<td class="enum_member_description">
+<p>A timeout occurred
+  while starting the service providing the VPN connection.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-SERVICE-START-FAILED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_SERVICE_START_FAILED</p></td>
+<td class="enum_member_description">
+<p>Starting the service
+  providing the VPN connection failed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-NO-SECRETS:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_NO_SECRETS</p></td>
+<td class="enum_member_description">
+<p>Necessary secrets for the
+  connection were not provided.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-LOGIN-FAILED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_LOGIN_FAILED</p></td>
+<td class="enum_member_description">
+<p>Authentication to the
+  server failed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-CONNECTION-REMOVED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_CONNECTION_REMOVED</p></td>
+<td class="enum_member_description">
+<p>The connection was
+  deleted from settings.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-DEPENDENCY-FAILED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_DEPENDENCY_FAILED</p></td>
+<td class="enum_member_description">
+<p>Master connection of this
+  connection failed to activate.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-DEVICE-REALIZE-FAILED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_REALIZE_FAILED</p></td>
+<td class="enum_member_description">
+<p>Could not create the
+  software device link.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVE-CONNECTION-STATE-REASON-DEVICE-REMOVED:CAPS"></a>NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_REMOVED</p></td>
+<td class="enum_member_description">
+<p>The device this connection
+  depended on disappeared.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.8</p>
 </div>
 <hr>
 <div class="refsect2">

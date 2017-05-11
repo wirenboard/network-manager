@@ -2,12 +2,12 @@
 .\"     Title: nmcli-examples
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 02/15/2017
+.\"      Date: 05/10/2017
 .\"    Manual: Examples
-.\"    Source: NetworkManager 1.6.2
+.\"    Source: NetworkManager 1.8.0
 .\"  Language: English
 .\"
-.TH "NMCLI\-EXAMPLES" "7" "" "NetworkManager 1\&.6\&.2" "Examples"
+.TH "NMCLI\-EXAMPLES" "7" "" "NetworkManager 1\&.8\&.0" "Examples"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -312,7 +312,47 @@ that is bound to interface name
 \fIcon show\fR
 command displays the profile so that all parameters can be reviewed\&.
 .PP
-\fBExample\ \&10.\ \&Escaping colon characters in tabular mode\fR
+\fBExample\ \&10.\ \&Convenient field values retrieval for scripting\fR
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBnmcli \-g ip4\&.address connection show my\-con\-eth0\fR
+192\&.168\&.1\&.12/24
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBnmcli \-g ip4\&.address,ip4\&.dns connection show my\-con\-eth0\fR
+192\&.168\&.1\&.12/24
+192\&.168\&.1\&.1
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBnmcli \-g ip4 connection show my\-con\-eth0\fR
+IP4:192\&.168\&.1\&.12/24:192\&.168\&.1\&.1::192\&.168\&.1\&.1::
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+This example shows retrieval of ip4 connection field values via the \-\-get\-values option\&. Multiple comma separated fields can be provided: they will be printed one per line\&. If a whole section is provided instead of a single field, the name of the section will be printed followed by all the related field values on the same line\&. See also \-\-terse, \-\-mode, \-\-fields and \-\-escape options in
+\fBnmcli\fR(1)
+manual page for more customized output\&.
+.PP
+\fBExample\ \&11.\ \&Escaping colon characters in tabular mode\fR
 .sp
 .if n \{\
 .RS 4
@@ -331,7 +371,7 @@ nager/ActiveConnection/9
 .PP
 This example shows escaping colon characters in tabular mode\&. It may be useful for script processing, because \*(Aq:\*(Aq is used as a field separator\&.
 .PP
-\fBExample\ \&11.\ \&nmcli usage in a NetworkManager dispatcher script to make Ethernet and Wi\-Fi mutually exclusive\fR
+\fBExample\ \&12.\ \&nmcli usage in a NetworkManager dispatcher script to make Ethernet and Wi\-Fi mutually exclusive\fR
 .sp
 .if n \{\
 .RS 4
@@ -369,7 +409,7 @@ manual page for more information about NetworkManager dispatcher scripts\&.
 .PP
 \fBExample sessions of interactive connection editor\fR
 .PP
-\fBExample\ \&12.\ \&Adding an ethernet connection profile in interactive editor (a)\fR
+\fBExample\ \&13.\ \&Adding an ethernet connection profile in interactive editor (a)\fR
 .sp
 .if n \{\
 .RS 4

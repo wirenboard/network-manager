@@ -77,13 +77,13 @@
 <tbody>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWimax.html#NMSettingWimax--mac-address" title="The “mac-address” property">mac-address</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWimax.html#NMSettingWimax--network-name" title="The “network-name” property">network-name</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -119,7 +119,7 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingWimax.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobjectgobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+<pre class="screen">    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> NMSettingWimax
 </pre>
@@ -234,13 +234,14 @@ to.</p>
 <div class="refsect2">
 <a name="NMSettingWimax-struct"></a><h3>NMSettingWimax</h3>
 <pre class="programlisting">typedef struct _NMSettingWimax NMSettingWimax;</pre>
+<p>WiMax Settings</p>
 </div>
 </div>
 <div class="refsect1">
 <a name="NMSettingWimax.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingWimax--mac-address"></a><h3>The <code class="literal">“mac-address”</code> property</h3>
-<pre class="programlisting">  “mac-address”              <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “mac-address”              <span class="type">gchar</span> *</pre>
 <p>If specified, this connection will only apply to the WiMAX device whose
 MAC address matches. This property does not change the MAC address of the
 device (known as MAC spoofing).</p>
@@ -254,7 +255,7 @@ device (known as MAC spoofing).</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingWimax--network-name"></a><h3>The <code class="literal">“network-name”</code> property</h3>
-<pre class="programlisting">  “network-name”             <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “network-name”             <span class="type">gchar</span> *</pre>
 <p>Network Service Provider (NSP) name of the WiMAX network this connection
 should use.</p>
 <div class="warning">

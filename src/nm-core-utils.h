@@ -90,12 +90,33 @@ GETTER (void) \
 
 /*****************************************************************************/
 
+typedef struct {
+	union {
+		guint8 addr_ptr[1];
+		in_addr_t addr4;
+		struct in6_addr addr6;
+
+		/* NMIPAddr is really a union for IP addresses.
+		 * However, as ethernet addresses fit in here nicely, use
+		 * it also for an ethernet MAC address. */
+		guint8 addr_eth[6 /*ETH_ALEN*/];
+	};
+} NMIPAddr;
+
+extern const NMIPAddr nm_ip_addr_zero;
+
+#define NMIPAddrInit { .addr6 = IN6ADDR_ANY_INIT }
+
+/*****************************************************************************/
+
 gboolean nm_ethernet_address_is_valid (gconstpointer addr, gssize len);
 
 gconstpointer nm_utils_ipx_address_clear_host_address (int family, gpointer dst, gconstpointer src, guint8 plen);
 in_addr_t nm_utils_ip4_address_clear_host_address (in_addr_t addr, guint8 plen);
 const struct in6_addr *nm_utils_ip6_address_clear_host_address (struct in6_addr *dst, const struct in6_addr *src, guint8 plen);
 gboolean nm_utils_ip6_address_same_prefix (const struct in6_addr *addr_a, const struct in6_addr *addr_b, guint8 plen);
+
+double nm_utils_exp10 (gint16 e);
 
 /**
  * nm_utils_ip6_route_metric_normalize:
@@ -111,8 +132,6 @@ nm_utils_ip6_route_metric_normalize (guint32 metric)
 {
 	return metric ? metric : 1024 /*NM_PLATFORM_ROUTE_METRIC_DEFAULT_IP6*/;
 }
-
-int nm_spawn_process (const char *args, GError **error);
 
 int nm_utils_modprobe (GError **error, gboolean suppress_error_loggin, const char *arg1, ...) G_GNUC_NULL_TERMINATED;
 
@@ -144,6 +163,8 @@ typedef enum {
 
 NMMatchSpecMatchType nm_match_spec_device (const GSList *specs,
                                            const char *interface_name,
+                                           const char *driver,
+                                           const char *driver_version,
                                            const char *device_type,
                                            const char *hwaddr,
                                            const char *s390_subchannels);
@@ -274,7 +295,7 @@ const char *nm_utils_new_infiniband_name (char *name, const char *parent_name, i
 GPtrArray *nm_utils_read_resolv_conf_nameservers (const char *rc_contents);
 GPtrArray *nm_utils_read_resolv_conf_dns_options (const char *rc_contents);
 
-int nm_utils_cmp_connection_by_autoconnect_priority (NMConnection **a, NMConnection **b);
+int nm_utils_cmp_connection_by_autoconnect_priority (NMConnection *a, NMConnection *b);
 
 void nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base, guint32 level, guint64 domain, const char *name, const char *prefix);
 
@@ -390,7 +411,7 @@ gboolean nm_utils_ipv6_addr_set_stable_privacy_impl (NMUtilsStableType stable_ty
                                                      struct in6_addr *addr,
                                                      const char *ifname,
                                                      const char *network_id,
-                                                     guint dad_counter,
+                                                     guint32 dad_counter,
                                                      guint8 *secret_key,
                                                      gsize key_len,
                                                      GError **error);
@@ -399,7 +420,7 @@ gboolean nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType id_type,
                                                 struct in6_addr *addr,
                                                 const char *ifname,
                                                 const char *network_id,
-                                                guint dad_counter,
+                                                guint32 dad_counter,
                                                 GError **error);
 
 char *nm_utils_hw_addr_gen_random_eth (const char *current_mac_address,
@@ -471,5 +492,13 @@ struct stat;
 
 gboolean nm_utils_validate_plugin (const char *path, struct stat *stat, GError **error);
 char **nm_utils_read_plugin_paths (const char *dirname, const char *prefix);
+char *nm_utils_format_con_diff_for_audit (GHashTable *diff);
+
+
+/*****************************************************************************/
+
+const char *nm_activation_type_to_string (NMActivationType activation_type);
+
+/*****************************************************************************/
 
 #endif /* __NM_CORE_UTILS_H__ */

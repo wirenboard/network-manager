@@ -93,29 +93,21 @@ grab_request_options (GPtrArray *store, const char* line)
 
 
 static void
-add_hostname4 (GString *str, const char *hostname, const char *fqdn)
+add_hostname4 (GString *str, const char *hostname, gboolean use_fqdn)
 {
-	char *plain_hostname, *dot;
-
-	if (fqdn) {
-		g_string_append_printf (str, FQDN_FORMAT "\n", fqdn);
-		g_string_append (str,
-		                 "send fqdn.encoded on;\n"
-		                 "send fqdn.server-update on;\n");
-	} else if (hostname) {
-		plain_hostname = g_strdup (hostname);
-		dot = strchr (plain_hostname, '.');
-		/* get rid of the domain */
-		if (dot)
-			*dot = '\0';
-
-		g_string_append_printf (str, HOSTNAME4_FORMAT "\n", plain_hostname);
-		g_free (plain_hostname);
+	if (hostname) {
+		if (use_fqdn) {
+			g_string_append_printf (str, FQDN_FORMAT "\n", hostname);
+			g_string_append (str,
+			                 "send fqdn.encoded on;\n"
+			                 "send fqdn.server-update on;\n");
+		} else
+			g_string_append_printf (str, HOSTNAME4_FORMAT "\n", hostname);
 	}
 }
 
 static void
-add_ip4_config (GString *str, GBytes *client_id, const char *hostname, const char *fqdn)
+add_ip4_config (GString *str, GBytes *client_id, const char *hostname, gboolean use_fqdn)
 {
 	if (client_id) {
 		const char *p;
@@ -150,7 +142,7 @@ add_ip4_config (GString *str, GBytes *client_id, const char *hostname, const cha
 		g_string_append (str, "; # added by NetworkManager\n");
 	}
 
-	add_hostname4 (str, hostname, fqdn);
+	add_hostname4 (str, hostname, use_fqdn);
 
 	g_string_append_c (str, '\n');
 
@@ -232,13 +224,46 @@ nm_dhcp_dhclient_get_client_id_from_config_file (const char *path)
 	return NULL;
 }
 
+static gboolean
+read_interface (const char *line, char *interface, guint size)
+{
+	gs_free char *dup = g_strdup (line + NM_STRLEN ("interface"));
+	char *ptr = dup, *end;
+
+	while (g_ascii_isspace (*ptr))
+		ptr++;
+
+	if (*ptr == '"') {
+		ptr++;
+		end = strchr (ptr, '"');
+		if (!end)
+			return FALSE;
+		*end = '\0';
+	} else {
+		end = strchr (ptr, ' ');
+		if (!end)
+			end = strchr (ptr, '{');
+		if (!end)
+			return FALSE;
+		*end = '\0';
+	}
+
+	if (   ptr[0] == '\0'
+	    || strlen (ptr) + 1 > size)
+		return FALSE;
+
+	snprintf (interface, size, "%s", ptr);
+
+	return TRUE;
+}
+
 char *
 nm_dhcp_dhclient_create_config (const char *interface,
                                 gboolean is_ip6,
                                 GBytes *client_id,
                                 const char *anycast_addr,
                                 const char *hostname,
-                                const char *fqdn,
+                                gboolean use_fqdn,
                                 const char *orig_path,
                                 const char *orig_contents,
                                 GBytes **out_new_client_id)
@@ -258,14 +283,30 @@ nm_dhcp_dhclient_create_config (const char *interface,
 		char **lines, **line;
 		gboolean in_alsoreq = FALSE;
 		gboolean in_req = FALSE;
+		char intf[IFNAMSIZ];
 
 		g_string_append_printf (new_contents, _("# Merged from %s\n\n"), orig_path);
+		intf[0] = '\0';
 
 		lines = g_strsplit_set (orig_contents, "\n\r", 0);
 		for (line = lines; lines && *line; line++) {
 			char *p = *line;
 
 			if (!strlen (g_strstrip (p)))
+				continue;
+
+			if (   !intf[0]
+			    && g_str_has_prefix (p, "interface")) {
+				if (read_interface (p, intf, sizeof (intf)))
+					continue;
+			}
+
+			if (intf[0] && strchr (p, '}')) {
+				intf[0] = '\0';
+				continue;
+			}
+
+			if (intf[0] && !nm_streq (intf, interface))
 				continue;
 
 			if (!strncmp (p, CLIENTID_TAG, strlen (CLIENTID_TAG))) {
@@ -279,7 +320,7 @@ nm_dhcp_dhclient_create_config (const char *interface,
 			}
 
 			/* Override config file hostname and use one from the connection */
-			if (hostname || fqdn) {
+			if (hostname) {
 				if (strncmp (p, HOSTNAME4_TAG, strlen (HOSTNAME4_TAG)) == 0)
 					continue;
 				if (strncmp (p, FQDN_TAG, strlen (FQDN_TAG)) == 0)
@@ -339,7 +380,7 @@ nm_dhcp_dhclient_create_config (const char *interface,
 		add_request (reqs, "dhcp6.domain-search");
 		add_request (reqs, "dhcp6.client-id");
 	} else {
-		add_ip4_config (new_contents, client_id, hostname, fqdn);
+		add_ip4_config (new_contents, client_id, hostname, use_fqdn);
 		add_request (reqs, "rfc3442-classless-static-routes");
 		add_request (reqs, "ms-classless-static-routes");
 		add_request (reqs, "static-routes");

@@ -5,8 +5,8 @@
 <title>nm-settings: NetworkManager Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
-<link rel="up" href="manpages.html" title="Manual Pages">
-<link rel="prev" href="NetworkManager.conf.html" title="NetworkManager.conf">
+<link rel="up" href="manpages.html" title="Part I. Manual Pages">
+<link rel="prev" href="nmtui.html" title="nmtui">
 <link rel="next" href="nm-settings-keyfile.html" title="nm-settings-keyfile">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
@@ -16,7 +16,7 @@
 <td width="100%" align="left" class="shortcuts"></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="manpages.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="NetworkManager.conf.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="nmtui.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
 <td><a accesskey="n" href="nm-settings-keyfile.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
@@ -93,618 +93,10 @@
 <tbody></tbody>
 </table>
 </div>
-<div class="table">
-<a name="id-1.2.6.4.3"></a><p class="title"><b>Table 25. 802-1x setting</b></p>
-<div class="table-contents"><table class="table" summary="802-1x setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.altsubject-matches"></a>altsubject-matches</td>
-<td align="left">array of string</td>
-<td align="left">[]</td>
-<td>List of strings to be matched against the altSubjectName of the certificate presented by the authentication server. If the list is empty, no verification of the server certificate's altSubjectName is performed.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.anonymous-identity"></a>anonymous-identity</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Anonymous identity string for EAP authentication methods.  Used as the unencrypted identity with EAP types that support different tunneled identity like EAP-TTLS.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.ca-cert"></a>ca-cert</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Contains the CA certificate if used by the EAP method specified in the "eap" property. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.ca-path"></a>ca-path</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>UTF-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "ca-cert" property.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.client-cert"></a>client-cert</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Contains the client certificate if used by the EAP method specified in the "eap" property. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.domain-suffix-match"></a>domain-suffix-match</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.eap"></a>eap</td>
-<td align="left">array of string</td>
-<td align="left">[]</td>
-<td>The allowed EAP method to be used when authenticating to the network with 802.1x.  Valid methods are: "leap", "md5", "tls", "peap", "ttls", "pwd", and "fast".  Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.identity"></a>identity</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Identity string for EAP authentication methods.  Often the user's user or login name.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">802-1x</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.pac-file"></a>pac-file</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>UTF-8 encoded file path containing PAC for EAP-FAST.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.password"></a>password</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>UTF-8 encoded password used for EAP authentication methods. If both the "password" property and the "password-raw" property are specified, "password" is preferred.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.password-flags"></a>password-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.password-raw"></a>password-raw</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Password used for EAP authentication methods, given as a byte array to allow passwords in other encodings than UTF-8 to be used. If both the "password" property and the "password-raw" property are specified, "password" is preferred.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.password-raw-flags"></a>password-raw-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "password-raw" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase1-fast-provisioning"></a>phase1-fast-provisioning</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Enables or disables in-line provisioning of EAP-FAST credentials when FAST is specified as the EAP method in the "eap" property. Recognized values are "0" (disabled), "1" (allow unauthenticated provisioning), "2" (allow authenticated provisioning), and "3" (allow both authenticated and unauthenticated provisioning).  See the wpa_supplicant documentation for more details.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase1-peaplabel"></a>phase1-peaplabel</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Forces use of the new PEAP label during key derivation.  Some RADIUS servers may require forcing the new PEAP label to interoperate with PEAPv1.  Set to "1" to force use of the new PEAP label.  See the wpa_supplicant documentation for more details.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase1-peapver"></a>phase1-peapver</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Forces which PEAP version is used when PEAP is set as the EAP method in the "eap" property.  When unset, the version reported by the server will be used.  Sometimes when using older RADIUS servers, it is necessary to force the client to use a particular PEAP version.  To do so, this property may be set to "0" or "1" to force that specific PEAP version.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-altsubject-matches"></a>phase2-altsubject-matches</td>
-<td align="left">array of string</td>
-<td align="left">[]</td>
-<td>List of strings to be matched against the altSubjectName of the certificate presented by the authentication server during the inner "phase 2" authentication. If the list is empty, no verification of the server certificate's altSubjectName is performed.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-auth"></a>phase2-auth</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Specifies the allowed "phase 2" inner non-EAP authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property.  Recognized non-EAP "phase 2" methods are "pap", "chap", "mschap", "mschapv2", "gtc", "otp", "md5", and "tls". Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-autheap"></a>phase2-autheap</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Specifies the allowed "phase 2" inner EAP-based authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property.  Recognized EAP-based "phase 2" methods are "md5", "mschapv2", "otp", "gtc", and "tls". Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-ca-cert"></a>phase2-ca-cert</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Contains the "phase 2" CA certificate if used by the EAP method specified in the "phase2-auth" or "phase2-autheap" properties. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-ca-path"></a>phase2-ca-path</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>UTF-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "phase2-ca-cert" property.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-client-cert"></a>phase2-client-cert</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Contains the "phase 2" client certificate if used by the EAP method specified in the "phase2-auth" or "phase2-autheap" properties. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-domain-suffix-match"></a>phase2-domain-suffix-match</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner "phase 2" authentication.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-private-key"></a>phase2-private-key</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Contains the "phase 2" inner private key when the "phase2-auth" or "phase2-autheap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "phase2-private-key-password" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "phase2-private-key-password" property must be set to the password used to decode the PKCS#12 private key and certificate.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-private-key-password"></a>phase2-private-key-password</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>The password used to decrypt the "phase 2" private key specified in the "phase2-private-key" property when the private key either uses the path scheme, or is a PKCS#12 format key.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-private-key-password-flags"></a>phase2-private-key-password-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "phase2-private-key-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.phase2-subject-match"></a>phase2-subject-match</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2-domain-suffix-match.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.pin"></a>pin</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>PIN used for EAP authentication methods.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.pin-flags"></a>pin-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "pin" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.private-key"></a>private-key</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>Contains the private key when the "eap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "private-key-password" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "private-key-password" property must be set to the password used to decode the PKCS#12 private key and certificate. WARNING: "private-key" is not a "secret" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.private-key-password"></a>private-key-password</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>The password used to decrypt the private key specified in the "private-key" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.private-key-password-flags"></a>private-key-password-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "private-key-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.subject-match"></a>subject-match</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Substring to be matched against the subject of the certificate presented by the authentication server. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain-suffix-match.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.802-1x.system-ca-certs"></a>system-ca-certs</td>
-<td align="left">boolean</td>
-<td align="left">FALSE</td>
-<td>When TRUE, overrides the "ca-path" and "phase2-ca-path" properties using the system CA directory specified at configure time with the --system-ca-path switch.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the "ca-cert" and "phase2-ca-cert" properties. If the path provided with --system-ca-path is rather a file name (bundle of trusted CA certificates), it overrides "ca-cert" and "phase2-ca-cert" properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant).</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.4"></a><p class="title"><b>Table 26. adsl setting</b></p>
-<div class="table-contents"><table class="table" summary="adsl setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.encapsulation"></a>encapsulation</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Encapsulation of ADSL connection.  Can be "vcmux" or "llc".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">adsl</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.password"></a>password</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Password used to authenticate with the ADSL service.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.password-flags"></a>password-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.protocol"></a>protocol</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>ADSL connection protocol.  Can be "pppoa", "pppoe" or "ipoatm".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.username"></a>username</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Username used to authenticate with the ADSL service.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.vci"></a>vci</td>
-<td align="left">uint32</td>
-<td align="left">0</td>
-<td>VCI of ADSL connection</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.adsl.vpi"></a>vpi</td>
-<td align="left">uint32</td>
-<td align="left">0</td>
-<td>VPI of ADSL connection</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.5"></a><p class="title"><b>Table 27. bluetooth setting</b></p>
-<div class="table-contents"><table class="table" summary="bluetooth setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bluetooth.bdaddr"></a>bdaddr</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>The Bluetooth address of the device.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bluetooth.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">bluetooth</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bluetooth.type"></a>type</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Either "dun" for Dial-Up Networking connections or "panu" for Personal Area Networking connections to devices supporting the NAP profile.</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.6"></a><p class="title"><b>Table 28. bond setting</b></p>
-<div class="table-contents"><table class="table" summary="bond setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bond.interface-name"></a>interface-name</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Deprecated in favor of connection.interface-name, but can be used for backward-compatibility with older daemons, to set the bond's interface name.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bond.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">bond</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bond.options"></a>options</td>
-<td align="left">dict of string to string</td>
-<td align="left">{'mode': 'balance-rr'}</td>
-<td>Dictionary of key/value pairs of bonding options.  Both keys and values must be strings. Option names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.7"></a><p class="title"><b>Table 29. bridge setting</b></p>
-<div class="table-contents"><table class="table" summary="bridge setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.ageing-time"></a>ageing-time</td>
-<td align="left">uint32</td>
-<td align="left">300</td>
-<td>The Ethernet MAC address aging time, in seconds.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.forward-delay"></a>forward-delay</td>
-<td align="left">uint32</td>
-<td align="left">15</td>
-<td>The Spanning Tree Protocol (STP) forwarding delay, in seconds.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.hello-time"></a>hello-time</td>
-<td align="left">uint32</td>
-<td align="left">2</td>
-<td>The Spanning Tree Protocol (STP) hello time, in seconds.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.interface-name"></a>interface-name</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>Deprecated in favor of connection.interface-name, but can be used for backward-compatibility with older daemons, to set the bridge's interface name.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.mac-address"></a>mac-address</td>
-<td align="left">byte array</td>
-<td align="left"> </td>
-<td>If specified, the MAC address of bridge. When creating a new bridge, this MAC address will be set. When matching an existing (outside NetworkManager created) bridge, this MAC address must match.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.max-age"></a>max-age</td>
-<td align="left">uint32</td>
-<td align="left">20</td>
-<td>The Spanning Tree Protocol (STP) maximum message age, in seconds.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.multicast-snooping"></a>multicast-snooping</td>
-<td align="left">boolean</td>
-<td align="left">TRUE</td>
-<td>Controls whether IGMP snooping is enabled for this bridge. Note that if snooping was automatically disabled due to hash collisions, the system may refuse to enable the feature until the collisions are resolved.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">bridge</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.priority"></a>priority</td>
-<td align="left">uint32</td>
-<td align="left">32768</td>
-<td>Sets the Spanning Tree Protocol (STP) priority for this bridge.  Lower values are "better"; the lowest priority bridge will be elected the root bridge.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge.stp"></a>stp</td>
-<td align="left">boolean</td>
-<td align="left">TRUE</td>
-<td>Controls whether Spanning Tree Protocol (STP) is enabled for this bridge.</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.8"></a><p class="title"><b>Table 30. bridge-port setting</b></p>
-<div class="table-contents"><table class="table" summary="bridge-port setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge-port.hairpin-mode"></a>hairpin-mode</td>
-<td align="left">boolean</td>
-<td align="left">FALSE</td>
-<td>Enables or disabled "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge-port.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">bridge-port</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge-port.path-cost"></a>path-cost</td>
-<td align="left">uint32</td>
-<td align="left">100</td>
-<td>The Spanning Tree Protocol (STP) port cost for destinations via this port.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.bridge-port.priority"></a>priority</td>
-<td align="left">uint32</td>
-<td align="left">32</td>
-<td>The Spanning Tree Protocol (STP) priority of this bridge port.</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.9"></a><p class="title"><b>Table 31. cdma setting</b></p>
-<div class="table-contents"><table class="table" summary="cdma setting" border="1">
-<colgroup>
-<col>
-<col>
-<col>
-<col>
-</colgroup>
-<thead><tr>
-<th>Key Name</th>
-<th>Value Type</th>
-<th>Default Value</th>
-<th>Value Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td align="left">
-<a name="nm-settings.property.cdma.name"></a>name</td>
-<td align="left">string</td>
-<td align="left">cdma</td>
-<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.cdma.number"></a>number</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>The number to dial to establish the connection to the CDMA-based mobile broadband network, if any.  If not specified, the default number (#777) is used when required.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.cdma.password"></a>password</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>The password used to authenticate with the network, if required.  Many providers do not require a password, or accept any password.  But if a password is required, it is specified here.</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.cdma.password-flags"></a>password-flags</td>
-<td align="left">NMSettingSecretFlags (uint32)</td>
-<td align="left"> </td>
-<td>Flags indicating how to handle the "password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
-</tr>
-<tr>
-<td align="left">
-<a name="nm-settings.property.cdma.username"></a>username</td>
-<td align="left">string</td>
-<td align="left"> </td>
-<td>The username used to authenticate with the network, if required.  Many providers do not require a username, or accept any username.  But if a username is required, it is specified here.</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.10"></a><p class="title"><b>Table 32. connection setting</b></p>
-<div class="table-contents"><table class="table" summary="connection setting" border="1">
+<div class="refsect2">
+<a name="id-1.2.7.4.3"></a><h3>connection setting</h3>
+<p>General Connection Profile Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -861,9 +253,711 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.11"></a><p class="title"><b>Table 33. dcb setting</b></p>
-<div class="table-contents"><table class="table" summary="dcb setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.4"></a><h3>802-1x setting</h3>
+<p>AIEEE 802.1x Authentication Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.altsubject-matches"></a>altsubject-matches</td>
+<td align="left">array of string</td>
+<td align="left">[]</td>
+<td>List of strings to be matched against the altSubjectName of the certificate presented by the authentication server. If the list is empty, no verification of the server certificate's altSubjectName is performed.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.anonymous-identity"></a>anonymous-identity</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Anonymous identity string for EAP authentication methods.  Used as the unencrypted identity with EAP types that support different tunneled identity like EAP-TTLS.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.auth-timeout"></a>auth-timeout</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>A timeout for the authentication. Zero means the global default; if the global default is not set, the authentication timeout is 25 seconds.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.ca-cert"></a>ca-cert</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Contains the CA certificate if used by the EAP method specified in the "eap" property. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.ca-cert-password"></a>ca-cert-password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to access the CA certificate stored in "ca-cert" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.ca-cert-password-flags"></a>ca-cert-password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "ca-cert-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.ca-path"></a>ca-path</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>UTF-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "ca-cert" property.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.client-cert"></a>client-cert</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Contains the client certificate if used by the EAP method specified in the "eap" property. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.client-cert-password"></a>client-cert-password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to access the client certificate stored in "client-cert" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.client-cert-password-flags"></a>client-cert-password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "client-cert-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.domain-suffix-match"></a>domain-suffix-match</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.eap"></a>eap</td>
+<td align="left">array of string</td>
+<td align="left">[]</td>
+<td>The allowed EAP method to be used when authenticating to the network with 802.1x.  Valid methods are: "leap", "md5", "tls", "peap", "ttls", "pwd", and "fast".  Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.identity"></a>identity</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Identity string for EAP authentication methods.  Often the user's user or login name.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">802-1x</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.pac-file"></a>pac-file</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>UTF-8 encoded file path containing PAC for EAP-FAST.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.password"></a>password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>UTF-8 encoded password used for EAP authentication methods. If both the "password" property and the "password-raw" property are specified, "password" is preferred.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.password-flags"></a>password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.password-raw"></a>password-raw</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Password used for EAP authentication methods, given as a byte array to allow passwords in other encodings than UTF-8 to be used. If both the "password" property and the "password-raw" property are specified, "password" is preferred.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.password-raw-flags"></a>password-raw-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "password-raw" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase1-auth-flags"></a>phase1-auth-flags</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>Specifies authentication flags to use in "phase 1" outer authentication using NMSetting8021xAuthFlags options. The invidual TLS versions can be explicitly disabled. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it. The TLS options map to tls_disable_tlsv1_x settings. See the wpa_supplicant documentation for more details.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase1-fast-provisioning"></a>phase1-fast-provisioning</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Enables or disables in-line provisioning of EAP-FAST credentials when FAST is specified as the EAP method in the "eap" property. Recognized values are "0" (disabled), "1" (allow unauthenticated provisioning), "2" (allow authenticated provisioning), and "3" (allow both authenticated and unauthenticated provisioning).  See the wpa_supplicant documentation for more details.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase1-peaplabel"></a>phase1-peaplabel</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Forces use of the new PEAP label during key derivation.  Some RADIUS servers may require forcing the new PEAP label to interoperate with PEAPv1.  Set to "1" to force use of the new PEAP label.  See the wpa_supplicant documentation for more details.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase1-peapver"></a>phase1-peapver</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Forces which PEAP version is used when PEAP is set as the EAP method in the "eap" property.  When unset, the version reported by the server will be used.  Sometimes when using older RADIUS servers, it is necessary to force the client to use a particular PEAP version.  To do so, this property may be set to "0" or "1" to force that specific PEAP version.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-altsubject-matches"></a>phase2-altsubject-matches</td>
+<td align="left">array of string</td>
+<td align="left">[]</td>
+<td>List of strings to be matched against the altSubjectName of the certificate presented by the authentication server during the inner "phase 2" authentication. If the list is empty, no verification of the server certificate's altSubjectName is performed.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-auth"></a>phase2-auth</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Specifies the allowed "phase 2" inner non-EAP authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property.  Recognized non-EAP "phase 2" methods are "pap", "chap", "mschap", "mschapv2", "gtc", "otp", "md5", and "tls". Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-autheap"></a>phase2-autheap</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Specifies the allowed "phase 2" inner EAP-based authentication methods when an EAP method that uses an inner TLS tunnel is specified in the "eap" property.  Recognized EAP-based "phase 2" methods are "md5", "mschapv2", "otp", "gtc", and "tls". Each "phase 2" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-ca-cert"></a>phase2-ca-cert</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Contains the "phase 2" CA certificate if used by the EAP method specified in the "phase2-auth" or "phase2-autheap" properties. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-ca-cert-password"></a>phase2-ca-cert-password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to access the "phase2" CA certificate stored in "phase2-ca-cert" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-ca-cert-password-flags"></a>phase2-ca-cert-password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "phase2-ca-cert-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-ca-path"></a>phase2-ca-path</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>UTF-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the "phase2-ca-cert" property.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-client-cert"></a>phase2-client-cert</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Contains the "phase 2" client certificate if used by the EAP method specified in the "phase2-auth" or "phase2-autheap" properties. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-client-cert-password"></a>phase2-client-cert-password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to access the "phase2" client certificate stored in "phase2-client-cert" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-client-cert-password-flags"></a>phase2-client-cert-password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "phase2-client-cert-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-domain-suffix-match"></a>phase2-domain-suffix-match</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner "phase 2" authentication.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-private-key"></a>phase2-private-key</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Contains the "phase 2" inner private key when the "phase2-auth" or "phase2-autheap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "phase2-private-key-password" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte, and as with the blob scheme the "phase2-private-key-password" property must be set to the password used to decode the PKCS#12 private key and certificate.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-private-key-password"></a>phase2-private-key-password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to decrypt the "phase 2" private key specified in the "phase2-private-key" property when the private key either uses the path scheme, or is a PKCS#12 format key.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-private-key-password-flags"></a>phase2-private-key-password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "phase2-private-key-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.phase2-subject-match"></a>phase2-subject-match</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2-domain-suffix-match.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.pin"></a>pin</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>PIN used for EAP authentication methods.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.pin-flags"></a>pin-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "pin" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.private-key"></a>private-key</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>Contains the private key when the "eap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "private-key-password" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte, and as with the blob scheme the "private-key-password" property must be set to the password used to decode the PKCS#12 private key and certificate. WARNING: "private-key" is not a "secret" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.private-key-password"></a>private-key-password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to decrypt the private key specified in the "private-key" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.private-key-password-flags"></a>private-key-password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "private-key-password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.subject-match"></a>subject-match</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Substring to be matched against the subject of the certificate presented by the authentication server. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain-suffix-match.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-1x.system-ca-certs"></a>system-ca-certs</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>When TRUE, overrides the "ca-path" and "phase2-ca-path" properties using the system CA directory specified at configure time with the --system-ca-path switch.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the "ca-cert" and "phase2-ca-cert" properties. If the path provided with --system-ca-path is rather a file name (bundle of trusted CA certificates), it overrides "ca-cert" and "phase2-ca-cert" properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant).</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.5"></a><h3>adsl setting</h3>
+<p>ADSL Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.encapsulation"></a>encapsulation</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Encapsulation of ADSL connection.  Can be "vcmux" or "llc".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">adsl</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.password"></a>password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Password used to authenticate with the ADSL service.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.password-flags"></a>password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.protocol"></a>protocol</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>ADSL connection protocol.  Can be "pppoa", "pppoe" or "ipoatm".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.username"></a>username</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Username used to authenticate with the ADSL service.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.vci"></a>vci</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>VCI of ADSL connection</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.adsl.vpi"></a>vpi</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>VPI of ADSL connection</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.6"></a><h3>bluetooth setting</h3>
+<p>Bluetooth Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bluetooth.bdaddr"></a>bdaddr</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>The Bluetooth address of the device.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bluetooth.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">bluetooth</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bluetooth.type"></a>type</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Either "dun" for Dial-Up Networking connections or "panu" for Personal Area Networking connections to devices supporting the NAP profile.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.7"></a><h3>bond setting</h3>
+<p>Bonding Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bond.interface-name"></a>interface-name</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Deprecated in favor of connection.interface-name, but can be used for backward-compatibility with older daemons, to set the bond's interface name.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bond.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">bond</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bond.options"></a>options</td>
+<td align="left">dict of string to string</td>
+<td align="left">{'mode': 'balance-rr'}</td>
+<td>Dictionary of key/value pairs of bonding options.  Both keys and values must be strings. Option names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.8"></a><h3>bridge setting</h3>
+<p>Bridging Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.ageing-time"></a>ageing-time</td>
+<td align="left">uint32</td>
+<td align="left">300</td>
+<td>The Ethernet MAC address aging time, in seconds.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.forward-delay"></a>forward-delay</td>
+<td align="left">uint32</td>
+<td align="left">15</td>
+<td>The Spanning Tree Protocol (STP) forwarding delay, in seconds.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.hello-time"></a>hello-time</td>
+<td align="left">uint32</td>
+<td align="left">2</td>
+<td>The Spanning Tree Protocol (STP) hello time, in seconds.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.interface-name"></a>interface-name</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Deprecated in favor of connection.interface-name, but can be used for backward-compatibility with older daemons, to set the bridge's interface name.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.mac-address"></a>mac-address</td>
+<td align="left">byte array</td>
+<td align="left"> </td>
+<td>If specified, the MAC address of bridge. When creating a new bridge, this MAC address will be set. When matching an existing (outside NetworkManager created) bridge, this MAC address must match.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.max-age"></a>max-age</td>
+<td align="left">uint32</td>
+<td align="left">20</td>
+<td>The Spanning Tree Protocol (STP) maximum message age, in seconds.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.multicast-snooping"></a>multicast-snooping</td>
+<td align="left">boolean</td>
+<td align="left">TRUE</td>
+<td>Controls whether IGMP snooping is enabled for this bridge. Note that if snooping was automatically disabled due to hash collisions, the system may refuse to enable the feature until the collisions are resolved.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">bridge</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.priority"></a>priority</td>
+<td align="left">uint32</td>
+<td align="left">32768</td>
+<td>Sets the Spanning Tree Protocol (STP) priority for this bridge.  Lower values are "better"; the lowest priority bridge will be elected the root bridge.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge.stp"></a>stp</td>
+<td align="left">boolean</td>
+<td align="left">TRUE</td>
+<td>Controls whether Spanning Tree Protocol (STP) is enabled for this bridge.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.9"></a><h3>bridge-port setting</h3>
+<p>Bridge Port Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge-port.hairpin-mode"></a>hairpin-mode</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Enables or disabled "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge-port.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">bridge-port</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge-port.path-cost"></a>path-cost</td>
+<td align="left">uint32</td>
+<td align="left">100</td>
+<td>The Spanning Tree Protocol (STP) port cost for destinations via this port.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.bridge-port.priority"></a>priority</td>
+<td align="left">uint32</td>
+<td align="left">32</td>
+<td>The Spanning Tree Protocol (STP) priority of this bridge port.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.10"></a><h3>cdma setting</h3>
+<p>CDMA-based Mobile Broadband Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.cdma.mtu"></a>mtu</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.cdma.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">cdma</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.cdma.number"></a>number</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The number to dial to establish the connection to the CDMA-based mobile broadband network, if any.  If not specified, the default number (#777) is used when required.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.cdma.password"></a>password</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The password used to authenticate with the network, if required.  Many providers do not require a password, or accept any password.  But if a password is required, it is specified here.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.cdma.password-flags"></a>password-flags</td>
+<td align="left">NMSettingSecretFlags (uint32)</td>
+<td align="left"> </td>
+<td>Flags indicating how to handle the "password" property. (see <a class="xref" href="nm-settings.html#secrets-flags" title="Secret flag types:">the section called “Secret flag types:”</a> for flag values)</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.cdma.username"></a>username</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The username used to authenticate with the network, if required.  Many providers do not require a username, or accept any username.  But if a username is required, it is specified here.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.11"></a><h3>dcb setting</h3>
+<p>Data Center Bridging Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -992,9 +1086,37 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.12"></a><p class="title"><b>Table 34. generic setting</b></p>
-<div class="table-contents"><table class="table" summary="generic setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.12"></a><h3>dummy setting</h3>
+<p>Dummy Link Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody><tr>
+<td align="left">
+<a name="nm-settings.property.dummy.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">dummy</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.13"></a><h3>generic setting</h3>
+<p>Generic Link Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1016,9 +1138,11 @@
 </tr></tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.13"></a><p class="title"><b>Table 35. gsm setting</b></p>
-<div class="table-contents"><table class="table" summary="gsm setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.14"></a><h3>gsm setting</h3>
+<p>GSM-based Mobile Broadband Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1052,6 +1176,13 @@
 <td align="left">boolean</td>
 <td align="left">FALSE</td>
 <td>When TRUE, only connections to the home network will be allowed. Connections to roaming networks will not be made.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.gsm.mtu"></a>mtu</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1126,9 +1257,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.14"></a><p class="title"><b>Table 36. infiniband setting</b></p>
-<div class="table-contents"><table class="table" summary="infiniband setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.15"></a><h3>infiniband setting</h3>
+<p>Infiniband Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1187,9 +1320,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.15"></a><p class="title"><b>Table 37. ipv4 setting</b></p>
-<div class="table-contents"><table class="table" summary="ipv4 setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.16"></a><h3>ipv4 setting</h3>
+<p>IPv4 Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1360,9 +1495,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.16"></a><p class="title"><b>Table 38. ipv6 setting</b></p>
-<div class="table-contents"><table class="table" summary="ipv6 setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.17"></a><h3>ipv6 setting</h3>
+<p>IPv6 Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1540,9 +1677,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.17"></a><p class="title"><b>Table 39. ip-tunnel setting</b></p>
-<div class="table-contents"><table class="table" summary="ip-tunnel setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.18"></a><h3>ip-tunnel setting</h3>
+<p>IP Tunneling Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1650,9 +1789,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.18"></a><p class="title"><b>Table 40. macsec setting</b></p>
-<div class="table-contents"><table class="table" summary="macsec setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.19"></a><h3>macsec setting</h3>
+<p>MACSec Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1732,9 +1873,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.19"></a><p class="title"><b>Table 41. macvlan setting</b></p>
-<div class="table-contents"><table class="table" summary="macvlan setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.20"></a><h3>macvlan setting</h3>
+<p>MAC VLAN Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1786,9 +1929,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.20"></a><p class="title"><b>Table 42. 802-11-olpc-mesh setting</b></p>
-<div class="table-contents"><table class="table" summary="802-11-olpc-mesh setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.21"></a><h3>802-11-olpc-mesh setting</h3>
+<p>OLPC Wireless Mesh Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1833,9 +1978,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.21"></a><p class="title"><b>Table 43. ppp setting</b></p>
-<div class="table-contents"><table class="table" summary="ppp setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.22"></a><h3>ppp setting</h3>
+<p>Point-to-Point Protocol Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -1985,9 +2132,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.22"></a><p class="title"><b>Table 44. pppoe setting</b></p>
-<div class="table-contents"><table class="table" summary="pppoe setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.23"></a><h3>pppoe setting</h3>
+<p>PPP-over-Ethernet Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2039,9 +2188,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.23"></a><p class="title"><b>Table 45. proxy setting</b></p>
-<div class="table-contents"><table class="table" summary="proxy setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.24"></a><h3>proxy setting</h3>
+<p>WWW Proxy Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2093,9 +2244,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.24"></a><p class="title"><b>Table 46. serial setting</b></p>
-<div class="table-contents"><table class="table" summary="serial setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.25"></a><h3>serial setting</h3>
+<p>Serial Link Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2154,9 +2307,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.25"></a><p class="title"><b>Table 47. team setting</b></p>
-<div class="table-contents"><table class="table" summary="team setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.26"></a><h3>team setting</h3>
+<p>Teaming Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2194,9 +2349,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.26"></a><p class="title"><b>Table 48. team-port setting</b></p>
-<div class="table-contents"><table class="table" summary="team-port setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.27"></a><h3>team-port setting</h3>
+<p>Team Port Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2227,9 +2384,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.27"></a><p class="title"><b>Table 49. tun setting</b></p>
-<div class="table-contents"><table class="table" summary="tun setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.28"></a><h3>tun setting</h3>
+<p>Tunnel Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2295,9 +2454,46 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.28"></a><p class="title"><b>Table 50. vlan setting</b></p>
-<div class="table-contents"><table class="table" summary="vlan setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.29"></a><h3>user setting</h3>
+<p>General User Profile Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.user.data"></a>data</td>
+<td align="left">dict of string to string</td>
+<td align="left">{}</td>
+<td>A dictionary of key/value pairs with user data. This data is ignored by NetworkManager and can be used at the users discretion. The keys only support a strict ascii format, but the values can be arbitrary UTF8 strings up to a certain length.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.user.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">user</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.30"></a><h3>vlan setting</h3>
+<p>VLAN Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2363,9 +2559,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.29"></a><p class="title"><b>Table 51. vpn setting</b></p>
-<div class="table-contents"><table class="table" summary="vpn setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.31"></a><h3>vpn setting</h3>
+<p>VPN Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2431,9 +2629,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.30"></a><p class="title"><b>Table 52. vxlan setting</b></p>
-<div class="table-contents"><table class="table" summary="vxlan setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.32"></a><h3>vxlan setting</h3>
+<p>VXLAN Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2569,9 +2769,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.31"></a><p class="title"><b>Table 53. wimax setting</b></p>
-<div class="table-contents"><table class="table" summary="wimax setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.33"></a><h3>wimax setting</h3>
+<p>WiMax Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2609,9 +2811,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.32"></a><p class="title"><b>Table 54. 802-3-ethernet setting</b></p>
-<div class="table-contents"><table class="table" summary="802-3-ethernet setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.34"></a><h3>802-3-ethernet setting</h3>
+<p>Wired Ethernet Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2740,9 +2944,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.33"></a><p class="title"><b>Table 55. 802-11-wireless setting</b></p>
-<div class="table-contents"><table class="table" summary="802-11-wireless setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.35"></a><h3>802-11-wireless setting</h3>
+<p>Wi-Fi Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -2892,9 +3098,11 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="table">
-<a name="id-1.2.6.4.34"></a><p class="title"><b>Table 56. 802-11-wireless-security setting</b></p>
-<div class="table-contents"><table class="table" summary="802-11-wireless-security setting" border="1">
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.36"></a><h3>802-11-wireless-security setting</h3>
+<p>Wi-Fi Security Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
 <col>
 <col>
@@ -3037,7 +3245,8 @@
 </tbody>
 </table></div>
 </div>
-<br class="table-break"><div class="refsect2">
+<hr>
+<div class="refsect2">
 <a name="secrets-flags"></a><h3>Secret flag types:</h3>
 <p>
             Each secret property in a setting has an associated <span class="emphasis"><em>flags</em></span> property

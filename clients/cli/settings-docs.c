@@ -56,9 +56,14 @@ NmcPropertyDesc setting_802_11_wireless_security[] = {
 NmcPropertyDesc setting_802_1x[] = {
 	{ "altsubject-matches", "List of strings to be matched against the altSubjectName of the certificate presented by the authentication server. If the list is empty, no verification of the server certificate's altSubjectName is performed." },
 	{ "anonymous-identity", "Anonymous identity string for EAP authentication methods.  Used as the unencrypted identity with EAP types that support different tunneled identity like EAP-TTLS." },
+	{ "auth-timeout", "A timeout for the authentication. Zero means the global default; if the global default is not set, the authentication timeout is 25 seconds." },
 	{ "ca-cert", "Contains the CA certificate if used by the EAP method specified in the \"eap\" property. Certificate data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string \"file://\" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended." },
+	{ "ca-cert-password", "The password used to access the CA certificate stored in \"ca-cert\" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login." },
+	{ "ca-cert-password-flags", "Flags indicating how to handle the \"ca-cert-password\" property." },
 	{ "ca-path", "UTF-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the \"ca-cert\" property." },
 	{ "client-cert", "Contains the client certificate if used by the EAP method specified in the \"eap\" property. Certificate data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string \"file://\" and ending with a terminating NUL byte." },
+	{ "client-cert-password", "The password used to access the client certificate stored in \"client-cert\" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login." },
+	{ "client-cert-password-flags", "Flags indicating how to handle the \"client-cert-password\" property." },
 	{ "domain-suffix-match", "Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison." },
 	{ "eap", "The allowed EAP method to be used when authenticating to the network with 802.1x.  Valid methods are: \"leap\", \"md5\", \"tls\", \"peap\", \"ttls\", \"pwd\", and \"fast\".  Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations." },
 	{ "identity", "Identity string for EAP authentication methods.  Often the user's user or login name." },
@@ -68,6 +73,7 @@ NmcPropertyDesc setting_802_1x[] = {
 	{ "password-flags", "Flags indicating how to handle the \"password\" property." },
 	{ "password-raw", "Password used for EAP authentication methods, given as a byte array to allow passwords in other encodings than UTF-8 to be used. If both the \"password\" property and the \"password-raw\" property are specified, \"password\" is preferred." },
 	{ "password-raw-flags", "Flags indicating how to handle the \"password-raw\" property." },
+	{ "phase1-auth-flags", "Specifies authentication flags to use in \"phase 1\" outer authentication using NMSetting8021xAuthFlags options. The invidual TLS versions can be explicitly disabled. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it. The TLS options map to tls_disable_tlsv1_x settings. See the wpa_supplicant documentation for more details." },
 	{ "phase1-fast-provisioning", "Enables or disables in-line provisioning of EAP-FAST credentials when FAST is specified as the EAP method in the \"eap\" property. Recognized values are \"0\" (disabled), \"1\" (allow unauthenticated provisioning), \"2\" (allow authenticated provisioning), and \"3\" (allow both authenticated and unauthenticated provisioning).  See the wpa_supplicant documentation for more details." },
 	{ "phase1-peaplabel", "Forces use of the new PEAP label during key derivation.  Some RADIUS servers may require forcing the new PEAP label to interoperate with PEAPv1.  Set to \"1\" to force use of the new PEAP label.  See the wpa_supplicant documentation for more details." },
 	{ "phase1-peapver", "Forces which PEAP version is used when PEAP is set as the EAP method in the \"eap\" property.  When unset, the version reported by the server will be used.  Sometimes when using older RADIUS servers, it is necessary to force the client to use a particular PEAP version.  To do so, this property may be set to \"0\" or \"1\" to force that specific PEAP version." },
@@ -75,16 +81,20 @@ NmcPropertyDesc setting_802_1x[] = {
 	{ "phase2-auth", "Specifies the allowed \"phase 2\" inner non-EAP authentication methods when an EAP method that uses an inner TLS tunnel is specified in the \"eap\" property.  Recognized non-EAP \"phase 2\" methods are \"pap\", \"chap\", \"mschap\", \"mschapv2\", \"gtc\", \"otp\", \"md5\", and \"tls\". Each \"phase 2\" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details." },
 	{ "phase2-autheap", "Specifies the allowed \"phase 2\" inner EAP-based authentication methods when an EAP method that uses an inner TLS tunnel is specified in the \"eap\" property.  Recognized EAP-based \"phase 2\" methods are \"md5\", \"mschapv2\", \"otp\", \"gtc\", and \"tls\". Each \"phase 2\" inner method requires specific parameters for successful authentication; see the wpa_supplicant documentation for more details." },
 	{ "phase2-ca-cert", "Contains the \"phase 2\" CA certificate if used by the EAP method specified in the \"phase2-auth\" or \"phase2-autheap\" properties. Certificate data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string \"file://\" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended." },
+	{ "phase2-ca-cert-password", "The password used to access the \"phase2\" CA certificate stored in \"phase2-ca-cert\" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login." },
+	{ "phase2-ca-cert-password-flags", "Flags indicating how to handle the \"phase2-ca-cert-password\" property." },
 	{ "phase2-ca-path", "UTF-8 encoded path to a directory containing PEM or DER formatted certificates to be added to the verification chain in addition to the certificate specified in the \"phase2-ca-cert\" property." },
 	{ "phase2-client-cert", "Contains the \"phase 2\" client certificate if used by the EAP method specified in the \"phase2-auth\" or \"phase2-autheap\" properties. Certificate data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string \"file://\" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended." },
+	{ "phase2-client-cert-password", "The password used to access the \"phase2\" client certificate stored in \"phase2-client-cert\" property. Only makes sense if the certificate is stored on a PKCS#11 token that requires a login." },
+	{ "phase2-client-cert-password-flags", "Flags indicating how to handle the \"phase2-client-cert-password\" property." },
 	{ "phase2-domain-suffix-match", "Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner \"phase 2\" authentication.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison." },
-	{ "phase2-private-key", "Contains the \"phase 2\" inner private key when the \"phase2-auth\" or \"phase2-autheap\" property is set to \"tls\". Key data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the \"phase2-private-key-password\" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and and ending with a terminating NUL byte, and as with the blob scheme the \"phase2-private-key-password\" property must be set to the password used to decode the PKCS#12 private key and certificate." },
+	{ "phase2-private-key", "Contains the \"phase 2\" inner private key when the \"phase2-auth\" or \"phase2-autheap\" property is set to \"tls\". Key data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the \"phase2-private-key-password\" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and ending with a terminating NUL byte, and as with the blob scheme the \"phase2-private-key-password\" property must be set to the password used to decode the PKCS#12 private key and certificate." },
 	{ "phase2-private-key-password", "The password used to decrypt the \"phase 2\" private key specified in the \"phase2-private-key\" property when the private key either uses the path scheme, or is a PKCS#12 format key." },
 	{ "phase2-private-key-password-flags", "Flags indicating how to handle the \"phase2-private-key-password\" property." },
 	{ "phase2-subject-match", "Substring to be matched against the subject of the certificate presented by the authentication server during the inner \"phase 2\" authentication. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2-domain-suffix-match." },
 	{ "pin", "PIN used for EAP authentication methods." },
 	{ "pin-flags", "Flags indicating how to handle the \"pin\" property." },
-	{ "private-key", "Contains the private key when the \"eap\" property is set to \"tls\". Key data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the \"private-key-password\" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and and ending with a terminating NUL byte, and as with the blob scheme the \"private-key-password\" property must be set to the password used to decode the PKCS#12 private key and certificate. WARNING: \"private-key\" is not a \"secret\" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data." },
+	{ "private-key", "Contains the private key when the \"eap\" property is set to \"tls\". Key data is specified using a \"scheme\"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the \"private-key-password\" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string \"file://\" and ending with a terminating NUL byte, and as with the blob scheme the \"private-key-password\" property must be set to the password used to decode the PKCS#12 private key and certificate. WARNING: \"private-key\" is not a \"secret\" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data." },
 	{ "private-key-password", "The password used to decrypt the private key specified in the \"private-key\" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key." },
 	{ "private-key-password-flags", "Flags indicating how to handle the \"private-key-password\" property." },
 	{ "subject-match", "Substring to be matched against the subject of the certificate presented by the authentication server. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain-suffix-match." },
@@ -151,6 +161,7 @@ NmcPropertyDesc setting_bridge_port[] = {
 };
   
 NmcPropertyDesc setting_cdma[] = {
+	{ "mtu", "If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames." },
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
 	{ "number", "The number to dial to establish the connection to the CDMA-based mobile broadband network, if any.  If not specified, the default number (#777) is used when required." },
 	{ "password", "The password used to authenticate with the network, if required.  Many providers do not require a password, or accept any password.  But if a password is required, it is specified here." },
@@ -200,6 +211,10 @@ NmcPropertyDesc setting_dcb[] = {
 	{ "priority-traffic-class", "An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the traffic class (0 - 7) to which the priority is mapped." },
 };
   
+NmcPropertyDesc setting_dummy[] = {
+	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
+};
+  
 NmcPropertyDesc setting_generic[] = {
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
 };
@@ -208,6 +223,7 @@ NmcPropertyDesc setting_gsm[] = {
 	{ "apn", "The GPRS Access Point Name specifying the APN used when establishing a data session with the GSM-based network.  The APN often determines how the user will be billed for their network usage and whether the user has access to the Internet or just a provider-specific walled-garden, so it is important to use the correct APN for the user's mobile broadband plan. The APN may only be composed of the characters a-z, 0-9, ., and - per GSM 03.60 Section 14.9." },
 	{ "device-id", "The device unique identifier (as given by the WWAN management service) which this connection applies to.  If given, the connection will only apply to the specified device." },
 	{ "home-only", "When TRUE, only connections to the home network will be allowed. Connections to roaming networks will not be made." },
+	{ "mtu", "If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames." },
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
 	{ "network-id", "The Network ID (GSM LAI format, ie MCC-MNC) to force specific network registration.  If the Network ID is specified, NetworkManager will attempt to force the device to register only on the specified network. This can be used to ensure that the device does not roam when direct roaming control of the device is not otherwise possible." },
 	{ "number", "Number to dial when establishing a PPP data session with the GSM-based mobile broadband network.  Many modems do not require PPP for connections to the mobile network and thus this property should be left blank, which allows NetworkManager to select the appropriate settings automatically." },
@@ -379,6 +395,11 @@ NmcPropertyDesc setting_tun[] = {
 	{ "vnet-hdr", "If TRUE the IFF_VNET_HDR the tunnel packets will include a virtio network header." },
 };
   
+NmcPropertyDesc setting_user[] = {
+	{ "data", "A dictionary of key/value pairs with user data. This data is ignored by NetworkManager and can be used at the users discretion. The keys only support a strict ascii format, but the values can be arbitrary UTF8 strings up to a certain length." },
+	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
+};
+  
 NmcPropertyDesc setting_vlan[] = {
 	{ "egress-priority-map", "For outgoing packets, a list of mappings from Linux SKB priorities to 802.1p priorities.  The mapping is given in the format \"from:to\" where both \"from\" and \"to\" are unsigned integers, ie \"7:3\"." },
 	{ "flags", "One or more flags which control the behavior and features of the VLAN interface.  Flags include NM_VLAN_FLAG_REORDER_HEADERS (0x1) (reordering of output packet headers), NM_VLAN_FLAG_GVRP (0x2) (use of the GVRP protocol), and NM_VLAN_FLAG_LOOSE_BINDING (0x4) (loose binding of the interface to its master device's operating state). NM_VLAN_FLAG_MVRP (0x8) (use of the MVRP protocol). The default value of this property is NM_VLAN_FLAG_REORDER_HEADERS, but it used to be 0. To preserve backward compatibility, the default-value in the D-Bus API continues to be 0 and a missing property on D-Bus is still considered as 0." },
@@ -436,18 +457,19 @@ NmcSettingDesc all_settings[] = {
 	{ "802-11-olpc-mesh", setting_802_11_olpc_mesh, 4 },
 	{ "802-11-wireless", setting_802_11_wireless, 17 },
 	{ "802-11-wireless-security", setting_802_11_wireless_security, 18 },
-	{ "802-1x", setting_802_1x, 35 },
+	{ "802-1x", setting_802_1x, 45 },
 	{ "802-3-ethernet", setting_802_3_ethernet, 15 },
 	{ "adsl", setting_adsl, 8 },
 	{ "bluetooth", setting_bluetooth, 3 },
 	{ "bond", setting_bond, 2 },
 	{ "bridge", setting_bridge, 9 },
 	{ "bridge-port", setting_bridge_port, 4 },
-	{ "cdma", setting_cdma, 5 },
+	{ "cdma", setting_cdma, 6 },
 	{ "connection", setting_connection, 20 },
 	{ "dcb", setting_dcb, 16 },
+	{ "dummy", setting_dummy, 1 },
 	{ "generic", setting_generic, 1 },
-	{ "gsm", setting_gsm, 13 },
+	{ "gsm", setting_gsm, 14 },
 	{ "infiniband", setting_infiniband, 6 },
 	{ "ip-tunnel", setting_ip_tunnel, 13 },
 	{ "ipv4", setting_ipv4, 20 },
@@ -461,6 +483,7 @@ NmcSettingDesc all_settings[] = {
 	{ "team", setting_team, 2 },
 	{ "team-port", setting_team_port, 2 },
 	{ "tun", setting_tun, 7 },
+	{ "user", setting_user, 2 },
 	{ "vlan", setting_vlan, 6 },
 	{ "vpn", setting_vpn, 7 },
 	{ "vxlan", setting_vxlan, 17 },

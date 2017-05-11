@@ -561,7 +561,7 @@ _nm_config_data_log_sort (const char **pa, const char **pb, gpointer dummy)
 	return g_strcmp0 (a, b);
 }
 
-static struct {
+static const struct {
 	const char *group;
 	const char *key;
 	const char *value;
@@ -601,7 +601,7 @@ nm_config_data_log (const NMConfigData *self,
 #define _LOG(stream, prefix, ...) \
 	G_STMT_START { \
 		if (!stream) \
-			_nm_log (LOGL_DEBUG, LOGD_CORE, 0, "%s"_NM_UTILS_MACRO_FIRST(__VA_ARGS__)"%s", prefix _NM_UTILS_MACRO_REST (__VA_ARGS__), ""); \
+			_nm_log (LOGL_DEBUG, LOGD_CORE, 0, NULL, NULL, "%s"_NM_UTILS_MACRO_FIRST(__VA_ARGS__)"%s", prefix _NM_UTILS_MACRO_REST (__VA_ARGS__), ""); \
 		else \
 			fprintf (stream, "%s"_NM_UTILS_MACRO_FIRST(__VA_ARGS__)"%s", prefix _NM_UTILS_MACRO_REST (__VA_ARGS__), "\n"); \
 	} G_STMT_END
@@ -1437,15 +1437,17 @@ set_property (GObject *object,
 	NMConfigData *self = NM_CONFIG_DATA (object);
 	NMConfigDataPrivate *priv = NM_CONFIG_DATA_GET_PRIVATE (self);
 
-	/* This type is immutable. All properties are construct only. */
 	switch (prop_id) {
 	case PROP_CONFIG_MAIN_FILE:
+		/* construct-only */
 		priv->config_main_file = g_value_dup_string (value);
 		break;
 	case PROP_CONFIG_DESCRIPTION:
+		/* construct-only */
 		priv->config_description = g_value_dup_string (value);
 		break;
 	case PROP_KEYFILE_USER:
+		/* construct-only */
 		priv->keyfile_user = g_value_dup_boxed (value);
 		if (   priv->keyfile_user
 		    && !_nm_keyfile_has_values (priv->keyfile_user)) {
@@ -1454,6 +1456,7 @@ set_property (GObject *object,
 		}
 		break;
 	case PROP_KEYFILE_INTERN:
+		/* construct-only */
 		priv->keyfile_intern = g_value_dup_boxed (value);
 		if (   priv->keyfile_intern
 		    && !_nm_keyfile_has_values (priv->keyfile_intern)) {
@@ -1462,6 +1465,7 @@ set_property (GObject *object,
 		}
 		break;
 	case PROP_NO_AUTO_DEFAULT:
+		/* construct-only */
 		{
 			char **value_arr = g_value_get_boxed (value);
 			guint i, j = 0;
@@ -1472,7 +1476,7 @@ set_property (GObject *object,
 			for (i = 0; value_arr && value_arr[i]; i++) {
 				if (   *value_arr[i]
 				    && nm_utils_hwaddr_valid (value_arr[i], -1)
-				    && _nm_utils_strv_find_first (value_arr, i, value_arr[i]) < 0) {
+				    && nm_utils_strv_find_first (value_arr, i, value_arr[i]) < 0) {
 					priv->no_auto_default.arr[j++] = g_strdup (value_arr[i]);
 					priv->no_auto_default.specs = g_slist_prepend (priv->no_auto_default.specs, g_strdup_printf ("mac:%s", value_arr[i]));
 				}

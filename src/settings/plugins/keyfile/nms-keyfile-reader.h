@@ -22,7 +22,12 @@
 #ifndef __NMS_KEYFILE_READER_H__
 #define __NMS_KEYFILE_READER_H__
 
-#include <nm-connection.h>
+#include "nm-connection.h"
+
+NMConnection *nms_keyfile_reader_from_keyfile (GKeyFile *key_file,
+                                               const char *filename,
+                                               gboolean verbose,
+                                               GError **error);
 
 NMConnection *nms_keyfile_reader_from_file (const char *filename, GError **error);
 

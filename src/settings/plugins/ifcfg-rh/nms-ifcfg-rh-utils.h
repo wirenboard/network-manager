@@ -31,7 +31,7 @@
 #define NM_IFCFG_CONNECTION_LOG_FMTD        "%s (%s,\"%s\",%p)"
 #define NM_IFCFG_CONNECTION_LOG_ARGD(con)   NM_IFCFG_CONNECTION_LOG_PATH (nm_settings_connection_get_filename ((NMSettingsConnection *) (con))), nm_connection_get_uuid ((NMConnection *) (con)), nm_connection_get_id ((NMConnection *) (con)), (con)
 
-char *utils_cert_path (const char *parent, const char *suffix);
+char *utils_cert_path (const char *parent, const char *suffix, const char *extension);
 
 const char *utils_get_ifcfg_name (const char *file, gboolean only_ifcfg);
 
@@ -54,5 +54,7 @@ gboolean utils_is_ifcfg_alias_file (const char *alias, const char *ifcfg);
 
 char *utils_detect_ifcfg_path (const char *path, gboolean only_ifcfg);
 
-#endif  /* _UTILS_H_ */
+void nms_ifcfg_rh_utils_user_key_encode (const char *key, GString *str_buffer);
+gboolean nms_ifcfg_rh_utils_user_key_decode (const char *name, GString *str_buffer);
 
+#endif  /* _UTILS_H_ */

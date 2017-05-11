@@ -5,9 +5,9 @@
 <title>NetworkManager.conf: NetworkManager Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
-<link rel="up" href="manpages.html" title="Manual Pages">
-<link rel="prev" href="nm-online.html" title="nm-online">
-<link rel="next" href="nm-settings.html" title="nm-settings">
+<link rel="up" href="manpages.html" title="Part I. Manual Pages">
+<link rel="prev" href="NetworkManager.html" title="NetworkManager">
+<link rel="next" href="nmcli.html" title="nmcli">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -16,8 +16,8 @@
 <td width="100%" align="left" class="shortcuts"></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="manpages.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="nm-online.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="nm-settings.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="p" href="NetworkManager.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="nmcli.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="NetworkManager.conf"></a><div class="titlepage"></div>
@@ -38,7 +38,7 @@
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.5"></a><h2>Description</h2>
+<a name="id-1.2.3.5"></a><h2>Description</h2>
 <p><code class="literal">NetworkManager.conf</code> is the configuration file for NetworkManager. It is used
     to set up various aspects of NetworkManager's behavior. The
     location of the main file and configuration directories may be changed
@@ -74,7 +74,7 @@
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.6"></a><h2>File Format</h2>
+<a name="id-1.2.3.6"></a><h2>File Format</h2>
 <p>
       The configuration file format is so-called key file (sort of
       ini-style format).  It consists of sections (groups) of
@@ -111,7 +111,7 @@ plugins-=remove-me
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.7"></a><h2>
+<a name="id-1.2.3.7"></a><h2>
 <code class="literal">main</code> section</h2>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
@@ -183,7 +183,7 @@ plugins-=remove-me
         clients to be installed. The <code class="literal">internal</code>
         option uses a built-in DHCP client which is not currently as
         featureful as the external clients.</p>
-<p>If this key is missing, it defaults to <code class="literal">dhclient</code>.
+<p>If this key is missing, it defaults to <code class="literal">internal</code>.
         It the chosen plugin is not available, clients are looked for
         in this order: <code class="literal">dhclient</code>, <code class="literal">dhcpcd</code>,
         <code class="literal">internal</code>.</p>
@@ -267,6 +267,34 @@ no-auto-default=*
           </p></td>
 </tr>
 <tr>
+<td><p><span class="term"><code class="varname">hostname-mode</code></span></p></td>
+<td>
+<p>
+            Set the management mode of the hostname. This parameter will
+            affect only the transient hostname. If a valid static hostname is set,
+            NetworkManager will skip the update of the hostname despite the value of
+            this option. An hostname empty or equal to 'localhost', 'localhost6',
+            'localhost.localdomain' or 'localhost6.localdomain' is considered invalid.
+          </p>
+<p><code class="literal">default</code>: NetworkManager will update the hostname
+          with the one provided via DHCP on the main connection (the one with a default
+          route). If not present, the hostname will be updated to the last one set
+          outside NetworkManager. If it is not valid, NetworkManager will try to recover
+          the hostname from the reverse lookup of the IP address of the main connection.
+          If this fails too, the hostname will be set to 'localhost.localdomain'.
+          </p>
+<p><code class="literal">dhcp</code>: NetworkManager will update the transient hostname
+          only with information coming from DHCP. No fallback nor reverse lookup will be
+          performed, but when the dhcp connection providing the hostname is deactivated,
+          the hostname is reset to the last hostname set outside NetworkManager or
+          'localhost' if none valid is there.
+          </p>
+<p><code class="literal">none</code>: NetworkManager will not manage the transient
+          hostname and will never set it.
+          </p>
+</td>
+</tr>
+<tr>
 <td><p><span class="term"><code class="varname">dns</code></span></p></td>
 <td>
 <p>Set the DNS (<code class="filename">resolv.conf</code>) processing mode.
@@ -286,7 +314,7 @@ no-auto-default=*
         <code class="filename">resolv.conf</code> to point to the local
         nameserver. It is possible to pass custom options to the
         dnsmasq instance by adding them to files in the
-        "<code class="filename">${prefix}/etc/NetworkManager/dnsmasq.d/</code>"
+        "<code class="filename">/etc/NetworkManager/dnsmasq.d/</code>"
         directory. Note that when multiple upstream servers are
         available, dnsmasq will initially contact them in parallel and
         then use the fastest to respond, probing again other servers
@@ -312,15 +340,17 @@ no-auto-default=*
         options, and this version of NetworkManager was build with a default of
         "<code class="literal">symlink</code>".
         Regardless of this setting, NetworkManager will
-        always write resolv.conf to its runtime state directory.</p>
-<p><code class="literal">symlink</code>: NetworkManager will symlink
-        <code class="filename">/etc/resolv.conf</code> to its private
-        resolv.conf file in the runtime state directory. If
-        <code class="filename">/etc/resolv.conf</code>
-        already is a symlink pointing to a different location, the file
-        will not be modified. This allows the user to disable managing
-        by pointing the link <code class="filename">/etc/resolv.conf</code> to
-        somewhere else.</p>
+        always write resolv.conf to its runtime state directory
+        <code class="filename">/var/run/NetworkManager/resolv.conf</code>.</p>
+<p><code class="literal">symlink</code>: If <code class="filename">/etc/resolv.conf</code> is
+        a regular file, NetworkManager will replace the file on update. If
+        <code class="filename">/etc/resolv.conf</code> is instead a symlink, NetworkManager
+        will leave it alone. Unless the symlink points to the internal file
+        <code class="filename">/var/run/NetworkManager/resolv.conf</code>,
+        in which case the symlink will be updated to emit an inotify notification.
+        This allows the user to conveniently instruct NetworkManager not
+        to manage <code class="filename">/etc/resolv.conf</code> by replacing it with
+        a symlink.</p>
 <p><code class="literal">file</code>: NetworkManager will write
         <code class="filename">/etc/resolv.conf</code> as file. If it finds
         a symlink, it will follow the symlink and update the target
@@ -370,7 +400,7 @@ no-auto-default=*
 </table></div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.8"></a><h2>
+<a name="id-1.2.3.8"></a><h2>
 <code class="literal">keyfile</code> section</h2>
 <p>This section contains keyfile-plugin-specific options, and
     is normally only used when you are not using any other
@@ -393,7 +423,7 @@ no-auto-default=*
 <tr>
 <td><p><span class="term"><code class="varname">path</code></span></p></td>
 <td><p>The location where keyfiles are read and stored.
-            This defaults to "<code class="filename">${prefix}/etc/NetworkManager/conf.d</code>".
+            This defaults to "<code class="filename">/etc/NetworkManager/system-connections</code>".
             </p></td>
 </tr>
 <tr>
@@ -422,7 +452,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.9"></a><h2>
+<a name="id-1.2.3.9"></a><h2>
 <code class="literal">ifupdown</code> section</h2>
 <p>This section contains ifupdown-specific options and thus only
     has effect when using the <code class="literal">ifupdown</code> plugin.</p>
@@ -456,7 +486,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.10"></a><h2>
+<a name="id-1.2.3.10"></a><h2>
 <code class="literal">logging</code> section</h2>
 <p>This section controls NetworkManager's logging.  Any
     settings here are overridden by the <code class="option">--log-level</code>
@@ -511,7 +541,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           "<code class="literal">debug</code>" uses syslog and logs to standard error.
           If NetworkManager is started in debug mode (<code class="literal">--debug</code>)
           this option is ignored and "<code class="literal">debug</code>" is always used.
-          Otherwise, the default is "<code class="literal">journal</code>".
+          Otherwise, the default is "<code class="literal">syslog</code>".
           </p></td>
 </tr>
 <tr>
@@ -520,7 +550,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           auditd, the audit daemon.  If <code class="literal">false</code>, audit
           records will be sent only to the NetworkManager logging
           system. If set to <code class="literal">true</code>, they will be also
-          sent to auditd.  The default value is <code class="literal">true</code>.
+          sent to auditd.  The default value is <code class="literal">false</code>.
           </p></td>
 </tr>
 </tbody>
@@ -529,7 +559,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.11"></a><h2>
+<a name="id-1.2.3.11"></a><h2>
 <code class="literal">connection</code> section</h2>
 <p>Specify default values for connections.
     </p>
@@ -543,7 +573,7 @@ ipv6.ip6-privacy=0
 <p>
     </p>
 <div class="refsect2">
-<a name="id-1.2.5.11.4"></a><h3>Supported Properties</h3>
+<a name="id-1.2.3.11.4"></a><h3>Supported Properties</h3>
 <p>
       Not all properties can be overwritten, only the following
       properties are supported to have their default values configured
@@ -730,7 +760,7 @@ ipv6.ip6-privacy=1
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.12"></a><h2>
+<a name="id-1.2.3.12"></a><h2>
 <code class="literal">device</code> section</h2>
 <p>Contains per-device persistent configuration.
     </p>
@@ -745,7 +775,7 @@ unmanaged=1
 <p>
     </p>
 <div class="refsect2">
-<a name="id-1.2.5.12.4"></a><h3>Supported Properties</h3>
+<a name="id-1.2.3.12.4"></a><h3>Supported Properties</h3>
 <p>
       The following properties can be configured per-device.
       </p>
@@ -811,6 +841,14 @@ unmanaged=1
               for details.
             </p></td>
 </tr>
+<tr>
+<td><p><a name="sriov-num-vfs"></a><span class="term"><code class="varname">sriov-num-vfs</code></span></p></td>
+<td><p>
+              Specify the number of virtual functions (VF) to enable
+              for a PCI physical device that supports single-root I/O
+              virtualization (SR-IOV).
+            </p></td>
+</tr>
 </tbody>
 </table></div>
 <p>
@@ -818,7 +856,7 @@ unmanaged=1
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.5.12.5"></a><h3>Sections</h3>
+<a name="id-1.2.3.12.5"></a><h3>Sections</h3>
 <p>
         The <code class="literal">[device]</code> section works the same as the <code class="literal">[connection]</code> section.
         That is, multiple sections that all start with the prefix "device" can be specified.
@@ -830,7 +868,7 @@ unmanaged=1
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.13"></a><h2>
+<a name="id-1.2.3.13"></a><h2>
 <code class="literal">connectivity</code> section</h2>
 <p>This section controls NetworkManager's optional connectivity
     checking functionality.  This allows NetworkManager to detect
@@ -876,7 +914,7 @@ unmanaged=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.14"></a><h2>
+<a name="id-1.2.3.14"></a><h2>
 <code class="literal">global-dns</code> section</h2>
 <p>This section specifies global DNS settings that override
     connection-specific configuration.</p>
@@ -906,7 +944,7 @@ unmanaged=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.15"></a><h2>
+<a name="id-1.2.3.15"></a><h2>
 <code class="literal">global-dns-domain</code> sections</h2>
 <p>Sections with a name starting with the "global-dns-domain-"
     prefix allow to define global DNS configuration for specific
@@ -942,7 +980,7 @@ unmanaged=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.16"></a><h2>
+<a name="id-1.2.3.16"></a><h2>
 <code class="literal">.config</code> sections</h2>
 <p>This is a special section that contains options which apply
       to the configuration file that contains the option.
@@ -1045,7 +1083,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.17"></a><h2>Plugins</h2>
+<a name="id-1.2.3.17"></a><h2>Plugins</h2>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -1135,7 +1173,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
 </table></div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.18"></a><h2>Appendix</h2>
+<a name="id-1.2.3.18"></a><h2>Appendix</h2>
 <div class="refsect2">
 <a name="device-spec"></a><h3>Device List Format</h3>
 <p>
@@ -1188,6 +1226,13 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
           Globbing is not supported.</p></td>
 </tr>
 <tr>
+<td><p><span class="term">driver:DRIVER</span></p></td>
+<td><p>Match the device driver as reported by "<code class="literal">nmcli -f GENERAL.DRIVER,GENERAL.DRIVER-VERSION device show</code>".
+          "<code class="literal">DRIVER</code>" must match the driver name exactly and does not support globbing.
+          Optionally, a driver version may be specified separated by '/'. Globbing is supported for the version.
+          </p></td>
+</tr>
+<tr>
 <td><p><span class="term">except:SPEC</span></p></td>
 <td><p>Negative match of a device. <code class="literal">SPEC</code> must be explicitly qualified with
              a prefix such as <code class="literal">interface-name:</code>. A negative match has higher priority then the positive
@@ -1225,7 +1270,7 @@ interface-name:vboxnet*,except:interface-name:vboxnet2
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.19"></a><h2>See Also</h2>
+<a name="id-1.2.3.19"></a><h2>See Also</h2>
 <p>
       <a class="link" href="NetworkManager.html" title="NetworkManager"><span class="citerefentry"><span class="refentrytitle">NetworkManager</span>(8)</span></a>,
       <a class="link" href="nmcli.html" title="nmcli"><span class="citerefentry"><span class="refentrytitle">nmcli</span>(1)</span></a>,

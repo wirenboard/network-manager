@@ -30,17 +30,17 @@
 #define NM_IS_DEFAULT_ROUTE_MANAGER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_DEFAULT_ROUTE_MANAGER))
 #define NM_DEFAULT_ROUTE_MANAGER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_DEFAULT_ROUTE_MANAGER, NMDefaultRouteManagerClass))
 
-#define NM_DEFAULT_ROUTE_MANAGER_PLATFORM "platform"
+#define NM_DEFAULT_ROUTE_MANAGER_LOG_WITH_PTR "log-with-ptr"
+#define NM_DEFAULT_ROUTE_MANAGER_PLATFORM     "platform"
 
 typedef struct _NMDefaultRouteManagerClass NMDefaultRouteManagerClass;
 
 GType nm_default_route_manager_get_type (void);
 
-NMDefaultRouteManager *nm_default_route_manager_get (void);
-NMDefaultRouteManager *nm_default_route_manager_new (NMPlatform *platform);
+NMDefaultRouteManager *nm_default_route_manager_new (gboolean log_with_ptr, NMPlatform *platform);
 
-void nm_default_route_manager_ip4_update_default_route (NMDefaultRouteManager *manager, gpointer source);
-void nm_default_route_manager_ip6_update_default_route (NMDefaultRouteManager *manager, gpointer source);
+gboolean nm_default_route_manager_ip4_update_default_route (NMDefaultRouteManager *manager, gpointer source);
+gboolean nm_default_route_manager_ip6_update_default_route (NMDefaultRouteManager *manager, gpointer source);
 
 gboolean nm_default_route_manager_ip4_connection_has_default_route (NMDefaultRouteManager *manager, NMConnection *connection, gboolean *out_is_never_default);
 gboolean nm_default_route_manager_ip6_connection_has_default_route (NMDefaultRouteManager *manager, NMConnection *connection, gboolean *out_is_never_default);
@@ -60,5 +60,8 @@ NMIP6Config *nm_default_route_manager_ip6_get_best_config (NMDefaultRouteManager
                                                            NMActiveConnection **out_ac,
                                                            NMDevice **out_device,
                                                            NMVpnConnection **out_vpn);
+
+gboolean nm_default_route_manager_resync (NMDefaultRouteManager *self,
+                                          int af_family);
 
 #endif  /* NM_DEFAULT_ROUTE_MANAGER_H */

@@ -45,6 +45,7 @@
 #include "nm-setting-cdma.h"
 #include "nm-setting-connection.h"
 #include "nm-setting-dcb.h"
+#include "nm-setting-dummy.h"
 #include "nm-setting-generic.h"
 #include "nm-setting-gsm.h"
 #include "nm-setting-infiniband.h"
@@ -117,6 +118,26 @@ gboolean _nm_connection_replace_settings (NMConnection *connection,
                                           NMSettingParseFlags parse_flags,
                                           GError **error);
 
+/**
+ * NMSettingVerifyResult:
+ * @NM_SETTING_VERIFY_SUCCESS: the setting verifies successfully
+ * @NM_SETTING_VERIFY_ERROR: the setting has a serious misconfiguration
+ * @NM_SETTING_VERIFY_NORMALIZABLE: the setting is valid but has properties
+ * that should be normalized
+ * @NM_SETTING_VERIFY_NORMALIZABLE_ERROR: the setting is invalid but the
+ * errors can be fixed by nm_connection_normalize().
+ */
+typedef enum {
+	NM_SETTING_VERIFY_SUCCESS       = TRUE,
+	NM_SETTING_VERIFY_ERROR         = FALSE,
+	NM_SETTING_VERIFY_NORMALIZABLE  = 2,
+	NM_SETTING_VERIFY_NORMALIZABLE_ERROR = 3,
+} NMSettingVerifyResult;
+
+NMSettingVerifyResult _nm_connection_verify (NMConnection *connection, GError **error);
+
+gboolean _nm_connection_remove_setting (NMConnection *connection, GType setting_type);
+
 NMConnection *_nm_simple_connection_new_from_dbus (GVariant      *dict,
                                                    NMSettingParseFlags parse_flags,
                                                    GError       **error);
@@ -154,8 +175,6 @@ gssize _nm_utils_ptrarray_find_first (gconstpointer *list, gssize len, gconstpoi
 gssize _nm_utils_ptrarray_find_binary_search (gconstpointer *list, gsize len, gconstpointer needle, GCompareDataFunc cmpfcn, gpointer user_data);
 gssize _nm_utils_array_find_binary_search (gconstpointer list, gsize elem_size, gsize len, gconstpointer needle, GCompareDataFunc cmpfcn, gpointer user_data);
 
-gssize      _nm_utils_strv_find_first (char **list, gssize len, const char *needle);
-
 char **_nm_utils_strv_cleanup (char **strv,
                                gboolean strip_whitespace,
                                gboolean skip_empty,
@@ -184,6 +203,8 @@ gboolean _nm_utils_check_module_file (const char *name,
                                       NMUtilsCheckFilePredicate check_file,
                                       gpointer user_data,
                                       GError **error);
+
+char *_nm_utils_enum_to_str_full (GType type, int value, const char *sep);
 
 #define NM_UTILS_UUID_TYPE_LEGACY            0
 #define NM_UTILS_UUID_TYPE_VARIANT3          1
@@ -343,5 +364,7 @@ gboolean _nm_utils_inet6_is_token (const struct in6_addr *in6addr);
 /*****************************************************************************/
 
 gboolean    _nm_utils_team_config_equal (const char *conf1, const char *conf2, gboolean port);
+
+/*****************************************************************************/
 
 #endif

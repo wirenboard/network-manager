@@ -98,7 +98,7 @@ NM_DEFINE_SINGLETON_GETTER (SettingsPluginIfcfg, settings_plugin_ifcfg_get, SETT
 #define _NMLOG_DOMAIN  LOGD_SETTINGS
 #define _NMLOG(level, ...) \
     G_STMT_START { \
-        nm_log ((level), (_NMLOG_DOMAIN), \
+        nm_log ((level), (_NMLOG_DOMAIN), NULL, NULL, \
                 "%s" _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                 "ifcfg-rh: " \
                 _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
@@ -687,7 +687,7 @@ add_connection (NMSettingsPlugin *config,
 		return NULL;
 
 	if (save_to_disk) {
-		if (!writer_new_connection (connection, IFCFG_DIR, &path, error))
+		if (!writer_new_connection (connection, IFCFG_DIR, &path, NULL, NULL, error))
 			return NULL;
 	}
 	return NM_SETTINGS_CONNECTION (update_connection (self, connection, path, NULL, FALSE, NULL, error));

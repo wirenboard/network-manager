@@ -26,7 +26,7 @@
 #error "Only <NetworkManager.h> can be included directly."
 #endif
 
-#include <nm-setting.h>
+#include "nm-setting.h"
 
 G_BEGIN_DECLS
 
@@ -58,6 +58,11 @@ typedef enum {
 #define NM_SETTING_PROXY_PAC_URL "pac-url"
 #define NM_SETTING_PROXY_PAC_SCRIPT "pac-script"
 
+/**
+ * NMSettingProxy:
+ *
+ * WWW Proxy Settings
+ */
 struct _NMSettingProxy {
 	NMSetting parent;
 };

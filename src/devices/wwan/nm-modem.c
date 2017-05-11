@@ -33,6 +33,7 @@
 #include "NetworkManagerUtils.h"
 #include "devices/nm-device-private.h"
 #include "nm-route-manager.h"
+#include "nm-netns.h"
 #include "nm-act-request.h"
 #include "nm-ip4-config.h"
 #include "nm-ip6-config.h"
@@ -158,7 +159,7 @@ nm_modem_set_state (NMModem *self,
 
 		priv->state = new_state;
 		_notify (self, PROP_STATE);
-		g_signal_emit (self, signals[STATE_CHANGED], 0, (int) new_state, (int) old_state, reason);
+		g_signal_emit (self, signals[STATE_CHANGED], 0, (int) new_state, (int) old_state);
 	}
 }
 
@@ -201,7 +202,7 @@ nm_modem_set_mm_enabled (NMModem *self,
 
 		/* Try to unlock the modem if it's being enabled */
 		if (enabled)
-			g_signal_emit_by_name (self, NM_MODEM_AUTH_REQUESTED, 0);
+			g_signal_emit (self, signals[AUTH_REQUESTED], 0);
 		return;
 	}
 
@@ -220,6 +221,22 @@ void
 nm_modem_emit_removed (NMModem *self)
 {
 	g_signal_emit (self, signals[REMOVED], 0);
+}
+
+void
+nm_modem_emit_prepare_result (NMModem *self, gboolean success, NMDeviceStateReason reason)
+{
+	nm_assert (NM_IS_MODEM (self));
+
+	g_signal_emit (self, signals[PREPARE_RESULT], 0, success, (guint) reason);
+}
+
+void
+nm_modem_emit_ppp_failed (NMModem *self, NMDeviceStateReason reason)
+{
+	nm_assert (NM_IS_MODEM (self));
+
+	g_signal_emit (self, signals[PPP_FAILED], 0, (guint) reason);
 }
 
 NMModemIPType
@@ -382,10 +399,10 @@ ppp_state_changed (NMPPPManager *ppp_manager, NMPPPStatus status, gpointer user_
 {
 	switch (status) {
 	case NM_PPP_STATUS_DISCONNECT:
-		g_signal_emit (NM_MODEM (user_data), signals[PPP_FAILED], 0, NM_DEVICE_STATE_REASON_PPP_DISCONNECT);
+		nm_modem_emit_ppp_failed (user_data, NM_DEVICE_STATE_REASON_PPP_DISCONNECT);
 		break;
 	case NM_PPP_STATUS_DEAD:
-		g_signal_emit (NM_MODEM (user_data), signals[PPP_FAILED], 0, NM_DEVICE_STATE_REASON_PPP_FAILED);
+		nm_modem_emit_ppp_failed (user_data, NM_DEVICE_STATE_REASON_PPP_FAILED);
 		break;
 	default:
 		break;
@@ -479,18 +496,19 @@ ppp_ip6_config (NMPPPManager *ppp_manager,
 
 static void
 ppp_stats (NMPPPManager *ppp_manager,
-           guint32 in_bytes,
-           guint32 out_bytes,
+           guint i_in_bytes,
+           guint i_out_bytes,
            gpointer user_data)
 {
 	NMModem *self = NM_MODEM (user_data);
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
+	guint32 in_bytes = i_in_bytes;
+	guint32 out_bytes = i_out_bytes;
 
 	if (priv->in_bytes != in_bytes || priv->out_bytes != out_bytes) {
 		priv->in_bytes = in_bytes;
 		priv->out_bytes = out_bytes;
-
-		g_signal_emit (self, signals[PPP_STATS], 0, in_bytes, out_bytes);
+		g_signal_emit (self, signals[PPP_STATS], 0, (guint) in_bytes, (guint) out_bytes);
 	}
 }
 
@@ -514,18 +532,16 @@ port_speed_is_zero (const char *port)
 static NMActStageReturn
 ppp_stage3_ip_config_start (NMModem *self,
                             NMActRequest *req,
-                            NMDeviceStateReason *reason)
+                            NMDeviceStateReason *out_failure_reason)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 	const char *ppp_name = NULL;
 	GError *error = NULL;
-	NMActStageReturn ret;
 	guint ip_timeout = 30;
 	guint baud_override = 0;
 
 	g_return_val_if_fail (NM_IS_MODEM (self), NM_ACT_STAGE_RETURN_FAILURE);
 	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (reason !=	NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
 	/* If we're already running PPP don't restart it; for example, if both
 	 * IPv4 and IPv6 are requested, IPv4 gets started first, but we use the
@@ -560,24 +576,10 @@ ppp_stage3_ip_config_start (NMModem *self,
 		baud_override = 57600;
 
 	priv->ppp_manager = nm_ppp_manager_create (priv->data_port, &error);
-	if (   priv->ppp_manager
-	    && nm_ppp_manager_start (priv->ppp_manager, req, ppp_name,
-	                             ip_timeout, baud_override, &error)) {
-		g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_STATE_CHANGED,
-		                  G_CALLBACK (ppp_state_changed),
-		                  self);
-		g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_IP4_CONFIG,
-		                  G_CALLBACK (ppp_ip4_config),
-		                  self);
-		g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_IP6_CONFIG,
-		                  G_CALLBACK (ppp_ip6_config),
-		                  self);
-		g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_STATS,
-		                  G_CALLBACK (ppp_stats),
-		                  self);
 
-		ret = NM_ACT_STAGE_RETURN_POSTPONE;
-	} else {
+	if (   !priv->ppp_manager
+	    || !nm_ppp_manager_start (priv->ppp_manager, req, ppp_name,
+	                              ip_timeout, baud_override, &error)) {
 		nm_log_err (LOGD_PPP, "(%s): error starting PPP: %s",
 		            nm_modem_get_uid (self),
 		            error->message);
@@ -585,11 +587,24 @@ ppp_stage3_ip_config_start (NMModem *self,
 
 		g_clear_object (&priv->ppp_manager);
 
-		*reason = NM_DEVICE_STATE_REASON_PPP_START_FAILED;
-		ret = NM_ACT_STAGE_RETURN_FAILURE;
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_PPP_START_FAILED);
+		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
-	return ret;
+	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_STATE_CHANGED,
+	                  G_CALLBACK (ppp_state_changed),
+	                  self);
+	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_IP4_CONFIG,
+	                  G_CALLBACK (ppp_ip4_config),
+	                  self);
+	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_IP6_CONFIG,
+	                  G_CALLBACK (ppp_ip6_config),
+	                  self);
+	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_STATS,
+	                  G_CALLBACK (ppp_stats),
+	                  self);
+
+	return NM_ACT_STAGE_RETURN_POSTPONE;
 }
 
 /*****************************************************************************/
@@ -598,7 +613,7 @@ NMActStageReturn
 nm_modem_stage3_ip4_config_start (NMModem *self,
                                   NMDevice *device,
                                   NMDeviceClass *device_class,
-                                  NMDeviceStateReason *reason)
+                                  NMDeviceStateReason *out_failure_reason)
 {
 	NMModemPrivate *priv;
 	NMActRequest *req;
@@ -611,12 +626,13 @@ nm_modem_stage3_ip4_config_start (NMModem *self,
 	g_return_val_if_fail (NM_IS_MODEM (self), NM_ACT_STAGE_RETURN_FAILURE);
 	g_return_val_if_fail (NM_IS_DEVICE (device), NM_ACT_STAGE_RETURN_FAILURE);
 	g_return_val_if_fail (NM_IS_DEVICE_CLASS (device_class), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (reason != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
 	req = nm_device_get_act_request (device);
-	g_assert (req);
+	g_return_val_if_fail (req, NM_ACT_STAGE_RETURN_FAILURE);
+
 	connection = nm_act_request_get_applied_connection (req);
-	g_assert (connection);
+	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
+
 	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
 
 	/* Only Disabled and Auto methods make sense for WWAN */
@@ -627,22 +643,22 @@ nm_modem_stage3_ip4_config_start (NMModem *self,
 		nm_log_warn (LOGD_MB | LOGD_IP4,
 		             "(%s): unhandled WWAN IPv4 method '%s'; will fail",
 		             nm_modem_get_uid (self), method);
-		*reason = NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE;
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
 		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
 	priv = NM_MODEM_GET_PRIVATE (self);
 	switch (priv->ip4_method) {
 	case NM_MODEM_IP_METHOD_PPP:
-		ret = ppp_stage3_ip_config_start (self, req, reason);
+		ret = ppp_stage3_ip_config_start (self, req, out_failure_reason);
 		break;
 	case NM_MODEM_IP_METHOD_STATIC:
 		nm_log_dbg (LOGD_MB, "MODEM_IP_METHOD_STATIC");
-		ret = NM_MODEM_GET_CLASS (self)->static_stage3_ip4_config_start (self, req, reason);
+		ret = NM_MODEM_GET_CLASS (self)->static_stage3_ip4_config_start (self, req, out_failure_reason);
 		break;
 	case NM_MODEM_IP_METHOD_AUTO:
 		nm_log_dbg (LOGD_MB, "MODEM_IP_METHOD_AUTO");
-		ret = device_class->act_stage3_ip4_config_start (device, NULL, reason);
+		ret = device_class->act_stage3_ip4_config_start (device, NULL, out_failure_reason);
 		break;
 	default:
 		nm_log_info (LOGD_MB, "(%s): IPv4 configuration disabled", nm_modem_get_uid (self));
@@ -670,7 +686,7 @@ nm_modem_ip4_pre_commit (NMModem *modem,
 
 		g_assert (address);
 		if (address->plen == 32)
-			nm_platform_link_set_noarp (NM_PLATFORM_GET, nm_device_get_ip_ifindex (device));
+			nm_platform_link_set_noarp (nm_device_get_platform (device), nm_device_get_ip_ifindex (device));
 	}
 }
 
@@ -712,30 +728,28 @@ nm_modem_emit_ip6_config_result (NMModem *self,
 }
 
 static NMActStageReturn
-stage3_ip6_config_request (NMModem *self, NMDeviceStateReason *reason)
+stage3_ip6_config_request (NMModem *self, NMDeviceStateReason *out_failure_reason)
 {
-	*reason = NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE;
+	NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
 	return NM_ACT_STAGE_RETURN_FAILURE;
 }
 
 NMActStageReturn
 nm_modem_stage3_ip6_config_start (NMModem *self,
                                   NMActRequest *req,
-                                  NMDeviceStateReason *reason)
+                                  NMDeviceStateReason *out_failure_reason)
 {
 	NMModemPrivate *priv;
 	NMActStageReturn ret;
 	NMConnection *connection;
 	const char *method;
 
-	g_return_val_if_fail (self != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 	g_return_val_if_fail (NM_IS_MODEM (self), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (reason != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
 	connection = nm_act_request_get_applied_connection (req);
-	g_assert (connection);
+	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
+
 	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP6_CONFIG);
 
 	/* Only Ignore and Auto methods make sense for WWAN */
@@ -746,14 +760,14 @@ nm_modem_stage3_ip6_config_start (NMModem *self,
 		nm_log_warn (LOGD_MB | LOGD_IP6,
 		             "(%s): unhandled WWAN IPv6 method '%s'; will fail",
 		             nm_modem_get_uid (self), method);
-		*reason = NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE;
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
 		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
 	priv = NM_MODEM_GET_PRIVATE (self);
 	switch (priv->ip6_method) {
 	case NM_MODEM_IP_METHOD_PPP:
-		ret = ppp_stage3_ip_config_start (self, req, reason);
+		ret = ppp_stage3_ip_config_start (self, req, out_failure_reason);
 		break;
 	case NM_MODEM_IP_METHOD_STATIC:
 	case NM_MODEM_IP_METHOD_AUTO:
@@ -761,7 +775,7 @@ nm_modem_stage3_ip6_config_start (NMModem *self,
 		 * which in the static case is the full config, and the DHCP/Auto case
 		 * is just the IPv6LL address to use for SLAAC.
 		 */
-		ret = NM_MODEM_GET_CLASS (self)->stage3_ip6_config_request (self, reason);
+		ret = NM_MODEM_GET_CLASS (self)->stage3_ip6_config_request (self, out_failure_reason);
 		break;
 	default:
 		nm_log_info (LOGD_MB, "(%s): IPv6 configuration disabled", nm_modem_get_uid (self));
@@ -770,6 +784,45 @@ nm_modem_stage3_ip6_config_start (NMModem *self,
 	}
 
 	return ret;
+}
+
+guint32
+nm_modem_get_configured_mtu (NMDevice *self, gboolean *out_is_user_config)
+{
+	NMConnection *connection;
+	NMSetting *setting;
+	gint64 mtu_default;
+	guint mtu = 0;
+	const char *property_name;
+
+	nm_assert (NM_IS_DEVICE (self));
+	nm_assert (out_is_user_config);
+
+	connection = nm_device_get_applied_connection (self);
+	if (!connection)
+		g_return_val_if_reached (0);
+
+	setting = (NMSetting *) nm_connection_get_setting_gsm (connection);
+	if (!setting)
+		setting = (NMSetting *) nm_connection_get_setting_cdma (connection);
+
+	if (setting) {
+		g_object_get (setting, "mtu", &mtu, NULL);
+		if (mtu) {
+			*out_is_user_config = TRUE;
+			return mtu;
+		}
+
+		property_name = NM_IS_SETTING_GSM (setting) ? "gsm.mtu" : "cdma.mtu";
+		mtu_default = nm_device_get_configured_mtu_from_connection_default (self, property_name);
+		if (mtu_default >= 0) {
+			*out_is_user_config = TRUE;
+			return (guint32) mtu_default;
+		}
+	}
+
+	*out_is_user_config = FALSE;
+	return 0;
 }
 
 /*****************************************************************************/
@@ -835,16 +888,16 @@ nm_modem_get_secrets (NMModem *self,
 static NMActStageReturn
 act_stage1_prepare (NMModem *modem,
                     NMConnection *connection,
-                    NMDeviceStateReason *reason)
+                    NMDeviceStateReason *out_failure_reason)
 {
-	*reason = NM_DEVICE_STATE_REASON_UNKNOWN;
+	NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_UNKNOWN);
 	return NM_ACT_STAGE_RETURN_FAILURE;
 }
 
 NMActStageReturn
 nm_modem_act_stage1_prepare (NMModem *self,
                              NMActRequest *req,
-                             NMDeviceStateReason *reason)
+                             NMDeviceStateReason *out_failure_reason)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 	gs_unref_ptrarray GPtrArray *hints = NULL;
@@ -857,13 +910,13 @@ nm_modem_act_stage1_prepare (NMModem *self,
 	priv->act_request = g_object_ref (req);
 
 	connection = nm_act_request_get_applied_connection (req);
-	g_assert (connection);
+	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
 
 	setting_name = nm_connection_need_secrets (connection, &hints);
 	if (!setting_name) {
 		/* Ready to connect */
 		g_assert (!hints);
-		return NM_MODEM_GET_CLASS (self)->act_stage1_prepare (self, connection, reason);
+		return NM_MODEM_GET_CLASS (self)->act_stage1_prepare (self, connection, out_failure_reason);
 	}
 
 	/* Secrets required... */
@@ -887,7 +940,7 @@ nm_modem_act_stage1_prepare (NMModem *self,
 NMActStageReturn
 nm_modem_act_stage2_config (NMModem *self,
                             NMActRequest *req,
-                            NMDeviceStateReason *reason)
+                            NMDeviceStateReason *out_failure_reason)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 
@@ -1016,9 +1069,10 @@ deactivate_cleanup (NMModem *self, NMDevice *device)
 		    priv->ip6_method == NM_MODEM_IP_METHOD_AUTO) {
 			ifindex = nm_device_get_ip_ifindex (device);
 			if (ifindex > 0) {
-				nm_route_manager_route_flush (nm_route_manager_get (), ifindex);
-				nm_platform_address_flush (NM_PLATFORM_GET, ifindex);
-				nm_platform_link_set_down (NM_PLATFORM_GET, ifindex);
+				nm_route_manager_route_flush (nm_netns_get_route_manager (nm_device_get_netns (device)),
+				                              ifindex);
+				nm_platform_address_flush (nm_device_get_platform (device), ifindex);
+				nm_platform_link_set_down (nm_device_get_platform (device), ifindex);
 			}
 		}
 	}
@@ -1205,8 +1259,7 @@ nm_modem_deactivate (NMModem *self, NMDevice *device)
 void
 nm_modem_device_state_changed (NMModem *self,
                                NMDeviceState new_state,
-                               NMDeviceState old_state,
-                               NMDeviceStateReason reason)
+                               NMDeviceState old_state)
 {
 	gboolean was_connected = FALSE, warn = TRUE;
 	NMModemPrivate *priv;
@@ -1396,15 +1449,15 @@ set_property (GObject *object, guint prop_id,
 
 	switch (prop_id) {
 	case PROP_PATH:
-		/* Construct only */
+		/* construct-only */
 		priv->path = g_value_dup_string (value);
 		break;
 	case PROP_DRIVER:
-		/* Construct only */
+		/* construct-only */
 		priv->driver = g_value_dup_string (value);
 		break;
 	case PROP_CONTROL_PORT:
-		/* Construct only */
+		/* construct-only */
 		priv->control_port = g_value_dup_string (value);
 		break;
 	case PROP_DATA_PORT:
@@ -1412,7 +1465,7 @@ set_property (GObject *object, guint prop_id,
 		priv->data_port = g_value_dup_string (value);
 		break;
 	case PROP_UID:
-		/* Construct only */
+		/* construct-only */
 		priv->uid = g_value_dup_string (value);
 		break;
 	case PROP_IP4_METHOD:
@@ -1628,15 +1681,16 @@ nm_modem_class_init (NMModemClass *klass)
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
 	signals[PPP_STATS] =
-	    g_signal_new ("ppp-stats",
+	    g_signal_new (NM_MODEM_PPP_STATS,
 	                  G_OBJECT_CLASS_TYPE (object_class),
 	                  G_SIGNAL_RUN_FIRST,
 	                  0, NULL, NULL, NULL,
 	                  G_TYPE_NONE, 2,
-	                  G_TYPE_UINT, G_TYPE_UINT);
+	                  G_TYPE_UINT /*guint32 in_bytes*/,
+	                  G_TYPE_UINT /*guint32 out_bytes*/);
 
 	signals[PPP_FAILED] =
-	    g_signal_new ("ppp-failed",
+	    g_signal_new (NM_MODEM_PPP_FAILED,
 	                  G_OBJECT_CLASS_TYPE (object_class),
 	                  G_SIGNAL_RUN_FIRST,
 	                  0, NULL, NULL, NULL,

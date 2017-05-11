@@ -94,8 +94,9 @@ else
     else
         NMTST_LIBTOOL=($NMTST_LIBTOOL --mode=execute)
     fi
-    for a in "$@"; do
-        case "$a" in
+    unset TEST
+    while test $# -gt 0; do
+        case "$1" in
         "--launch-dbus")
             NMTST_LAUNCH_DBUS=1
             shift
@@ -120,6 +121,11 @@ else
             NMTST_USE_VALGRIND=0
             shift;
             ;;
+        "--test"|-t)
+            shift
+            TEST="$1"
+            shift
+            ;;
         "--")
             shift
             break
@@ -131,11 +137,21 @@ else
     done
     # we support calling the script directly. In this case,
     # only pass the path to the test to run.
-    TEST="$1"; shift
+    if test -z "${TEST+x}"; then
+        TEST="$1"; shift
+    fi
     if [[ -z "${NMTST_SUPPRESSIONS+x}" ]]; then
         NMTST_SUPPRESSIONS="$SCRIPT_PATH/../valgrind.suppressions"
     fi
 
+fi
+
+if _is_true "$NMTST_MAKE_FIRST" 0; then
+    git_dir="$(readlink -f "$(git rev-parse --show-toplevel)")"
+    rel_path="$(realpath --relative-to="$git_dir" -m "$TEST" 2>/dev/null)" || die "cannot resolve test-name \"$TEST\". Did you call the script properly?"
+    cd "$git_dir"
+    make -j5 "$rel_path" || die "make of $TEST failed ($git_dir / $rel_path)"
+    cd - 1>/dev/null
 fi
 
 [ -x "$TEST" ] || die "Test \"$TEST\" does not exist"
@@ -149,14 +165,6 @@ if [ -z "${NMTST_LAUNCH_DBUS}" ]; then
     else
         NMTST_LAUNCH_DBUS=0
     fi
-fi
-
-if _is_true "$NMTST_MAKE_FIRST" 0; then
-    git_dir="$(readlink -f "$(git rev-parse --show-toplevel)")"
-    rel_path="${TEST_PATH/#$(printf '%s/' "$git_dir")}/$TEST_NAME"
-    cd "$git_dir"
-    make -j5 "$rel_path" || die "make of $TEST failed ($git_dir / $rel_path)"
-    cd - 1>/dev/null
 fi
 
 # if the user wishes, change first into the directory of the test

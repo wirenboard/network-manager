@@ -23,9 +23,9 @@
 
 #include <glib-object.h>
 
-#include <nm-version.h>
-#include <nm-dbus-interface.h>
-#include <nm-core-enum-types.h>
+#include "nm-version.h"
+#include "nm-dbus-interface.h"
+#include "nm-core-enum-types.h"
 
 typedef struct _NMConnection              NMConnection;
 typedef struct _NMSetting                 NMSetting;
@@ -38,6 +38,7 @@ typedef struct _NMSettingBridgePort       NMSettingBridgePort;
 typedef struct _NMSettingCdma             NMSettingCdma;
 typedef struct _NMSettingConnection       NMSettingConnection;
 typedef struct _NMSettingDcb              NMSettingDcb;
+typedef struct _NMSettingDummy            NMSettingDummy;
 typedef struct _NMSettingGeneric          NMSettingGeneric;
 typedef struct _NMSettingGsm              NMSettingGsm;
 typedef struct _NMSettingInfiniband       NMSettingInfiniband;
@@ -55,6 +56,7 @@ typedef struct _NMSettingSerial           NMSettingSerial;
 typedef struct _NMSettingTeam             NMSettingTeam;
 typedef struct _NMSettingTeamPort         NMSettingTeamPort;
 typedef struct _NMSettingTun              NMSettingTun;
+typedef struct _NMSettingUser             NMSettingUser;
 typedef struct _NMSettingVlan             NMSettingVlan;
 typedef struct _NMSettingVpn              NMSettingVpn;
 typedef struct _NMSettingVxlan            NMSettingVxlan;

@@ -32,6 +32,7 @@
 #include <linux/version.h>
 #include <linux/rtnetlink.h>
 #include <fcntl.h>
+#include <libudev.h>
 
 #include "nm-utils.h"
 #include "nm-setting-wired.h"
@@ -42,8 +43,8 @@
  * utils
  ******************************************************************/
 
-extern char *if_indextoname (unsigned int __ifindex, char *__ifname);
-unsigned int if_nametoindex (const char *__ifname);
+extern char *if_indextoname (unsigned __ifindex, char *__ifname);
+unsigned if_nametoindex (const char *__ifname);
 
 const char *
 nmp_utils_if_indextoname (int ifindex, char *out_ifname/*IFNAMSIZ*/)
@@ -440,7 +441,7 @@ nmp_utils_ethtool_set_wake_on_lan (int ifindex,
 		return TRUE;
 
 	nm_log_dbg (LOGD_PLATFORM, "setting Wake-on-LAN options 0x%x, password '%s'",
-	            (unsigned int) wol, wol_password);
+	            (unsigned) wol, wol_password);
 
 	wol_info.cmd = ETHTOOL_SWOL;
 	wol_info.wolopts = 0;
@@ -520,35 +521,33 @@ nmp_utils_mii_supports_carrier_detect (int ifindex)
  ******************************************************************/
 
 const char *
-nmp_utils_udev_get_driver (GUdevDevice *device)
+nmp_utils_udev_get_driver (struct udev_device *udevice)
 {
-	GUdevDevice *parent = NULL, *grandparent = NULL;
+	struct udev_device *parent = NULL, *grandparent = NULL;
 	const char *driver, *subsys;
 
-	driver = g_udev_device_get_driver (device);
+	driver = udev_device_get_driver (udevice);
 	if (driver)
 		goto out;
 
 	/* Try the parent */
-	parent = g_udev_device_get_parent (device);
+	parent = udev_device_get_parent (udevice);
 	if (parent) {
-		driver = g_udev_device_get_driver (parent);
+		driver = udev_device_get_driver (parent);
 		if (!driver) {
 			/* Try the grandparent if it's an ibmebus device or if the
 			 * subsys is NULL which usually indicates some sort of
 			 * platform device like a 'gadget' net interface.
 			 */
-			subsys = g_udev_device_get_subsystem (parent);
+			subsys = udev_device_get_subsystem (parent);
 			if (   (g_strcmp0 (subsys, "ibmebus") == 0)
 			    || (subsys == NULL)) {
-				grandparent = g_udev_device_get_parent (parent);
+				grandparent = udev_device_get_parent (parent);
 				if (grandparent)
-					driver = g_udev_device_get_driver (grandparent);
+					driver = udev_device_get_driver (grandparent);
 			}
 		}
 	}
-	g_clear_object (&parent);
-	g_clear_object (&grandparent);
 
 out:
 	/* Intern the string so we don't have to worry about memory

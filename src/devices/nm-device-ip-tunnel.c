@@ -124,8 +124,8 @@ update_properties_from_ifindex (NMDevice *device, int ifindex)
 	NMDeviceIPTunnel *self = NM_DEVICE_IP_TUNNEL (device);
 	NMDeviceIPTunnelPrivate *priv = NM_DEVICE_IP_TUNNEL_GET_PRIVATE (self);
 	int parent_ifindex = 0;
-	in_addr_t local4, remote4;
-	struct in6_addr local6, remote6;
+	in_addr_t local4 = 0, remote4 = 0;
+	struct in6_addr local6 = { 0 }, remote6 = { 0 };
 	guint8 ttl = 0, tos = 0, encap_limit = 0;
 	gboolean pmtud = FALSE;
 	guint32 flow_label = 0;
@@ -157,7 +157,7 @@ clear:
 	if (priv->mode == NM_IP_TUNNEL_MODE_GRE) {
 		const NMPlatformLnkGre *lnk;
 
-		lnk = nm_platform_link_get_lnk_gre (NM_PLATFORM_GET, ifindex, NULL);
+		lnk = nm_platform_link_get_lnk_gre (nm_device_get_platform (device), ifindex, NULL);
 		if (!lnk) {
 			_LOGW (LOGD_PLATFORM, "could not read %s properties", "gre");
 			goto clear;
@@ -202,7 +202,7 @@ clear:
 	} else if (priv->mode == NM_IP_TUNNEL_MODE_SIT) {
 		const NMPlatformLnkSit *lnk;
 
-		lnk = nm_platform_link_get_lnk_sit (NM_PLATFORM_GET, ifindex, NULL);
+		lnk = nm_platform_link_get_lnk_sit (nm_device_get_platform (device), ifindex, NULL);
 		if (!lnk) {
 			_LOGW (LOGD_PLATFORM, "could not read %s properties", "sit");
 			goto clear;
@@ -217,7 +217,7 @@ clear:
 	} else if (priv->mode == NM_IP_TUNNEL_MODE_IPIP) {
 		const NMPlatformLnkIpIp *lnk;
 
-		lnk = nm_platform_link_get_lnk_ipip (NM_PLATFORM_GET, ifindex, NULL);
+		lnk = nm_platform_link_get_lnk_ipip (nm_device_get_platform (device), ifindex, NULL);
 		if (!lnk) {
 			_LOGW (LOGD_PLATFORM, "could not read %s properties", "ipip");
 			goto clear;
@@ -233,7 +233,7 @@ clear:
 	           || priv->mode == NM_IP_TUNNEL_MODE_IP6IP6) {
 		const NMPlatformLnkIp6Tnl *lnk;
 
-		lnk = nm_platform_link_get_lnk_ip6tnl (NM_PLATFORM_GET, ifindex, NULL);
+		lnk = nm_platform_link_get_lnk_ip6tnl (nm_device_get_platform (device), ifindex, NULL);
 		if (!lnk) {
 			_LOGW (LOGD_PLATFORM, "could not read %s properties", "ip6tnl");
 			goto clear;
@@ -332,7 +332,7 @@ complete_connection (NMDevice *device,
 {
 	NMSettingIPTunnel *s_ip_tunnel;
 
-	nm_utils_complete_generic (NM_PLATFORM_GET,
+	nm_utils_complete_generic (nm_device_get_platform (device),
 	                           connection,
 	                           NM_SETTING_IP_TUNNEL_SETTING_NAME,
 	                           existing_connections,
@@ -641,7 +641,7 @@ create_and_realize (NMDevice *device,
 			lnk_gre.output_flags = NM_GRE_KEY;
 		}
 
-		plerr = nm_platform_link_gre_add (NM_PLATFORM_GET, iface, &lnk_gre, out_plink);
+		plerr = nm_platform_link_gre_add (nm_device_get_platform (device), iface, &lnk_gre, out_plink);
 		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 			             "Failed to create GRE interface '%s' for '%s': %s",
@@ -667,7 +667,7 @@ create_and_realize (NMDevice *device,
 		lnk_sit.tos = nm_setting_ip_tunnel_get_tos (s_ip_tunnel);
 		lnk_sit.path_mtu_discovery = nm_setting_ip_tunnel_get_path_mtu_discovery (s_ip_tunnel);
 
-		plerr = nm_platform_link_sit_add (NM_PLATFORM_GET, iface, &lnk_sit, out_plink);
+		plerr = nm_platform_link_sit_add (nm_device_get_platform (device), iface, &lnk_sit, out_plink);
 		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 					"Failed to create SIT interface '%s' for '%s': %s",
@@ -693,7 +693,7 @@ create_and_realize (NMDevice *device,
 		lnk_ipip.tos = nm_setting_ip_tunnel_get_tos (s_ip_tunnel);
 		lnk_ipip.path_mtu_discovery = nm_setting_ip_tunnel_get_path_mtu_discovery (s_ip_tunnel);
 
-		plerr = nm_platform_link_ipip_add (NM_PLATFORM_GET, iface, &lnk_ipip, out_plink);
+		plerr = nm_platform_link_ipip_add (nm_device_get_platform (device), iface, &lnk_ipip, out_plink);
 		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 					"Failed to create IPIP interface '%s' for '%s': %s",
@@ -722,7 +722,7 @@ create_and_realize (NMDevice *device,
 		lnk_ip6tnl.flow_label = nm_setting_ip_tunnel_get_flow_label (s_ip_tunnel);
 		lnk_ip6tnl.proto = nm_setting_ip_tunnel_get_mode (s_ip_tunnel) == NM_IP_TUNNEL_MODE_IPIP6 ? IPPROTO_IPIP : IPPROTO_IPV6;
 
-		plerr = nm_platform_link_ip6tnl_add (NM_PLATFORM_GET, iface, &lnk_ip6tnl, out_plink);
+		plerr = nm_platform_link_ip6tnl_add (nm_device_get_platform (device), iface, &lnk_ip6tnl, out_plink);
 		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 			             "Failed to create IPIP interface '%s' for '%s': %s",
@@ -782,6 +782,33 @@ unrealize_notify (NMDevice *device)
 	NM_DEVICE_CLASS (nm_device_ip_tunnel_parent_class)->unrealize_notify (device);
 
 	update_properties_from_ifindex (device, 0);
+}
+
+static gboolean
+can_reapply_change (NMDevice *device,
+                    const char *setting_name,
+                    NMSetting *s_old,
+                    NMSetting *s_new,
+                    GHashTable *diffs,
+                    GError **error)
+{
+	NMDeviceClass *device_class;
+
+	/* Only handle ip-tunnel setting here, delegate other settings to parent class */
+	if (nm_streq (setting_name, NM_SETTING_IP_TUNNEL_SETTING_NAME)) {
+		return nm_device_hash_check_invalid_keys (diffs,
+		                                          NM_SETTING_IP_TUNNEL_SETTING_NAME,
+		                                          error,
+		                                          NM_SETTING_IP_TUNNEL_MTU); /* reapplied with IP config */
+	}
+
+	device_class = NM_DEVICE_CLASS (nm_device_ip_tunnel_parent_class);
+	return device_class->can_reapply_change (device,
+	                                         setting_name,
+	                                         s_old,
+	                                         s_new,
+	                                         diffs,
+	                                         error);
 }
 
 /*****************************************************************************/
@@ -866,16 +893,32 @@ constructed (GObject *object)
 }
 
 static void
+dispose (GObject *object)
+{
+	NMDeviceIPTunnel *self = NM_DEVICE_IP_TUNNEL (object);
+	NMDeviceIPTunnelPrivate *priv = NM_DEVICE_IP_TUNNEL_GET_PRIVATE (self);
+
+	g_clear_pointer (&priv->local, g_free);
+	g_clear_pointer (&priv->remote, g_free);
+	g_clear_pointer (&priv->input_key, g_free);
+	g_clear_pointer (&priv->output_key, g_free);
+
+	G_OBJECT_CLASS (nm_device_ip_tunnel_parent_class)->dispose (object);
+}
+
+static void
 nm_device_ip_tunnel_class_init (NMDeviceIPTunnelClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	NMDeviceClass *device_class = NM_DEVICE_CLASS (klass);
 
 	object_class->constructed = constructed;
+	object_class->dispose = dispose;
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
 
 	device_class->link_changed = link_changed;
+	device_class->can_reapply_change = can_reapply_change;
 	device_class->complete_connection = complete_connection;
 	device_class->update_connection = update_connection;
 	device_class->check_connection_compatible = check_connection_compatible;

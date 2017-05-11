@@ -68,10 +68,13 @@ G_DEFINE_TYPE (NMDeviceModem, nm_device_modem, NM_TYPE_DEVICE)
 /*****************************************************************************/
 
 static void
-ppp_failed (NMModem *modem, NMDeviceStateReason reason, gpointer user_data)
+ppp_failed (NMModem *modem,
+            guint i_reason,
+            gpointer user_data)
 {
 	NMDevice *device = NM_DEVICE (user_data);
 	NMDeviceModem *self = NM_DEVICE_MODEM (user_data);
+	NMDeviceStateReason reason = i_reason;
 
 	switch (nm_device_get_state (device)) {
 	case NM_DEVICE_STATE_PREPARE:
@@ -110,12 +113,13 @@ ppp_failed (NMModem *modem, NMDeviceStateReason reason, gpointer user_data)
 static void
 modem_prepare_result (NMModem *modem,
                       gboolean success,
-                      NMDeviceStateReason reason,
+                      guint i_reason,
                       gpointer user_data)
 {
 	NMDeviceModem *self = NM_DEVICE_MODEM (user_data);
 	NMDevice *device = NM_DEVICE (self);
 	NMDeviceState state;
+	NMDeviceStateReason reason = i_reason;
 
 	state = nm_device_get_state (device);
 	g_return_if_fail (state == NM_DEVICE_STATE_PREPARE);
@@ -123,12 +127,12 @@ modem_prepare_result (NMModem *modem,
 	if (success)
 		nm_device_activate_schedule_stage2_device_config (device);
 	else {
-		if (reason == NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT) {
+		if (nm_device_state_reason_check (reason) == NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT) {
 			/* If the connect failed because the SIM PIN was wrong don't allow
 			 * the device to be auto-activated anymore, which would risk locking
 			 * the SIM if the incorrect PIN continues to be used.
 			 */
-			nm_device_set_autoconnect (device, FALSE);
+			nm_device_set_autoconnect_intern (device, FALSE);
 			_LOGI (LOGD_MB, "disabling autoconnect due to failed SIM PIN");
 		}
 
@@ -201,7 +205,7 @@ modem_ip6_config_result (NMModem *modem,
 	NMDeviceModem *self = NM_DEVICE_MODEM (user_data);
 	NMDevice *device = NM_DEVICE (self);
 	NMActStageReturn ret;
-	NMDeviceStateReason reason = NM_DEVICE_STATE_REASON_NONE;
+	NMDeviceStateReason failure_reason = NM_DEVICE_STATE_REASON_NONE;
 	NMIP6Config *ignored = NULL;
 	gboolean got_config = !!config;
 
@@ -235,11 +239,11 @@ modem_ip6_config_result (NMModem *modem,
 	}
 
 	/* Start SLAAC now that we have a link-local address from the modem */
-	ret = NM_DEVICE_CLASS (nm_device_modem_parent_class)->act_stage3_ip6_config_start (device, &ignored, &reason);
+	ret = NM_DEVICE_CLASS (nm_device_modem_parent_class)->act_stage3_ip6_config_start (device, &ignored, &failure_reason);
 	g_assert (ignored == NULL);
 	switch (ret) {
 	case NM_ACT_STAGE_RETURN_FAILURE:
-		nm_device_ip_method_failed (device, AF_INET6, reason);
+		nm_device_ip_method_failed (device, AF_INET6, failure_reason);
 		break;
 	case NM_ACT_STAGE_RETURN_IP_FAIL:
 		/* all done */
@@ -371,9 +375,9 @@ device_state_changed (NMDevice *device,
 		       nm_modem_state_to_string (nm_modem_get_state (priv->modem)));
 	}
 
-	nm_modem_device_state_changed (priv->modem, new_state, old_state, reason);
+	nm_modem_device_state_changed (priv->modem, new_state, old_state);
 
-	switch (reason) {
+	switch (nm_device_state_reason_check (reason)) {
 	case NM_DEVICE_STATE_REASON_GSM_REGISTRATION_DENIED:
 	case NM_DEVICE_STATE_REASON_GSM_REGISTRATION_NOT_SEARCHING:
 	case NM_DEVICE_STATE_REASON_GSM_SIM_NOT_INSERTED:
@@ -386,8 +390,10 @@ device_state_changed (NMDevice *device,
 		/* Block autoconnect of the just-failed connection for situations
 		 * where a retry attempt would just fail again.
 		 */
-		if (connection)
-			nm_settings_connection_set_autoconnect_blocked_reason (connection, reason);
+		if (connection) {
+			nm_settings_connection_set_autoconnect_blocked_reason (connection,
+			                                                       NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_BLOCKED);
+		}
 		break;
 	default:
 		break;
@@ -509,41 +515,41 @@ deactivate_async (NMDevice *self,
 /*****************************************************************************/
 
 static NMActStageReturn
-act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
+act_stage1_prepare (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMActStageReturn ret;
 	NMActRequest *req;
 
-	ret = NM_DEVICE_CLASS (nm_device_modem_parent_class)->act_stage1_prepare (device, reason);
+	ret = NM_DEVICE_CLASS (nm_device_modem_parent_class)->act_stage1_prepare (device, out_failure_reason);
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
 	req = nm_device_get_act_request (device);
-	g_assert (req);
+	g_return_val_if_fail (req, NM_ACT_STAGE_RETURN_FAILURE);
 
-	return nm_modem_act_stage1_prepare (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem, req, reason);
+	return nm_modem_act_stage1_prepare (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem, req, out_failure_reason);
 }
 
 static NMActStageReturn
-act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMActRequest *req;
 
 	req = nm_device_get_act_request (device);
-	g_assert (req);
+	g_return_val_if_fail (req, NM_ACT_STAGE_RETURN_FAILURE);
 
-	return nm_modem_act_stage2_config (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem, req, reason);
+	return nm_modem_act_stage2_config (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem, req, out_failure_reason);
 }
 
 static NMActStageReturn
 act_stage3_ip4_config_start (NMDevice *device,
                              NMIP4Config **out_config,
-                             NMDeviceStateReason *reason)
+                             NMDeviceStateReason *out_failure_reason)
 {
 	return nm_modem_stage3_ip4_config_start (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem,
 	                                         device,
 	                                         NM_DEVICE_CLASS (nm_device_modem_parent_class),
-	                                         reason);
+	                                         out_failure_reason);
 }
 
 static void
@@ -555,11 +561,11 @@ ip4_config_pre_commit (NMDevice *device, NMIP4Config *config)
 static NMActStageReturn
 act_stage3_ip6_config_start (NMDevice *device,
                              NMIP6Config **out_config,
-                             NMDeviceStateReason *reason)
+                             NMDeviceStateReason *out_failure_reason)
 {
 	return nm_modem_stage3_ip6_config_start (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem,
 	                                         nm_device_get_act_request (device),
-	                                         reason);
+	                                         out_failure_reason);
 }
 
 static gboolean
@@ -800,6 +806,7 @@ nm_device_modem_class_init (NMDeviceModemClass *mclass)
 	device_class->owns_iface = owns_iface;
 	device_class->is_available = is_available;
 	device_class->get_ip_iface_identifier = get_ip_iface_identifier;
+	device_class->get_configured_mtu = nm_modem_get_configured_mtu;
 
 	device_class->state_changed = device_state_changed;
 

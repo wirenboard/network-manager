@@ -51,6 +51,7 @@
 #include "nm-setting-serial.h"
 #include "nm-setting-team.h"
 #include "nm-setting-team-port.h"
+#include "nm-setting-user.h"
 #include "nm-setting-vlan.h"
 #include "nm-setting-vpn.h"
 #include "nm-setting-wimax.h"
@@ -640,6 +641,47 @@ test_setting_ip4_config_address_data (void)
 	g_assert (value == NULL);
 
 	g_object_unref (conn);
+}
+
+static void
+test_setting_ip_route_attributes (void)
+{
+	GVariant *variant;
+	gboolean res, known;
+
+#define TEST_ATTR(name, type, value, family, exp_res, exp_known) \
+	variant = g_variant_new_ ## type (value); \
+	res = nm_ip_route_attribute_validate (name, variant, family, &known, NULL); \
+	g_assert (res == exp_res); \
+	g_assert (known == exp_known); \
+	g_variant_unref (variant);
+
+	TEST_ATTR ("foo", uint32, 12, AF_INET, FALSE, FALSE);
+
+	TEST_ATTR ("tos", byte,   127, AF_INET, TRUE, TRUE);
+	TEST_ATTR ("tos", string, "0x28", AF_INET, FALSE, TRUE);
+
+	TEST_ATTR ("cwnd",  uint32, 10,    AF_INET, TRUE,  TRUE);
+	TEST_ATTR ("cwnd",  string, "11",  AF_INET, FALSE, TRUE);
+
+	TEST_ATTR ("lock-mtu", boolean, TRUE, AF_INET, TRUE,  TRUE);
+	TEST_ATTR ("lock-mtu", uint32,  1,    AF_INET, FALSE, TRUE);
+
+	TEST_ATTR ("from", string, "fd01::1",     AF_INET6, TRUE,  TRUE);
+	TEST_ATTR ("from", string, "fd01::1/64",  AF_INET6, TRUE,  TRUE);
+	TEST_ATTR ("from", string, "fd01::1/128", AF_INET6, TRUE,  TRUE);
+	TEST_ATTR ("from", string, "fd01::1/129", AF_INET6, FALSE, TRUE);
+	TEST_ATTR ("from", string, "fd01::1/a",   AF_INET6, FALSE, TRUE);
+	TEST_ATTR ("from", string, "abc/64",      AF_INET6, FALSE, TRUE);
+	TEST_ATTR ("from", string, "1.2.3.4",     AF_INET,  FALSE, TRUE);
+	TEST_ATTR ("from", string, "1.2.3.4",     AF_INET6, FALSE, TRUE);
+
+	TEST_ATTR ("src", string, "1.2.3.4",    AF_INET,  TRUE,  TRUE);
+	TEST_ATTR ("src", string, "1.2.3.4",    AF_INET6, FALSE, TRUE);
+	TEST_ATTR ("src", string, "1.2.3.0/24", AF_INET,  FALSE, TRUE);
+	TEST_ATTR ("src", string, "fd01::12",   AF_INET6, TRUE,  TRUE);
+
+#undef TEST_ATTR
 }
 
 static void
@@ -4285,6 +4327,18 @@ test_setting_compare_default_strv (void)
 	out_settings = NULL;
 }
 
+/*****************************************************************************/
+
+static void
+test_setting_user_data (void)
+{
+	gs_unref_object NMSettingUser *s_user = NULL;
+
+	s_user = NM_SETTING_USER (nm_setting_user_new ());
+}
+
+/*****************************************************************************/
+
 static void
 test_hexstr2bin (void)
 {
@@ -4837,7 +4891,7 @@ test_nm_utils_is_power_of_two (void)
 		if (i == -1)
 			xyes = 0;
 		else {
-			xyes = (1LL << i);
+			xyes = (((guint64) 1) << i);
 			g_assert (xyes != 0);
 		}
 
@@ -4848,7 +4902,7 @@ again:
 			 * by randomly setting bits. */
 			numbits = g_rand_int_range (rand, 1, 65);
 			while (xno != ~((guint64) 0) && numbits > 0) {
-				guint64 v = (1LL << g_rand_int_range (rand, 0, 64));
+				guint64 v = (((guint64) 1) << g_rand_int_range (rand, 0, 64));
 
 				if ((xno | v) != xno) {
 					xno |= v;
@@ -5142,25 +5196,30 @@ static void test_nm_utils_enum (void)
 
 	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_YES, "yes");
 	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_UNKNOWN, "unknown");
-	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_INVALID, NULL);
+	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_INVALID, "4");
+	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_67, "67");
+	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_46, "64");
 
 	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_NONE, "");
 	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_BAZ, "baz");
 	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_FOO |
 	                                          NM_TEST_GENERAL_META_FLAGS_BAR |
 	                                          NM_TEST_GENERAL_META_FLAGS_BAZ, "foo, bar, baz");
+	test_nm_utils_enum_to_str_do (meta_flags, 0xFF, "foo, bar, baz, 0xf8");
+	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_0x8, "0x8");
+	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_0x4, "0x10");
 
 	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED, "red");
-	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_WHITE, "");
+	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_WHITE, "0x1");
 	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED |
 	                                           NM_TEST_GENERAL_COLOR_FLAGS_GREEN, "red, green");
 
 	test_nm_utils_enum_from_str_do (bool_enum, "", FALSE, 0, NULL);
 	test_nm_utils_enum_from_str_do (bool_enum, " ", FALSE, 0, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, "invalid", FALSE, 0, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, "invalid", FALSE, 0, "invalid");
 	test_nm_utils_enum_from_str_do (bool_enum, "yes", TRUE, NM_TEST_GENERAL_BOOL_ENUM_YES, NULL);
 	test_nm_utils_enum_from_str_do (bool_enum, "no", TRUE, NM_TEST_GENERAL_BOOL_ENUM_NO, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, "yes,no", FALSE, 0, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, "yes,no", FALSE, 0, "yes,no");
 
 	test_nm_utils_enum_from_str_do (meta_flags, "", TRUE, 0, NULL);
 	test_nm_utils_enum_from_str_do (meta_flags, " ", TRUE, 0, NULL);
@@ -5172,16 +5231,18 @@ static void test_nm_utils_enum (void)
 	test_nm_utils_enum_from_str_do (meta_flags, "foo,,bar", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
 	                                                              NM_TEST_GENERAL_META_FLAGS_BAR, NULL);
 	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz,quux,bar", FALSE, 0, "quux");
+	test_nm_utils_enum_from_str_do (meta_flags, "foo,0x6", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO | 0x6, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "0x30,0x08,foo", TRUE, 0x39, NULL);
 
 	test_nm_utils_enum_from_str_do (color_flags, "green", TRUE, NM_TEST_GENERAL_COLOR_FLAGS_GREEN, NULL);
 	test_nm_utils_enum_from_str_do (color_flags, "blue,red", TRUE, NM_TEST_GENERAL_COLOR_FLAGS_BLUE |
 	                                                               NM_TEST_GENERAL_COLOR_FLAGS_RED, NULL);
 	test_nm_utils_enum_from_str_do (color_flags, "blue,white", FALSE, 0, "white");
 
-	test_nm_utils_enum_get_values_do (bool_enum, 0, G_MAXINT, "no,yes,maybe,unknown");
+	test_nm_utils_enum_get_values_do (bool_enum, 0, G_MAXINT, "no,yes,maybe,unknown,67,64");
 	test_nm_utils_enum_get_values_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_YES,
 	                                  NM_TEST_GENERAL_BOOL_ENUM_MAYBE, "yes,maybe");
-	test_nm_utils_enum_get_values_do (meta_flags, 0, G_MAXINT, "none,foo,bar,baz");
+	test_nm_utils_enum_get_values_do (meta_flags, 0, G_MAXINT, "none,foo,bar,baz,0x8,0x10");
 	test_nm_utils_enum_get_values_do (color_flags, 0, G_MAXINT, "blue,red,green");
 }
 
@@ -5405,6 +5466,97 @@ test_nm_in_strset (void)
 #undef _ASSERT
 }
 
+static void
+test_route_attributes_parse (void)
+{
+	GHashTable *ht;
+	GError *error = NULL;
+	GVariant *variant;
+
+	ht = nm_utils_parse_variant_attributes ("mtu=1400  src=1.2.3.4 cwnd=14",
+	                                        ' ', '=', FALSE,
+	                                        nm_ip_route_get_variant_attribute_spec (),
+	                                        &error);
+	g_assert_no_error (error);
+	g_assert (ht);
+	g_hash_table_unref (ht);
+
+	ht = nm_utils_parse_variant_attributes ("mtu=1400 src=1.2.3.4 cwnd=14 \\",
+	                                         ' ', '=', FALSE,
+	                                         nm_ip_route_get_variant_attribute_spec (),
+	                                         &error);
+	g_assert_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED);
+	g_assert (!ht);
+	g_clear_error (&error);
+
+	ht = nm_utils_parse_variant_attributes ("mtu.1400 src.1\\.2\\.3\\.4 ",
+	                                         ' ', '.', FALSE,
+	                                         nm_ip_route_get_variant_attribute_spec (),
+	                                         &error);
+	g_assert (ht);
+	g_assert_no_error (error);
+	variant = g_hash_table_lookup (ht, NM_IP_ROUTE_ATTRIBUTE_MTU);
+	g_assert (variant);
+	g_assert (g_variant_is_of_type (variant, G_VARIANT_TYPE_UINT32));
+	g_assert_cmpuint (g_variant_get_uint32 (variant), ==, 1400);
+
+	variant = g_hash_table_lookup (ht, NM_IP_ROUTE_ATTRIBUTE_SRC);
+	g_assert (variant);
+	g_assert (g_variant_is_of_type (variant, G_VARIANT_TYPE_STRING));
+	g_assert_cmpstr (g_variant_get_string (variant, NULL), ==, "1.2.3.4");
+	g_hash_table_unref (ht);
+
+	ht = nm_utils_parse_variant_attributes ("from:fd01\\:\\:42\\/64/initrwnd:21",
+	                                         '/', ':', FALSE,
+	                                         nm_ip_route_get_variant_attribute_spec (),
+	                                         &error);
+	g_assert (ht);
+	g_assert_no_error (error);
+	variant = g_hash_table_lookup (ht, NM_IP_ROUTE_ATTRIBUTE_INITRWND);
+	g_assert (variant);
+	g_assert (g_variant_is_of_type (variant, G_VARIANT_TYPE_UINT32));
+	g_assert_cmpuint (g_variant_get_uint32 (variant), ==, 21);
+
+	variant = g_hash_table_lookup (ht, NM_IP_ROUTE_ATTRIBUTE_FROM);
+	g_assert (variant);
+	g_assert (g_variant_is_of_type (variant, G_VARIANT_TYPE_STRING));
+	g_assert_cmpstr (g_variant_get_string (variant, NULL), ==, "fd01::42/64");
+	g_hash_table_unref (ht);
+}
+
+static void
+test_route_attributes_format (void)
+{
+	gs_unref_hashtable GHashTable *ht = NULL;
+	char *str;
+
+	ht = g_hash_table_new_full (g_str_hash, g_str_equal,
+	                            NULL, (GDestroyNotify) g_variant_unref);
+
+	str = nm_utils_format_variant_attributes (NULL, ' ', '=');
+	g_assert_cmpstr (str, ==, NULL);
+
+	str = nm_utils_format_variant_attributes (ht, ' ', '=');
+	g_assert_cmpstr (str, ==, NULL);
+
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_MTU, g_variant_new_uint32 (5000));
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_INITRWND, g_variant_new_uint32 (20));
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU, g_variant_new_boolean (TRUE));
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_SRC, g_variant_new_string ("aaaa:bbbb::1"));
+	str = nm_utils_format_variant_attributes (ht, ' ', '=');
+	g_assert_cmpstr (str, ==, "initrwnd=20 lock-mtu=true mtu=5000 src=aaaa:bbbb::1");
+	g_hash_table_remove_all (ht);
+	g_free (str);
+
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_WINDOW, g_variant_new_uint32 (30000));
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_INITCWND, g_variant_new_uint32 (21));
+	g_hash_table_insert (ht, NM_IP_ROUTE_ATTRIBUTE_FROM, g_variant_new_string ("aaaa:bbbb:cccc:dddd::/64"));
+	str = nm_utils_format_variant_attributes (ht, '/', ':');
+	g_assert_cmpstr (str, ==, "from:aaaa\\:bbbb\\:cccc\\:dddd\\:\\:\\/64/initcwnd:21/window:30000");
+	g_hash_table_remove_all (ht);
+	g_free (str);
+}
+
 /*****************************************************************************/
 
 static gboolean
@@ -5460,6 +5612,7 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_vpn_modify_during_foreach", test_setting_vpn_modify_during_foreach);
 	g_test_add_func ("/core/general/test_setting_ip4_config_labels", test_setting_ip4_config_labels);
 	g_test_add_func ("/core/general/test_setting_ip4_config_address_data", test_setting_ip4_config_address_data);
+	g_test_add_func ("/core/general/test_setting_ip_route_attributes", test_setting_ip_route_attributes);
 	g_test_add_func ("/core/general/test_setting_gsm_apn_spaces", test_setting_gsm_apn_spaces);
 	g_test_add_func ("/core/general/test_setting_gsm_apn_bad_chars", test_setting_gsm_apn_bad_chars);
 	g_test_add_func ("/core/general/test_setting_gsm_apn_underscore", test_setting_gsm_apn_underscore);
@@ -5551,6 +5704,7 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_ip4_gateway", test_setting_ip4_gateway);
 	g_test_add_func ("/core/general/test_setting_ip6_gateway", test_setting_ip6_gateway);
 	g_test_add_func ("/core/general/test_setting_compare_default_strv", test_setting_compare_default_strv);
+	g_test_add_func ("/core/general/test_setting_user_data", test_setting_user_data);
 
 	g_test_add_func ("/core/general/hexstr2bin", test_hexstr2bin);
 	g_test_add_func ("/core/general/test_nm_utils_uuid_generate_from_string", test_nm_utils_uuid_generate_from_string);
@@ -5569,6 +5723,8 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/_nm_utils_team_config_equal", test_nm_utils_team_config_equal);
 	g_test_add_func ("/core/general/test_nm_utils_enum", test_nm_utils_enum);
 	g_test_add_func ("/core/general/nm-set-out", test_nm_set_out);
+	g_test_add_func ("/core/general/route_attributes/parse", test_route_attributes_parse);
+	g_test_add_func ("/core/general/route_attributes/format", test_route_attributes_format);
 
 	return g_test_run ();
 }

@@ -2,12 +2,12 @@
 .\"     Title: nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 02/15/2017
+.\"      Date: 05/10/2017
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.6.2
+.\"    Source: NetworkManager 1.8.0
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.6\&.2" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.8\&.0" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -151,13 +151,16 @@ common
 is used to print common field values of the command\&.
 .sp
 If omitted, default is
-common\&. The option is mandatory when
-\fB\-\-terse\fR
-is used\&. In this case, generic values
-all
-and
-common
-cannot be used\&. This is to maintain compatibility when new fields are added in the future\&.
+common\&.
+.RE
+.PP
+\fB\-g\fR | \fB\-\-get\-values\fR {\fIfield1\fR,\fIfield2\fR... | all | common}
+.RS 4
+This option is used to print values from specific fields\&. It is basically a shortcut for
+\-\-mode tabular \-\-terse \-\-fields
+and is a convenient way to retrieve values for particular fields\&. The values are printed one per line without headers\&.
+.sp
+If a section is specified instead of a field, the section name will be printed followed by colon separated values of the fields belonging to that section, all on the same line\&.
 .RE
 .PP
 \fB\-e\fR | \fB\-\-escape\fR {yes | no}
@@ -875,6 +878,17 @@ macvlan
 .IP \(bu 2.3
 .\}
 vxlan
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+dummy
 .RE
 .sp
 The most typical uses are described in the

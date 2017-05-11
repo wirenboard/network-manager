@@ -87,7 +87,8 @@ gboolean nm_dns_manager_remove_ip6_config (NMDnsManager *self, NMIP6Config *conf
 void nm_dns_manager_set_initial_hostname (NMDnsManager *self,
                                           const char *hostname);
 void nm_dns_manager_set_hostname         (NMDnsManager *self,
-                                          const char *hostname);
+                                          const char *hostname,
+                                          gboolean skip_update);
 
 /**
  * NMDnsManagerResolvConfManager
@@ -119,5 +120,7 @@ typedef enum {
 } NMDnsManagerResolvConfManager;
 
 gboolean nm_dns_manager_get_resolv_conf_explicit (NMDnsManager *self);
+
+void nm_dns_manager_stop (NMDnsManager *self);
 
 #endif /* __NETWORKMANAGER_DNS_MANAGER_H__ */

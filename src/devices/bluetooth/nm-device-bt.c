@@ -99,7 +99,7 @@ G_DEFINE_TYPE (NMDeviceBt, nm_device_bt, NM_TYPE_DEVICE)
 
 /*****************************************************************************/
 
-static gboolean modem_stage1 (NMDeviceBt *self, NMModem *modem, NMDeviceStateReason *reason);
+static gboolean modem_stage1 (NMDeviceBt *self, NMModem *modem, NMDeviceStateReason *out_failure_reason);
 
 /*****************************************************************************/
 
@@ -328,7 +328,7 @@ complete_connection (NMDevice *device,
 		return FALSE;
 	}
 
-	nm_utils_complete_generic (NM_PLATFORM_GET,
+	nm_utils_complete_generic (nm_device_get_platform (device),
 	                           connection,
 	                           NM_SETTING_BLUETOOTH_SETTING_NAME,
 	                           existing_connections,
@@ -362,18 +362,24 @@ complete_connection (NMDevice *device,
 
 static void
 ppp_stats (NMModem *modem,
-           guint32 in_bytes,
-           guint32 out_bytes,
+           guint i_in_bytes,
+           guint i_out_bytes,
            gpointer user_data)
 {
-	g_signal_emit (NM_DEVICE_BT (user_data), signals[PPP_STATS], 0, in_bytes, out_bytes);
+	guint32 in_bytes = i_in_bytes;
+	guint32 out_bytes = i_out_bytes;
+
+	g_signal_emit (NM_DEVICE_BT (user_data), signals[PPP_STATS], 0, (guint) in_bytes, (guint) out_bytes);
 }
 
 static void
-ppp_failed (NMModem *modem, NMDeviceStateReason reason, gpointer user_data)
+ppp_failed (NMModem *modem,
+            guint i_reason,
+            gpointer user_data)
 {
 	NMDevice *device = NM_DEVICE (user_data);
 	NMDeviceBt *self = NM_DEVICE_BT (user_data);
+	NMDeviceStateReason reason = i_reason;
 
 	switch (nm_device_get_state (device)) {
 	case NM_DEVICE_STATE_PREPARE:
@@ -430,28 +436,30 @@ modem_auth_result (NMModem *modem, GError *error, gpointer user_data)
 {
 	NMDevice *device = NM_DEVICE (user_data);
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE ((NMDeviceBt *) device);
-	NMDeviceStateReason reason = NM_DEVICE_STATE_REASON_NONE;
 
 	if (error) {
 		nm_device_state_changed (device,
 		                         NM_DEVICE_STATE_FAILED,
 		                         NM_DEVICE_STATE_REASON_NO_SECRETS);
 	} else {
+		NMDeviceStateReason failure_reason = NM_DEVICE_STATE_REASON_NONE;
+
 		/* Otherwise, on success for GSM/CDMA secrets we need to schedule modem stage1 again */
 		g_return_if_fail (nm_device_get_state (device) == NM_DEVICE_STATE_NEED_AUTH);
-		if (!modem_stage1 (NM_DEVICE_BT (device), priv->modem, &reason))
-			nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, reason);
+		if (!modem_stage1 (NM_DEVICE_BT (device), priv->modem, &failure_reason))
+			nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, failure_reason);
 	}
 }
 
 static void
 modem_prepare_result (NMModem *modem,
                       gboolean success,
-                      NMDeviceStateReason reason,
+                      guint i_reason,
                       gpointer user_data)
 {
 	NMDeviceBt *self = NM_DEVICE_BT (user_data);
 	NMDevice *device = NM_DEVICE (self);
+	NMDeviceStateReason reason = i_reason;
 	NMDeviceState state;
 
 	state = nm_device_get_state (device);
@@ -460,12 +468,12 @@ modem_prepare_result (NMModem *modem,
 	if (success) {
 		NMActRequest *req;
 		NMActStageReturn ret;
-		NMDeviceStateReason stage2_reason = NM_DEVICE_STATE_REASON_NONE;
+		NMDeviceStateReason failure_reason = NM_DEVICE_STATE_REASON_NONE;
 
 		req = nm_device_get_act_request (device);
-		g_assert (req);
+		g_return_if_fail (req);
 
-		ret = nm_modem_act_stage2_config (modem, req, &stage2_reason);
+		ret = nm_modem_act_stage2_config (modem, req, &failure_reason);
 		switch (ret) {
 		case NM_ACT_STAGE_RETURN_POSTPONE:
 			break;
@@ -474,17 +482,17 @@ modem_prepare_result (NMModem *modem,
 			break;
 		case NM_ACT_STAGE_RETURN_FAILURE:
 		default:
-			nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, stage2_reason);
+			nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, failure_reason);
 			break;
 		}
 	} else {
-		if (reason == NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT) {
+		if (nm_device_state_reason_check (reason) == NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT) {
 			/* If the connect failed because the SIM PIN was wrong don't allow
 			 * the device to be auto-activated anymore, which would risk locking
 			 * the SIM if the incorrect PIN continues to be used.
 			 */
-			nm_device_set_autoconnect (device, FALSE);
 			_LOGI (LOGD_MB, "disabling autoconnect due to failed SIM PIN");
+			nm_device_set_autoconnect_intern (device, FALSE);
 		}
 
 		nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, reason);
@@ -500,7 +508,7 @@ device_state_changed (NMDevice *device,
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE ((NMDeviceBt *) device);
 
 	if (priv->modem)
-		nm_modem_device_state_changed (priv->modem, new_state, old_state, reason);
+		nm_modem_device_state_changed (priv->modem, new_state, old_state);
 
 	/* Need to recheck available connections whenever MM appears or disappears,
 	 * since the device could be both DUN and NAP capable and thus may not
@@ -541,17 +549,15 @@ data_port_changed_cb (NMModem *modem, GParamSpec *pspec, gpointer user_data)
 }
 
 static gboolean
-modem_stage1 (NMDeviceBt *self, NMModem *modem, NMDeviceStateReason *reason)
+modem_stage1 (NMDeviceBt *self, NMModem *modem, NMDeviceStateReason *out_failure_reason)
 {
 	NMActRequest *req;
 	NMActStageReturn ret;
 
-	g_return_val_if_fail (reason != NULL, FALSE);
-
 	req = nm_device_get_act_request (NM_DEVICE (self));
-	g_assert (req);
+	g_return_val_if_fail (req, FALSE);
 
-	ret = nm_modem_act_stage1_prepare (modem, req, reason);
+	ret = nm_modem_act_stage1_prepare (modem, req, out_failure_reason);
 	switch (ret) {
 	case NM_ACT_STAGE_RETURN_POSTPONE:
 	case NM_ACT_STAGE_RETURN_SUCCESS:
@@ -639,7 +645,7 @@ component_added (NMDevice *device, GObject *component)
 	const gchar *modem_control_port;
 	char *base;
 	NMDeviceState state;
-	NMDeviceStateReason reason = NM_DEVICE_STATE_REASON_NONE;
+	NMDeviceStateReason failure_reason = NM_DEVICE_STATE_REASON_NONE;
 
 	if (!NM_IS_MODEM (component))
 		return FALSE;
@@ -694,8 +700,8 @@ component_added (NMDevice *device, GObject *component)
 	g_signal_connect (modem, "notify::" NM_MODEM_DATA_PORT, G_CALLBACK (data_port_changed_cb), self);
 
 	/* Kick off the modem connection */
-	if (!modem_stage1 (self, modem, &reason))
-		nm_device_state_changed (NM_DEVICE (self), NM_DEVICE_STATE_FAILED, reason);
+	if (!modem_stage1 (self, modem, &failure_reason))
+		nm_device_state_changed (NM_DEVICE (self), NM_DEVICE_STATE_FAILED, failure_reason);
 
 	return TRUE;
 }
@@ -836,14 +842,15 @@ bt_connect_timeout (gpointer user_data)
 }
 
 static NMActStageReturn
-act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceBt *self = NM_DEVICE_BT (device);
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (self);
 	NMConnection *connection;
 
 	connection = nm_device_get_applied_connection (device);
-	g_assert (connection);
+	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
+
 	priv->bt_type = get_connection_bt_type (connection);
 	if (priv->bt_type == NM_BT_CAPABILITY_NONE) {
 		// FIXME: set a reason code
@@ -851,7 +858,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	}
 
 	if (priv->bt_type == NM_BT_CAPABILITY_DUN && !priv->mm_running) {
-		*reason = NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE;
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE);
 		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
@@ -862,8 +869,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	                               priv->bt_type & (NM_BT_CAPABILITY_DUN | NM_BT_CAPABILITY_NAP),
 	                               bluez_connect_cb, g_object_ref (device));
 
-	if (priv->timeout_id)
-		g_source_remove (priv->timeout_id);
+	nm_clear_g_source (&priv->timeout_id);
 	priv->timeout_id = g_timeout_add_seconds (30, bt_connect_timeout, device);
 
 	return NM_ACT_STAGE_RETURN_POSTPONE;
@@ -872,38 +878,34 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 static NMActStageReturn
 act_stage3_ip4_config_start (NMDevice *device,
                              NMIP4Config **out_config,
-                             NMDeviceStateReason *reason)
+                             NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE ((NMDeviceBt *) device);
-	NMActStageReturn ret;
 
 	if (priv->bt_type == NM_BT_CAPABILITY_DUN) {
-		ret = nm_modem_stage3_ip4_config_start (priv->modem,
-		                                        device,
-		                                        NM_DEVICE_CLASS (nm_device_bt_parent_class),
-		                                        reason);
-	} else
-		ret = NM_DEVICE_CLASS (nm_device_bt_parent_class)->act_stage3_ip4_config_start (device, out_config, reason);
+		return nm_modem_stage3_ip4_config_start (priv->modem,
+		                                         device,
+		                                         NM_DEVICE_CLASS (nm_device_bt_parent_class),
+		                                         out_failure_reason);
+	}
 
-	return ret;
+	return NM_DEVICE_CLASS (nm_device_bt_parent_class)->act_stage3_ip4_config_start (device, out_config, out_failure_reason);
 }
 
 static NMActStageReturn
 act_stage3_ip6_config_start (NMDevice *device,
                              NMIP6Config **out_config,
-                             NMDeviceStateReason *reason)
+                             NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE ((NMDeviceBt *) device);
-	NMActStageReturn ret;
 
 	if (priv->bt_type == NM_BT_CAPABILITY_DUN) {
-		ret = nm_modem_stage3_ip6_config_start (priv->modem,
-		                                        nm_device_get_act_request (device),
-		                                        reason);
-	} else
-		ret = NM_DEVICE_CLASS (nm_device_bt_parent_class)->act_stage3_ip6_config_start (device, out_config, reason);
+		return nm_modem_stage3_ip6_config_start (priv->modem,
+		                                         nm_device_get_act_request (device),
+		                                         out_failure_reason);
+	}
 
-	return ret;
+	return NM_DEVICE_CLASS (nm_device_bt_parent_class)->act_stage3_ip6_config_start (device, out_config, out_failure_reason);
 }
 
 static void
@@ -923,8 +925,7 @@ deactivate (NMDevice *device)
 			 */
 			nm_modem_device_state_changed (priv->modem,
 			                               NM_DEVICE_STATE_DISCONNECTED,
-			                               NM_DEVICE_STATE_ACTIVATED,
-			                               NM_DEVICE_STATE_REASON_USER_REQUESTED);
+			                               NM_DEVICE_STATE_ACTIVATED);
 			modem_cleanup (NM_DEVICE_BT (device));
 		}
 	}
@@ -1028,15 +1029,15 @@ set_property (GObject *object, guint prop_id,
 
 	switch (prop_id) {
 	case PROP_BT_NAME:
-		/* Construct only */
+		/* construct-only */
 		priv->name = g_value_dup_string (value);
 		break;
 	case PROP_BT_CAPABILITIES:
-		/* Construct only */
+		/* construct-only */
 		priv->capabilities = g_value_get_uint (value);
 		break;
 	case PROP_BT_DEVICE:
-		/* Construct only */
+		/* construct-only */
 		priv->bt_device = g_value_dup_object (value);
 		g_signal_connect (priv->bt_device, "removed", G_CALLBACK (bluez_device_removed), object);
 		break;
@@ -1174,6 +1175,7 @@ nm_device_bt_class_init (NMDeviceBtClass *klass)
 	device_class->complete_connection = complete_connection;
 	device_class->is_available = is_available;
 	device_class->component_added = component_added;
+	device_class->get_configured_mtu = nm_modem_get_configured_mtu;
 
 	device_class->state_changed = device_state_changed;
 
@@ -1198,12 +1200,13 @@ nm_device_bt_class_init (NMDeviceBtClass *klass)
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
 	signals[PPP_STATS] =
-	    g_signal_new ("ppp-stats",
+	    g_signal_new (NM_DEVICE_BT_PPP_STATS,
 	                  G_OBJECT_CLASS_TYPE (object_class),
 	                  G_SIGNAL_RUN_FIRST,
 	                  0, NULL, NULL, NULL,
 	                  G_TYPE_NONE, 2,
-	                  G_TYPE_UINT, G_TYPE_UINT);
+	                  G_TYPE_UINT /*guint32 in_bytes*/,
+	                  G_TYPE_UINT /*guint32 out_bytes*/);
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
 	                                        NMDBUS_TYPE_DEVICE_BLUETOOTH_SKELETON,

@@ -207,6 +207,10 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMActiveConnection.html#NMActiveConnection-state-changed" title="The “state-changed” signal">NMActiveConnection::state-changed</a>, object signal in nm-types
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMActiveConnection.html#NMActiveConnection--connection" title="The “connection” property">NMActiveConnection:connection</a>, object property in nm-types
 </dt>
 <dd></dd>
@@ -268,6 +272,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionState" title="enum NMActiveConnectionState">NMActiveConnectionState</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionStateReason" title="enum NMActiveConnectionStateReason">NMActiveConnectionStateReason</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
 </dt>
 <dd></dd>
 <dt>
@@ -347,6 +355,10 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMActiveConnection.html#nm-active-connection-get-state-reason" title="nm_active_connection_get_state_reason ()">nm_active_connection_get_state_reason</a>, function in <a class="link" href="NMActiveConnection.html" title="NMActiveConnection">NMActiveConnection</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMActiveConnection.html#nm-active-connection-get-uuid" title="nm_active_connection_get_uuid ()">nm_active_connection_get_uuid</a>, function in <a class="link" href="NMActiveConnection.html" title="NMActiveConnection">NMActiveConnection</a>
 </dt>
 <dd></dd>
@@ -420,6 +432,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-6:CAPS" title="NM_AVAILABLE_IN_1_6">NM_AVAILABLE_IN_1_6</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-dbus-interface.html#NM-AVAILABLE-IN-1-8:CAPS" title="NM_AVAILABLE_IN_1_8">NM_AVAILABLE_IN_1_8</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
 </dt>
 <dd></dd>
 <a name="idxB"></a><h3 class="title">B</h3>
@@ -953,19 +969,19 @@
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-utilNMConnection.html#NMConnection-struct">NMConnection</a>, struct in nm-core-types
+<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct">NMConnection</a>, struct in nm-core-types
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-utilNMConnection.html#NMConnection-changed">NMConnection::changed</a>, object signal in nm-core-types
+<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-changed">NMConnection::changed</a>, object signal in nm-core-types
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-utilNMConnection.html#NMConnection-secrets-cleared">NMConnection::secrets-cleared</a>, object signal in nm-core-types
+<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-secrets-cleared">NMConnection::secrets-cleared</a>, object signal in nm-core-types
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-utilNMConnection.html#NMConnection-secrets-updated">NMConnection::secrets-updated</a>, object signal in nm-core-types
+<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-secrets-updated">NMConnection::secrets-updated</a>, object signal in nm-core-types
 </dt>
 <dd></dd>
 <dt>
@@ -1082,6 +1098,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="NMConnection.html#nm-connection-get-setting-dcb" title="nm_connection_get_setting_dcb ()">nm_connection_get_setting_dcb</a>, function in <a class="link" href="NMConnection.html" title="NMConnection">NMConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMConnection.html#nm-connection-get-setting-dummy" title="nm_connection_get_setting_dummy ()">nm_connection_get_setting_dummy</a>, function in <a class="link" href="NMConnection.html" title="NMConnection">NMConnection</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1295,6 +1315,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-BRIDGE:CAPS" title="NM_DBUS_INTERFACE_DEVICE_BRIDGE">NM_DBUS_INTERFACE_DEVICE_BRIDGE</a>, macro in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-DUMMY:CAPS" title="NM_DBUS_INTERFACE_DEVICE_DUMMY">NM_DBUS_INTERFACE_DEVICE_DUMMY</a>, macro in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1574,6 +1598,14 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-8:CAPS" title="NM_DEPRECATED_IN_1_8">NM_DEPRECATED_IN_1_8</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-8-FOR:CAPS" title="NM_DEPRECATED_IN_1_8_FOR()">NM_DEPRECATED_IN_1_8_FOR</a>, macro in <a class="link" href="libnm-nm-vpn-dbus-interface.html" title="nm-vpn-dbus-interface">nm-vpn-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMDevice.html#NMDevice-struct" title="NMDevice">NMDevice</a>, struct in nm-types
 </dt>
 <dd></dd>
@@ -1750,6 +1782,10 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMDeviceDummy.html#NMDeviceDummy-struct" title="NMDeviceDummy">NMDeviceDummy</a>, struct in nm-types
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-errors.html#NMDeviceError" title="enum NMDeviceError">NMDeviceError</a>, enum in <a class="link" href="libnm-nm-errors.html" title="nm-errors">nm-errors</a>
 </dt>
 <dd></dd>
@@ -1850,63 +1886,63 @@
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec, struct in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec-struct" title="NMDeviceMacsec">NMDeviceMacsec</a>, struct in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:cipher-suite, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--cipher-suite" title="The “cipher-suite” property">NMDeviceMacsec:cipher-suite</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:encoding-sa, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--encoding-sa" title="The “encoding-sa” property">NMDeviceMacsec:encoding-sa</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:encrypt, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--encrypt" title="The “encrypt” property">NMDeviceMacsec:encrypt</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:es, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--es" title="The “es” property">NMDeviceMacsec:es</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:hw-address, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--hw-address" title="The “hw-address” property">NMDeviceMacsec:hw-address</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:icv-length, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--icv-length" title="The “icv-length” property">NMDeviceMacsec:icv-length</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:include-sci, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--include-sci" title="The “include-sci” property">NMDeviceMacsec:include-sci</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:parent, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--parent" title="The “parent” property">NMDeviceMacsec:parent</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:protect, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--protect" title="The “protect” property">NMDeviceMacsec:protect</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:replay-protect, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--replay-protect" title="The “replay-protect” property">NMDeviceMacsec:replay-protect</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:scb, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--scb" title="The “scb” property">NMDeviceMacsec:scb</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:sci, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--sci" title="The “sci” property">NMDeviceMacsec:sci</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:validation, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--validation" title="The “validation” property">NMDeviceMacsec:validation</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NMDeviceMacsec:window, object property in nm-types
+<a class="link" href="NMDeviceMacsec.html#NMDeviceMacsec--window" title="The “window” property">NMDeviceMacsec:window</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
@@ -2702,115 +2738,115 @@ NMDeviceMacsec:window, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_CIPHER_SUITE, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-CIPHER-SUITE:CAPS" title="NM_DEVICE_MACSEC_CIPHER_SUITE">NM_DEVICE_MACSEC_CIPHER_SUITE</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_ENCODING_SA, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-ENCODING-SA:CAPS" title="NM_DEVICE_MACSEC_ENCODING_SA">NM_DEVICE_MACSEC_ENCODING_SA</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_ENCRYPT, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-ENCRYPT:CAPS" title="NM_DEVICE_MACSEC_ENCRYPT">NM_DEVICE_MACSEC_ENCRYPT</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_ES, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-ES:CAPS" title="NM_DEVICE_MACSEC_ES">NM_DEVICE_MACSEC_ES</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_cipher_suite, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-cipher-suite" title="nm_device_macsec_get_cipher_suite ()">nm_device_macsec_get_cipher_suite</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_encoding_sa, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-encoding-sa" title="nm_device_macsec_get_encoding_sa ()">nm_device_macsec_get_encoding_sa</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_encrypt, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-encrypt" title="nm_device_macsec_get_encrypt ()">nm_device_macsec_get_encrypt</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_es, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-es" title="nm_device_macsec_get_es ()">nm_device_macsec_get_es</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_hw_address, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-hw-address" title="nm_device_macsec_get_hw_address ()">nm_device_macsec_get_hw_address</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_icv_length, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-icv-length" title="nm_device_macsec_get_icv_length ()">nm_device_macsec_get_icv_length</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_include_sci, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-include-sci" title="nm_device_macsec_get_include_sci ()">nm_device_macsec_get_include_sci</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_parent, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-parent" title="nm_device_macsec_get_parent ()">nm_device_macsec_get_parent</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_protect, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-protect" title="nm_device_macsec_get_protect ()">nm_device_macsec_get_protect</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_replay_protect, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-replay-protect" title="nm_device_macsec_get_replay_protect ()">nm_device_macsec_get_replay_protect</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_scb, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-scb" title="nm_device_macsec_get_scb ()">nm_device_macsec_get_scb</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_sci, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-sci" title="nm_device_macsec_get_sci ()">nm_device_macsec_get_sci</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_validation, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-validation" title="nm_device_macsec_get_validation ()">nm_device_macsec_get_validation</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_device_macsec_get_window, function in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#nm-device-macsec-get-window" title="nm_device_macsec_get_window ()">nm_device_macsec_get_window</a>, function in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_HW_ADDRESS, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-HW-ADDRESS:CAPS" title="NM_DEVICE_MACSEC_HW_ADDRESS">NM_DEVICE_MACSEC_HW_ADDRESS</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_ICV_LENGTH, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-ICV-LENGTH:CAPS" title="NM_DEVICE_MACSEC_ICV_LENGTH">NM_DEVICE_MACSEC_ICV_LENGTH</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_INCLUDE_SCI, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-INCLUDE-SCI:CAPS" title="NM_DEVICE_MACSEC_INCLUDE_SCI">NM_DEVICE_MACSEC_INCLUDE_SCI</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_PARENT, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-PARENT:CAPS" title="NM_DEVICE_MACSEC_PARENT">NM_DEVICE_MACSEC_PARENT</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_PROTECT, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-PROTECT:CAPS" title="NM_DEVICE_MACSEC_PROTECT">NM_DEVICE_MACSEC_PROTECT</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_REPLAY_PROTECT, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-REPLAY-PROTECT:CAPS" title="NM_DEVICE_MACSEC_REPLAY_PROTECT">NM_DEVICE_MACSEC_REPLAY_PROTECT</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_SCB, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-SCB:CAPS" title="NM_DEVICE_MACSEC_SCB">NM_DEVICE_MACSEC_SCB</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_SCI, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-SCI:CAPS" title="NM_DEVICE_MACSEC_SCI">NM_DEVICE_MACSEC_SCI</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_VALIDATION, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-VALIDATION:CAPS" title="NM_DEVICE_MACSEC_VALIDATION">NM_DEVICE_MACSEC_VALIDATION</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
+<a class="link" href="NMDeviceMacsec.html#NM-DEVICE-MACSEC-WINDOW:CAPS" title="NM_DEVICE_MACSEC_WINDOW">NM_DEVICE_MACSEC_WINDOW</a>, macro in <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
 </dt>
 <dd></dd>
 <dt>
@@ -3595,6 +3631,62 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-CWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_CWND">NM_IP_ROUTE_ATTRIBUTE_CWND</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-FROM:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_FROM">NM_IP_ROUTE_ATTRIBUTE_FROM</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-INITCWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_INITCWND">NM_IP_ROUTE_ATTRIBUTE_INITCWND</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-INITRWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_INITRWND">NM_IP_ROUTE_ATTRIBUTE_INITRWND</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-LOCK-CWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_LOCK_CWND">NM_IP_ROUTE_ATTRIBUTE_LOCK_CWND</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-LOCK-INITCWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_LOCK_INITCWND">NM_IP_ROUTE_ATTRIBUTE_LOCK_INITCWND</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-LOCK-INITRWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_LOCK_INITRWND">NM_IP_ROUTE_ATTRIBUTE_LOCK_INITRWND</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-LOCK-MTU:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU">NM_IP_ROUTE_ATTRIBUTE_LOCK_MTU</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-LOCK-WINDOW:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_LOCK_WINDOW">NM_IP_ROUTE_ATTRIBUTE_LOCK_WINDOW</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-MTU:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_MTU">NM_IP_ROUTE_ATTRIBUTE_MTU</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-SRC:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_SRC">NM_IP_ROUTE_ATTRIBUTE_SRC</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-TOS:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_TOS">NM_IP_ROUTE_ATTRIBUTE_TOS</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#nm-ip-route-attribute-validate" title="nm_ip_route_attribute_validate ()">nm_ip_route_attribute_validate</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-WINDOW:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_WINDOW">NM_IP_ROUTE_ATTRIBUTE_WINDOW</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingIPConfig.html#nm-ip-route-dup" title="nm_ip_route_dup ()">nm_ip_route_dup</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
@@ -3636,6 +3728,10 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIPConfig.html#nm-ip-route-get-prefix" title="nm_ip_route_get_prefix ()">nm_ip_route_get_prefix</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#nm-ip-route-get-variant-attribute-spec" title="nm_ip_route_get_variant_attribute_spec ()">nm_ip_route_get_variant_attribute_spec</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4048,7 +4144,19 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--auth-timeout" title="The “auth-timeout” property">NMSetting8021x:auth-timeout</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--ca-cert" title="The “ca-cert” property">NMSetting8021x:ca-cert</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--ca-cert-password" title="The “ca-cert-password” property">NMSetting8021x:ca-cert-password</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--ca-cert-password-flags" title="The “ca-cert-password-flags” property">NMSetting8021x:ca-cert-password-flags</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4057,6 +4165,14 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 <dd></dd>
 <dt>
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--client-cert" title="The “client-cert” property">NMSetting8021x:client-cert</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--client-cert-password" title="The “client-cert-password” property">NMSetting8021x:client-cert-password</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--client-cert-password-flags" title="The “client-cert-password-flags” property">NMSetting8021x:client-cert-password-flags</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4092,6 +4208,10 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--phase1-auth-flags" title="The “phase1-auth-flags” property">NMSetting8021x:phase1-auth-flags</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase1-fast-provisioning" title="The “phase1-fast-provisioning” property">NMSetting8021x:phase1-fast-provisioning</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
@@ -4120,11 +4240,27 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-ca-cert-password" title="The “phase2-ca-cert-password” property">NMSetting8021x:phase2-ca-cert-password</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-ca-cert-password-flags" title="The “phase2-ca-cert-password-flags” property">NMSetting8021x:phase2-ca-cert-password-flags</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-ca-path" title="The “phase2-ca-path” property">NMSetting8021x:phase2-ca-path</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-client-cert" title="The “phase2-client-cert” property">NMSetting8021x:phase2-client-cert</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-client-cert-password" title="The “phase2-client-cert-password” property">NMSetting8021x:phase2-client-cert-password</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-client-cert-password-flags" title="The “phase2-client-cert-password-flags” property">NMSetting8021x:phase2-client-cert-password-flags</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4173,6 +4309,10 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 <dd></dd>
 <dt>
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--system-ca-certs" title="The “system-ca-certs” property">NMSetting8021x:system-ca-certs</a>, object property in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NMSetting8021xAuthFlags" title="enum NMSetting8021xAuthFlags">NMSetting8021xAuthFlags</a>, enum in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4293,6 +4433,10 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingCdma.html#NMSettingCdma-struct" title="NMSettingCdma">NMSettingCdma</a>, struct in <a class="link" href="NMSettingCdma.html" title="NMSettingCdma">NMSettingCdma</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingCdma.html#NMSettingCdma--mtu" title="The “mtu” property">NMSettingCdma:mtu</a>, object property in <a class="link" href="NMSettingCdma.html" title="NMSettingCdma">NMSettingCdma</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4480,6 +4624,10 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingDummy.html#NMSettingDummy-struct" title="NMSettingDummy">NMSettingDummy</a>, struct in <a class="link" href="NMSettingDummy.html" title="NMSettingDummy">NMSettingDummy</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingGeneric.html#NMSettingGeneric-struct" title="NMSettingGeneric">NMSettingGeneric</a>, struct in <a class="link" href="NMSettingGeneric.html" title="NMSettingGeneric">NMSettingGeneric</a>
 </dt>
 <dd></dd>
@@ -4497,6 +4645,10 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingGsm.html#NMSettingGsm--home-only" title="The “home-only” property">NMSettingGsm:home-only</a>, object property in <a class="link" href="NMSettingGsm.html" title="NMSettingGsm">NMSettingGsm</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingGsm.html#NMSettingGsm--mtu" title="The “mtu” property">NMSettingGsm:mtu</a>, object property in <a class="link" href="NMSettingGsm.html" title="NMSettingGsm">NMSettingGsm</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4724,47 +4876,47 @@ NM_DEVICE_MACSEC_WINDOW, macro in NMDeviceMacsec
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec, struct in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec-struct" title="NMSettingMacsec">NMSettingMacsec</a>, struct in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:encrypt, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--encrypt" title="The “encrypt” property">NMSettingMacsec:encrypt</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:mka-cak, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--mka-cak" title="The “mka-cak” property">NMSettingMacsec:mka-cak</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:mka-cak-flags, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--mka-cak-flags" title="The “mka-cak-flags” property">NMSettingMacsec:mka-cak-flags</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:mka-ckn, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--mka-ckn" title="The “mka-ckn” property">NMSettingMacsec:mka-ckn</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:mode, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--mode" title="The “mode” property">NMSettingMacsec:mode</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:parent, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--parent" title="The “parent” property">NMSettingMacsec:parent</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:port, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--port" title="The “port” property">NMSettingMacsec:port</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsec:validation, object property in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsec--validation" title="The “validation” property">NMSettingMacsec:validation</a>, object property in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsecMode, enum in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsecMode" title="enum NMSettingMacsecMode">NMSettingMacsecMode</a>, enum in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NMSettingMacsecValidation, enum in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NMSettingMacsecValidation" title="enum NMSettingMacsecValidation">NMSettingMacsecValidation</a>, enum in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5017,6 +5169,14 @@ NMSettingProxyMethod, enum in NMSettingProxy
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingTun.html#NMSettingTunMode" title="enum NMSettingTunMode">NMSettingTunMode</a>, enum in <a class="link" href="NMSettingTun.html" title="NMSettingTun">NMSettingTun</a>
+</dt>
+<dd></dd>
+<dt>
+NMSettingUser, struct in nm-core-types
+</dt>
+<dd></dd>
+<dt>
+NMSettingUser:data, object property in nm-core-types
 </dt>
 <dd></dd>
 <dt>
@@ -5384,7 +5544,19 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-AUTH-TIMEOUT:CAPS" title="NM_SETTING_802_1X_AUTH_TIMEOUT">NM_SETTING_802_1X_AUTH_TIMEOUT</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CA-CERT:CAPS" title="NM_SETTING_802_1X_CA_CERT">NM_SETTING_802_1X_CA_CERT</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CA-CERT-PASSWORD:CAPS" title="NM_SETTING_802_1X_CA_CERT_PASSWORD">NM_SETTING_802_1X_CA_CERT_PASSWORD</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CA-CERT-PASSWORD-FLAGS:CAPS" title="NM_SETTING_802_1X_CA_CERT_PASSWORD_FLAGS">NM_SETTING_802_1X_CA_CERT_PASSWORD_FLAGS</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5420,6 +5592,14 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CLIENT-CERT-PASSWORD:CAPS" title="NM_SETTING_802_1X_CLIENT_CERT_PASSWORD">NM_SETTING_802_1X_CLIENT_CERT_PASSWORD</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CLIENT-CERT-PASSWORD-FLAGS:CAPS" title="NM_SETTING_802_1X_CLIENT_CERT_PASSWORD_FLAGS">NM_SETTING_802_1X_CLIENT_CERT_PASSWORD_FLAGS</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-DOMAIN-SUFFIX-MATCH:CAPS" title="NM_SETTING_802_1X_DOMAIN_SUFFIX_MATCH">NM_SETTING_802_1X_DOMAIN_SUFFIX_MATCH</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
@@ -5436,7 +5616,19 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-auth-timeout" title="nm_setting_802_1x_get_auth_timeout ()">nm_setting_802_1x_get_auth_timeout</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-blob" title="nm_setting_802_1x_get_ca_cert_blob ()">nm_setting_802_1x_get_ca_cert_blob</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-password" title="nm_setting_802_1x_get_ca_cert_password ()">nm_setting_802_1x_get_ca_cert_password</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-password-flags" title="nm_setting_802_1x_get_ca_cert_password_flags ()">nm_setting_802_1x_get_ca_cert_password_flags</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5457,6 +5649,14 @@ NMSettingProxyMethod, enum in NMSettingProxy
 <dd></dd>
 <dt>
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob" title="nm_setting_802_1x_get_client_cert_blob ()">nm_setting_802_1x_get_client_cert_blob</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-password" title="nm_setting_802_1x_get_client_cert_password ()">nm_setting_802_1x_get_client_cert_password</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-password-flags" title="nm_setting_802_1x_get_client_cert_password_flags ()">nm_setting_802_1x_get_client_cert_password_flags</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5516,6 +5716,10 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase1-auth-flags" title="nm_setting_802_1x_get_phase1_auth_flags ()">nm_setting_802_1x_get_phase1_auth_flags</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase1-fast-provisioning" title="nm_setting_802_1x_get_phase1_fast_provisioning ()">nm_setting_802_1x_get_phase1_fast_provisioning</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
@@ -5544,6 +5748,14 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-password" title="nm_setting_802_1x_get_phase2_ca_cert_password ()">nm_setting_802_1x_get_phase2_ca_cert_password</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-password-flags" title="nm_setting_802_1x_get_phase2_ca_cert_password_flags ()">nm_setting_802_1x_get_phase2_ca_cert_password_flags</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-path" title="nm_setting_802_1x_get_phase2_ca_cert_path ()">nm_setting_802_1x_get_phase2_ca_cert_path</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
@@ -5561,6 +5773,14 @@ NMSettingProxyMethod, enum in NMSettingProxy
 <dd></dd>
 <dt>
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-blob" title="nm_setting_802_1x_get_phase2_client_cert_blob ()">nm_setting_802_1x_get_phase2_client_cert_blob</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-password" title="nm_setting_802_1x_get_phase2_client_cert_password ()">nm_setting_802_1x_get_phase2_client_cert_password</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-password-flags" title="nm_setting_802_1x_get_phase2_client_cert_password_flags ()">nm_setting_802_1x_get_phase2_client_cert_password_flags</a>, function in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5684,6 +5904,10 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-AUTH-FLAGS:CAPS" title="NM_SETTING_802_1X_PHASE1_AUTH_FLAGS">NM_SETTING_802_1X_PHASE1_AUTH_FLAGS</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-FAST-PROVISIONING:CAPS" title="NM_SETTING_802_1X_PHASE1_FAST_PROVISIONING">NM_SETTING_802_1X_PHASE1_FAST_PROVISIONING</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
@@ -5712,11 +5936,27 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-CERT-PASSWORD:CAPS" title="NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD">NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-CERT-PASSWORD-FLAGS:CAPS" title="NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD_FLAGS">NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD_FLAGS</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS" title="NM_SETTING_802_1X_PHASE2_CA_PATH">NM_SETTING_802_1X_PHASE2_CA_PATH</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS" title="NM_SETTING_802_1X_PHASE2_CLIENT_CERT">NM_SETTING_802_1X_PHASE2_CLIENT_CERT</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT-PASSWORD:CAPS" title="NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD">NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT-PASSWORD-FLAGS:CAPS" title="NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD_FLAGS">NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD_FLAGS</a>, macro in <a class="link" href="NMSetting8021x.html" title="NMSetting8021x">NMSetting8021x</a>
 </dt>
 <dd></dd>
 <dt>
@@ -6192,6 +6432,10 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingCdma.html#nm-setting-cdma-get-mtu" title="nm_setting_cdma_get_mtu ()">nm_setting_cdma_get_mtu</a>, function in <a class="link" href="NMSettingCdma.html" title="NMSettingCdma">NMSettingCdma</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingCdma.html#nm-setting-cdma-get-number" title="nm_setting_cdma_get_number ()">nm_setting_cdma_get_number</a>, function in <a class="link" href="NMSettingCdma.html" title="NMSettingCdma">NMSettingCdma</a>
 </dt>
 <dd></dd>
@@ -6205,6 +6449,10 @@ NMSettingProxyMethod, enum in NMSettingProxy
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingCdma.html#nm-setting-cdma-get-username" title="nm_setting_cdma_get_username ()">nm_setting_cdma_get_username</a>, function in <a class="link" href="NMSettingCdma.html" title="NMSettingCdma">NMSettingCdma</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingCdma.html#NM-SETTING-CDMA-MTU:CAPS" title="NM_SETTING_CDMA_MTU">NM_SETTING_CDMA_MTU</a>, macro in <a class="link" href="NMSettingCdma.html" title="NMSettingCdma">NMSettingCdma</a>
 </dt>
 <dd></dd>
 <dt>
@@ -6672,6 +6920,14 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingDummy.html#nm-setting-dummy-new" title="nm_setting_dummy_new ()">nm_setting_dummy_new</a>, function in <a class="link" href="NMSettingDummy.html" title="NMSettingDummy">NMSettingDummy</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingDummy.html#NM-SETTING-DUMMY-SETTING-NAME:CAPS" title="NM_SETTING_DUMMY_SETTING_NAME">NM_SETTING_DUMMY_SETTING_NAME</a>, macro in <a class="link" href="NMSettingDummy.html" title="NMSettingDummy">NMSettingDummy</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSetting.html#nm-setting-duplicate" title="nm_setting_duplicate ()">nm_setting_duplicate</a>, function in <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
 </dt>
 <dd></dd>
@@ -6720,6 +6976,10 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingGsm.html#nm-setting-gsm-get-mtu" title="nm_setting_gsm_get_mtu ()">nm_setting_gsm_get_mtu</a>, function in <a class="link" href="NMSettingGsm.html" title="NMSettingGsm">NMSettingGsm</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingGsm.html#nm-setting-gsm-get-network-id" title="nm_setting_gsm_get_network_id ()">nm_setting_gsm_get_network_id</a>, function in <a class="link" href="NMSettingGsm.html" title="NMSettingGsm">NMSettingGsm</a>
 </dt>
 <dd></dd>
@@ -6757,6 +7017,10 @@ NMSettingProxyMethod, enum in NMSettingProxy
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingGsm.html#NM-SETTING-GSM-HOME-ONLY:CAPS" title="NM_SETTING_GSM_HOME_ONLY">NM_SETTING_GSM_HOME_ONLY</a>, macro in <a class="link" href="NMSettingGsm.html" title="NMSettingGsm">NMSettingGsm</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingGsm.html#NM-SETTING-GSM-MTU:CAPS" title="NM_SETTING_GSM_MTU">NM_SETTING_GSM_MTU</a>, macro in <a class="link" href="NMSettingGsm.html" title="NMSettingGsm">NMSettingGsm</a>
 </dt>
 <dd></dd>
 <dt>
@@ -7312,83 +7576,83 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_ENCRYPT, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-ENCRYPT:CAPS" title="NM_SETTING_MACSEC_ENCRYPT">NM_SETTING_MACSEC_ENCRYPT</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_encrypt, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-encrypt" title="nm_setting_macsec_get_encrypt ()">nm_setting_macsec_get_encrypt</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_mka_cak, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-mka-cak" title="nm_setting_macsec_get_mka_cak ()">nm_setting_macsec_get_mka_cak</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_mka_cak_flags, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-mka-cak-flags" title="nm_setting_macsec_get_mka_cak_flags ()">nm_setting_macsec_get_mka_cak_flags</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_mka_ckn, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-mka-ckn" title="nm_setting_macsec_get_mka_ckn ()">nm_setting_macsec_get_mka_ckn</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_mode, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-mode" title="nm_setting_macsec_get_mode ()">nm_setting_macsec_get_mode</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_parent, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-parent" title="nm_setting_macsec_get_parent ()">nm_setting_macsec_get_parent</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_port, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-port" title="nm_setting_macsec_get_port ()">nm_setting_macsec_get_port</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_get_validation, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-get-validation" title="nm_setting_macsec_get_validation ()">nm_setting_macsec_get_validation</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_MKA_CAK, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-MKA-CAK:CAPS" title="NM_SETTING_MACSEC_MKA_CAK">NM_SETTING_MACSEC_MKA_CAK</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_MKA_CAK_FLAGS, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-MKA-CAK-FLAGS:CAPS" title="NM_SETTING_MACSEC_MKA_CAK_FLAGS">NM_SETTING_MACSEC_MKA_CAK_FLAGS</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_MKA_CAK_LENGTH, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-MKA-CAK-LENGTH:CAPS" title="NM_SETTING_MACSEC_MKA_CAK_LENGTH">NM_SETTING_MACSEC_MKA_CAK_LENGTH</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_MKA_CKN, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-MKA-CKN:CAPS" title="NM_SETTING_MACSEC_MKA_CKN">NM_SETTING_MACSEC_MKA_CKN</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_MKA_CKN_LENGTH, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-MKA-CKN-LENGTH:CAPS" title="NM_SETTING_MACSEC_MKA_CKN_LENGTH">NM_SETTING_MACSEC_MKA_CKN_LENGTH</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_MODE, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-MODE:CAPS" title="NM_SETTING_MACSEC_MODE">NM_SETTING_MACSEC_MODE</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-nm_setting_macsec_new, function in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#nm-setting-macsec-new" title="nm_setting_macsec_new ()">nm_setting_macsec_new</a>, function in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_PARENT, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-PARENT:CAPS" title="NM_SETTING_MACSEC_PARENT">NM_SETTING_MACSEC_PARENT</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_PORT, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-PORT:CAPS" title="NM_SETTING_MACSEC_PORT">NM_SETTING_MACSEC_PORT</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_SETTING_NAME, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-SETTING-NAME:CAPS" title="NM_SETTING_MACSEC_SETTING_NAME">NM_SETTING_MACSEC_SETTING_NAME</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
-NM_SETTING_MACSEC_VALIDATION, macro in NMSettingMacsec
+<a class="link" href="NMSettingMacsec.html#NM-SETTING-MACSEC-VALIDATION:CAPS" title="NM_SETTING_MACSEC_VALIDATION">NM_SETTING_MACSEC_VALIDATION</a>, macro in <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
 </dt>
 <dd></dd>
 <dt>
@@ -7853,6 +8117,38 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingTun.html#NM-SETTING-TUN-VNET-HDR:CAPS" title="NM_SETTING_TUN_VNET_HDR">NM_SETTING_TUN_VNET_HDR</a>, macro in <a class="link" href="NMSettingTun.html" title="NMSettingTun">NMSettingTun</a>
+</dt>
+<dd></dd>
+<dt>
+nm_setting_user_check_key, function in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+nm_setting_user_check_val, function in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+NM_SETTING_USER_DATA, macro in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+nm_setting_user_get_data, function in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+nm_setting_user_get_keys, function in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+nm_setting_user_new, function in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+NM_SETTING_USER_SETTING_NAME, macro in nm-setting-user
+</dt>
+<dd></dd>
+<dt>
+nm_setting_user_set_data, function in nm-setting-user
 </dt>
 <dd></dd>
 <dt>
@@ -8817,6 +9113,10 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-format-variant-attributes" title="nm_utils_format_variant_attributes ()">nm_utils_format_variant_attributes</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-utils.html#nm-utils-hexstr2bin" title="nm_utils_hexstr2bin ()">nm_utils_hexstr2bin</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
 </dt>
 <dd></dd>
@@ -8965,6 +9265,10 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-parse-variant-attributes" title="nm_utils_parse_variant_attributes ()">nm_utils_parse_variant_attributes</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-utils.html#nm-utils-same-ssid" title="nm_utils_same_ssid ()">nm_utils_same_ssid</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
 </dt>
 <dd></dd>
@@ -9022,6 +9326,10 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 <dd></dd>
 <a name="idxV"></a><h3 class="title">V</h3>
 <dt>
+<a class="link" href="libnm-nm-utils.html#NMVariantAttributeSpec" title="NMVariantAttributeSpec">NMVariantAttributeSpec</a>, struct in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMConnection.html#NM-VARIANT-TYPE-SETTING:CAPS" title="NM_VARIANT_TYPE_SETTING">NM_VARIANT_TYPE_SETTING</a>, macro in <a class="link" href="NMConnection.html" title="NMConnection">NMConnection</a>
 </dt>
 <dd></dd>
@@ -9078,7 +9386,7 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-gliblibnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorInterface">NMVpnEditorInterface</a>, struct in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+<a href="/usr/share/gtk-doc/html/libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorInterface">NMVpnEditorInterface</a>, struct in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9154,7 +9462,7 @@ NMVpnPluginInfo, struct in nm-vpn-plugin-info
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-gliblibnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-get-widget">nm_vpn_editor_get_widget</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+<a href="/usr/share/gtk-doc/html/libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-get-widget">nm_vpn_editor_get_widget</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9214,7 +9522,7 @@ NMVpnPluginInfo, struct in nm-vpn-plugin-info
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-gliblibnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-update-connection">nm_vpn_editor_update_connection</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+<a href="/usr/share/gtk-doc/html/libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-update-connection">nm_vpn_editor_update_connection</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>

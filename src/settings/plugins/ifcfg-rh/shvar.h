@@ -34,9 +34,9 @@
 typedef struct _shvarFile shvarFile;
 
 const char *svFileGetName (const shvarFile *s);
-void svFileSetName (shvarFile *s, const char *fileName);
 
-void svFileSetModified (shvarFile *s);
+void svFileSetName_test_only (shvarFile *s, const char *fileName);
+void svFileSetModified_test_only (shvarFile *s);
 
 /* Create the file <name>, return a shvarFile (never fails) */
 shvarFile *svCreateFile (const char *name);
@@ -49,9 +49,14 @@ shvarFile *svOpenFile (const char *name, GError **error);
  * be freed by the caller.
  */
 const char *svGetValue (shvarFile *s, const char *key, char **to_free);
-char *svGetValueString (shvarFile *s, const char *key);
+char *svGetValue_cp (shvarFile *s, const char *key);
+
+const char *svGetValueStr (shvarFile *s, const char *key, char **to_free);
+char *svGetValueStr_cp (shvarFile *s, const char *key);
 
 gint svParseBoolean (const char *value, gint def);
+
+GHashTable *svGetKeys (shvarFile *s);
 
 /* return TRUE if <key> resolves to any truth value (e.g. "yes", "y", "true")
  * return FALSE if <key> resolves to any non-truth value (e.g. "no", "n", "false")
@@ -66,12 +71,14 @@ gint64 svGetValueInt64 (shvarFile *s, const char *key, guint base, gint64 min, g
  * the key=value pair after that line.  Otherwise, prepend the pair
  * to the top of the file.
  */
-void svSetValueString (shvarFile *s, const char *key, const char *value);
 void svSetValue (shvarFile *s, const char *key, const char *value);
+void svSetValueStr (shvarFile *s, const char *key, const char *value);
 void svSetValueBoolean (shvarFile *s, const char *key, gboolean value);
 void svSetValueInt64 (shvarFile *s, const char *key, gint64 value);
 
 void svUnsetValue (shvarFile *s, const char *key);
+
+void svUnsetValuesWithPrefix (shvarFile *s, const char *prefix);
 
 /* Write the current contents iff modified.  Returns FALSE on error
  * and TRUE on success.  Do not write if no values have been modified.
@@ -86,5 +93,17 @@ void svCloseFile (shvarFile *s);
 
 const char *svEscape (const char *s, char **to_free);
 const char *svUnescape (const char *s, char **to_free);
+
+static inline void
+_nm_auto_shvar_file_close (shvarFile **p_s)
+{
+	if (*p_s) {
+		int errsv = errno;
+
+		svCloseFile (*p_s);
+		errno = errsv;
+	}
+}
+#define nm_auto_shvar_file_close nm_auto(_nm_auto_shvar_file_close)
 
 #endif /* _SHVAR_H */

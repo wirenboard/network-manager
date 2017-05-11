@@ -103,7 +103,7 @@ NM_DEFINE_SINGLETON_GETTER (NMAgentManager, nm_agent_manager_get, NM_TYPE_AGENT_
                             nm_secret_agent_get_description (__agent)); \
             } else \
                 __prefix2[0] = '\0'; \
-            _nm_log ((level), (_NMLOG_DOMAIN), 0, \
+            _nm_log ((level), (_NMLOG_DOMAIN), 0, NULL, NULL, \
                      "%s%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                      __prefix1, __prefix2 _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
         } \
@@ -178,7 +178,7 @@ remove_agent (NMAgentManager *self, const char *owner)
 	while (g_hash_table_iter_next (&iter, &data, NULL))
 		request_remove_agent ((Request *) data, agent, &pending_reqs);
 
-	/* We cannot call request_next_agent() from from within hash iterating loop,
+	/* We cannot call request_next_agent() from within hash iterating loop,
 	 * because it may remove the request from the hash table, which invalidates
 	 * the iterator. So, only remove the agent from requests. And store the requests
 	 * that should be sent to other agent to a temporary list to proceed afterwards.

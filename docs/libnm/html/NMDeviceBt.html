@@ -7,7 +7,7 @@
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMDeviceBridge.html" title="NMDeviceBridge">
-<link rel="next" href="NMDeviceEthernet.html" title="NMDeviceEthernet">
+<link rel="next" href="NMDeviceDummy.html" title="NMDeviceDummy">
 <meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -23,7 +23,7 @@
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="ch04.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
 <td><a accesskey="p" href="NMDeviceBridge.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="NMDeviceEthernet.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="NMDeviceDummy.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="NMDeviceBt"></a><div class="titlepage"></div>
@@ -83,13 +83,13 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMDeviceBt.html#NMDeviceBt--hw-address" title="The “hw-address” property">hw-address</a></td>
 <td class="property_flags">Read</td>
 </tr>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMDeviceBt.html#NMDeviceBt--name" title="The “name” property">name</a></td>
 <td class="property_flags">Read</td>
 </tr>
@@ -125,7 +125,7 @@
 </div>
 <div class="refsect1">
 <a name="NMDeviceBt.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobjectgobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+<pre class="screen">    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMObject.html" title="NMObject">NMObject</a>
         <span class="lineart">╰──</span> <a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
             <span class="lineart">╰──</span> NMDeviceBt
@@ -135,7 +135,7 @@
 <a name="NMDeviceBt.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
 <p>
 NMDeviceBt implements
- <a href="/usr/share/gtk-doc/html/gioGInitable.html#GInitable-struct">GInitable</a> and  <a href="/usr/share/gtk-doc/html/gioGAsyncInitable.html#GAsyncInitable-struct">GAsyncInitable</a>.</p>
+ GInitable and  GAsyncInitable.</p>
 </div>
 <div class="refsect1">
 <a name="NMDeviceBt.description"></a><h2>Description</h2>
@@ -257,7 +257,7 @@ nm_device_bt_get_capabilities (<em class="parameter"><code><a class="link" href=
 <hr>
 <div class="refsect2">
 <a name="NMDeviceBt--hw-address"></a><h3>The <code class="literal">“hw-address”</code> property</h3>
-<pre class="programlisting">  “hw-address”               <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “hw-address”               <span class="type">gchar</span> *</pre>
 <p>The hardware (MAC) address of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
@@ -265,7 +265,7 @@ nm_device_bt_get_capabilities (<em class="parameter"><code><a class="link" href=
 <hr>
 <div class="refsect2">
 <a name="NMDeviceBt--name"></a><h3>The <code class="literal">“name”</code> property</h3>
-<pre class="programlisting">  “name”                     <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “name”                     <span class="type">gchar</span> *</pre>
 <p>The name of the bluetooth device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>

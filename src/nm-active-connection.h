@@ -55,6 +55,10 @@
 #define NM_ACTIVE_CONNECTION_INT_SUBJECT        "int-subject"
 #define NM_ACTIVE_CONNECTION_INT_MASTER         "int-master"
 #define NM_ACTIVE_CONNECTION_INT_MASTER_READY   "int-master-ready"
+#define NM_ACTIVE_CONNECTION_INT_ACTIVATION_TYPE "int-activation-type"
+
+/* Signals */
+#define NM_ACTIVE_CONNECTION_STATE_CHANGED           "state-changed"
 
 /* Internal signals*/
 #define NM_ACTIVE_CONNECTION_DEVICE_CHANGED          "device-changed"
@@ -138,7 +142,8 @@ gboolean      nm_active_connection_get_default6 (NMActiveConnection *self);
 NMActiveConnectionState nm_active_connection_get_state (NMActiveConnection *self);
 
 void          nm_active_connection_set_state (NMActiveConnection *self,
-                                              NMActiveConnectionState state);
+                                              NMActiveConnectionState state,
+                                              NMActiveConnectionStateReason reason);
 
 NMDevice *    nm_active_connection_get_device (NMActiveConnection *self);
 
@@ -158,10 +163,7 @@ void          nm_active_connection_set_master (NMActiveConnection *self,
 void          nm_active_connection_set_parent (NMActiveConnection *self,
                                                NMActiveConnection *parent);
 
-void          nm_active_connection_set_assumed (NMActiveConnection *self,
-                                                gboolean assumed);
-
-gboolean      nm_active_connection_get_assumed (NMActiveConnection *self);
+NMActivationType nm_active_connection_get_activation_type (NMActiveConnection *self);
 
 void          nm_active_connection_clear_secrets (NMActiveConnection *self);
 

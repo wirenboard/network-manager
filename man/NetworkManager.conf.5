@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 02/15/2017
+.\"      Date: 05/10/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.6.2
+.\"    Source: NetworkManager 1.8.0
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.6\&.2" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.8\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -144,7 +144,7 @@ internal
 option uses a built\-in DHCP client which is not currently as featureful as the external clients\&.
 .sp
 If this key is missing, it defaults to
-dhclient\&. It the chosen plugin is not available, clients are looked for in this order:
+internal\&. It the chosen plugin is not available, clients are looked for in this order:
 dhclient,
 dhcpcd,
 internal\&.
@@ -205,6 +205,17 @@ When set to \*(Aqtrue\*(Aq, NetworkManager quits after performing initial networ
 true, network configuration for WiFi, WWAN, Bluetooth, ADSL, and PPPoE interfaces cannot be preserved due to their use of external services, and these devices will be deconfigured when NetworkManager quits even though other interface\*(Aqs configuration may be preserved\&. Also, to preserve DHCP addresses the \*(Aqdhcp\*(Aq option must be set to \*(Aqinternal\*(Aq\&. The default value of the \*(Aqconfigure\-and\-quit\*(Aq option is \*(Aqfalse\*(Aq, meaning that NetworkManager will continue running after initial network configuration and continue responding to system and hardware events, D\-Bus requests, and user commands\&.
 .RE
 .PP
+\fIhostname\-mode\fR
+.RS 4
+Set the management mode of the hostname\&. This parameter will affect only the transient hostname\&. If a valid static hostname is set, NetworkManager will skip the update of the hostname despite the value of this option\&. An hostname empty or equal to \*(Aqlocalhost\*(Aq, \*(Aqlocalhost6\*(Aq, \*(Aqlocalhost\&.localdomain\*(Aq or \*(Aqlocalhost6\&.localdomain\*(Aq is considered invalid\&.
+.sp
+default: NetworkManager will update the hostname with the one provided via DHCP on the main connection (the one with a default route)\&. If not present, the hostname will be updated to the last one set outside NetworkManager\&. If it is not valid, NetworkManager will try to recover the hostname from the reverse lookup of the IP address of the main connection\&. If this fails too, the hostname will be set to \*(Aqlocalhost\&.localdomain\*(Aq\&.
+.sp
+dhcp: NetworkManager will update the transient hostname only with information coming from DHCP\&. No fallback nor reverse lookup will be performed, but when the dhcp connection providing the hostname is deactivated, the hostname is reset to the last hostname set outside NetworkManager or \*(Aqlocalhost\*(Aq if none valid is there\&.
+.sp
+none: NetworkManager will not manage the transient hostname and will never set it\&.
+.RE
+.PP
 \fIdns\fR
 .RS 4
 Set the DNS (resolv\&.conf) processing mode\&. If the key is unspecified,
@@ -225,7 +236,7 @@ to reflect the nameservers provided by currently active connections\&.
 .sp
 dnsmasq: NetworkManager will run dnsmasq as a local caching nameserver, using a "split DNS" configuration if you are connected to a VPN, and then update
 resolv\&.conf
-to point to the local nameserver\&. It is possible to pass custom options to the dnsmasq instance by adding them to files in the "${prefix}/etc/NetworkManager/dnsmasq\&.d/" directory\&. Note that when multiple upstream servers are available, dnsmasq will initially contact them in parallel and then use the fastest to respond, probing again other servers after some time\&. This behavior can be modified passing the \*(Aqall\-servers\*(Aq or \*(Aqstrict\-order\*(Aq options to dnsmasq (see the manual page for more details)\&.
+to point to the local nameserver\&. It is possible to pass custom options to the dnsmasq instance by adding them to files in the "/etc/NetworkManager/dnsmasq\&.d/" directory\&. Note that when multiple upstream servers are available, dnsmasq will initially contact them in parallel and then use the fastest to respond, probing again other servers after some time\&. This behavior can be modified passing the \*(Aqall\-servers\*(Aq or \*(Aqstrict\-order\*(Aq options to dnsmasq (see the manual page for more details)\&.
 .sp
 unbound: NetworkManager will talk to unbound and dnssec\-triggerd, providing a "split DNS" configuration with DNSSEC support\&.
 /etc/resolv\&.conf
@@ -241,15 +252,17 @@ rc\-manager\ \&unmanaged
 .RS 4
 Set the
 resolv\&.conf
-management mode\&. The default value depends on NetworkManager build options, and this version of NetworkManager was build with a default of "symlink"\&. Regardless of this setting, NetworkManager will always write resolv\&.conf to its runtime state directory\&.
+management mode\&. The default value depends on NetworkManager build options, and this version of NetworkManager was build with a default of "symlink"\&. Regardless of this setting, NetworkManager will always write resolv\&.conf to its runtime state directory
+/var/run/NetworkManager/resolv\&.conf\&.
 .sp
-symlink: NetworkManager will symlink
+symlink: If
 /etc/resolv\&.conf
-to its private resolv\&.conf file in the runtime state directory\&. If
+is a regular file, NetworkManager will replace the file on update\&. If
 /etc/resolv\&.conf
-already is a symlink pointing to a different location, the file will not be modified\&. This allows the user to disable managing by pointing the link
+is instead a symlink, NetworkManager will leave it alone\&. Unless the symlink points to the internal file
+/var/run/NetworkManager/resolv\&.conf, in which case the symlink will be updated to emit an inotify notification\&. This allows the user to conveniently instruct NetworkManager not to manage
 /etc/resolv\&.conf
-to somewhere else\&.
+by replacing it with a symlink\&.
 .sp
 file: NetworkManager will write
 /etc/resolv\&.conf
@@ -296,7 +309,7 @@ or other system configuration files according to build options\&.
 .PP
 \fIpath\fR
 .RS 4
-The location where keyfiles are read and stored\&. This defaults to "${prefix}/etc/NetworkManager/conf\&.d"\&.
+The location where keyfiles are read and stored\&. This defaults to "/etc/NetworkManager/system\-connections"\&.
 .RE
 .PP
 \fIunmanaged\-devices\fR
@@ -524,7 +537,7 @@ INFO\&.
 .PP
 \fIbackend\fR
 .RS 4
-The logging backend\&. Supported values are "debug", "syslog", "journal"\&. "debug" uses syslog and logs to standard error\&. If NetworkManager is started in debug mode (\-\-debug) this option is ignored and "debug" is always used\&. Otherwise, the default is "journal"\&.
+The logging backend\&. Supported values are "debug", "syslog", "journal"\&. "debug" uses syslog and logs to standard error\&. If NetworkManager is started in debug mode (\-\-debug) this option is ignored and "debug" is always used\&. Otherwise, the default is "syslog"\&.
 .RE
 .PP
 \fIaudit\fR
@@ -532,7 +545,7 @@ The logging backend\&. Supported values are "debug", "syslog", "journal"\&. "deb
 Whether the audit records are delivered to auditd, the audit daemon\&. If
 false, audit records will be sent only to the NetworkManager logging system\&. If set to
 true, they will be also sent to auditd\&. The default value is
-true\&.
+false\&.
 .RE
 .SH "CONNECTION SECTION"
 .PP
@@ -767,6 +780,11 @@ and
 wifi\&.generate\-mac\-address\-mask, this allows to configure the generated MAC addresses during scanning\&. See
 \fBnm-settings\fR(5)
 for details\&.
+.RE
+.PP
+\fIsriov\-num\-vfs\fR
+.RS 4
+Specify the number of virtual functions (VF) to enable for a PCI physical device that supports single\-root I/O virtualization (SR\-IOV)\&.
 .RE
 .SS "Sections"
 .PP
@@ -1039,6 +1057,11 @@ Match the device based on the subchannel address\&. Globbing is not supported
 type:TYPE
 .RS 4
 Match the device type\&. Valid type names are as reported by "nmcli \-f GENERAL\&.TYPE device show"\&. Globbing is not supported\&.
+.RE
+.PP
+driver:DRIVER
+.RS 4
+Match the device driver as reported by "nmcli \-f GENERAL\&.DRIVER,GENERAL\&.DRIVER\-VERSION device show"\&. "DRIVER" must match the driver name exactly and does not support globbing\&. Optionally, a driver version may be specified separated by \*(Aq/\*(Aq\&. Globbing is supported for the version\&.
 .RE
 .PP
 except:SPEC

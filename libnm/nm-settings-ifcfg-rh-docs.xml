@@ -17,6 +17,7 @@
 <property name="phase1-peapver" variable="IEEE_8021X_PEAP_VERSION(+)" format="" values="0, 1" default="" example="" description="Use to force a specific PEAP version."/>
 <property name="phase1-peaplabel" variable="IEEE_8021X_PEAP_FORCE_NEW_LABEL(+)" format="" values="yes, no" default="no" example="" description="Use to force the new PEAP label during key derivation."/>
 <property name="phase1-fast-provisioning" variable="IEEE_8021X_FAST_PROVISIONING(+)" format="" values="space-separated list of these values [allow-auth, allow-unauth]" default="" example="IEEE_8021X_FAST_PROVISIONING=&quot;allow-auth allow-unauth&quot;" description="Enable in-line provisioning of EAP-FAST credentials."/>
+<property name="phase1-auth-flags" variable="IEEE_8021X_PHASE1_AUTH_FLAGS(+)" format="" values="space-separated list of authentication flags names" default="" example="IEEE_8021X_PHASE1_AUTH_FLAGS=&quot;tls-1-0-disable tls-1-1-disable&quot;" description="Authentication flags for the supplicant"/>
 <property name="phase2-auth" variable="IEEE_8021X_INNER_AUTH_METHODS(+)" format="" values="&quot;PAP&quot;, &quot;CHAP&quot;, &quot;MSCHAP&quot;, &quot;MSCHAPV2&quot;, &quot;GTC&quot;, &quot;OTP&quot;, &quot;MD5&quot; and &quot;TLS&quot;" default="" example="IEEE_8021X_INNER_AUTH_METHODS=PAP" description="Inner non-EAP authentication methods. IEEE_8021X_INNER_AUTH_METHODS
 can contain values both for &apos;phase2-auth&apos; and &apos;phase2-autheap&apos; properties."/>
 <property name="phase2-autheap" variable="IEEE_8021X_INNER_AUTH_METHODS(+)" format="" values="&quot;EAP-MD5&quot;, &quot;EAP-MSCHAPV2&quot;, &quot;EAP-GTC&quot;, &quot;EAP-OTP&quot; and &quot;EAP-TLS&quot;" default="" example="IEEE_8021X_INNER_AUTH_METHODS=&quot;MSCHAPV2 EAP-TLS&quot;" description="Inner EAP-based authentication methods. Note that
@@ -41,6 +42,7 @@ lookaside file, or it can be owned by a secret agent."/>
 <property name="pin" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
 <property name="pin-flags" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
 <property name="system-ca-certs" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
+<property name="auth-timeout" variable="IEEE_8021X_AUTH_TIMEOUT(+)" format="" values="" default="0" example="" description="Timeout in seconds for the 802.1X authentication. Zero means the global default or 25."/>
 </setting>
 <setting name="adsl">
 </setting>
@@ -126,6 +128,8 @@ The sum of the numbers must be 100."/>
 &quot;may not utilize all bandwidth&quot;, &quot;1&quot; means &quot;may utilize all bandwidth&quot;."/>
 <property name="priority-traffic-class" variable="DCB_PG_UP2TC" format="" values="" default="" example="DCB_PG_UP2TC=01623701" description="Priority values. String of eight trafic class values (0 - 7)."/>
 </setting>
+<setting name="dummy">
+</setting>
 <setting name="generic">
 </setting>
 <setting name="gsm">
@@ -155,7 +159,7 @@ servers, initscripts and resolver only care about the first three, usually."/>
 <property name="dns-search" variable="DOMAIN" format="string (space-separated domains)" values="" default="" example="" description="List of DNS search domains."/>
 <property name="addresses" variable="IPADDR, PREFIX, IPADDR1, PREFIX1, ..." format="" values="" default="" example="IPADDR=10.5.5.23 PREFIX=24 IPADDR1=1.1.1.2 PREFIX1=16" description="List of static IP addresses."/>
 <property name="gateway" variable="GATEWAY" format="" values="" default="" example="GATEWAY=10.5.5.1" description="Gateway IP address."/>
-<property name="routes" variable="ADDRESS1, NETMASK1, GATEWAY1, METRIC1, ..." format="" values="" default="" example="" description="List of static routes. They are not stored in ifcfg-* file,
+<property name="routes" variable="ADDRESS1, NETMASK1, GATEWAY1, METRIC1, OPTIONS1, ..." format="" values="" default="" example="" description="List of static routes. They are not stored in ifcfg-* file,
 but in route-* file instead."/>
 <property name="ignore-auto-routes" variable="PEERROUTES(+)" format="" values="" default="yes" example="" description="PEERROUTES has the opposite meaning as &apos;ignore-auto-routes&apos; property."/>
 <property name="ignore-auto-dns" variable="PEERDNS" format="" values="" default="yes" example="" description="PEERDNS has the opposite meaning as &apos;ignore-auto-dns&apos; property."/>
@@ -232,6 +236,8 @@ proxy configuration, or set the PAC file via PAC_URL or PAC_SCRIPT."/>
 <property name="config" variable="TEAM_CONFIG" format="" values="" default="" example="" description="Team configuration in JSON. See man teamd.conf for details."/>
 </setting>
 <setting name="tun">
+</setting>
+<setting name="user">
 </setting>
 <setting name="vlan">
 <property name="parent" variable="DEVICE or PHYSDEV" format="" values="" default="" example="" description="Parent interface of the VLAN."/>

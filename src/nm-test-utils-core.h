@@ -30,12 +30,12 @@
 
 /*****************************************************************************/
 
-inline static void
+static inline void
 nmtst_init_with_logging (int *argc, char ***argv, const char *log_level, const char *log_domains)
 {
 	__nmtst_init (argc, argv, FALSE, log_level, log_domains, NULL);
 }
-inline static void
+static inline void
 nmtst_init_assert_logging (int *argc, char ***argv, const char *log_level, const char *log_domains)
 {
 	gboolean set_logging;
@@ -54,7 +54,7 @@ nmtst_init_assert_logging (int *argc, char ***argv, const char *log_level, const
 
 #ifdef __NETWORKMANAGER_PLATFORM_H__
 
-inline static NMPlatformIP4Address *
+static inline NMPlatformIP4Address *
 nmtst_platform_ip4_address (const char *address, const char *peer_address, guint plen)
 {
 	static NMPlatformIP4Address addr;
@@ -72,7 +72,7 @@ nmtst_platform_ip4_address (const char *address, const char *peer_address, guint
 	return &addr;
 }
 
-inline static NMPlatformIP4Address *
+static inline NMPlatformIP4Address *
 nmtst_platform_ip4_address_full (const char *address, const char *peer_address, guint plen,
                                  int ifindex, NMIPConfigSource source, guint32 timestamp,
                                  guint32 lifetime, guint32 preferred, guint32 flags,
@@ -95,7 +95,7 @@ nmtst_platform_ip4_address_full (const char *address, const char *peer_address, 
 	return addr;
 }
 
-inline static NMPlatformIP6Address *
+static inline NMPlatformIP6Address *
 nmtst_platform_ip6_address (const char *address, const char *peer_address, guint plen)
 {
 	static NMPlatformIP6Address addr;
@@ -110,7 +110,7 @@ nmtst_platform_ip6_address (const char *address, const char *peer_address, guint
 	return &addr;
 }
 
-inline static NMPlatformIP6Address *
+static inline NMPlatformIP6Address *
 nmtst_platform_ip6_address_full (const char *address, const char *peer_address, guint plen,
                                  int ifindex, NMIPConfigSource source, guint32 timestamp,
                                  guint32 lifetime, guint32 preferred, guint32 flags)
@@ -127,7 +127,7 @@ nmtst_platform_ip6_address_full (const char *address, const char *peer_address, 
 	return addr;
 }
 
-inline static NMPlatformIP4Route *
+static inline NMPlatformIP4Route *
 nmtst_platform_ip4_route (const char *network, guint plen, const char *gateway)
 {
 	static NMPlatformIP4Route route;
@@ -142,7 +142,7 @@ nmtst_platform_ip4_route (const char *network, guint plen, const char *gateway)
 	return &route;
 }
 
-inline static NMPlatformIP4Route *
+static inline NMPlatformIP4Route *
 nmtst_platform_ip4_route_full (const char *network, guint plen, const char *gateway,
                                int ifindex, NMIPConfigSource source,
                                guint metric, guint mss,
@@ -161,8 +161,8 @@ nmtst_platform_ip4_route_full (const char *network, guint plen, const char *gate
 	return route;
 }
 
-inline static NMPlatformIP6Route *
-nmtst_platform_ip6_route (const char *network, guint plen, const char *gateway)
+static inline NMPlatformIP6Route *
+nmtst_platform_ip6_route (const char *network, guint plen, const char *gateway, const char *pref_src)
 {
 	static NMPlatformIP6Route route;
 
@@ -172,16 +172,17 @@ nmtst_platform_ip6_route (const char *network, guint plen, const char *gateway)
 	route.network = *nmtst_inet6_from_string (network);
 	route.plen = plen;
 	route.gateway = *nmtst_inet6_from_string (gateway);
+	route.pref_src = *nmtst_inet6_from_string (pref_src);
 
 	return &route;
 }
 
-inline static NMPlatformIP6Route *
+static inline NMPlatformIP6Route *
 nmtst_platform_ip6_route_full (const char *network, guint plen, const char *gateway,
                                int ifindex, NMIPConfigSource source,
                                guint metric, guint mss)
 {
-	NMPlatformIP6Route *route = nmtst_platform_ip6_route (network, plen, gateway);
+	NMPlatformIP6Route *route = nmtst_platform_ip6_route (network, plen, gateway, NULL);
 
 	route->ifindex = ifindex;
 	route->rt_source = source;
@@ -191,13 +192,13 @@ nmtst_platform_ip6_route_full (const char *network, guint plen, const char *gate
 	return route;
 }
 
-inline static int
+static inline int
 _nmtst_platform_ip4_routes_equal_sort (gconstpointer a, gconstpointer b, gpointer user_data)
 {
 	return nm_platform_ip4_route_cmp ((const NMPlatformIP4Route *) a, (const NMPlatformIP4Route *) b);
 }
 
-inline static void
+static inline void
 nmtst_platform_ip4_routes_equal (const NMPlatformIP4Route *a, const NMPlatformIP4Route *b, gsize len, gboolean ignore_order)
 {
 	gsize i;
@@ -217,7 +218,7 @@ nmtst_platform_ip4_routes_equal (const NMPlatformIP4Route *a, const NMPlatformIP
 		if (nm_platform_ip4_route_cmp (&a[i], &b[i]) != 0) {
 			char buf[sizeof (_nm_utils_to_string_buffer)];
 
-			g_error ("Error comparing IPv4 route[%lu]: %s vs %s", (long unsigned) i,
+			g_error ("Error comparing IPv4 route[%lu]: %s vs %s", (unsigned long) i,
 			         nm_platform_ip4_route_to_string (&a[i], NULL, 0),
 			         nm_platform_ip4_route_to_string (&b[i], buf, sizeof (buf)));
 			g_assert_not_reached ();
@@ -225,13 +226,13 @@ nmtst_platform_ip4_routes_equal (const NMPlatformIP4Route *a, const NMPlatformIP
 	}
 }
 
-inline static int
+static inline int
 _nmtst_platform_ip6_routes_equal_sort (gconstpointer a, gconstpointer b, gpointer user_data)
 {
 	return nm_platform_ip6_route_cmp ((const NMPlatformIP6Route *) a, (const NMPlatformIP6Route *) b);
 }
 
-inline static void
+static inline void
 nmtst_platform_ip6_routes_equal (const NMPlatformIP6Route *a, const NMPlatformIP6Route *b, gsize len, gboolean ignore_order)
 {
 	gsize i;
@@ -251,7 +252,7 @@ nmtst_platform_ip6_routes_equal (const NMPlatformIP6Route *a, const NMPlatformIP
 		if (nm_platform_ip6_route_cmp (&a[i], &b[i]) != 0) {
 			char buf[sizeof (_nm_utils_to_string_buffer)];
 
-			g_error ("Error comparing IPv6 route[%lu]: %s vs %s", (long unsigned) i,
+			g_error ("Error comparing IPv6 route[%lu]: %s vs %s", (unsigned long) i,
 			         nm_platform_ip6_route_to_string (&a[i], NULL, 0),
 			         nm_platform_ip6_route_to_string (&b[i], buf, sizeof (buf)));
 			g_assert_not_reached ();
@@ -264,7 +265,7 @@ nmtst_platform_ip6_routes_equal (const NMPlatformIP6Route *a, const NMPlatformIP
 
 #ifdef __NETWORKMANAGER_IP4_CONFIG_H__
 
-inline static NMIP4Config *
+static inline NMIP4Config *
 nmtst_ip4_config_clone (NMIP4Config *config)
 {
 	NMIP4Config *copy = nm_ip4_config_new (-1);
@@ -280,7 +281,7 @@ nmtst_ip4_config_clone (NMIP4Config *config)
 
 #ifdef __NETWORKMANAGER_IP6_CONFIG_H__
 
-inline static NMIP6Config *
+static inline NMIP6Config *
 nmtst_ip6_config_clone (NMIP6Config *config)
 {
 	NMIP6Config *copy = nm_ip6_config_new (-1);

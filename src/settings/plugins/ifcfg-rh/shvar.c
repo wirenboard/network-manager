@@ -41,7 +41,7 @@
 
 /*****************************************************************************/
 
-typedef struct {
+struct _shvarLine {
 	/* There are three cases:
 	 *
 	 * 1) the line is not a valid variable assignment (that is, it doesn't
@@ -61,7 +61,9 @@ typedef struct {
 	char *line;
 	const char *key;
 	char *key_with_prefix;
-} shvarLine;
+};
+
+typedef struct _shvarLine shvarLine;
 
 struct _shvarFile {
 	char      *fileName;
@@ -220,14 +222,12 @@ svEscape (const char *s, char **to_free)
 	int newlen;
 	size_t i, j, slen;
 
-	slen = strlen (s);
-
-	for (i = 0; i < slen; i++) {
-		if (_char_req_escape (s[i]))
+	for (slen = 0; s[slen]; slen++) {
+		if (_char_req_escape (s[slen]))
 			mangle++;
-		else if (_char_req_quotes (s[i]))
+		else if (_char_req_quotes (s[slen]))
 			requires_quotes = TRUE;
-		else if (s[i] < ' ') {
+		else if (s[slen] < ' ') {
 			/* if the string contains newline we can only express it using ANSI C quotation
 			 * (as we don't support line continuation).
 			 * Additionally, ANSI control characters look odd with regular quotation, so handle
@@ -639,15 +639,19 @@ svFileGetName (const shvarFile *s)
 }
 
 void
-svFileSetName (shvarFile *s, const char *fileName)
+svFileSetName_test_only (shvarFile *s, const char *fileName)
 {
+	/* changing the file name is not supported for regular
+	 * operation. Only allowed to use in tests, othewise,
+	 * the filename is immutable. */
 	g_free (s->fileName);
 	s->fileName = g_strdup (fileName);
 }
 
 void
-svFileSetModified (shvarFile *s)
+svFileSetModified_test_only (shvarFile *s)
 {
+	/* marking a file as modified is only for testing. */
 	s->modified = TRUE;
 }
 
@@ -877,6 +881,30 @@ shlist_find (const GList *current, const char *key)
 
 /*****************************************************************************/
 
+GHashTable *
+svGetKeys (shvarFile *s)
+{
+	GHashTable *keys = NULL;
+	const GList *current;
+	const shvarLine *line;
+
+	nm_assert (s);
+
+	for (current = s->lineList; current; current = current->next) {
+		line = current->data;
+		if (line->key && line->line) {
+			/* we don't clone the keys. The keys are only valid
+			 * until @s gets modified. */
+			if (!keys)
+				keys = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+			g_hash_table_add (keys, (gpointer) line->key);
+		}
+	}
+	return keys;
+}
+
+/*****************************************************************************/
+
 static const char *
 _svGetValue (shvarFile *s, const char *key, char **to_free)
 {
@@ -895,39 +923,104 @@ _svGetValue (shvarFile *s, const char *key, char **to_free)
 	}
 	if (last) {
 		line = last->data;
-		if (line->line)
-			return svUnescape (line->line, to_free);
+		if (line->line) {
+			const char *v;
+
+			v = svUnescape (line->line, to_free);
+			if (!v) {
+				/* a wrongly quoted value is treated like the empty string.
+				 * See also svWriteFile(), which handles unparsable values
+				 * that way. */
+				nm_assert (!*to_free);
+				return "";
+			}
+			return v;
+		}
 	}
 	*to_free = NULL;
 	return NULL;
 }
 
+/* Returns the value for key. The value is either owned by @s
+ * or returned as to_free. This aims to avoid cloning the string.
+ *
+ * - like svGetValue_cp(), but avoids cloning the value if possible.
+ * - like svGetValueStr(), but does not ignore empty string values.
+ */
 const char *
 svGetValue (shvarFile *s, const char *key, char **to_free)
 {
-	g_return_val_if_fail (s != NULL, NULL);
-	g_return_val_if_fail (key != NULL, NULL);
+	g_return_val_if_fail (s, NULL);
+	g_return_val_if_fail (key, NULL);
 	g_return_val_if_fail (to_free, NULL);
 
 	return _svGetValue (s, key, to_free);
 }
 
-/* Get the value associated with the key, and leave the current pointer
- * pointing at the line containing the value.  The char* returned MUST
- * be freed by the caller.
+/* Returns the value for key. The value is either owned by @s
+ * or returned as to_free. This aims to avoid cloning the string.
+ *
+ * - like svGetValue(), but does not return an empty string.
+ * - like svGetValueStr_cp(), but avoids cloning the value if possible.
+ */
+const char *
+svGetValueStr (shvarFile *s, const char *key, char **to_free)
+{
+	const char *value;
+
+	g_return_val_if_fail (s, NULL);
+	g_return_val_if_fail (key, NULL);
+	g_return_val_if_fail (to_free, NULL);
+
+	value = _svGetValue (s, key, to_free);
+	if (!value || !value[0]) {
+		nm_assert (!*to_free);
+		return NULL;
+	}
+	return value;
+}
+
+/* Returns the value for key. The returned value must be freed
+ * by the caller.
+ *
+ * - like svGetValue(), but always returns a copy of the value.
+ * - like svGetValueStr_cp(), but does not ignore an empty string.
  */
 char *
-svGetValueString (shvarFile *s, const char *key)
+svGetValue_cp (shvarFile *s, const char *key)
 {
 	char *to_free;
 	const char *value;
+
+	g_return_val_if_fail (s, NULL);
+	g_return_val_if_fail (key, NULL);
 
 	value = _svGetValue (s, key, &to_free);
 	if (!value) {
 		nm_assert (!to_free);
 		return NULL;
 	}
-	if (!value[0]) {
+	return to_free ?: g_strdup (value);
+}
+
+/* Returns the value for key. The returned value must be freed
+ * by the caller.
+ * If the key is unset or the value an empty string, NULL is returned.
+ *
+ * - like svGetValueStr(), but always returns a copy of the value.
+ * - like svGetValue_cp(), but returns NULL instead of an empty string.
+ */
+char *
+svGetValueStr_cp (shvarFile *s, const char *key)
+{
+	char *to_free;
+	const char *value;
+
+	g_return_val_if_fail (s, NULL);
+	g_return_val_if_fail (key, NULL);
+
+	value = _svGetValue (s, key, &to_free);
+	if (!value || !value[0]) {
 		nm_assert (!to_free);
 		return NULL;
 	}
@@ -991,8 +1084,8 @@ svGetValueInt64 (shvarFile *s, const char *key, guint base, gint64 min, gint64 m
 
 /*****************************************************************************/
 
-/* Same as svSetValueString() but it preserves empty @value -- contrary to
- * svSetValueString() for which "" effectively means to remove the value. */
+/* Same as svSetValueStr() but it preserves empty @value -- contrary to
+ * svSetValueStr() for which "" effectively means to remove the value. */
 void
 svSetValue (shvarFile *s, const char *key, const char *value)
 {
@@ -1041,7 +1134,7 @@ svSetValue (shvarFile *s, const char *key, const char *value)
  * to the bottom of the file.
  */
 void
-svSetValueString (shvarFile *s, const char *key, const char *value)
+svSetValueStr (shvarFile *s, const char *key, const char *value)
 {
 	svSetValue (s, key, value && value[0] ? value : NULL);
 }
@@ -1064,6 +1157,27 @@ void
 svUnsetValue (shvarFile *s, const char *key)
 {
 	svSetValue (s, key, NULL);
+}
+
+void
+svUnsetValuesWithPrefix (shvarFile *s, const char *prefix)
+{
+	GList *current;
+
+	g_return_if_fail (s);
+	g_return_if_fail (prefix);
+
+	for (current = s->lineList; current; current = current->next) {
+		shvarLine *line = current->data;
+
+		ASSERT_shvarLine (line);
+		if (   line->key
+		    && g_str_has_prefix (line->key, prefix)) {
+			if (nm_clear_g_free (&line->line))
+				s->modified = TRUE;
+		}
+		ASSERT_shvarLine (line);
+	}
 }
 
 /*****************************************************************************/

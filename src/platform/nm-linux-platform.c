@@ -38,7 +38,7 @@
 #include <linux/if_tunnel.h>
 #include <netlink/netlink.h>
 #include <netlink/msg.h>
-#include <gudev/gudev.h>
+#include <libudev.h>
 
 #include "nm-utils.h"
 #include "nm-core-internal.h"
@@ -51,6 +51,7 @@
 #include "wifi/wifi-utils.h"
 #include "wifi/wifi-utils-wext.h"
 #include "nm-utils/unaligned.h"
+#include "nm-utils/nm-udev-utils.h"
 
 #define VLAN_FLAG_MVRP 0x8
 
@@ -144,13 +145,13 @@
     G_STMT_START { \
         char __prefix[32]; \
         const char *__p_prefix = _NMLOG_PREFIX_NAME; \
-        const void *const __self = (self); \
+        NMPlatform *const __self = (self); \
         \
-        if (__self && __self != nm_platform_try_get ()) { \
+        if (__self && nm_platform_get_log_with_ptr (__self)) { \
             g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _NMLOG_PREFIX_NAME, __self); \
             __p_prefix = __prefix; \
         } \
-        _nm_log (__level, __domain, __errsv, \
+        _nm_log (__level, __domain, __errsv, NULL, NULL, \
                  "%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                  __p_prefix _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
     } G_STMT_END
@@ -298,7 +299,7 @@ _support_user_ipv6ll_get (void)
 {
 	if (_support_user_ipv6ll_still_undecided ()) {
 		_support_user_ipv6ll = -1;
-		_LOG2W ("kernel support for IFLA_INET6_ADDR_GEN_MODE %s", "failed to detect; assume no support");
+		_LOG2D ("kernel-support: IFLA_INET6_ADDR_GEN_MODE: %s", "failed to detect; assume no support");
 		return FALSE;
 	}
 	return _support_user_ipv6ll > 0;
@@ -309,13 +310,11 @@ static void
 _support_user_ipv6ll_detect (struct nlattr **tb)
 {
 	if (_support_user_ipv6ll_still_undecided ()) {
-		if (tb[IFLA_INET6_ADDR_GEN_MODE]) {
-			_support_user_ipv6ll = 1;
-			_LOG2D ("kernel support for IFLA_INET6_ADDR_GEN_MODE %s", "detected");
-		} else {
-			_support_user_ipv6ll = -1;
-			_LOG2D ("kernel support for IFLA_INET6_ADDR_GEN_MODE %s", "not detected");
-		}
+		gboolean supported = !!tb[IFLA_INET6_ADDR_GEN_MODE];
+
+		_support_user_ipv6ll = supported ? 1 : -1;
+		_LOG2D ("kernel-support: IFLA_INET6_ADDR_GEN_MODE: %s",
+		        supported ? "detected" : "not detected");
 	}
 }
 
@@ -1835,6 +1834,7 @@ _new_from_nl_route (struct nlmsghdr *nlh, gboolean id_only)
 		NMIPAddr gateway;
 	} nh;
 	guint32 mss;
+	guint32 window = 0, cwnd = 0, initcwnd = 0, initrwnd = 0, mtu = 0, lock = 0;
 	guint32 table;
 
 	if (!nlmsg_valid_hdr (nlh, sizeof (*rtm)))
@@ -1848,8 +1848,7 @@ _new_from_nl_route (struct nlmsghdr *nlh, gboolean id_only)
 	if (!NM_IN_SET (rtm->rtm_family, AF_INET, AF_INET6))
 		goto errout;
 
-	if (   rtm->rtm_type != RTN_UNICAST
-	    || rtm->rtm_tos != 0)
+	if (rtm->rtm_type != RTN_UNICAST)
 		goto errout;
 
 	err = nlmsg_parse (nlh, sizeof (struct rtmsg), tb, RTA_MAX, policy);
@@ -1943,21 +1942,34 @@ _new_from_nl_route (struct nlmsghdr *nlh, gboolean id_only)
 	mss = 0;
 	if (tb[RTA_METRICS]) {
 		struct nlattr *mtb[RTAX_MAX + 1];
-		int i;
+		static struct nla_policy rtax_policy[RTAX_MAX + 1] = {
+			[RTAX_LOCK]        = { .type = NLA_U32 },
+			[RTAX_ADVMSS]      = { .type = NLA_U32 },
+			[RTAX_WINDOW]      = { .type = NLA_U32 },
+			[RTAX_CWND]        = { .type = NLA_U32 },
+			[RTAX_INITCWND]    = { .type = NLA_U32 },
+			[RTAX_INITRWND]    = { .type = NLA_U32 },
+			[RTAX_MTU]         = { .type = NLA_U32 },
+		};
 
-		err = nla_parse_nested(mtb, RTAX_MAX, tb[RTA_METRICS], NULL);
+		err = nla_parse_nested (mtb, RTAX_MAX, tb[RTA_METRICS], rtax_policy);
 		if (err < 0)
 			goto errout;
 
-		for (i = 1; i <= RTAX_MAX; i++) {
-			if (mtb[i]) {
-				if (i == RTAX_ADVMSS) {
-					if (nla_len (mtb[i]) >= sizeof (uint32_t))
-						mss = nla_get_u32(mtb[i]);
-					break;
-				}
-			}
-		}
+		if (mtb[RTAX_LOCK])
+			lock = nla_get_u32 (mtb[RTAX_LOCK]);
+		if (mtb[RTAX_ADVMSS])
+			mss = nla_get_u32 (mtb[RTAX_ADVMSS]);
+		if (mtb[RTAX_WINDOW])
+			window = nla_get_u32 (mtb[RTAX_WINDOW]);
+		if (mtb[RTAX_CWND])
+			cwnd = nla_get_u32 (mtb[RTAX_CWND]);
+		if (mtb[RTAX_INITCWND])
+			initcwnd = nla_get_u32 (mtb[RTAX_INITCWND]);
+		if (mtb[RTAX_INITRWND])
+			initrwnd = nla_get_u32 (mtb[RTAX_INITRWND]);
+		if (mtb[RTAX_MTU])
+			mtu = nla_get_u32 (mtb[RTAX_MTU]);
 	}
 
 	/*****************************************************************/
@@ -1982,12 +1994,31 @@ _new_from_nl_route (struct nlmsghdr *nlh, gboolean id_only)
 	if (is_v4)
 		obj->ip4_route.scope_inv = nm_platform_route_scope_inv (rtm->rtm_scope);
 
-	if (is_v4) {
-		if (_check_addr_or_errout (tb, RTA_PREFSRC, addr_len))
+	if (_check_addr_or_errout (tb, RTA_PREFSRC, addr_len)) {
+		if (is_v4)
 			memcpy (&obj->ip4_route.pref_src, nla_data (tb[RTA_PREFSRC]), addr_len);
+		else
+			memcpy (&obj->ip6_route.pref_src, nla_data (tb[RTA_PREFSRC]), addr_len);
+	}
+
+	if (!is_v4 && tb[RTA_SRC]) {
+		_check_addr_or_errout (tb, RTA_SRC, addr_len);
+		memcpy (&obj->ip6_route.src, nla_data (tb[RTA_SRC]), addr_len);
+		obj->ip6_route.src_plen = rtm->rtm_src_len;
 	}
 
 	obj->ip_route.mss = mss;
+	obj->ip_route.window = window;
+	obj->ip_route.cwnd = cwnd;
+	obj->ip_route.initcwnd = initcwnd;
+	obj->ip_route.initrwnd = initrwnd;
+	obj->ip_route.mtu = mtu;
+	obj->ip_route.tos = rtm->rtm_tos;
+	obj->ip_route.lock_window = NM_FLAGS_HAS (lock, 1 << RTAX_WINDOW);
+	obj->ip_route.lock_cwnd = NM_FLAGS_HAS (lock, 1 << RTAX_CWND);
+	obj->ip_route.lock_initcwnd = NM_FLAGS_HAS (lock, 1 << RTAX_INITCWND);
+	obj->ip_route.lock_initrwnd = NM_FLAGS_HAS (lock, 1 << RTAX_INITRWND);
+	obj->ip_route.lock_mtu  = NM_FLAGS_HAS (lock, 1 << RTAX_MTU);
 
 	if (NM_FLAGS_HAS (rtm->rtm_flags, RTM_F_CLONED)) {
 		/* we must not straight way reject cloned routes, because we might have cached
@@ -2362,21 +2393,29 @@ _nl_msg_new_route (int nlmsg_type,
                    gconstpointer gateway,
                    guint32 metric,
                    guint32 mss,
-                   gconstpointer pref_src)
+                   gconstpointer pref_src,
+                   gconstpointer src,
+                   guint8 src_plen,
+                   guint8 tos,
+                   guint32 window,
+                   guint32 cwnd,
+                   guint32 initcwnd,
+                   guint32 initrwnd,
+                   guint32 mtu,
+                   guint32 lock)
 {
 	struct nl_msg *msg;
 	struct rtmsg rtmsg = {
 		.rtm_family = family,
-		.rtm_tos = 0,
+		.rtm_tos = tos,
 		.rtm_table = RT_TABLE_MAIN, /* omit setting RTA_TABLE attribute */
 		.rtm_protocol = nmp_utils_ip_config_source_coerce_to_rtprot (source),
 		.rtm_scope = scope,
 		.rtm_type = RTN_UNICAST,
 		.rtm_flags = 0,
 		.rtm_dst_len = plen,
-		.rtm_src_len = 0,
+		.rtm_src_len = src ? src_plen : 0,
 	};
-	NMIPAddr network_clean;
 
 	gsize addr_len;
 
@@ -2393,22 +2432,37 @@ _nl_msg_new_route (int nlmsg_type,
 
 	addr_len = family == AF_INET ? sizeof (in_addr_t) : sizeof (struct in6_addr);
 
-	nm_utils_ipx_address_clear_host_address (family, &network_clean, network, plen);
-	NLA_PUT (msg, RTA_DST, addr_len, &network_clean);
+	NLA_PUT (msg, RTA_DST, addr_len, network);
+
+	if (src)
+		NLA_PUT (msg, RTA_SRC, addr_len, src);
 
 	NLA_PUT_U32 (msg, RTA_PRIORITY, metric);
 
 	if (pref_src)
 		NLA_PUT (msg, RTA_PREFSRC, addr_len, pref_src);
 
-	if (mss > 0) {
+	if (mss || window || cwnd || initcwnd || initrwnd || mtu || lock) {
 		struct nlattr *metrics;
 
 		metrics = nla_nest_start (msg, RTA_METRICS);
 		if (!metrics)
 			goto nla_put_failure;
 
-		NLA_PUT_U32 (msg, RTAX_ADVMSS, mss);
+		if (mss)
+			NLA_PUT_U32 (msg, RTAX_ADVMSS, mss);
+		if (window)
+			NLA_PUT_U32 (msg, RTAX_WINDOW, window);
+		if (cwnd)
+			NLA_PUT_U32 (msg, RTAX_CWND, cwnd);
+		if (initcwnd)
+			NLA_PUT_U32 (msg, RTAX_INITCWND, initcwnd);
+		if (initrwnd)
+			NLA_PUT_U32 (msg, RTAX_INITRWND, initrwnd);
+		if (mtu)
+			NLA_PUT_U32 (msg, RTAX_MTU, mtu);
+		if (lock)
+			NLA_PUT_U32 (msg, RTAX_LOCK, lock);
 
 		nla_nest_end(msg, metrics);
 	}
@@ -2452,15 +2506,15 @@ _support_kernel_extended_ifa_flags_detect (struct nl_msg *msg)
 	 * we assume, that the kernel supports extended flags, IFA_F_MANAGETEMPADDR
 	 * and IFA_F_NOPREFIXROUTE (they were added together).
 	 **/
-	_support_kernel_extended_ifa_flags = !!nlmsg_find_attr (msg_hdr, sizeof (struct ifaddrmsg), 8 /* IFA_FLAGS */);
-	_LOG2D ("support: kernel-extended-ifa-flags: %ssupported", _support_kernel_extended_ifa_flags ? "" : "not ");
+	_support_kernel_extended_ifa_flags = !!nlmsg_find_attr (msg_hdr, sizeof (struct ifaddrmsg), IFA_FLAGS);
+	_LOG2D ("kernel-support: extended-ifa-flags: %s", _support_kernel_extended_ifa_flags ? "detected" : "not detected");
 }
 
 static gboolean
 _support_kernel_extended_ifa_flags_get (void)
 {
 	if (_support_kernel_extended_ifa_flags_still_undecided ()) {
-		_LOG2W ("support: kernel-extended-ifa-flags: unable to detect kernel support for handling IPv6 temporary addresses. Assume support");
+		_LOG2D ("kernel-support: extended-ifa-flags: %s", "unable to detect kernel support for handling IPv6 temporary addresses. Assume support");
 		_support_kernel_extended_ifa_flags = 1;
 	}
 	return _support_kernel_extended_ifa_flags;
@@ -2492,7 +2546,7 @@ typedef struct {
 	gboolean sysctl_get_warned;
 	GHashTable *sysctl_get_prev_values;
 
-	GUdevClient *udev_client;
+	NMUdevClient *udev_client;
 
 	struct {
 		/* which delayed actions are scheduled, as marked in @flags.
@@ -2526,19 +2580,13 @@ struct _NMLinuxPlatformClass {
 
 G_DEFINE_TYPE (NMLinuxPlatform, nm_linux_platform, NM_TYPE_PLATFORM)
 
-static inline NMLinuxPlatformPrivate *
-NM_LINUX_PLATFORM_GET_PRIVATE (const void *self)
-{
-	nm_assert (NM_IS_LINUX_PLATFORM (self));
-
-	return &(((NMLinuxPlatform *) self)->_priv);
-}
+#define NM_LINUX_PLATFORM_GET_PRIVATE(self) _NM_GET_PRIVATE_VOID(self, NMLinuxPlatform, NM_IS_LINUX_PLATFORM)
 
 NMPlatform *
-nm_linux_platform_new (gboolean netns_support)
+nm_linux_platform_new (gboolean log_with_ptr, gboolean netns_support)
 {
 	return g_object_new (NM_TYPE_LINUX_PLATFORM,
-	                     NM_PLATFORM_REGISTER_SINGLETON, FALSE,
+	                     NM_PLATFORM_LOG_WITH_PTR, log_with_ptr,
 	                     NM_PLATFORM_NETNS_SUPPORT, netns_support,
 	                     NULL);
 }
@@ -2546,10 +2594,7 @@ nm_linux_platform_new (gboolean netns_support)
 void
 nm_linux_platform_setup (void)
 {
-	g_object_new (NM_TYPE_LINUX_PLATFORM,
-	              NM_PLATFORM_REGISTER_SINGLETON, TRUE,
-	              NM_PLATFORM_NETNS_SUPPORT, FALSE,
-	              NULL);
+	nm_platform_setup (nm_linux_platform_new (FALSE, FALSE));
 }
 
 static void
@@ -2584,23 +2629,24 @@ static void
 _log_dbg_sysctl_set_impl (NMPlatform *platform, const char *pathid, int dirfd, const char *path, const char *value)
 {
 	GError *error = NULL;
-	char *contents, *contents_escaped;
-	char *value_escaped = g_strescape (value, NULL);
+	char *contents;
+	gs_free char *value_escaped = g_strescape (value, NULL);
 
 	if (nm_utils_file_get_contents (dirfd, path, 1*1024*1024, &contents, NULL, &error) < 0) {
 		_LOGD ("sysctl: setting '%s' to '%s' (current value cannot be read: %s)", pathid, value_escaped, error->message);
 		g_clear_error (&error);
-	} else {
-		g_strstrip (contents);
-		contents_escaped = g_strescape (contents, NULL);
-		if (strcmp (contents, value) == 0)
-			_LOGD ("sysctl: setting '%s' to '%s' (current value is identical)", pathid, value_escaped);
-		else
-			_LOGD ("sysctl: setting '%s' to '%s' (current value is '%s')", pathid, value_escaped, contents_escaped);
-		g_free (contents);
-		g_free (contents_escaped);
+		return;
 	}
-	g_free (value_escaped);
+
+	g_strstrip (contents);
+	if (nm_streq (contents, value))
+		_LOGD ("sysctl: setting '%s' to '%s' (current value is identical)", pathid, value_escaped);
+	else {
+		gs_free char *contents_escaped = g_strescape (contents, NULL);
+
+		_LOGD ("sysctl: setting '%s' to '%s' (current value is '%s')", pathid, value_escaped, contents_escaped);
+	}
+	g_free (contents);
 }
 
 #define _log_dbg_sysctl_set(platform, pathid, dirfd, path, value) \
@@ -2750,26 +2796,23 @@ _log_dbg_sysctl_get_impl (NMPlatform *platform, const char *pathid, const char *
 
 	if (prev_value) {
 		if (strcmp (prev_value, contents) != 0) {
-			char *contents_escaped = g_strescape (contents, NULL);
-			char *prev_value_escaped = g_strescape (prev_value, NULL);
+			gs_free char *contents_escaped = g_strescape (contents, NULL);
+			gs_free char *prev_value_escaped = g_strescape (prev_value, NULL);
 
 			_LOGD ("sysctl: reading '%s': '%s' (changed from '%s' on last read)", pathid, contents_escaped, prev_value_escaped);
-			g_free (contents_escaped);
-			g_free (prev_value_escaped);
 			g_hash_table_insert (priv->sysctl_get_prev_values, g_strdup (pathid), g_strdup (contents));
 		}
 	} else {
-		char *contents_escaped = g_strescape (contents, NULL);
+		gs_free char *contents_escaped = g_strescape (contents, NULL);
 
 		_LOGD ("sysctl: reading '%s': '%s'", pathid, contents_escaped);
-		g_free (contents_escaped);
 		g_hash_table_insert (priv->sysctl_get_prev_values, g_strdup (pathid), g_strdup (contents));
-	}
 
-	if (   !priv->sysctl_get_warned
-	    && g_hash_table_size (priv->sysctl_get_prev_values) > 50000) {
-		_LOGW ("sysctl: the internal cache for debug-logging of sysctl values grew pretty large. You can clear it by disabling debug-logging: `nmcli general logging level KEEP domains PLATFORM:INFO`.");
-		priv->sysctl_get_warned = TRUE;
+		if (   !priv->sysctl_get_warned
+		    && g_hash_table_size (priv->sysctl_get_prev_values) > 50000) {
+			_LOGW ("sysctl: the internal cache for debug-logging of sysctl values grew pretty large. You can clear it by disabling debug-logging: `nmcli general logging level KEEP domains PLATFORM:INFO`.");
+			priv->sysctl_get_warned = TRUE;
+		}
 	}
 }
 
@@ -4352,18 +4395,23 @@ link_get_unmanaged (NMPlatform *platform, int ifindex, gboolean *unmanaged)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	const NMPObject *link;
-	GUdevDevice *udev_device = NULL;
+	struct udev_device *udevice = NULL;
+	const char *uproperty;
 
 	link = nmp_cache_lookup_link (priv->cache, ifindex);
-	if (link)
-		udev_device = link->_link.udev.device;
+	if (!link)
+		return FALSE;
 
-	if (udev_device && g_udev_device_get_property (udev_device, "NM_UNMANAGED")) {
-		*unmanaged = g_udev_device_get_property_as_boolean (udev_device, "NM_UNMANAGED");
-		return TRUE;
-	}
+	udevice = link->_link.udev.device;
+	if (!udevice)
+		return FALSE;
 
-	return FALSE;
+	uproperty = udev_device_get_property_value (udevice, "NM_UNMANAGED");
+	if (!uproperty)
+		return FALSE;
+
+	*unmanaged = nm_udev_utils_property_as_boolean (uproperty);
+	return TRUE;
 }
 
 static gboolean
@@ -4463,10 +4511,10 @@ link_get_udi (NMPlatform *platform, int ifindex)
 	    || !obj->_link.netlink.is_in_netlink
 	    || !obj->_link.udev.device)
 		return NULL;
-	return g_udev_device_get_sysfs_path (obj->_link.udev.device);
+	return udev_device_get_syspath (obj->_link.udev.device);
 }
 
-static GObject *
+static struct udev_device *
 link_get_udev_device (NMPlatform *platform, int ifindex)
 {
 	const NMPObject *obj_cache;
@@ -4477,7 +4525,7 @@ link_get_udev_device (NMPlatform *platform, int ifindex)
 	 * appears invisible via other platform functions. */
 
 	obj_cache = nmp_cache_lookup_link (NM_LINUX_PLATFORM_GET_PRIVATE (platform)->cache, ifindex);
-	return obj_cache ? (GObject *) obj_cache->_link.udev.device : NULL;
+	return obj_cache ? obj_cache->_link.udev.device : NULL;
 }
 
 static NMPlatformError
@@ -4554,6 +4602,30 @@ link_supports_vlans (NMPlatform *platform, int ifindex)
 		return FALSE;
 
 	return nmp_utils_ethtool_supports_vlans (ifindex);
+}
+
+static gboolean
+link_supports_sriov (NMPlatform *platform, int ifindex)
+{
+	nm_auto_pop_netns NMPNetns *netns = NULL;
+	nm_auto_close int dirfd = -1;
+	char ifname[IFNAMSIZ];
+	int total = -1;
+
+	if (!nm_platform_netns_push (platform, &netns))
+		return FALSE;
+
+	dirfd = nm_platform_sysctl_open_netdir (platform, ifindex, ifname);
+	if (dirfd < 0)
+		return FALSE;
+
+	total = nm_platform_sysctl_get_int32 (platform,
+	                                      NMP_SYSCTL_PATHID_NETDIR (dirfd,
+	                                                                ifname,
+	                                                                "device/sriov_totalvfs"),
+	                                      -1);
+
+	return total > 0;
 }
 
 static NMPlatformError
@@ -4647,6 +4719,71 @@ nla_put_failure:
 	g_return_val_if_reached (FALSE);
 }
 
+static gboolean
+link_set_sriov_num_vfs (NMPlatform *platform, int ifindex, guint num_vfs)
+{
+	nm_auto_pop_netns NMPNetns *netns = NULL;
+	nm_auto_close int dirfd = -1;
+	int total, current;
+	char ifname[IFNAMSIZ];
+	char buf[64];
+
+	_LOGD ("link: change %d: num VFs: %u", ifindex, num_vfs);
+
+	if (!nm_platform_netns_push (platform, &netns))
+		return FALSE;
+
+	dirfd = nm_platform_sysctl_open_netdir (platform, ifindex, ifname);
+	if (!dirfd)
+		return FALSE;
+
+	total = nm_platform_sysctl_get_int32 (platform,
+	                                      NMP_SYSCTL_PATHID_NETDIR (dirfd,
+	                                                                ifname,
+	                                                                "device/sriov_totalvfs"),
+	                                      -1);
+	if (total < 1)
+		return FALSE;
+	if (num_vfs > total) {
+		_LOGW ("link: %d only supports %u VFs (requested %u)", ifindex, total, num_vfs);
+		num_vfs = total;
+	}
+
+	current = nm_platform_sysctl_get_int32 (platform,
+	                                        NMP_SYSCTL_PATHID_NETDIR (dirfd,
+	                                                                  ifname,
+	                                                                  "device/sriov_numvfs"),
+	                                        -1);
+	if (current == num_vfs)
+		return TRUE;
+
+	if (current != 0) {
+		/* We need to destroy all other VFs before changing the value */
+		if (!nm_platform_sysctl_set (NM_PLATFORM_GET,
+		                             NMP_SYSCTL_PATHID_NETDIR (dirfd,
+		                                                       ifname,
+		                                                      "device/sriov_numvfs"),
+		                             "0")) {
+			_LOGW ("link: couldn't set SR-IOV num_vfs to %d: %s", 0, strerror (errno));
+			return FALSE;
+		}
+		if (num_vfs == 0)
+			return TRUE;
+	}
+
+	/* Finally, set the desired value */
+	if (!nm_platform_sysctl_set (NM_PLATFORM_GET,
+	                             NMP_SYSCTL_PATHID_NETDIR (dirfd,
+	                                                       ifname,
+	                                                       "device/sriov_numvfs"),
+	                             nm_sprintf_buf (buf, "%d", num_vfs))) {
+		_LOGW ("link: couldn't set SR-IOV num_vfs to %d: %s", num_vfs, strerror (errno));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 static char *
 link_get_physical_port_id (NMPlatform *platform, int ifindex)
 {
@@ -4691,7 +4828,7 @@ vlan_add (NMPlatform *platform,
 	vlan_flags &= (guint32) NM_VLAN_FLAGS_ALL;
 
 	_LOGD ("link: add vlan '%s', parent %d, vlan id %d, flags %X",
-	       name, parent, vlan_id, (unsigned int) vlan_flags);
+	       name, parent, vlan_id, (unsigned) vlan_flags);
 
 	nlmsg = _nl_msg_new_link (RTM_NEWLINK,
 	                          NLM_F_CREATE | NLM_F_EXCL,
@@ -5153,7 +5290,7 @@ _vlan_change_vlan_qos_mapping_create (gboolean is_ingress_map,
 	if (current_n_map) {
 		if (is_ingress_map) {
 			/* For the ingress-map, there are only 8 entries (0 to 7).
-			 * When the user requests to reset all entires, we don't actually
+			 * When the user requests to reset all entries, we don't actually
 			 * need the cached entries, we can just explicitly clear all possible
 			 * ones.
 			 *
@@ -5456,34 +5593,17 @@ wifi_get_wifi_data (NMPlatform *platform, int ifindex)
 	wifi_data = g_hash_table_lookup (priv->wifi_data, GINT_TO_POINTER (ifindex));
 	pllink = nm_platform_link_get (platform, ifindex);
 
-	/* @wifi_data contains an interface name which is used for WEXT queries. If
-	 * the interface name changes we should at least replace the name in the
-	 * existing structure; but probably a complete reinitialization is better
-	 * because during the initial creation there can be race conditions while
-	 * the interface is renamed by udev.
-	 */
-	if (wifi_data && pllink) {
-		if (!nm_streq (wifi_utils_get_iface (wifi_data), pllink->name)) {
-			_LOGD ("wifi: interface %s renamed to %s, dropping old data for ifindex %d",
-			       wifi_utils_get_iface (wifi_data),
-			       pllink->name,
-			       ifindex);
-			g_hash_table_remove (priv->wifi_data, GINT_TO_POINTER (ifindex));
-			wifi_data = NULL;
-		}
-	}
-
 	if (!wifi_data) {
 		if (pllink) {
 			if (pllink->type == NM_LINK_TYPE_WIFI)
-				wifi_data = wifi_utils_init (pllink->name, ifindex, TRUE);
+				wifi_data = wifi_utils_init (ifindex, TRUE);
 			else if (pllink->type == NM_LINK_TYPE_OLPC_MESH) {
 				/* The kernel driver now uses nl80211, but we force use of WEXT because
 				 * the cfg80211 interactions are not quite ready to support access to
 				 * mesh control through nl80211 just yet.
 				 */
 #if HAVE_WEXT
-				wifi_data = wifi_wext_init (pllink->name, ifindex, FALSE);
+				wifi_data = wifi_wext_init (ifindex, FALSE);
 #endif
 			}
 
@@ -5905,53 +6025,85 @@ ip6_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteFlags fl
 	return ipx_route_get_all (platform, ifindex, NMP_OBJECT_TYPE_IP6_ROUTE, flags);
 }
 
+static guint32
+ip_route_get_lock_flag (NMPlatformIPRoute *route)
+{
+	return   (((guint32) route->lock_window) << RTAX_WINDOW)
+	       | (((guint32) route->lock_cwnd) << RTAX_CWND)
+	       | (((guint32) route->lock_initcwnd) << RTAX_INITCWND)
+	       | (((guint32) route->lock_initrwnd) << RTAX_INITRWND)
+	       | (((guint32) route->lock_mtu) << RTAX_MTU);
+}
+
 static gboolean
-ip4_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
-               in_addr_t network, guint8 plen, in_addr_t gateway,
-               in_addr_t pref_src, guint32 metric, guint32 mss)
+ip4_route_add (NMPlatform *platform, const NMPlatformIP4Route *route)
 {
 	NMPObject obj_id;
 	nm_auto_nlmsg struct nl_msg *nlmsg = NULL;
+	in_addr_t network;
 
+	network = nm_utils_ip4_address_clear_host_address (route->network, route->plen);
+
+	/* FIXME: take the scope from route into account */
 	nlmsg = _nl_msg_new_route (RTM_NEWROUTE,
 	                           NLM_F_CREATE | NLM_F_REPLACE,
 	                           AF_INET,
-	                           ifindex,
-	                           source,
-	                           gateway ? RT_SCOPE_UNIVERSE : RT_SCOPE_LINK,
+	                           route->ifindex,
+	                           route->rt_source,
+	                           route->gateway ? RT_SCOPE_UNIVERSE : RT_SCOPE_LINK,
 	                           &network,
-	                           plen,
-	                           &gateway,
-	                           metric,
-	                           mss,
-	                           pref_src ? &pref_src : NULL);
+	                           route->plen,
+	                           &route->gateway,
+	                           route->metric,
+	                           route->mss,
+	                           route->pref_src ? &route->pref_src : NULL,
+	                           NULL,
+	                           0,
+	                           route->tos,
+	                           route->window,
+	                           route->cwnd,
+	                           route->initcwnd,
+	                           route->initrwnd,
+	                           route->mtu,
+	                           ip_route_get_lock_flag ((NMPlatformIPRoute *) route));
 
-	nmp_object_stackinit_id_ip4_route (&obj_id, ifindex, network, plen, metric);
+	nmp_object_stackinit_id_ip4_route (&obj_id, route->ifindex, network, route->plen, route->metric);
 	return do_add_addrroute (platform, &obj_id, nlmsg);
 }
 
 static gboolean
-ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
-               struct in6_addr network, guint8 plen, struct in6_addr gateway,
-               guint32 metric, guint32 mss)
+ip6_route_add (NMPlatform *platform, const NMPlatformIP6Route *route)
 {
 	NMPObject obj_id;
 	nm_auto_nlmsg struct nl_msg *nlmsg = NULL;
+	struct in6_addr network;
 
+	nm_utils_ip6_address_clear_host_address (&network, &route->network, route->plen);
+
+	/* FIXME: take the scope from route into account */
 	nlmsg = _nl_msg_new_route (RTM_NEWROUTE,
 	                           NLM_F_CREATE | NLM_F_REPLACE,
 	                           AF_INET6,
-	                           ifindex,
-	                           source,
-	                           !IN6_IS_ADDR_UNSPECIFIED (&gateway) ? RT_SCOPE_UNIVERSE : RT_SCOPE_LINK,
+	                           route->ifindex,
+	                           route->rt_source,
+	                           IN6_IS_ADDR_UNSPECIFIED (&route->gateway) ? RT_SCOPE_LINK : RT_SCOPE_UNIVERSE,
 	                           &network,
-	                           plen,
-	                           &gateway,
-	                           metric,
-	                           mss,
-	                           NULL);
+	                           route->plen,
+	                           &route->gateway,
+	                           route->metric,
+	                           route->mss,
+	                           !IN6_IS_ADDR_UNSPECIFIED (&route->pref_src) ? &route->pref_src : NULL,
+	                           !IN6_IS_ADDR_UNSPECIFIED (&route->src) ? &route->src : NULL,
+	                           route->src_plen,
+	                           route->tos,
+	                           route->window,
+	                           route->cwnd,
+	                           route->initcwnd,
+	                           route->initrwnd,
+	                           route->mtu,
+	                           ip_route_get_lock_flag ((NMPlatformIPRoute *) route));
 
-	nmp_object_stackinit_id_ip6_route (&obj_id, ifindex, &network, plen, metric);
+	nmp_object_stackinit_id_ip6_route (&obj_id, route->ifindex, &network, route->plen, route->metric);
 	return do_add_addrroute (platform, &obj_id, nlmsg);
 }
 
@@ -5961,6 +6113,8 @@ ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, guint8 p
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	nm_auto_nlmsg struct nl_msg *nlmsg = NULL;
 	NMPObject obj_id;
+
+	network = nm_utils_ip4_address_clear_host_address (network, plen);
 
 	nmp_object_stackinit_id_ip4_route (&obj_id, ifindex, network, plen, metric);
 
@@ -6004,7 +6158,16 @@ ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, guint8 p
 	                           NULL,
 	                           metric,
 	                           0,
-	                           NULL);
+	                           NULL,
+	                           NULL,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0);
 	if (!nlmsg)
 		return FALSE;
 
@@ -6019,6 +6182,8 @@ ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, gu
 
 	metric = nm_utils_ip6_route_metric_normalize (metric);
 
+	nm_utils_ip6_address_clear_host_address (&network, &network, plen);
+
 	nlmsg = _nl_msg_new_route (RTM_DELROUTE,
 	                           0,
 	                           AF_INET6,
@@ -6030,7 +6195,16 @@ ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, gu
 	                           NULL,
 	                           metric,
 	                           0,
-	                           NULL);
+	                           NULL,
+	                           NULL,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0,
+	                           0);
 	if (!nlmsg)
 		return FALSE;
 
@@ -6423,14 +6597,16 @@ after_read:
 /*****************************************************************************/
 
 static void
-cache_update_link_udev (NMPlatform *platform, int ifindex, GUdevDevice *udev_device)
+cache_update_link_udev (NMPlatform *platform,
+                        int ifindex,
+                        struct udev_device *udevice)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	nm_auto_nmpobj NMPObject *obj_cache = NULL;
 	gboolean was_visible;
 	NMPCacheOpsType cache_op;
 
-	cache_op = nmp_cache_update_link_udev (priv->cache, ifindex, udev_device, &obj_cache, &was_visible, cache_pre_hook, platform);
+	cache_op = nmp_cache_update_link_udev (priv->cache, ifindex, udevice, &obj_cache, &was_visible, cache_pre_hook, platform);
 
 	if (cache_op != NMP_CACHE_OPS_UNCHANGED) {
 		nm_auto_pop_netns NMPNetns *netns = NULL;
@@ -6443,55 +6619,58 @@ cache_update_link_udev (NMPlatform *platform, int ifindex, GUdevDevice *udev_dev
 
 static void
 udev_device_added (NMPlatform *platform,
-                   GUdevDevice *udev_device)
+                   struct udev_device *udevice)
 {
 	const char *ifname;
+	const char *ifindex_s;
 	int ifindex;
 
-	ifname = g_udev_device_get_name (udev_device);
+	ifname = udev_device_get_sysname (udevice);
 	if (!ifname) {
 		_LOGD ("udev-add: failed to get device's interface");
 		return;
 	}
 
-	if (!g_udev_device_get_property (udev_device, "IFINDEX")) {
+	ifindex_s = udev_device_get_property_value (udevice, "IFINDEX");
+	if (!ifindex_s) {
 		_LOGW ("udev-add[%s]failed to get device's ifindex", ifname);
 		return;
 	}
-	ifindex = g_udev_device_get_property_as_int (udev_device, "IFINDEX");
+	ifindex = _nm_utils_ascii_str_to_int64 (ifindex_s, 10, 1, G_MAXINT, 0);
 	if (ifindex <= 0) {
 		_LOGW ("udev-add[%s]: retrieved invalid IFINDEX=%d", ifname, ifindex);
 		return;
 	}
 
-	if (!g_udev_device_get_sysfs_path (udev_device)) {
+	if (!udev_device_get_syspath (udevice)) {
 		_LOGD ("udev-add[%s,%d]: couldn't determine device path; ignoring...", ifname, ifindex);
 		return;
 	}
 
 	_LOGT ("udev-add[%s,%d]: device added", ifname, ifindex);
-	cache_update_link_udev (platform, ifindex, udev_device);
+	cache_update_link_udev (platform, ifindex, udevice);
 }
 
 static gboolean
-_udev_device_removed_match_link (const NMPObject *obj, gpointer udev_device)
+_udev_device_removed_match_link (const NMPObject *obj, gpointer udevice)
 {
-	return obj->_link.udev.device == udev_device;
+	return obj->_link.udev.device == udevice;
 }
 
 static void
 udev_device_removed (NMPlatform *platform,
-                     GUdevDevice *udev_device)
+                     struct udev_device *udevice)
 {
+	const char *ifindex_s;
 	int ifindex = 0;
 
-	if (g_udev_device_get_property (udev_device, "IFINDEX"))
-		ifindex = g_udev_device_get_property_as_int (udev_device, "IFINDEX");
-	else {
+	ifindex_s = udev_device_get_property_value (udevice, "IFINDEX");
+	ifindex = _nm_utils_ascii_str_to_int64 (ifindex_s, 10, 1, G_MAXINT, 0);
+	if (ifindex <= 0) {
 		const NMPObject *obj;
 
 		obj = nmp_cache_lookup_link_full (NM_LINUX_PLATFORM_GET_PRIVATE (platform)->cache,
-		                                  0, NULL, FALSE, NM_LINK_TYPE_NONE, _udev_device_removed_match_link, udev_device);
+		                                  0, NULL, FALSE, NM_LINK_TYPE_NONE, _udev_device_removed_match_link, udevice);
 		if (obj)
 			ifindex = obj->link.ifindex;
 	}
@@ -6504,9 +6683,8 @@ udev_device_removed (NMPlatform *platform,
 }
 
 static void
-handle_udev_event (GUdevClient *client,
-                   const char *action,
-                   GUdevDevice *udev_device,
+handle_udev_event (NMUdevClient *udev_client,
+                   struct udev_device *udevice,
                    gpointer user_data)
 {
 	nm_auto_pop_netns NMPNetns *netns = NULL;
@@ -6514,26 +6692,27 @@ handle_udev_event (GUdevClient *client,
 	const char *subsys;
 	const char *ifindex;
 	guint64 seqnum;
+	const char *action;
 
-	g_return_if_fail (action != NULL);
+	action = udev_device_get_action (udevice);
+	g_return_if_fail (action);
+
+	subsys = udev_device_get_subsystem (udevice);
+	g_return_if_fail (nm_streq0 (subsys, "net"));
 
 	if (!nm_platform_netns_push (platform, &netns))
 		return;
 
-	/* A bit paranoid */
-	subsys = g_udev_device_get_subsystem (udev_device);
-	g_return_if_fail (!g_strcmp0 (subsys, "net"));
-
-	ifindex = g_udev_device_get_property (udev_device, "IFINDEX");
-	seqnum = g_udev_device_get_seqnum (udev_device);
+	ifindex = udev_device_get_property_value (udevice, "IFINDEX");
+	seqnum = udev_device_get_seqnum (udevice);
 	_LOGD ("UDEV event: action '%s' subsys '%s' device '%s' (%s); seqnum=%" G_GUINT64_FORMAT,
-	        action, subsys, g_udev_device_get_name (udev_device),
+	        action, subsys, udev_device_get_sysname (udevice),
 	        ifindex ? ifindex : "unknown", seqnum);
 
-	if (!strcmp (action, "add") || !strcmp (action, "move"))
-		udev_device_added (platform, udev_device);
-	if (!strcmp (action, "remove"))
-		udev_device_removed (platform, udev_device);
+	if (NM_IN_STRSET (action, "add", "move"))
+		udev_device_added (platform, udevice);
+	else if (NM_IN_STRSET (action, "remove"))
+		udev_device_removed (platform, udevice);
 }
 
 /*****************************************************************************/
@@ -6554,8 +6733,10 @@ nm_linux_platform_init (NMLinuxPlatform *self)
 	priv->delayed_action.list_wait_for_nl_response = g_array_new (FALSE, TRUE, sizeof (DelayedActionWaitForNlResponseData));
 	priv->wifi_data = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) wifi_utils_deinit);
 
-	if (use_udev)
-		priv->udev_client = g_udev_client_new ((const char *[]) { "net", NULL });
+	if (use_udev) {
+		priv->udev_client = nm_udev_client_new ((const char *[]) { "net", NULL },
+		                                        handle_udev_event, self);
+	}
 }
 
 static void
@@ -6638,24 +6819,30 @@ constructed (GObject *_object)
 
 	/* Set up udev monitoring */
 	if (priv->udev_client) {
-		GUdevEnumerator *enumerator;
-		GList *devices, *iter;
-
-		g_signal_connect (priv->udev_client, "uevent", G_CALLBACK (handle_udev_event), platform);
+		struct udev_enumerate *enumerator;
+		struct udev_list_entry *devices, *l;
 
 		/* And read initial device list */
-		enumerator = g_udev_enumerator_new (priv->udev_client);
-		g_udev_enumerator_add_match_subsystem (enumerator, "net");
+		enumerator = nm_udev_client_enumerate_new (priv->udev_client);
 
-		g_udev_enumerator_add_match_is_initialized (enumerator);
+		udev_enumerate_add_match_is_initialized (enumerator);
 
-		devices = g_udev_enumerator_execute (enumerator);
-		for (iter = devices; iter; iter = g_list_next (iter)) {
-			udev_device_added (platform, G_UDEV_DEVICE (iter->data));
-			g_object_unref (G_UDEV_DEVICE (iter->data));
+		udev_enumerate_scan_devices (enumerator);
+
+		devices = udev_enumerate_get_list_entry (enumerator);
+		for (l = devices; l; l = udev_list_entry_get_next (l)) {
+			struct udev_device *udevice;
+
+			udevice = udev_device_new_from_syspath (udev_enumerate_get_udev (enumerator),
+			                                        udev_list_entry_get_name (l));
+			if (!udevice)
+				continue;
+
+			udev_device_added (platform, udevice);
+			udev_device_unref (udevice);
 		}
-		g_list_free (devices);
-		g_object_unref (enumerator);
+
+		udev_enumerate_unref (enumerator);
 	}
 }
 
@@ -6674,11 +6861,6 @@ dispose (GObject *object)
 	g_ptr_array_set_size (priv->delayed_action.list_refresh_link, 0);
 
 	g_clear_pointer (&priv->prune_candidates, g_hash_table_unref);
-
-	if (priv->udev_client) {
-		g_signal_handlers_disconnect_by_func (priv->udev_client, G_CALLBACK (handle_udev_event), platform);
-		g_clear_object (&priv->udev_client);
-	}
 
 	G_OBJECT_CLASS (nm_linux_platform_parent_class)->dispose (object);
 }
@@ -6704,6 +6886,8 @@ finalize (GObject *object)
 		sysctl_clear_cache_list = g_slist_remove (sysctl_clear_cache_list, object);
 		g_hash_table_destroy (priv->sysctl_get_prev_values);
 	}
+
+	priv->udev_client = nm_udev_client_unref (priv->udev_client);
 
 	G_OBJECT_CLASS (nm_linux_platform_parent_class)->finalize (object);
 }
@@ -6750,6 +6934,7 @@ nm_linux_platform_class_init (NMLinuxPlatformClass *klass)
 	platform_class->link_set_address = link_set_address;
 	platform_class->link_get_permanent_address = link_get_permanent_address;
 	platform_class->link_set_mtu = link_set_mtu;
+	platform_class->link_set_sriov_num_vfs = link_set_sriov_num_vfs;
 
 	platform_class->link_get_physical_port_id = link_get_physical_port_id;
 	platform_class->link_get_dev_id = link_get_dev_id;
@@ -6758,6 +6943,7 @@ nm_linux_platform_class_init (NMLinuxPlatformClass *klass)
 
 	platform_class->link_supports_carrier_detect = link_supports_carrier_detect;
 	platform_class->link_supports_vlans = link_supports_vlans;
+	platform_class->link_supports_sriov = link_supports_sriov;
 
 	platform_class->link_enslave = link_enslave;
 	platform_class->link_release = link_release;

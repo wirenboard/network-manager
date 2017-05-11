@@ -25,7 +25,7 @@
 #error "Only <NetworkManager.h> can be included directly."
 #endif
 
-#include <nm-setting.h>
+#include "nm-setting.h"
 
 G_BEGIN_DECLS
 
@@ -42,6 +42,8 @@ G_BEGIN_DECLS
 
 /**
  * NMSettingTeamPort:
+ *
+ * Team Port Settings
  */
 struct _NMSettingTeamPort {
 	NMSetting parent;

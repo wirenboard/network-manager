@@ -60,6 +60,15 @@ struct NMConfigCmdLineOptions {
 	 */
 	int connectivity_interval;
 	char *connectivity_response;
+
+	/* @first_start is not provided by command line. It is a convenient hack
+	 * to pass in an argument to NMConfig. This makes NMConfigCmdLineOptions a
+	 * misnomer.
+	 *
+	 * It is true, if NM is started the first time -- contrary to a restart
+	 * during the same boot up. That is determined by the content of the
+	 * /var/run/NetworManager state directory. */
+	bool first_start;
 };
 
 typedef struct {
@@ -291,6 +300,12 @@ nm_config_get_is_debug (NMConfig *config)
 	return NM_CONFIG_GET_PRIVATE (config)->cli.is_debug;
 }
 
+gboolean
+nm_config_get_first_start (NMConfig *config)
+{
+	return NM_CONFIG_GET_PRIVATE (config)->cli.first_start;
+}
+
 /*****************************************************************************/
 
 static char **
@@ -309,7 +324,7 @@ no_auto_default_from_file (const char *no_auto_default_file)
 		for (i = 0; list[i]; i++) {
 			if (   *list[i]
 			    && nm_utils_hwaddr_valid (list[i], -1)
-			    && _nm_utils_strv_find_first (list, i, list[i]) < 0)
+			    && nm_utils_strv_find_first (list, i, list[i]) < 0)
 				g_ptr_array_add (no_auto_default_new, list[i]);
 			else
 				g_free (list[i]);
@@ -369,7 +384,7 @@ nm_config_set_no_auto_default_for_device (NMConfig *self, NMDevice *device)
 
 	no_auto_default_current = nm_config_data_get_no_auto_default (priv->config_data);
 
-	if (_nm_utils_strv_find_first ((char **) no_auto_default_current, -1, hw_address) >= 0) {
+	if (nm_utils_strv_find_first ((char **) no_auto_default_current, -1, hw_address) >= 0) {
 		/* @hw_address is already blocked. We don't have to update our in-memory representation.
 		 * Maybe we should write to no_auto_default_file anew, but let's save that too. */
 		return;
@@ -412,6 +427,7 @@ _nm_config_cmd_line_options_clear (NMConfigCmdLineOptions *cli)
 	g_clear_pointer (&cli->connectivity_uri, g_free);
 	g_clear_pointer (&cli->connectivity_response, g_free);
 	cli->connectivity_interval = -1;
+	cli->first_start = FALSE;
 }
 
 static void
@@ -434,14 +450,18 @@ _nm_config_cmd_line_options_copy (const NMConfigCmdLineOptions *cli, NMConfigCmd
 	dst->connectivity_uri = g_strdup (cli->connectivity_uri);
 	dst->connectivity_response = g_strdup (cli->connectivity_response);
 	dst->connectivity_interval = cli->connectivity_interval;
+	dst->first_start = cli->first_start;
 }
 
 NMConfigCmdLineOptions *
-nm_config_cmd_line_options_new ()
+nm_config_cmd_line_options_new (gboolean first_start)
 {
 	NMConfigCmdLineOptions *cli = g_new0 (NMConfigCmdLineOptions, 1);
 
 	_nm_config_cmd_line_options_clear (cli);
+
+	cli->first_start = first_start;
+
 	return cli;
 }
 
@@ -551,14 +571,14 @@ _sort_groups_cmp (const char **pa, const char **pb, gpointer dummy)
 	b_is_connection = g_str_has_prefix (b, NM_CONFIG_KEYFILE_GROUPPREFIX_CONNECTION);
 
 	if (a_is_connection != b_is_connection) {
-		/* one is a [connection*] entry, the other not. We sort [connection*] entires
+		/* one is a [connection*] entry, the other not. We sort [connection*] entries
 		 * after.  */
 		if (a_is_connection)
 			return 1;
 		return -1;
 	}
 	if (a_is_connection) {
-		/* both are [connection.\+] entires. Reverse their order.
+		/* both are [connection.\+] entries. Reverse their order.
 		 * One of the sections might be literally [connection]. That section
 		 * is special and it's order will be fixed later. It doesn't actually
 		 * matter here how it compares with [connection.\+] sections. */
@@ -569,14 +589,14 @@ _sort_groups_cmp (const char **pa, const char **pb, gpointer dummy)
 	b_is_device = g_str_has_prefix (b, NM_CONFIG_KEYFILE_GROUPPREFIX_DEVICE);
 
 	if (a_is_device != b_is_device) {
-		/* one is a [device*] entry, the other not. We sort [device*] entires
+		/* one is a [device*] entry, the other not. We sort [device*] entries
 		 * after.  */
 		if (a_is_device)
 			return 1;
 		return -1;
 	}
 	if (a_is_device) {
-		/* both are [device.\+] entires. Reverse their order.
+		/* both are [device.\+] entries. Reverse their order.
 		 * One of the sections might be literally [device]. That section
 		 * is special and it's order will be fixed later. It doesn't actually
 		 * matter here how it compares with [device.\+] sections. */
@@ -659,7 +679,7 @@ read_config (GKeyFile *keyfile, gboolean is_base_config, const char *dirname, co
 	}
 
 	/* the config-group is internal to every configuration snippets. It doesn't make sense
-	 * to merge the into the global configuration, and it doesn't make sense to preserve the
+	 * to merge it into the global configuration, and it doesn't make sense to preserve the
 	 * group beyond this point. */
 	g_key_file_remove_group (kf, NM_CONFIG_KEYFILE_GROUP_CONFIG, NULL);
 
@@ -750,13 +770,13 @@ read_config (GKeyFile *keyfile, gboolean is_base_config, const char *dirname, co
 
 					for (iter_val = old_val; iter_val && *iter_val; iter_val++) {
 						if (   last_char != '-'
-						    || _nm_utils_strv_find_first (new_val, -1, *iter_val) < 0)
+						    || nm_utils_strv_find_first (new_val, -1, *iter_val) < 0)
 							g_ptr_array_add (new, g_strdup (*iter_val));
 					}
 					for (iter_val = new_val; iter_val && *iter_val; iter_val++) {
 						/* don't add duplicates. That means an "option=a,b"; "option+=a,c" results in "option=a,b,c" */
 						if (   last_char == '+'
-						    && _nm_utils_strv_find_first (old_val, -1, *iter_val) < 0)
+						    && nm_utils_strv_find_first (old_val, -1, *iter_val) < 0)
 							g_ptr_array_add (new, *iter_val);
 						else
 							g_free (*iter_val);
@@ -953,8 +973,8 @@ read_entire_config (const NMConfigCmdLineOptions *cli,
 		const char *filename = system_confs->pdata[i];
 
 		/* if a same named file exists in config_dir or run_config_dir, skip it. */
-		if (_nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0 ||
-		    _nm_utils_strv_find_first ((char **) run_confs->pdata, run_confs->len, filename) >= 0) {
+		if (nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0 ||
+		    nm_utils_strv_find_first ((char **) run_confs->pdata, run_confs->len, filename) >= 0) {
 			g_ptr_array_remove_index (system_confs, i);
 			continue;
 		}
@@ -968,7 +988,7 @@ read_entire_config (const NMConfigCmdLineOptions *cli,
 		const char *filename = run_confs->pdata[i];
 
 		/* if a same named file exists in config_dir, skip it. */
-		if (_nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0) {
+		if (nm_utils_strv_find_first ((char **) confs->pdata, confs->len, filename) >= 0) {
 			g_ptr_array_remove_index (run_confs, i);
 			continue;
 		}
@@ -1926,15 +1946,13 @@ _config_device_state_data_new (int ifindex, GKeyFile *kf)
 
 /**
  * nm_config_device_state_load:
- * @self: the NMConfig instance
  * @ifindex: the ifindex for which the state is to load
  *
  * Returns: (transfer full): a run state object.
  *   Must be freed with g_free().
  */
 NMConfigDeviceStateData *
-nm_config_device_state_load (NMConfig *self,
-                             int ifindex)
+nm_config_device_state_load (int ifindex)
 {
 	NMConfigDeviceStateData *device_state;
 	char path[NM_STRLEN (NM_CONFIG_DEVICE_STATE_DIR) + 60];
@@ -1964,10 +1982,16 @@ nm_config_device_state_load (NMConfig *self,
 	return device_state;
 }
 
+NM_UTILS_LOOKUP_STR_DEFINE_STATIC (_device_state_managed_type_to_str, NMConfigDeviceStateManagedType,
+	NM_UTILS_LOOKUP_DEFAULT_NM_ASSERT ("unknown"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNKNOWN,   "unknown"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNMANAGED, "unmanaged"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED,   "managed"),
+);
+
 gboolean
-nm_config_device_state_write (NMConfig *self,
-                              int ifindex,
-                              gboolean managed,
+nm_config_device_state_write (int ifindex,
+                              NMConfigDeviceStateManagedType managed,
                               const char *perm_hw_addr_fake,
                               const char *connection_uuid)
 {
@@ -1975,20 +1999,23 @@ nm_config_device_state_write (NMConfig *self,
 	GError *local = NULL;
 	gs_unref_keyfile GKeyFile *kf = NULL;
 
-	g_return_val_if_fail (NM_IS_CONFIG (self), FALSE);
 	g_return_val_if_fail (ifindex > 0, FALSE);
 	g_return_val_if_fail (!connection_uuid || *connection_uuid, FALSE);
-	g_return_val_if_fail (managed || !connection_uuid, FALSE);
+	g_return_val_if_fail (managed == NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED || !connection_uuid, FALSE);
 
 	nm_assert (!perm_hw_addr_fake || nm_utils_hwaddr_valid (perm_hw_addr_fake, -1));
 
 	nm_sprintf_buf (path, "%s/%d", NM_CONFIG_DEVICE_STATE_DIR, ifindex);
 
 	kf = nm_config_create_keyfile ();
-	g_key_file_set_boolean (kf,
-	                        DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
-	                        DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED,
-	                        !!managed);
+	if (NM_IN_SET (managed,
+	               NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED,
+	               NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_UNMANAGED)) {
+		g_key_file_set_boolean (kf,
+		                        DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+		                        DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_MANAGED,
+		                        managed == NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED);
+	}
 	if (perm_hw_addr_fake) {
 		g_key_file_set_string (kf,
 		                       DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
@@ -2007,17 +2034,16 @@ nm_config_device_state_write (NMConfig *self,
 		g_error_free (local);
 		return FALSE;
 	}
-	_LOGT ("device-state: write #%d (%s); managed=%d%s%s%s%s%s%s",
+	_LOGT ("device-state: write #%d (%s); managed=%s%s%s%s%s%s%s",
 	       ifindex, path,
-	       (bool) managed,
+	       _device_state_managed_type_to_str (managed),
 	       NM_PRINT_FMT_QUOTED (connection_uuid, ", connection-uuid=", connection_uuid, "", ""),
 	       NM_PRINT_FMT_QUOTED (perm_hw_addr_fake, ", perm-hw-addr-fake=", perm_hw_addr_fake, "", ""));
 	return TRUE;
 }
 
 void
-nm_config_device_state_prune_unseen (NMConfig *self,
-                                     GHashTable *seen_ifindexes)
+nm_config_device_state_prune_unseen (GHashTable *seen_ifindexes)
 {
 	GDir *dir;
 	const char *fn;
@@ -2230,6 +2256,7 @@ set_property (GObject *object, guint prop_id,
 	NMConfig *self = NM_CONFIG (object);
 	NMConfigPrivate *priv = NM_CONFIG_GET_PRIVATE (self);
 	NMConfigCmdLineOptions *cli;
+	char **strv;
 
 	switch (prop_id) {
 	case PROP_CMD_LINE_OPTIONS:
@@ -2242,7 +2269,10 @@ set_property (GObject *object, guint prop_id,
 		break;
 	case PROP_ATOMIC_SECTION_PREFIXES:
 		/* construct-only */
-		priv->atomic_section_prefixes = g_strdupv (g_value_get_boxed (value));
+		strv = g_value_get_boxed (value);
+		if (strv && !strv[0])
+			strv = NULL;
+		priv->atomic_section_prefixes = g_strdupv (strv);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);

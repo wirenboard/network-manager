@@ -385,13 +385,7 @@ show_nm_status (NmCli *nmc, const char *pretty_header_name, const char *print_fl
 static NMCResultCode
 do_general_status (NmCli *nmc, int argc, char **argv)
 {
-	gs_free_error GError *error = NULL;
-
-        if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error)) {
-                g_string_printf (nmc->return_text, _("Error: %s."), error->message);
-                return NMC_RESULT_ERROR_USER_INPUT;
-	}
-
+	next_arg (nmc, &argc, &argv, NULL);
 	if (nmc->complete)
 		return nmc->return_value;
 
@@ -566,13 +560,7 @@ show_nm_permissions (NmCli *nmc)
 static NMCResultCode
 do_general_permissions (NmCli *nmc, int argc, char **argv)
 {
-	gs_free_error GError *error = NULL;
-
-        if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error)) {
-                g_string_printf (nmc->return_text, _("Error: %s."), error->message);
-                return NMC_RESULT_ERROR_USER_INPUT;
-	}
-
+	next_arg (nmc, &argc, &argv, NULL);
 	if (nmc->complete)
 		return nmc->return_value;
 
@@ -632,18 +620,30 @@ show_general_logging (NmCli *nmc)
 	return TRUE;
 }
 
+static void
+nmc_complete_strings_nocase (const char *prefix, ...)
+{
+	va_list args;
+	const char *candidate;
+	int len;
+
+	len = strlen (prefix);
+
+	va_start (args, prefix);
+	while ((candidate = va_arg (args, const char *))) {
+		if (strncasecmp (prefix, candidate, len) == 0)
+			g_print ("%s\n", candidate);
+	}
+	va_end (args);
+}
+
 static NMCResultCode
 do_general_logging (NmCli *nmc, int argc, char **argv)
 {
 	gs_free_error GError *error = NULL;
 
+	next_arg (nmc, &argc, &argv, NULL);
 	if (argc == 0) {
-		if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error)) {
-			g_string_printf (nmc->return_text, _("Error: %s."), error->message);
-			g_error_free (error);
-			return NMC_RESULT_ERROR_USER_INPUT;
-		}
-
 		if (nmc->complete)
 			return nmc->return_value;
 
@@ -652,18 +652,48 @@ do_general_logging (NmCli *nmc, int argc, char **argv)
 		/* arguments provided -> set logging level and domains */
 		const char *level = NULL;
 		const char *domains = NULL;
-		nmc_arg_t exp_args[] = { {"level",   TRUE, &level,   TRUE},
-		                         {"domains", TRUE, &domains, TRUE},
-		                         {NULL} };
 
-		/* TODO: nmc_parse_args needs completion */
+		do {
+			if (argc == 1 && nmc->complete)
+				nmc_complete_strings (*argv, "level", "domains", NULL);
+
+			if (matches (*argv, "level")) {
+				argc--;
+				argv++;
+				if (!argc) {
+					g_string_printf (nmc->return_text, _("Error: '%s' argument is missing."), *(argv-1));
+					return NMC_RESULT_ERROR_USER_INPUT;
+				}
+				if (argc == 1 && nmc->complete) {
+					nmc_complete_strings_nocase (*argv, "TRACE", "DEBUG", "INFO", "WARN",
+					                             "ERR", "OFF", "KEEP", NULL);
+				}
+				level = *argv;
+			} else if (matches (*argv, "domains")) {
+				argc--;
+				argv++;
+				if (!argc) {
+					g_string_printf (nmc->return_text, _("Error: '%s' argument is missing."), *(argv-1));
+					return NMC_RESULT_ERROR_USER_INPUT;
+				}
+				if (argc == 1 && nmc->complete) {
+					nmc_complete_strings_nocase (*argv, "PLATFORM", "RFKILL", "ETHER", "WIFI", "BT",
+					                             "MB", "DHCP4", "DHCP6", "PPP", "WIFI_SCAN", "IP4",
+					                             "IP6", "AUTOIP4", "DNS", "VPN", "SHARING", "SUPPLICANT",
+					                             "AGENTS", "SETTINGS", "SUSPEND", "CORE", "DEVICE", "OLPC",
+					                             "INFINIBAND", "FIREWALL", "ADSL", "BOND", "VLAN", "BRIDGE",
+					                             "DBUS_PROPS", "TEAM", "CONCHECK", "DCB", "DISPATCH", "AUDIT",
+					                             "SYSTEMD", "VPN_PLUGIN", "PROXY", NULL);
+				}
+				domains = *argv;
+			} else {
+				g_string_printf (nmc->return_text, _("Error: property '%s' is not known."), *argv);
+				return NMC_RESULT_ERROR_USER_INPUT;
+			}
+		} while (next_arg (nmc, &argc, &argv, NULL) == 0);
+
 		if (nmc->complete)
 			return nmc->return_value;
-
-		if (!nmc_parse_args (exp_args, FALSE, &argc, &argv, &error)) {
-			g_string_assign (nmc->return_text, error->message);
-			return error->code;
-		}
 
 		nm_client_set_logging (nmc->client, level, domains, &error);
 		if (error) {
@@ -695,6 +725,7 @@ save_hostname_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 static NMCResultCode
 do_general_hostname (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
 	if (nmc->complete)
 		return nmc->return_value;
 
@@ -710,7 +741,7 @@ do_general_hostname (NmCli *nmc, int argc, char **argv)
 		/* hostname provided -> set it */
 		const char *hostname = *argv;
 
-		if (next_arg (&argc, &argv) == 0)
+		if (next_arg (nmc, &argc, &argv, NULL) == 0)
 			g_print ("Warning: ignoring extra garbage after '%s' hostname\n", hostname);
 
 		nmc->should_wait++;
@@ -735,6 +766,8 @@ static const NMCCommand general_cmds[] = {
 NMCResultCode
 do_general (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
+
 	/* Register polkit agent */
 	nmc_start_polkit_agent_start_try (nmc);
 
@@ -800,18 +833,21 @@ do_networking_on_off (NmCli *nmc, int argc, char **argv, gboolean enable)
 static NMCResultCode
 do_networking_on (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
 	return do_networking_on_off (nmc, argc, argv, TRUE);
 }
 
 static NMCResultCode
 do_networking_off (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
 	return do_networking_on_off (nmc, argc, argv, FALSE);
 }
 
 static NMCResultCode
 do_networking_connectivity (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
 	if (nmc->complete) {
 		if (argc == 1)
 			nmc_complete_strings (*argv, "check", NULL);
@@ -821,7 +857,7 @@ do_networking_connectivity (NmCli *nmc, int argc, char **argv)
 	if (!argc) {
 		/* no arguments -> get current state */
 		nmc_switch_show (nmc, NMC_FIELDS_NM_CONNECTIVITY, _("Connectivity"));
-	} else if (matches (*argv, "check") == 0) {
+	} else if (matches (*argv, "check")) {
 		gs_free_error GError *error = NULL;
 
 		/* Register polkit agent */
@@ -845,6 +881,7 @@ do_networking_connectivity (NmCli *nmc, int argc, char **argv)
 static NMCResultCode
 do_networking_show (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
 	if (nmc->complete)
 		return nmc->return_value;
 
@@ -866,6 +903,7 @@ static const NMCCommand networking_cmds[] = {
 NMCResultCode
 do_networking (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
 	nmc_do_cmd (nmc, networking_cmds, *argv, argc, argv);
 
 	return nmc->return_value;
@@ -875,17 +913,13 @@ static NMCResultCode
 do_radio_all (NmCli *nmc, int argc, char **argv)
 {
 	gboolean enable_flag;
-	gs_free_error GError *error = NULL;
 
+	next_arg (nmc, &argc, &argv, NULL);
 	if (argc == 0) {
 		if (nmc->complete)
 			return nmc->return_value;
 
 		/* no argument, show all radio switches */
-		if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error)) {
-			g_string_printf (nmc->return_text, _("Error: %s."), error->message);
-			return NMC_RESULT_ERROR_USER_INPUT;
-		}
 		show_nm_status (nmc, _("Radio switches"), NMC_FIELDS_NM_STATUS_RADIO);
 	} else {
 		if (nmc->complete) {
@@ -910,6 +944,7 @@ do_radio_wifi (NmCli *nmc, int argc, char **argv)
 {
 	gboolean enable_flag;
 
+	next_arg (nmc, &argc, &argv, NULL);
 	if (argc == 0) {
 		if (nmc->complete)
 			return nmc->return_value;
@@ -936,6 +971,7 @@ do_radio_wwan (NmCli *nmc, int argc, char **argv)
 {
 	gboolean enable_flag;
 
+	next_arg (nmc, &argc, &argv, NULL);
 	if (argc == 0) {
 		if (nmc->complete)
 			return nmc->return_value;
@@ -970,6 +1006,8 @@ static const NMCCommand radio_cmds[] = {
 NMCResultCode
 do_radio (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
+
 	/* Register polkit agent */
 	nmc_start_polkit_agent_start_try (nmc);
 
@@ -1124,7 +1162,7 @@ ac_overview (NmCli *nmc, NMActiveConnection *ac)
 	NMIPConfig *ip;
 
 	if (nm_active_connection_get_master (ac)) {
-		g_string_append_printf (outbuf, "%s %s,", _("master"),
+		g_string_append_printf (outbuf, "%s %s, ", _("master"),
 		                        nm_device_get_iface (nm_active_connection_get_master (ac)));
 	}
 	if (nm_active_connection_get_vpn (ac))
@@ -1194,6 +1232,8 @@ do_overview (NmCli *nmc, int argc, char **argv)
 	NMDnsEntry *dns;
 	char *tmp;
 	int i;
+
+	next_arg (nmc, &argc, &argv, NULL);
 
 	/* Register polkit agent */
 	nmc_start_polkit_agent_start_try (nmc);
@@ -1294,6 +1334,8 @@ do_overview (NmCli *nmc, int argc, char **argv)
 NMCResultCode
 do_monitor (NmCli *nmc, int argc, char **argv)
 {
+	next_arg (nmc, &argc, &argv, NULL);
+
 	if (nmc->complete)
 		return nmc->return_value;
 

@@ -5,7 +5,7 @@
 <refentry id="gdbus-org.freedesktop.NetworkManager.Settings.Connection">
   <refmeta>    <refentrytitle role="top_of_page" id="gdbus-interface-org-freedesktop-NetworkManager-Settings-Connection.top_of_page">org.freedesktop.NetworkManager.Settings.Connection</refentrytitle>
   <indexterm zone="gdbus-interface-org-freedesktop-NetworkManager-Settings-Connection.top_of_page"><primary sortas=".Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</primary></indexterm>
-  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.Settings.Connection</refname>    <refpurpose></refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
+  </refmeta>  <refnamediv>    <refname>org.freedesktop.NetworkManager.Settings.Connection</refname>    <refpurpose>Connection Settings Profile</refpurpose>  </refnamediv>  <refsynopsisdiv role="synopsis">
     <title role="synopsis.title">Methods</title>
     <synopsis>
 <link linkend="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Update">Update</link>        (IN  a{sa{sv}} properties);

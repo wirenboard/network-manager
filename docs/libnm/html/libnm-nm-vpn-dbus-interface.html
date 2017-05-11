@@ -33,6 +33,21 @@
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
 <div class="refsect1">
+<a name="libnm-nm-vpn-dbus-interface.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody><tr>
+<td class="define_keyword">#define</td>
+<td class="function_name">
+<a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-8-FOR:CAPS" title="NM_DEPRECATED_IN_1_8_FOR()">NM_DEPRECATED_IN_1_8_FOR</a><span class="c_punctuation">()</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect1">
 <a name="libnm-nm-vpn-dbus-interface.other"></a><h2>Types and Values</h2>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
 <colgroup>
@@ -305,7 +320,7 @@
 </div>
 <div class="refsect1">
 <a name="libnm-nm-vpn-dbus-interface.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NMVpnConnectionState
     <span class="lineart">├──</span> NMVpnConnectionStateReason
     <span class="lineart">├──</span> NMVpnPluginFailure
@@ -317,7 +332,10 @@
 </div>
 <div class="refsect1">
 <a name="libnm-nm-vpn-dbus-interface.functions_details"></a><h2>Functions</h2>
-<p></p>
+<div class="refsect2">
+<a name="NM-DEPRECATED-IN-1-8-FOR:CAPS"></a><h3>NM_DEPRECATED_IN_1_8_FOR()</h3>
+<pre class="programlisting">#define             NM_DEPRECATED_IN_1_8_FOR(f)</pre>
+</div>
 </div>
 <div class="refsect1">
 <a name="libnm-nm-vpn-dbus-interface.other_details"></a><h2>Types and Values</h2>
@@ -616,6 +634,7 @@
 <hr>
 <div class="refsect2">
 <a name="NMVpnConnectionStateReason"></a><h3>enum NMVpnConnectionStateReason</h3>
+<div class="warning"><p><code class="literal">NMVpnConnectionStateReason</code> is deprecated and should not be used in newly-written code.</p></div>
 <p>VPN connection state reasons</p>
 <div class="refsect3">
 <a name="NMVpnConnectionStateReason.members"></a><h4>Members</h4>
@@ -770,6 +789,7 @@
 <a name="NM-VPN-PLUGIN-CONFIG-TUNDEV:CAPS"></a><h3>NM_VPN_PLUGIN_CONFIG_TUNDEV</h3>
 <pre class="programlisting">#define NM_VPN_PLUGIN_CONFIG_TUNDEV      "tundev"
 </pre>
+<div class="warning"><p><code class="literal">NM_VPN_PLUGIN_CONFIG_TUNDEV</code> is deprecated and should not be used in newly-written code.</p></div>
 </div>
 <hr>
 <div class="refsect2">

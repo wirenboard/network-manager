@@ -77,13 +77,13 @@
 <tbody>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-client-id" title="The “dhcp-client-id” property">dhcp-client-id</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
 <td class="property_type">
-<a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-fqdn" title="The “dhcp-fqdn” property">dhcp-fqdn</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -139,7 +139,7 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingIP4Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobjectgobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+<pre class="screen">    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
             <span class="lineart">╰──</span> NMSettingIP4Config
@@ -302,13 +302,14 @@ through that interface to the default network.</p>
 <div class="refsect2">
 <a name="NMSettingIP4Config-struct"></a><h3>NMSettingIP4Config</h3>
 <pre class="programlisting">typedef struct _NMSettingIP4Config NMSettingIP4Config;</pre>
+<p>IPv4 Settings</p>
 </div>
 </div>
 <div class="refsect1">
 <a name="NMSettingIP4Config.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingIP4Config--dhcp-client-id"></a><h3>The <code class="literal">“dhcp-client-id”</code> property</h3>
-<pre class="programlisting">  “dhcp-client-id”           <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “dhcp-client-id”           <span class="type">gchar</span> *</pre>
 <p>A string sent to the DHCP server to identify the local machine which the
 DHCP server may use to customize the DHCP lease and options.</p>
 <p>Flags: Read / Write</p>
@@ -317,8 +318,8 @@ DHCP server may use to customize the DHCP lease and options.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP4Config--dhcp-fqdn"></a><h3>The <code class="literal">“dhcp-fqdn”</code> property</h3>
-<pre class="programlisting">  “dhcp-fqdn”                <a href="/usr/share/gtk-doc/html/glibglib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
-<p>If the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname" title="The “dhcp-send-hostname” property"><span class="type">“dhcp-send-hostname”</span></a> property is <a href="/usr/share/gtk-doc/html/glibglib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, then the
+<pre class="programlisting">  “dhcp-fqdn”                <span class="type">gchar</span> *</pre>
+<p>If the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname" title="The “dhcp-send-hostname” property"><span class="type">“dhcp-send-hostname”</span></a> property is <code class="literal">TRUE</code>, then the
 specified FQDN will be sent to the DHCP server when acquiring a lease. This
 property and <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-hostname" title="The “dhcp-hostname” property"><span class="type">“dhcp-hostname”</span></a> are mutually exclusive and
 cannot be set at the same time.</p>

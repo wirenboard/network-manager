@@ -43,10 +43,6 @@
 
 /*****************************************************************************/
 
-const NMIPAddr nm_ip_addr_zero = NMIPAddrInit;
-
-/*****************************************************************************/
-
 G_STATIC_ASSERT (sizeof ( ((NMPlatformLink *) NULL)->addr.data ) == NM_UTILS_HWADDR_LEN_MAX);
 G_STATIC_ASSERT (G_STRUCT_OFFSET (NMPlatformIPAddress, address_ptr) == G_STRUCT_OFFSET (NMPlatformIP4Address, address));
 G_STATIC_ASSERT (G_STRUCT_OFFSET (NMPlatformIPAddress, address_ptr) == G_STRUCT_OFFSET (NMPlatformIP6Address, address));
@@ -62,13 +58,13 @@ G_STATIC_ASSERT (G_STRUCT_OFFSET (NMPlatformIPRoute, network_ptr) == G_STRUCT_OF
         if (nm_logging_enabled (__level, _NMLOG_DOMAIN)) { \
             char __prefix[32]; \
             const char *__p_prefix = _NMLOG_PREFIX_NAME; \
-            const void *const __self = (self); \
+            const NMPlatform *const __self = (self); \
             \
-            if (__self && __self != nm_platform_try_get ()) { \
+            if (__self && NM_PLATFORM_GET_PRIVATE (__self)->log_with_ptr) { \
                 g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _NMLOG_PREFIX_NAME, __self); \
                 __p_prefix = __prefix; \
             } \
-            _nm_log (__level, _NMLOG_DOMAIN, 0, \
+            _nm_log (__level, _NMLOG_DOMAIN, 0, NULL, NULL, \
                      "%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                      __p_prefix _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
         } \
@@ -83,17 +79,25 @@ static guint signals[_NM_PLATFORM_SIGNAL_ID_LAST] = { 0 };
 enum {
 	PROP_0,
 	PROP_NETNS_SUPPORT,
-	PROP_REGISTER_SINGLETON,
+	PROP_LOG_WITH_PTR,
 	LAST_PROP,
 };
 
 typedef struct _NMPlatformPrivate {
-	bool register_singleton:1;
+	bool log_with_ptr:1;
 } NMPlatformPrivate;
 
 G_DEFINE_TYPE (NMPlatform, nm_platform, G_TYPE_OBJECT)
 
 #define NM_PLATFORM_GET_PRIVATE(self) _NM_GET_PRIVATE_PTR (self, NMPlatform, NM_IS_PLATFORM)
+
+/*****************************************************************************/
+
+gboolean
+nm_platform_get_log_with_ptr (NMPlatform *self)
+{
+	return NM_PLATFORM_GET_PRIVATE (self)->log_with_ptr;
+}
 
 /*****************************************************************************/
 
@@ -184,12 +188,6 @@ nm_platform_get ()
 {
 	g_assert (singleton_instance);
 
-	return singleton_instance;
-}
-
-NMPlatform *
-nm_platform_try_get (void)
-{
 	return singleton_instance;
 }
 
@@ -444,11 +442,19 @@ _link_get_all_presort (gconstpointer  p_a,
 	const NMPlatformLink *a = p_a;
 	const NMPlatformLink *b = p_b;
 
-	if (a->ifindex < b->ifindex)
+	/* Loopback always first */
+	if (a->ifindex == 1)
 		return -1;
-	if (a->ifindex > b->ifindex)
+	if (b->ifindex == 1)
 		return 1;
-	return 0;
+
+	/* Initialized links first */
+	if (a->initialized > b->initialized)
+		return -1;
+	if (a->initialized < b->initialized)
+		return 1;
+
+	return strcmp (a->name, b->name);
 }
 
 /**
@@ -1000,7 +1006,7 @@ nm_platform_link_get_udi (NMPlatform *self, int ifindex)
 	return NULL;
 }
 
-GObject *
+struct udev_device *
 nm_platform_link_get_udev_device (NMPlatform *self, int ifindex)
 {
 	_CHECK_SELF (self, klass, FALSE);
@@ -1169,6 +1175,30 @@ nm_platform_link_supports_vlans (NMPlatform *self, int ifindex)
 	return klass->link_supports_vlans (self, ifindex);
 }
 
+gboolean
+nm_platform_link_supports_sriov (NMPlatform *self, int ifindex)
+{
+	_CHECK_SELF (self, klass, FALSE);
+
+	g_return_val_if_fail (ifindex >= 0, FALSE);
+
+	return klass->link_supports_sriov (self, ifindex);
+}
+
+gboolean
+nm_platform_link_set_sriov_num_vfs (NMPlatform *self, int ifindex, guint num_vfs)
+{
+	_CHECK_SELF (self, klass, FALSE);
+
+	g_return_val_if_fail (ifindex > 0, FALSE);
+
+	_LOGD ("link: setting %u VFs for %s (%d)",
+	       num_vfs,
+	       nm_strquote_a (25, nm_platform_link_get_name (self, ifindex)),
+	       ifindex);
+	return klass->link_set_sriov_num_vfs (self, ifindex, num_vfs);
+}
+
 /**
  * nm_platform_link_set_up:
  * @self: platform instance
@@ -1184,7 +1214,7 @@ nm_platform_link_set_up (NMPlatform *self, int ifindex, gboolean *out_no_firmwar
 
 	g_return_val_if_fail (ifindex > 0, FALSE);
 
-	_LOGD ("link: setting up '%s' (%d)", nm_platform_link_get_name (self, ifindex), ifindex);
+	_LOGD ("link: setting up %s (%d)", nm_strquote_a (25, nm_platform_link_get_name (self, ifindex)), ifindex);
 	return klass->link_set_up (self, ifindex, out_no_firmware);
 }
 
@@ -1202,7 +1232,7 @@ nm_platform_link_set_down (NMPlatform *self, int ifindex)
 
 	g_return_val_if_fail (ifindex > 0, FALSE);
 
-	_LOGD ("link: setting down '%s' (%d)", nm_platform_link_get_name (self, ifindex), ifindex);
+	_LOGD ("link: setting down %s (%d)", nm_strquote_a (25, nm_platform_link_get_name (self, ifindex)), ifindex);
 	return klass->link_set_down (self, ifindex);
 }
 
@@ -1220,7 +1250,7 @@ nm_platform_link_set_arp (NMPlatform *self, int ifindex)
 
 	g_return_val_if_fail (ifindex >= 0, FALSE);
 
-	_LOGD ("link: setting arp '%s' (%d)", nm_platform_link_get_name (self, ifindex), ifindex);
+	_LOGD ("link: setting arp %s (%d)", nm_strquote_a (25, nm_platform_link_get_name (self, ifindex)), ifindex);
 	return klass->link_set_arp (self, ifindex);
 }
 
@@ -3109,14 +3139,7 @@ nm_platform_ip6_route_get_all (NMPlatform *self, int ifindex, NMPlatformGetRoute
 /**
  * nm_platform_ip4_route_add:
  * @self:
- * @ifindex:
- * @source:
- * network:
- * plen:
- * gateway:
- * pref_src:
- * metric:
- * mss:
+ * @route:
  *
  * For kernel, a gateway can be either explicitly set or left
  * at zero (0.0.0.0). In addition, there is the scope of the IPv4
@@ -3137,57 +3160,29 @@ nm_platform_ip6_route_get_all (NMPlatform *self, int ifindex, NMPlatformGetRoute
  * Returns: %TRUE in case of success.
  */
 gboolean
-nm_platform_ip4_route_add (NMPlatform *self,
-                           int ifindex, NMIPConfigSource source,
-                           in_addr_t network, guint8 plen,
-                           in_addr_t gateway, in_addr_t pref_src,
-                           guint32 metric, guint32 mss)
+nm_platform_ip4_route_add (NMPlatform *self, const NMPlatformIP4Route *route)
 {
 	_CHECK_SELF (self, klass, FALSE);
 
-	g_return_val_if_fail (plen <= 32, FALSE);
+	g_return_val_if_fail (route, FALSE);
+	g_return_val_if_fail (route->plen <= 32, FALSE);
 
-	if (_LOGD_ENABLED ()) {
-		NMPlatformIP4Route route = { 0 };
+	_LOGD ("route: adding or updating IPv4 route: %s", nm_platform_ip4_route_to_string (route, NULL, 0));
 
-		route.ifindex = ifindex;
-		route.rt_source = source;
-		route.network = network;
-		route.plen = plen;
-		route.gateway = gateway;
-		route.metric = metric;
-		route.mss = mss;
-		route.pref_src = pref_src;
-
-		_LOGD ("route: adding or updating IPv4 route: %s", nm_platform_ip4_route_to_string (&route, NULL, 0));
-	}
-	return klass->ip4_route_add (self, ifindex, source, network, plen, gateway, pref_src, metric, mss);
+	return klass->ip4_route_add (self, route);
 }
 
 gboolean
-nm_platform_ip6_route_add (NMPlatform *self,
-                           int ifindex, NMIPConfigSource source,
-                           struct in6_addr network, guint8 plen, struct in6_addr gateway,
-                           guint32 metric, guint32 mss)
+nm_platform_ip6_route_add (NMPlatform *self, const NMPlatformIP6Route *route)
 {
 	_CHECK_SELF (self, klass, FALSE);
 
-	g_return_val_if_fail (plen <= 128, FALSE);
+	g_return_val_if_fail (route, FALSE);
+	g_return_val_if_fail (route->plen <= 128, FALSE);
 
-	if (_LOGD_ENABLED ()) {
-		NMPlatformIP6Route route = { 0 };
+	_LOGD ("route: adding or updating IPv6 route: %s", nm_platform_ip6_route_to_string (route, NULL, 0));
 
-		route.ifindex = ifindex;
-		route.rt_source = source;
-		route.network = network;
-		route.plen = plen;
-		route.gateway = gateway;
-		route.metric = metric;
-		route.mss = mss;
-
-		_LOGD ("route: adding or updating IPv6 route: %s", nm_platform_ip6_route_to_string (&route, NULL, 0));
-	}
-	return klass->ip6_route_add (self, ifindex, source, network, plen, gateway, metric, mss);
+	return klass->ip6_route_add (self, route);
 }
 
 gboolean
@@ -3900,6 +3895,7 @@ nm_platform_ip4_route_to_string (const NMPlatformIP4Route *route, char *buf, gsi
 	char s_pref_src[INET_ADDRSTRLEN];
 	char str_dev[TO_STRING_DEV_BUF_SIZE];
 	char str_scope[30], s_source[50];
+	char str_tos[32], str_window[32], str_cwnd[32], str_initcwnd[32], str_initrwnd[32], str_mtu[32];
 
 	if (!nm_utils_to_string_buffer_init_null (route, &buf, &len))
 		return buf;
@@ -3909,16 +3905,35 @@ nm_platform_ip4_route_to_string (const NMPlatformIP4Route *route, char *buf, gsi
 
 	_to_string_dev (NULL, route->ifindex, str_dev, sizeof (str_dev));
 
+	if (route->tos)
+		nm_sprintf_buf (str_tos, " tos 0x%x", (unsigned) route->tos);
+	if (route->window)
+		nm_sprintf_buf (str_window, " window %s%"G_GUINT32_FORMAT, route->lock_window ? "lock " : "", route->window);
+	if (route->cwnd)
+		nm_sprintf_buf (str_cwnd, " cwnd %s%"G_GUINT32_FORMAT, route->lock_cwnd ? "lock " : "", route->cwnd);
+	if (route->initcwnd)
+		nm_sprintf_buf (str_initcwnd, " initcwnd %s%"G_GUINT32_FORMAT, route->lock_initcwnd ? "lock " : "", route->initcwnd);
+	if (route->initrwnd)
+		nm_sprintf_buf (str_initrwnd, " initrwnd %s%"G_GUINT32_FORMAT, route->lock_initrwnd ? "lock " : "", route->initrwnd);
+	if (route->mtu)
+		nm_sprintf_buf (str_mtu, " mtu %s%"G_GUINT32_FORMAT, route->lock_mtu ? "lock " : "", route->mtu);
+
 	g_snprintf (buf, len,
 	            "%s/%d"
 	            " via %s"
 	            "%s"
 	            " metric %"G_GUINT32_FORMAT
 	            " mss %"G_GUINT32_FORMAT
-	            " src %s" /* source */
+	            " rt-src %s" /* protocol */
 	            "%s" /* cloned */
 	            "%s%s" /* scope */
 	            "%s%s" /* pref-src */
+	            "%s" /* tos */
+	            "%s" /* window */
+	            "%s" /* cwnd */
+	            "%s" /* initcwnd */
+	            "%s" /* initrwnd */
+	            "%s" /* mtu */
 	            "",
 	            s_network,
 	            route->plen,
@@ -3931,7 +3946,13 @@ nm_platform_ip4_route_to_string (const NMPlatformIP4Route *route, char *buf, gsi
 	            route->scope_inv ? " scope " : "",
 	            route->scope_inv ? (nm_platform_route_scope2str (nm_platform_route_scope_inv (route->scope_inv), str_scope, sizeof (str_scope))) : "",
 	            route->pref_src ? " pref-src " : "",
-	            route->pref_src ? inet_ntop (AF_INET, &route->pref_src, s_pref_src, sizeof(s_pref_src)) : "");
+	            route->pref_src ? inet_ntop (AF_INET, &route->pref_src, s_pref_src, sizeof(s_pref_src)) : "",
+	            route->tos ? str_tos : "",
+	            route->window ? str_window : "",
+	            route->cwnd ? str_cwnd : "",
+	            route->initcwnd ? str_initcwnd : "",
+	            route->initrwnd ? str_initrwnd : "",
+	            route->mtu ? str_mtu : "");
 	return buf;
 }
 
@@ -3950,16 +3971,37 @@ nm_platform_ip4_route_to_string (const NMPlatformIP4Route *route, char *buf, gsi
 const char *
 nm_platform_ip6_route_to_string (const NMPlatformIP6Route *route, char *buf, gsize len)
 {
-	char s_network[INET6_ADDRSTRLEN], s_gateway[INET6_ADDRSTRLEN];
+	char s_network[INET6_ADDRSTRLEN], s_gateway[INET6_ADDRSTRLEN], s_pref_src[INET6_ADDRSTRLEN];
+	char s_src[INET6_ADDRSTRLEN];
 	char str_dev[TO_STRING_DEV_BUF_SIZE], s_source[50];
+	char str_tos[32], str_window[32], str_cwnd[32], str_initcwnd[32], str_initrwnd[32], str_mtu[32];
 
 	if (!nm_utils_to_string_buffer_init_null (route, &buf, &len))
 		return buf;
 
-	inet_ntop (AF_INET6, &route->network, s_network, sizeof(s_network));
-	inet_ntop (AF_INET6, &route->gateway, s_gateway, sizeof(s_gateway));
+	inet_ntop (AF_INET6, &route->network, s_network, sizeof (s_network));
+	inet_ntop (AF_INET6, &route->gateway, s_gateway, sizeof (s_gateway));
+	inet_ntop (AF_INET6, &route->src, s_src, sizeof (s_src));
+
+	if (IN6_IS_ADDR_UNSPECIFIED (&route->pref_src))
+		s_pref_src[0] = 0;
+	else
+		inet_ntop (AF_INET6, &route->pref_src, s_pref_src, sizeof (s_pref_src));
 
 	_to_string_dev (NULL, route->ifindex, str_dev, sizeof (str_dev));
+
+	if (route->tos)
+		nm_sprintf_buf (str_tos, " tos 0x%x", (unsigned) route->tos);
+	if (route->window)
+		nm_sprintf_buf (str_window, " window %s%"G_GUINT32_FORMAT, route->lock_window ? "lock " : "", route->window);
+	if (route->cwnd)
+		nm_sprintf_buf (str_cwnd, " cwnd %s%"G_GUINT32_FORMAT, route->lock_cwnd ? "lock " : "", route->cwnd);
+	if (route->initcwnd)
+		nm_sprintf_buf (str_initcwnd, " initcwnd %s%"G_GUINT32_FORMAT, route->lock_initcwnd ? "lock " : "", route->initcwnd);
+	if (route->initrwnd)
+		nm_sprintf_buf (str_initrwnd, " initrwnd %s%"G_GUINT32_FORMAT, route->lock_initrwnd ? "lock " : "", route->initrwnd);
+	if (route->mtu)
+		nm_sprintf_buf (str_mtu, " mtu %s%"G_GUINT32_FORMAT, route->lock_mtu ? "lock " : "", route->mtu);
 
 	g_snprintf (buf, len,
 	            "%s/%d"
@@ -3967,8 +4009,16 @@ nm_platform_ip6_route_to_string (const NMPlatformIP6Route *route, char *buf, gsi
 	            "%s"
 	            " metric %"G_GUINT32_FORMAT
 	            " mss %"G_GUINT32_FORMAT
-	            " src %s" /* source */
+	            " rt-src %s" /* protocol */
+	            " src %s/%u" /* source */
 	            "%s" /* cloned */
+	            "%s%s" /* pref-src */
+	            "%s" /* tos */
+	            "%s" /* window */
+	            "%s" /* cwnd */
+	            "%s" /* initcwnd */
+	            "%s" /* initrwnd */
+	            "%s" /* mtu */
 	            "",
 	            s_network,
 	            route->plen,
@@ -3977,7 +4027,17 @@ nm_platform_ip6_route_to_string (const NMPlatformIP6Route *route, char *buf, gsi
 	            route->metric,
 	            route->mss,
 	            nmp_utils_ip_config_source_to_string (route->rt_source, s_source, sizeof (s_source)),
-	            route->rt_cloned ? " cloned" : "");
+	            s_src, route->src_plen,
+	            route->rt_cloned ? " cloned" : "",
+	            s_pref_src[0] ? " pref-src " : "",
+	            s_pref_src[0] ? s_pref_src : "",
+	            route->tos ? str_tos : "",
+	            route->window ? str_window : "",
+	            route->cwnd ? str_cwnd : "",
+	            route->initcwnd ? str_initcwnd : "",
+	            route->initrwnd ? str_initrwnd : "",
+	            route->mtu ? str_mtu : "");
+
 	return buf;
 }
 
@@ -4253,11 +4313,16 @@ nm_platform_ip6_address_cmp (const NMPlatformIP6Address *a, const NMPlatformIP6A
 }
 
 int
-nm_platform_ip4_route_cmp (const NMPlatformIP4Route *a, const NMPlatformIP4Route *b)
+nm_platform_ip4_route_cmp_full (const NMPlatformIP4Route *a, const NMPlatformIP4Route *b, gboolean consider_host_part)
 {
 	_CMP_SELF (a, b);
 	_CMP_FIELD (a, b, ifindex);
-	_CMP_FIELD (a, b, network);
+	if (consider_host_part)
+		_CMP_FIELD (a, b, network);
+	else {
+		_CMP_DIRECT (nm_utils_ip4_address_clear_host_address (a->network, a->plen),
+		             nm_utils_ip4_address_clear_host_address (b->network, b->plen));
+	}
 	_CMP_FIELD (a, b, plen);
 	_CMP_FIELD (a, b, metric);
 	_CMP_FIELD (a, b, gateway);
@@ -4266,21 +4331,54 @@ nm_platform_ip4_route_cmp (const NMPlatformIP4Route *a, const NMPlatformIP4Route
 	_CMP_FIELD (a, b, scope_inv);
 	_CMP_FIELD (a, b, pref_src);
 	_CMP_FIELD (a, b, rt_cloned);
+	_CMP_FIELD (a, b, tos);
+	_CMP_FIELD (a, b, lock_window);
+	_CMP_FIELD (a, b, lock_cwnd);
+	_CMP_FIELD (a, b, lock_initcwnd);
+	_CMP_FIELD (a, b, lock_initrwnd);
+	_CMP_FIELD (a, b, lock_mtu);
+	_CMP_FIELD (a, b, window);
+	_CMP_FIELD (a, b, cwnd);
+	_CMP_FIELD (a, b, initcwnd);
+	_CMP_FIELD (a, b, initrwnd);
+	_CMP_FIELD (a, b, mtu);
 	return 0;
 }
 
 int
-nm_platform_ip6_route_cmp (const NMPlatformIP6Route *a, const NMPlatformIP6Route *b)
+nm_platform_ip6_route_cmp_full (const NMPlatformIP6Route *a, const NMPlatformIP6Route *b, gboolean consider_host_part)
 {
 	_CMP_SELF (a, b);
 	_CMP_FIELD (a, b, ifindex);
-	_CMP_FIELD_MEMCMP (a, b, network);
+	if (consider_host_part)
+		_CMP_FIELD_MEMCMP (a, b, network);
+	else {
+		struct in6_addr n1, n2;
+
+		nm_utils_ip6_address_clear_host_address (&n1, &a->network, a->plen);
+		nm_utils_ip6_address_clear_host_address (&n2, &b->network, b->plen);
+		_CMP_DIRECT_MEMCMP (&n1, &n2, sizeof (struct in6_addr));
+	}
 	_CMP_FIELD (a, b, plen);
 	_CMP_FIELD (a, b, metric);
 	_CMP_FIELD_MEMCMP (a, b, gateway);
+	_CMP_FIELD_MEMCMP (a, b, pref_src);
+	_CMP_FIELD_MEMCMP (a, b, src);
+	_CMP_FIELD (a, b, src_plen);
 	_CMP_FIELD (a, b, rt_source);
 	_CMP_FIELD (a, b, mss);
 	_CMP_FIELD (a, b, rt_cloned);
+	_CMP_FIELD (a, b, tos);
+	_CMP_FIELD (a, b, lock_window);
+	_CMP_FIELD (a, b, lock_cwnd);
+	_CMP_FIELD (a, b, lock_initcwnd);
+	_CMP_FIELD (a, b, lock_initrwnd);
+	_CMP_FIELD (a, b, lock_mtu);
+	_CMP_FIELD (a, b, window);
+	_CMP_FIELD (a, b, cwnd);
+	_CMP_FIELD (a, b, initcwnd);
+	_CMP_FIELD (a, b, initrwnd);
+	_CMP_FIELD (a, b, mtu);
 	return 0;
 }
 
@@ -4411,28 +4509,27 @@ nm_platform_netns_push (NMPlatform *platform, NMPNetns **netns)
 static gboolean
 _vtr_v4_route_add (NMPlatform *self, int ifindex, const NMPlatformIPXRoute *route, gint64 metric)
 {
-	return nm_platform_ip4_route_add (self,
-	                                  ifindex > 0 ? ifindex : route->rx.ifindex,
-	                                  route->rx.rt_source,
-	                                  route->r4.network,
-	                                  route->rx.plen,
-	                                  route->r4.gateway,
-	                                  route->r4.pref_src,
-	                                  metric >= 0 ? (guint32) metric : route->rx.metric,
-	                                  route->rx.mss);
+	NMPlatformIP4Route rt = route->r4;
+
+	if (ifindex > 0)
+		rt.ifindex = ifindex;
+	if (metric >= 0)
+		rt.metric = metric;
+
+	return nm_platform_ip4_route_add (self, &rt);
 }
 
 static gboolean
 _vtr_v6_route_add (NMPlatform *self, int ifindex, const NMPlatformIPXRoute *route, gint64 metric)
 {
-	return nm_platform_ip6_route_add (self,
-	                                  ifindex > 0 ? ifindex : route->rx.ifindex,
-	                                  route->rx.rt_source,
-	                                  route->r6.network,
-	                                  route->rx.plen,
-	                                  route->r6.gateway,
-	                                  metric >= 0 ? (guint32) metric : route->rx.metric,
-	                                  route->rx.mss);
+	NMPlatformIP6Route rt = route->r6;
+
+	if (ifindex > 0)
+		rt.ifindex = ifindex;
+	if (metric >= 0)
+		rt.metric = metric;
+
+	return nm_platform_ip6_route_add (self, &rt);
 }
 
 static gboolean
@@ -4479,7 +4576,7 @@ const NMPlatformVTableRoute nm_platform_vtable_route_v4 = {
 	.is_ip4                         = TRUE,
 	.addr_family                    = AF_INET,
 	.sizeof_route                   = sizeof (NMPlatformIP4Route),
-	.route_cmp                      = (int (*) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b)) nm_platform_ip4_route_cmp,
+	.route_cmp                      = (int (*) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b, gboolean consider_host_part)) nm_platform_ip4_route_cmp_full,
 	.route_to_string                = (const char *(*) (const NMPlatformIPXRoute *route, char *buf, gsize len)) nm_platform_ip4_route_to_string,
 	.route_get_all                  = nm_platform_ip4_route_get_all,
 	.route_add                      = _vtr_v4_route_add,
@@ -4492,7 +4589,7 @@ const NMPlatformVTableRoute nm_platform_vtable_route_v6 = {
 	.is_ip4                         = FALSE,
 	.addr_family                    = AF_INET6,
 	.sizeof_route                   = sizeof (NMPlatformIP6Route),
-	.route_cmp                      = (int (*) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b)) nm_platform_ip6_route_cmp,
+	.route_cmp                      = (int (*) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b, gboolean consider_host_part)) nm_platform_ip6_route_cmp_full,
 	.route_to_string                = (const char *(*) (const NMPlatformIPXRoute *route, char *buf, gsize len)) nm_platform_ip6_route_to_string,
 	.route_get_all                  = nm_platform_ip6_route_get_all,
 	.route_add                      = _vtr_v6_route_add,
@@ -4521,26 +4618,14 @@ set_property (GObject *object, guint prop_id,
 				self->_netns = g_object_ref (netns);
 		}
 		break;
-	case PROP_REGISTER_SINGLETON:
+	case PROP_LOG_WITH_PTR:
 		/* construct-only */
-		priv->register_singleton = g_value_get_boolean (value);
+		priv->log_with_ptr = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
-}
-
-static void
-constructed (GObject *object)
-{
-	NMPlatform *self = NM_PLATFORM (object);
-	NMPlatformPrivate *priv =  NM_PLATFORM_GET_PRIVATE (self);
-
-	G_OBJECT_CLASS (nm_platform_parent_class)->constructed (object);
-
-	if (priv->register_singleton)
-		nm_platform_setup (self);
 }
 
 static void
@@ -4565,7 +4650,6 @@ nm_platform_class_init (NMPlatformClass *platform_class)
 	g_type_class_add_private (object_class, sizeof (NMPlatformPrivate));
 
 	object_class->set_property = set_property;
-	object_class->constructed = constructed;
 	object_class->finalize = finalize;
 
 	platform_class->wifi_set_powersave = wifi_set_powersave;
@@ -4579,9 +4663,9 @@ nm_platform_class_init (NMPlatformClass *platform_class)
 	                           G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
-	 (object_class, PROP_REGISTER_SINGLETON,
-	     g_param_spec_boolean (NM_PLATFORM_REGISTER_SINGLETON, "", "",
-	                           FALSE,
+	 (object_class, PROP_LOG_WITH_PTR,
+	     g_param_spec_boolean (NM_PLATFORM_LOG_WITH_PTR, "", "",
+	                           TRUE,
 	                           G_PARAM_WRITABLE |
 	                           G_PARAM_CONSTRUCT_ONLY |
 	                           G_PARAM_STATIC_STRINGS));

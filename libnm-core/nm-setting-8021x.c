@@ -77,22 +77,31 @@ typedef struct {
 	char *anonymous_identity;
 	char *pac_file;
 	GBytes *ca_cert;
+	char *ca_cert_password;
+	NMSettingSecretFlags ca_cert_password_flags;
 	char *ca_path;
 	char *subject_match;
 	GSList *altsubject_matches;
 	char *domain_suffix_match;
 	GBytes *client_cert;
+	char *client_cert_password;
+	NMSettingSecretFlags client_cert_password_flags;
 	char *phase1_peapver;
 	char *phase1_peaplabel;
 	char *phase1_fast_provisioning;
+	NMSetting8021xAuthFlags phase1_auth_flags;
 	char *phase2_auth;
 	char *phase2_autheap;
 	GBytes *phase2_ca_cert;
+	char *phase2_ca_cert_password;
+	NMSettingSecretFlags phase2_ca_cert_password_flags;
 	char *phase2_ca_path;
 	char *phase2_subject_match;
 	GSList *phase2_altsubject_matches;
 	char *phase2_domain_suffix_match;
 	GBytes *phase2_client_cert;
+	char *phase2_client_cert_password;
+	NMSettingSecretFlags phase2_client_cert_password_flags;
 	char *password;
 	NMSettingSecretFlags password_flags;
 	GBytes *password_raw;
@@ -106,6 +115,7 @@ typedef struct {
 	char *phase2_private_key_password;
 	NMSettingSecretFlags phase2_private_key_password_flags;
 	gboolean system_ca_certs;
+	gint auth_timeout;
 } NMSetting8021xPrivate;
 
 enum {
@@ -115,22 +125,31 @@ enum {
 	PROP_ANONYMOUS_IDENTITY,
 	PROP_PAC_FILE,
 	PROP_CA_CERT,
+	PROP_CA_CERT_PASSWORD,
+	PROP_CA_CERT_PASSWORD_FLAGS,
 	PROP_CA_PATH,
 	PROP_SUBJECT_MATCH,
 	PROP_ALTSUBJECT_MATCHES,
 	PROP_DOMAIN_SUFFIX_MATCH,
 	PROP_CLIENT_CERT,
+	PROP_CLIENT_CERT_PASSWORD,
+	PROP_CLIENT_CERT_PASSWORD_FLAGS,
 	PROP_PHASE1_PEAPVER,
 	PROP_PHASE1_PEAPLABEL,
 	PROP_PHASE1_FAST_PROVISIONING,
+	PROP_PHASE1_AUTH_FLAGS,
 	PROP_PHASE2_AUTH,
 	PROP_PHASE2_AUTHEAP,
 	PROP_PHASE2_CA_CERT,
+	PROP_PHASE2_CA_CERT_PASSWORD,
+	PROP_PHASE2_CA_CERT_PASSWORD_FLAGS,
 	PROP_PHASE2_CA_PATH,
 	PROP_PHASE2_SUBJECT_MATCH,
 	PROP_PHASE2_ALTSUBJECT_MATCHES,
 	PROP_PHASE2_DOMAIN_SUFFIX_MATCH,
 	PROP_PHASE2_CLIENT_CERT,
+	PROP_PHASE2_CLIENT_CERT_PASSWORD,
+	PROP_PHASE2_CLIENT_CERT_PASSWORD_FLAGS,
 	PROP_PASSWORD,
 	PROP_PASSWORD_FLAGS,
 	PROP_PASSWORD_RAW,
@@ -144,6 +163,7 @@ enum {
 	PROP_PIN,
 	PROP_PIN_FLAGS,
 	PROP_SYSTEM_CA_CERTS,
+	PROP_AUTH_TIMEOUT,
 
 	LAST_PROP
 };
@@ -160,6 +180,8 @@ nm_setting_802_1x_new (void)
 {
 	return (NMSetting *) g_object_new (NM_TYPE_SETTING_802_1X, NULL);
 }
+
+/*****************************************************************************/
 
 /**
  * nm_setting_802_1x_get_num_eap_methods:
@@ -740,6 +762,41 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *setting,
 }
 
 /**
+ * nm_setting_802_1x_get_ca_cert_password:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the password used to access the CA certificate stored in
+ * #NMSetting8021x:ca-cert property. Only makes sense if the certificate
+ * is stored on a PKCS#<!-- -->11 token that requires a login.
+ *
+ * Since: 1.8
+ **/
+const char *
+nm_setting_802_1x_get_ca_cert_password (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NULL);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->ca_cert_password;
+}
+
+/**
+ * nm_setting_802_1x_get_ca_cert_password_flags:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the #NMSettingSecretFlags pertaining to the
+ * #NMSetting8021x:ca-cert-password
+ *
+ * Since: 1.8
+ **/
+NMSettingSecretFlags
+nm_setting_802_1x_get_ca_cert_password_flags (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NM_SETTING_SECRET_FLAG_NONE);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->ca_cert_password_flags;
+}
+
+/**
  * nm_setting_802_1x_get_subject_match:
  * @setting: the #NMSetting8021x
  *
@@ -1121,6 +1178,41 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *setting,
 }
 
 /**
+ * nm_setting_802_1x_get_client_cert_password:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the password used to access the client certificate stored in
+ * #NMSetting8021x:client-cert property. Only makes sense if the certificate
+ * is stored on a PKCS#<!-- -->11 token that requires a login.
+ *
+ * Since: 1.8
+ **/
+const char *
+nm_setting_802_1x_get_client_cert_password (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NULL);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->client_cert_password;
+}
+
+/**
+ * nm_setting_802_1x_get_client_cert_password_flags:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the #NMSettingSecretFlags pertaining to the
+ * #NMSetting8021x:client-cert-password
+ *
+ * Since: 1.8
+ **/
+NMSettingSecretFlags
+nm_setting_802_1x_get_client_cert_password_flags (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NM_SETTING_SECRET_FLAG_NONE);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->client_cert_password_flags;
+}
+
+/**
  * nm_setting_802_1x_get_phase1_peapver:
  * @setting: the #NMSetting8021x
  *
@@ -1168,6 +1260,22 @@ nm_setting_802_1x_get_phase1_fast_provisioning (NMSetting8021x *setting)
 	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NULL);
 
 	return NM_SETTING_802_1X_GET_PRIVATE (setting)->phase1_fast_provisioning;
+}
+
+/**
+ * nm_setting_802_1x_get_phase1_auth_flags:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the authentication flags for "phase 1".
+ *
+ * Since: 1.8
+ */
+NMSetting8021xAuthFlags
+nm_setting_802_1x_get_phase1_auth_flags (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), 0);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->phase1_auth_flags;
 }
 
 /**
@@ -1410,6 +1518,41 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *setting,
 
 	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CA_CERT);
 	return priv->phase2_ca_cert != NULL;
+}
+
+/**
+ * nm_setting_802_1x_get_phase2_ca_cert_password:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the password used to access the "phase2" CA certificate stored in
+ * #NMSetting8021x:phase2-ca-cert property. Only makes sense if the certificate
+ * is stored on a PKCS#<!-- -->11 token that requires a login.
+ *
+ * Since: 1.8
+ **/
+const char *
+nm_setting_802_1x_get_phase2_ca_cert_password (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NULL);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->phase2_ca_cert_password;
+}
+
+/**
+ * nm_setting_802_1x_get_phase2_ca_cert_password_flags:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the #NMSettingSecretFlags pertaining to the
+ * #NMSetting8021x:phase2-private-key-password
+ *
+ * Since: 1.8
+ **/
+NMSettingSecretFlags
+nm_setting_802_1x_get_phase2_ca_cert_password_flags (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NM_SETTING_SECRET_FLAG_NONE);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->phase2_ca_cert_password_flags;
 }
 
 /**
@@ -1797,6 +1940,41 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *setting,
 
 	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 	return priv->phase2_client_cert != NULL;
+}
+
+/**
+ * nm_setting_802_1x_get_phase2_client_cert_password:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the password used to access the "phase2" client certificate stored in
+ * #NMSetting8021x:phase2-client-cert property. Only makes sense if the certificate
+ * is stored on a PKCS#<!-- -->11 token that requires a login.
+ *
+ * Since: 1.8
+ **/
+const char *
+nm_setting_802_1x_get_phase2_client_cert_password (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NULL);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->phase2_client_cert_password;
+}
+
+/**
+ * nm_setting_802_1x_get_phase2_client_cert_password_flags:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns: the #NMSettingSecretFlags pertaining to the
+ * #NMSetting8021x:phase2-client-cert-password
+ *
+ * Since: 1.8
+ **/
+NMSettingSecretFlags
+nm_setting_802_1x_get_phase2_client_cert_password_flags (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), NM_SETTING_SECRET_FLAG_NONE);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->phase2_client_cert_password_flags;
 }
 
 /**
@@ -2548,6 +2726,25 @@ nm_setting_802_1x_get_phase2_private_key_format (NMSetting8021x *setting)
 	return NM_SETTING_802_1X_CK_FORMAT_UNKNOWN;
 }
 
+/**
+ * nm_setting_802_1x_get_auth_timeout:
+ * @setting: the #NMSetting8021x
+ *
+ * Returns the value contained in the #NMSetting8021x:auth-timeout property.
+ *
+ * Returns: the configured authentication timeout in seconds. Zero means the
+ * global default value.
+ *
+ * Since: 1.8
+ **/
+gint
+nm_setting_802_1x_get_auth_timeout (NMSetting8021x *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), 0);
+
+	return NM_SETTING_802_1X_GET_PRIVATE (setting)->auth_timeout;
+}
+
 static void
 need_secrets_password (NMSetting8021x *self,
                        GPtrArray *secrets,
@@ -2576,9 +2773,13 @@ need_secrets_sim (NMSetting8021x *self,
 static gboolean
 need_private_key_password (GBytes *blob,
                            const char *path,
-                           const char *password)
+                           const char *password,
+                           NMSettingSecretFlags flags)
 {
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
+
+	if (flags & NM_SETTING_SECRET_FLAG_NOT_REQUIRED)
+		return FALSE;
 
 	/* Private key password is required */
 	if (password) {
@@ -2589,7 +2790,7 @@ need_private_key_password (GBytes *blob,
 			                                         g_bytes_get_size (blob),
 			                                         password, NULL, NULL);
 		else
-			g_warning ("%s: unknown private key password scheme", __func__);
+			return FALSE;
 	}
 
 	return (format == NM_CRYPTO_FILE_FORMAT_UNKNOWN);
@@ -2609,34 +2810,52 @@ need_secrets_tls (NMSetting8021x *self,
 		scheme = nm_setting_802_1x_get_phase2_private_key_scheme (self);
 		if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
 			path = nm_setting_802_1x_get_phase2_private_key_path (self);
-		else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11)
-			return;
 		else if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
 			blob = nm_setting_802_1x_get_phase2_private_key_blob (self);
-		else {
+		else if (scheme != NM_SETTING_802_1X_CK_SCHEME_PKCS11)
 			g_warning ("%s: unknown phase2 private key scheme %d", __func__, scheme);
-			g_ptr_array_add (secrets, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
-			return;
-		}
 
-		if (need_private_key_password (blob, path, priv->phase2_private_key_password))
+		if (need_private_key_password (blob, path,
+		                               priv->phase2_private_key_password,
+		                               priv->phase2_private_key_password_flags))
 			g_ptr_array_add (secrets, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD);
+
+		scheme = nm_setting_802_1x_get_phase2_ca_cert_scheme (self);
+		if (    scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11
+		    && !(priv->phase2_ca_cert_password_flags & NM_SETTING_SECRET_FLAG_NOT_REQUIRED)
+		    && !priv->phase2_ca_cert_password)
+			g_ptr_array_add (secrets, NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD);
+
+		scheme = nm_setting_802_1x_get_phase2_client_cert_scheme (self);
+		if (    scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11
+		    && !(priv->phase2_client_cert_password_flags & NM_SETTING_SECRET_FLAG_NOT_REQUIRED)
+		    && !priv->phase2_client_cert_password)
+			g_ptr_array_add (secrets, NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD);
 	} else {
 		scheme = nm_setting_802_1x_get_private_key_scheme (self);
 		if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
 			path = nm_setting_802_1x_get_private_key_path (self);
-		else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11)
-			return;
 		else if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
 			blob = nm_setting_802_1x_get_private_key_blob (self);
-		else {
+		else if (scheme != NM_SETTING_802_1X_CK_SCHEME_PKCS11)
 			g_warning ("%s: unknown private key scheme %d", __func__, scheme);
-			g_ptr_array_add (secrets, NM_SETTING_802_1X_PRIVATE_KEY);
-			return;
-		}
 
-		if (need_private_key_password (blob, path, priv->private_key_password))
+		if (need_private_key_password (blob, path,
+		                               priv->private_key_password,
+		                               priv->private_key_password_flags))
 			g_ptr_array_add (secrets, NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD);
+
+		scheme = nm_setting_802_1x_get_ca_cert_scheme (self);
+		if (    scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11
+		    && !(priv->ca_cert_password_flags & NM_SETTING_SECRET_FLAG_NOT_REQUIRED)
+		    && !priv->ca_cert_password)
+			g_ptr_array_add (secrets, NM_SETTING_802_1X_CA_CERT_PASSWORD);
+
+		scheme = nm_setting_802_1x_get_client_cert_scheme (self);
+		if (    scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11
+		    && !(priv->client_cert_password_flags & NM_SETTING_SECRET_FLAG_NOT_REQUIRED)
+		    && !priv->client_cert_password)
+			g_ptr_array_add (secrets, NM_SETTING_802_1X_CLIENT_CERT_PASSWORD);
 	}
 }
 
@@ -2951,21 +3170,37 @@ need_secrets (NMSetting *setting)
 }
 
 static gboolean
-verify_cert (GBytes *bytes, const char *prop_name, GError **error)
+verify_cert (GBytes *bytes, const char *prop_name,
+             const char *password, const char *password_prop_name, GError **error)
 {
 	GError *local = NULL;
+	NMSetting8021xCKScheme scheme;
 
-	if (   !bytes
-	    || get_cert_scheme (bytes, &local) != NM_SETTING_802_1X_CK_SCHEME_UNKNOWN)
+	if (bytes)
+		scheme = get_cert_scheme (bytes, &local);
+	else
 		return TRUE;
 
-	g_set_error (error,
-	             NM_CONNECTION_ERROR,
-	             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-	             _("certificate is invalid: %s"), local->message);
-	g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, prop_name);
-	g_error_free (local);
-	return FALSE;
+	if (scheme == NM_SETTING_802_1X_CK_SCHEME_UNKNOWN) {
+		g_set_error (error,
+		             NM_CONNECTION_ERROR,
+		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		             _("certificate is invalid: %s"), local->message);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, prop_name);
+		g_error_free (local);
+		return FALSE;
+	}
+
+	if (password && (scheme != NM_SETTING_802_1X_CK_SCHEME_PKCS11)) {
+		g_set_error (error,
+		             NM_CONNECTION_ERROR,
+		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		             _("password is not supported when certificate is not on a PKCS#11 token"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, password_prop_name);
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 static gboolean
@@ -3048,6 +3283,15 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		return FALSE;
 	}
 
+	if (NM_FLAGS_ANY (priv->phase1_auth_flags, ~NM_SETTING_802_1X_AUTH_FLAGS_ALL)) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("invalid auth flags"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE1_AUTH_FLAGS);
+		return FALSE;
+	}
+
 	if (priv->phase2_auth && !g_strv_contains (valid_phase2_auth, priv->phase2_auth)) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
@@ -3068,19 +3312,23 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		return FALSE;
 	}
 
-	if (!verify_cert (priv->ca_cert, NM_SETTING_802_1X_CA_CERT, error))
+	if (!verify_cert (priv->ca_cert, NM_SETTING_802_1X_CA_CERT,
+	                  priv->ca_cert_password, NM_SETTING_802_1X_CA_CERT_PASSWORD, error))
 		return FALSE;
-	if (!verify_cert (priv->phase2_ca_cert, NM_SETTING_802_1X_PHASE2_CA_CERT, error))
-		return FALSE;
-
-	if (!verify_cert (priv->client_cert, NM_SETTING_802_1X_CLIENT_CERT, error))
-		return FALSE;
-	if (!verify_cert (priv->phase2_client_cert, NM_SETTING_802_1X_PHASE2_CLIENT_CERT, error))
+	if (!verify_cert (priv->phase2_ca_cert, NM_SETTING_802_1X_PHASE2_CA_CERT,
+	                  priv->phase2_ca_cert_password, NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD, error))
 		return FALSE;
 
-	if (!verify_cert (priv->private_key, NM_SETTING_802_1X_PRIVATE_KEY, error))
+	if (!verify_cert (priv->client_cert, NM_SETTING_802_1X_CLIENT_CERT,
+	                  priv->client_cert_password, NM_SETTING_802_1X_CLIENT_CERT_PASSWORD, error))
 		return FALSE;
-	if (!verify_cert (priv->phase2_private_key, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY, error))
+	if (!verify_cert (priv->phase2_client_cert, NM_SETTING_802_1X_PHASE2_CLIENT_CERT,
+	                  priv->phase2_client_cert_password, NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD, error))
+		return FALSE;
+
+	if (!verify_cert (priv->private_key, NM_SETTING_802_1X_PRIVATE_KEY, NULL, NULL, error))
+		return FALSE;
+	if (!verify_cert (priv->phase2_private_key, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY, NULL, NULL, error))
 		return FALSE;
 
 	/* FIXME: finish */
@@ -3125,15 +3373,19 @@ finalize (GObject *object)
 
 	if (priv->ca_cert)
 		g_bytes_unref (priv->ca_cert);
+	g_free (priv->ca_cert_password);
 	if (priv->client_cert)
 		g_bytes_unref (priv->client_cert);
+	g_free (priv->client_cert_password);
 	if (priv->private_key)
 		g_bytes_unref (priv->private_key);
 	g_free (priv->private_key_password);
 	if (priv->phase2_ca_cert)
 		g_bytes_unref (priv->phase2_ca_cert);
+	g_free (priv->phase2_ca_cert_password);
 	if (priv->phase2_client_cert)
 		g_bytes_unref (priv->phase2_client_cert);
+	g_free (priv->phase2_client_cert_password);
 	if (priv->phase2_private_key)
 		g_bytes_unref (priv->phase2_private_key);
 	g_free (priv->phase2_private_key_password);
@@ -3150,7 +3402,7 @@ set_cert_prop_helper (const GValue *value, const char *prop_name, GError **error
 	bytes = g_value_dup_boxed (value);
 	/* Verify the new data */
 	if (bytes) {
-		valid = verify_cert (bytes, prop_name, error);
+		valid = verify_cert (bytes, prop_name, NULL, NULL, error);
 		if (!valid)
 			g_clear_pointer (&bytes, g_bytes_unref);
 	}
@@ -3191,6 +3443,13 @@ set_property (GObject *object, guint prop_id,
 			g_error_free (error);
 		}
 		break;
+	case PROP_CA_CERT_PASSWORD:
+		g_free (priv->ca_cert_password);
+		priv->ca_cert_password = g_value_dup_string (value);
+		break;
+	case PROP_CA_CERT_PASSWORD_FLAGS:
+		priv->ca_cert_password_flags = g_value_get_flags (value);
+		break;
 	case PROP_CA_PATH:
 		g_free (priv->ca_path);
 		priv->ca_path = g_value_dup_string (value);
@@ -3216,6 +3475,13 @@ set_property (GObject *object, guint prop_id,
 			g_error_free (error);
 		}
 		break;
+	case PROP_CLIENT_CERT_PASSWORD:
+		g_free (priv->client_cert_password);
+		priv->client_cert_password = g_value_dup_string (value);
+		break;
+	case PROP_CLIENT_CERT_PASSWORD_FLAGS:
+		priv->client_cert_password_flags = g_value_get_flags (value);
+		break;
 	case PROP_PHASE1_PEAPVER:
 		g_free (priv->phase1_peapver);
 		priv->phase1_peapver = g_value_dup_string (value);
@@ -3227,6 +3493,9 @@ set_property (GObject *object, guint prop_id,
 	case PROP_PHASE1_FAST_PROVISIONING:
 		g_free (priv->phase1_fast_provisioning);
 		priv->phase1_fast_provisioning = g_value_dup_string (value);
+		break;
+	case PROP_PHASE1_AUTH_FLAGS:
+		priv->phase1_auth_flags = g_value_get_uint (value);
 		break;
 	case PROP_PHASE2_AUTH:
 		g_free (priv->phase2_auth);
@@ -3245,6 +3514,13 @@ set_property (GObject *object, guint prop_id,
 			g_error_free (error);
 		}
 		break;
+	case PROP_PHASE2_CA_CERT_PASSWORD:
+		g_free (priv->phase2_ca_cert_password);
+		priv->phase2_ca_cert_password = g_value_dup_string (value);
+		break;
+	case PROP_PHASE2_CA_CERT_PASSWORD_FLAGS:
+		priv->phase2_ca_cert_password_flags = g_value_get_flags (value);
+		break;
 	case PROP_PHASE2_CA_PATH:
 		g_free (priv->phase2_ca_path);
 		priv->phase2_ca_path = g_value_dup_string (value);
@@ -3262,6 +3538,7 @@ set_property (GObject *object, guint prop_id,
 		priv->phase2_domain_suffix_match = nm_strdup_not_empty (g_value_get_string (value));
 		break;
 	case PROP_PHASE2_CLIENT_CERT:
+
 		if (priv->phase2_client_cert)
 			g_bytes_unref (priv->phase2_client_cert);
 		priv->phase2_client_cert = set_cert_prop_helper (value, NM_SETTING_802_1X_PHASE2_CLIENT_CERT, &error);
@@ -3269,6 +3546,13 @@ set_property (GObject *object, guint prop_id,
 			g_warning ("Error setting certificate (invalid data): %s", error->message);
 			g_error_free (error);
 		}
+		break;
+	case PROP_PHASE2_CLIENT_CERT_PASSWORD:
+		g_free (priv->phase2_client_cert_password);
+		priv->phase2_client_cert_password = g_value_dup_string (value);
+		break;
+	case PROP_PHASE2_CLIENT_CERT_PASSWORD_FLAGS:
+		priv->phase2_client_cert_password_flags = g_value_get_flags (value);
 		break;
 	case PROP_PASSWORD:
 		g_free (priv->password);
@@ -3327,6 +3611,9 @@ set_property (GObject *object, guint prop_id,
 	case PROP_SYSTEM_CA_CERTS:
 		priv->system_ca_certs = g_value_get_boolean (value);
 		break;
+	case PROP_AUTH_TIMEOUT:
+		priv->auth_timeout = g_value_get_int (value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -3356,6 +3643,12 @@ get_property (GObject *object, guint prop_id,
 	case PROP_CA_CERT:
 		g_value_set_boxed (value, priv->ca_cert);
 		break;
+	case PROP_CA_CERT_PASSWORD:
+		g_value_set_string (value, priv->ca_cert_password);
+		break;
+	case PROP_CA_CERT_PASSWORD_FLAGS:
+		g_value_set_flags (value, priv->ca_cert_password_flags);
+		break;
 	case PROP_CA_PATH:
 		g_value_set_string (value, priv->ca_path);
 		break;
@@ -3371,6 +3664,12 @@ get_property (GObject *object, guint prop_id,
 	case PROP_CLIENT_CERT:
 		g_value_set_boxed (value, priv->client_cert);
 		break;
+	case PROP_CLIENT_CERT_PASSWORD:
+		g_value_set_string (value, priv->client_cert_password);
+		break;
+	case PROP_CLIENT_CERT_PASSWORD_FLAGS:
+		g_value_set_flags (value, priv->client_cert_password_flags);
+		break;
 	case PROP_PHASE1_PEAPVER:
 		g_value_set_string (value, priv->phase1_peapver);
 		break;
@@ -3380,6 +3679,9 @@ get_property (GObject *object, guint prop_id,
 	case PROP_PHASE1_FAST_PROVISIONING:
 		g_value_set_string (value, priv->phase1_fast_provisioning);
 		break;
+	case PROP_PHASE1_AUTH_FLAGS:
+		g_value_set_uint (value, priv->phase1_auth_flags);
+		break;
 	case PROP_PHASE2_AUTH:
 		g_value_set_string (value, priv->phase2_auth);
 		break;
@@ -3388,6 +3690,12 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_PHASE2_CA_CERT:
 		g_value_set_boxed (value, priv->phase2_ca_cert);
+		break;
+	case PROP_PHASE2_CA_CERT_PASSWORD:
+		g_value_set_string (value, priv->phase2_ca_cert_password);
+		break;
+	case PROP_PHASE2_CA_CERT_PASSWORD_FLAGS:
+		g_value_set_flags (value, priv->phase2_ca_cert_password_flags);
 		break;
 	case PROP_PHASE2_CA_PATH:
 		g_value_set_string (value, priv->phase2_ca_path);
@@ -3403,6 +3711,12 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_PHASE2_CLIENT_CERT:
 		g_value_set_boxed (value, priv->phase2_client_cert);
+		break;
+	case PROP_PHASE2_CLIENT_CERT_PASSWORD:
+		g_value_set_string (value, priv->phase2_client_cert_password);
+		break;
+	case PROP_PHASE2_CLIENT_CERT_PASSWORD_FLAGS:
+		g_value_set_flags (value, priv->phase2_client_cert_password_flags);
 		break;
 	case PROP_PASSWORD:
 		g_value_set_string (value, priv->password);
@@ -3442,6 +3756,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_SYSTEM_CA_CERTS:
 		g_value_set_boolean (value, priv->system_ca_certs);
+		break;
+	case PROP_AUTH_TIMEOUT:
+		g_value_set_int (value, priv->auth_timeout);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -3583,6 +3900,44 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                     G_PARAM_STATIC_STRINGS));
 
 	/**
+	 * NMSetting8021x:ca-cert-password:
+	 *
+	 * The password used to access the CA certificate stored in
+	 * #NMSetting8021x:ca-cert property. Only makes sense if the certificate
+	 * is stored on a PKCS#<!-- -->11 token that requires a login.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_CA_CERT_PASSWORD,
+		 g_param_spec_string (NM_SETTING_802_1X_CA_CERT_PASSWORD, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      NM_SETTING_PARAM_SECRET |
+		                      G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:ca-cert-password-flags:
+	 *
+	 * Flags indicating how to handle the #NMSetting8021x:ca-cert-password property.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_CA_CERT_PASSWORD_FLAGS,
+		 g_param_spec_flags (NM_SETTING_802_1X_CA_CERT_PASSWORD_FLAGS, "", "",
+		                     NM_TYPE_SETTING_SECRET_FLAGS,
+		                     NM_SETTING_SECRET_FLAG_NONE,
+		                     G_PARAM_READWRITE |
+		                     G_PARAM_STATIC_STRINGS));
+
+	/**
 	 * NMSetting8021x:ca-path:
 	 *
 	 * UTF-8 encoded path to a directory containing PEM or DER formatted
@@ -3701,6 +4056,44 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                     G_PARAM_STATIC_STRINGS));
 
 	/**
+	 * NMSetting8021x:client-cert-password:
+	 *
+	 * The password used to access the client certificate stored in
+	 * #NMSetting8021x:client-cert property. Only makes sense if the certificate
+	 * is stored on a PKCS#<!-- -->11 token that requires a login.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_CLIENT_CERT_PASSWORD,
+		 g_param_spec_string (NM_SETTING_802_1X_CLIENT_CERT_PASSWORD, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      NM_SETTING_PARAM_SECRET |
+		                      G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:client-cert-password-flags:
+	 *
+	 * Flags indicating how to handle the #NMSetting8021x:client-cert-password property.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_CLIENT_CERT_PASSWORD_FLAGS,
+		 g_param_spec_flags (NM_SETTING_802_1X_CLIENT_CERT_PASSWORD_FLAGS, "", "",
+		                     NM_TYPE_SETTING_SECRET_FLAGS,
+		                     NM_SETTING_SECRET_FLAG_NONE,
+		                     G_PARAM_READWRITE |
+		                     G_PARAM_STATIC_STRINGS));
+
+	/**
 	 * NMSetting8021x:phase1-peapver:
 	 *
 	 * Forces which PEAP version is used when PEAP is set as the EAP method in
@@ -3771,6 +4164,34 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                      NULL,
 		                      G_PARAM_READWRITE |
 		                      G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:phase1-auth-flags:
+	 *
+	 * Specifies authentication flags to use in "phase 1" outer
+	 * authentication using #NMSetting8021xAuthFlags options.
+	 * The invidual TLS versions can be explicitly disabled. If a certain
+	 * TLS disable flag is not set, it is up to the supplicant to allow
+	 * or forbid it. The TLS options map to tls_disable_tlsv1_x settings.
+	 * See the wpa_supplicant documentation for more details.
+	 *
+	 * Since: 1.8
+	 */
+	/* ---ifcfg-rh---
+	 * property: phase1-auth-flags
+	 * variable: IEEE_8021X_PHASE1_AUTH_FLAGS(+)
+	 * values: space-separated list of authentication flags names
+	 * description: Authentication flags for the supplicant
+	 * example: IEEE_8021X_PHASE1_AUTH_FLAGS="tls-1-0-disable tls-1-1-disable"
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_PHASE1_AUTH_FLAGS,
+		 g_param_spec_uint (NM_SETTING_802_1X_PHASE1_AUTH_FLAGS, "", "",
+		                    0, G_MAXUINT32, NM_SETTING_802_1X_AUTH_FLAGS_NONE,
+		                    G_PARAM_CONSTRUCT |
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSetting8021x:phase2-auth:
@@ -3847,6 +4268,44 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		(object_class, PROP_PHASE2_CA_CERT,
 		 g_param_spec_boxed (NM_SETTING_802_1X_PHASE2_CA_CERT, "", "",
 		                     G_TYPE_BYTES,
+		                     G_PARAM_READWRITE |
+		                     G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:phase2-ca-cert-password:
+	 *
+	 * The password used to access the "phase2" CA certificate stored in
+	 * #NMSetting8021x:phase2-ca-cert property. Only makes sense if the certificate
+	 * is stored on a PKCS#<!-- -->11 token that requires a login.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_PHASE2_CA_CERT_PASSWORD,
+		 g_param_spec_string (NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      NM_SETTING_PARAM_SECRET |
+		                      G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:phase2-ca-cert-password-flags:
+	 *
+	 * Flags indicating how to handle the #NMSetting8021x:phase2-ca-cert-password property.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_PHASE2_CA_CERT_PASSWORD_FLAGS,
+		 g_param_spec_flags (NM_SETTING_802_1X_PHASE2_CA_CERT_PASSWORD_FLAGS, "", "",
+		                     NM_TYPE_SETTING_SECRET_FLAGS,
+		                     NM_SETTING_SECRET_FLAG_NONE,
 		                     G_PARAM_READWRITE |
 		                     G_PARAM_STATIC_STRINGS));
 
@@ -3966,6 +4425,47 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                     G_PARAM_READWRITE |
 		                     G_PARAM_STATIC_STRINGS));
 
+
+
+
+	/**
+	 * NMSetting8021x:phase2-client-cert-password:
+	 *
+	 * The password used to access the "phase2" client certificate stored in
+	 * #NMSetting8021x:phase2-client-cert property. Only makes sense if the certificate
+	 * is stored on a PKCS#<!-- -->11 token that requires a login.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_PHASE2_CLIENT_CERT_PASSWORD,
+		 g_param_spec_string (NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      NM_SETTING_PARAM_SECRET |
+		                      G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:phase2-client-cert-password-flags:
+	 *
+	 * Flags indicating how to handle the #NMSetting8021x:phase2-client-cert-password property.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_PHASE2_CLIENT_CERT_PASSWORD_FLAGS,
+		 g_param_spec_flags (NM_SETTING_802_1X_PHASE2_CLIENT_CERT_PASSWORD_FLAGS, "", "",
+		                     NM_TYPE_SETTING_SECRET_FLAGS,
+		                     NM_SETTING_SECRET_FLAG_NONE,
+		                     G_PARAM_READWRITE |
+		                     G_PARAM_STATIC_STRINGS));
+
 	/**
 	 * NMSetting8021x:password:
 	 *
@@ -4066,7 +4566,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 	 * property must be set to password used to decrypt the PKCS#<!-- -->12
 	 * certificate and key. When using PKCS#<!-- -->12 files and the path
 	 * scheme, this property should be set to the full UTF-8 encoded path of the
-	 * key, prefixed with the string "file://" and and ending with a terminating
+	 * key, prefixed with the string "file://" and ending with a terminating
 	 * NUL byte, and as with the blob scheme the "private-key-password" property
 	 * must be set to the password used to decode the PKCS#<!-- -->12 private
 	 * key and certificate.
@@ -4158,7 +4658,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 	 * property must be set to password used to decrypt the PKCS#<!-- -->12
 	 * certificate and key. When using PKCS#<!-- -->12 files and the path
 	 * scheme, this property should be set to the full UTF-8 encoded path of the
-	 * key, prefixed with the string "file://" and and ending with a terminating
+	 * key, prefixed with the string "file://" and ending with a terminating
 	 * NUL byte, and as with the blob scheme the
 	 * #NMSetting8021x:phase2-private-key-password property must be set to the
 	 * password used to decode the PKCS#<!-- -->12 private key and certificate.
@@ -4290,4 +4790,28 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                       G_PARAM_READWRITE |
 		                       G_PARAM_CONSTRUCT |
 		                       G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSetting8021x:auth-timeout:
+	 *
+	 * A timeout for the authentication. Zero means the global default; if the
+	 * global default is not set, the authentication timeout is 25 seconds.
+	 *
+	 * Since: 1.8
+	 **/
+	/* ---ifcfg-rh---
+	 * property: auth-timeout
+	 * variable: IEEE_8021X_AUTH_TIMEOUT(+)
+	 * default: 0
+	 * description: Timeout in seconds for the 802.1X authentication. Zero means the global default or 25.
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_AUTH_TIMEOUT,
+		 g_param_spec_int (NM_SETTING_802_1X_AUTH_TIMEOUT, "", "",
+		                   0, G_MAXINT32, 0,
+		                   G_PARAM_READWRITE |
+		                   NM_SETTING_PARAM_FUZZY_IGNORE |
+		                   G_PARAM_STATIC_STRINGS));
+
 }

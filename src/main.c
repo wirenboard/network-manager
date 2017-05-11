@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2004 - 2012 Red Hat, Inc.
+ * Copyright (C) 2004 - 2017 Red Hat, Inc.
  * Copyright (C) 2005 - 2008 Novell, Inc.
  */
 
@@ -49,7 +49,10 @@
 #include "nm-auth-manager.h"
 #include "nm-core-internal.h"
 #include "nm-exported-object.h"
+#include "nm-connectivity.h"
+#include "dns/nm-dns-manager.h"
 #include "systemd/nm-sd.h"
+#include "nm-netns.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -57,6 +60,8 @@
 
 #define NM_DEFAULT_PID_FILE          NMRUNDIR "/NetworkManager.pid"
 #define NM_DEFAULT_SYSTEM_STATE_FILE NMSTATEDIR "/NetworkManager.state"
+
+#define CONFIG_ATOMIC_SECTION_PREFIXES ((char **) NULL)
 
 static GMainLoop *main_loop = NULL;
 static gboolean configure_and_quit = FALSE;
@@ -166,7 +171,7 @@ print_config (NMConfigCmdLineOptions *config_cli)
 
 	nm_logging_setup ("OFF", "ALL", NULL, NULL);
 
-	config = nm_config_new (config_cli, NULL, &error);
+	config = nm_config_new (config_cli, CONFIG_ATOMIC_SECTION_PREFIXES, &error);
 	if (config == NULL) {
 		fprintf (stderr, _("Failed to read configuration: %s\n"), error->message);
 		return 7;
@@ -234,7 +239,11 @@ main (int argc, char *argv[])
 
 	main_loop = g_main_loop_new (NULL, FALSE);
 
-	config_cli = nm_config_cmd_line_options_new ();
+	/* we determine a first-start (contrary to a restart during the same boot)
+	 * based on the existence of NM_CONFIG_DEVICE_STATE_DIR directory. */
+	config_cli = nm_config_cmd_line_options_new (!g_file_test (NM_CONFIG_DEVICE_STATE_DIR,
+	                                                           G_FILE_TEST_IS_DIR));
+
 	do_early_setup (&argc, &argv, config_cli);
 
 	if (global_opt.g_fatal_warnings)
@@ -299,7 +308,7 @@ main (int argc, char *argv[])
 	}
 
 	/* Read the config file and CLI overrides */
-	config = nm_config_setup (config_cli, NULL, &error);
+	config = nm_config_setup (config_cli, CONFIG_ATOMIC_SECTION_PREFIXES, &error);
 	nm_config_cmd_line_options_free (config_cli);
 	config_cli = NULL;
 	if (config == NULL) {
@@ -345,14 +354,14 @@ main (int argc, char *argv[])
 	/* Set up unix signal handling - before creating threads, but after daemonizing! */
 	nm_main_utils_setup_signals (main_loop);
 
-	nm_logging_syslog_openlog (nm_config_get_is_debug (config)
-	                           ? "debug"
-	                           : nm_config_data_get_value_cached (NM_CONFIG_GET_DATA_ORIG,
-	                                                              NM_CONFIG_KEYFILE_GROUP_LOGGING,
-	                                                              NM_CONFIG_KEYFILE_KEY_LOGGING_BACKEND,
-	                                                              NM_CONFIG_GET_VALUE_STRIP | NM_CONFIG_GET_VALUE_NO_EMPTY));
+	nm_logging_syslog_openlog (nm_config_data_get_value_cached (NM_CONFIG_GET_DATA_ORIG,
+	                                                            NM_CONFIG_KEYFILE_GROUP_LOGGING,
+	                                                            NM_CONFIG_KEYFILE_KEY_LOGGING_BACKEND,
+	                                                            NM_CONFIG_GET_VALUE_STRIP | NM_CONFIG_GET_VALUE_NO_EMPTY),
+	                           nm_config_get_is_debug (config));
 
-	nm_log_info (LOGD_CORE, "NetworkManager (version " NM_DIST_VERSION ") is starting...");
+	nm_log_info (LOGD_CORE, "NetworkManager (version " NM_DIST_VERSION ") is starting... (%s)",
+	             nm_config_get_first_start (config) ? "for the first time" : "after a restart");
 
 	nm_log_info (LOGD_CORE, "Read config: %s", nm_config_data_get_config_description (nm_config_get_data (config)));
 	nm_config_data_log (nm_config_get_data (config), "CONFIG: ", "  ", NULL);
@@ -367,6 +376,11 @@ main (int argc, char *argv[])
 	             "disabled"
 #endif
 	             );
+
+	/* Set up platform interaction layer */
+	nm_linux_platform_setup ();
+
+	NM_UTILS_KEEP_ALIVE (config, nm_netns_get (), "NMConfig-depends-on-NMNetns");
 
 	nm_auth_manager_setup (nm_config_data_get_value_boolean (nm_config_get_data_orig (config),
 	                                                         NM_CONFIG_KEYFILE_GROUP_MAIN,
@@ -385,10 +399,9 @@ main (int argc, char *argv[])
 		}
 	}
 
-	/* Set up platform interaction layer */
-	nm_linux_platform_setup ();
-
-	NM_UTILS_KEEP_ALIVE (config, NM_PLATFORM_GET, "NMConfig-depends-on-NMPlatform");
+#if WITH_CONCHECK
+	NM_UTILS_KEEP_ALIVE (nm_manager_get (), nm_connectivity_get (), "NMManager-depends-on-NMConnectivity");
+#endif
 
 	nm_dispatcher_init ();
 
@@ -398,6 +411,8 @@ main (int argc, char *argv[])
 		nm_log_err (LOGD_CORE, "failed to initialize: %s", error->message);
 		goto done;
 	}
+
+	nm_platform_process_events (NM_PLATFORM_GET);
 
 	/* Make sure the loopback interface is up. If interface is down, we bring
 	 * it up and kernel will assign it link-local IPv4 and IPv6 addresses. If
@@ -433,6 +448,8 @@ done:
 	nm_manager_stop (nm_manager_get ());
 
 	nm_config_state_set (config, TRUE, TRUE);
+
+	nm_dns_manager_stop (nm_dns_manager_get ());
 
 	if (global_opt.pidfile && wrote_pidfile)
 		unlink (global_opt.pidfile);

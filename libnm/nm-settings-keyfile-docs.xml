@@ -24,6 +24,8 @@ or semicolon separated list of 6 decimal bytes (obsolete)"/>
 </setting>
 <setting name="dcb">
 </setting>
+<setting name="dummy">
+</setting>
 <setting name="generic">
 </setting>
 <setting name="gsm">
@@ -71,6 +73,8 @@ versions of NetworkManager stored this as an integer: 69 (&apos;E&apos;) for eve
 <setting name="team">
 </setting>
 <setting name="tun">
+</setting>
+<setting name="user">
 </setting>
 <setting name="vlan">
 </setting>

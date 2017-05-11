@@ -77,7 +77,7 @@ G_DEFINE_TYPE (NMAuditManager, nm_audit_manager, G_TYPE_OBJECT)
 #define _NMLOG_PREFIX_NAME    "audit"
 #define _NMLOG(level, domain, ...) \
     G_STMT_START { \
-        nm_log ((level), (domain), \
+        nm_log ((level), (domain), NULL, NULL, \
                 "%s" _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
                 _NMLOG_PREFIX_NAME": " \
                 _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
@@ -302,11 +302,11 @@ _nm_audit_manager_log_generic_op (NMAuditManager *self, const char *file, guint 
 void
 _nm_audit_manager_log_device_op (NMAuditManager *self, const char *file, guint line,
                                  const char *func, const char *op, NMDevice *device,
-                                 gboolean result, gpointer subject_context,
+                                 gboolean result, const char *args, gpointer subject_context,
                                  const char *reason)
 {
 	gs_unref_ptrarray GPtrArray *fields = NULL;
-	AuditField interface_field = { }, ifindex_field = { };
+	AuditField interface_field = { }, ifindex_field = { }, args_field = { };
 	int ifindex;
 
 	g_return_if_fail (op);
@@ -322,6 +322,11 @@ _nm_audit_manager_log_device_op (NMAuditManager *self, const char *file, guint l
 	if (ifindex > 0) {
 		_audit_field_init_uint (&ifindex_field, "ifindex", ifindex, BACKEND_ALL);
 		g_ptr_array_add (fields, &ifindex_field);
+	}
+
+	if (args) {
+		_audit_field_init_string (&args_field, "args", args, FALSE, BACKEND_ALL);
+		g_ptr_array_add (fields, &args_field);
 	}
 
 	_audit_log_helper (self, fields, file, line, func, op, result, subject_context, reason);

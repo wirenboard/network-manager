@@ -34,6 +34,10 @@
    */
 #undef HAVE_DCGETTEXT
 
+/* Define to 1 if you have the declaration of `explicit_bzero', and to 0 if
+   you don't. */
+#undef HAVE_DECL_EXPLICIT_BZERO
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -200,17 +204,26 @@
 /* Define to 1 if ConsoleKit is available */
 #undef SESSION_TRACKING_CONSOLEKIT
 
+/* Define to 1 if libelogin is available */
+#undef SESSION_TRACKING_ELOGIND
+
 /* Define to 1 if libsystemd-login is available */
 #undef SESSION_TRACKING_SYSTEMD
 
 /* The size of `dev_t', as computed by sizeof. */
 #undef SIZEOF_DEV_T
 
+/* The size of `time_t', as computed by sizeof. */
+#undef SIZEOF_TIME_T
+
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
 /* Define to 1 to use ConsoleKit2 suspend api */
 #undef SUSPEND_RESUME_CONSOLEKIT
+
+/* Define to 1 to use elogind suspend api */
+#undef SUSPEND_RESUME_ELOGIND
 
 /* Define to 1 to use systemd suspend api */
 #undef SUSPEND_RESUME_SYSTEMD
@@ -267,8 +280,8 @@
 /* Define if JANSSON is enabled */
 #undef WITH_JANSSON
 
-/* Define if you have libsoup */
-#undef WITH_LIBSOUP
+/* Define if you have libpsl */
+#undef WITH_LIBPSL
 
 /* Define if you have ModemManager1 support */
 #undef WITH_MODEM_MANAGER_1
