@@ -46,6 +46,7 @@ override_dh_auto_configure:
 		--enable-teamdctl \
 		--enable-json-validation \
 		--enable-bluez5-dun \
+		--enable-vala \
 		--with-selinux=yes \
 		--with-libaudit=yes
 

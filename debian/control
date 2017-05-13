@@ -42,6 +42,7 @@ Build-Depends: debhelper (>= 10),
                libteam-dev (>= 1.9),
                libjansson-dev,
                libbluetooth-dev (>= 5),
+               valac (>= 0.17.1.24),
                dbus <!nocheck>,
                python-gi <!nocheck>,
                python-dbus <!nocheck>
