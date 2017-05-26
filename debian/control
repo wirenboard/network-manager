@@ -285,3 +285,16 @@ Description: GObject introspection data for the libnm library
  It can be used by packages using the GIRepository format to generate
  dynamic bindings.
 
+Package: network-manager-config-connectivity-debian
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends},
+         network-manager (>= ${source:Version})
+Description: NetworkManager configuration to enable connectivity checking
+ This package contains a configuration file which enables NetworkManager's
+ connectivity checking functionality.
+ .
+ NetworkManager will try to connect to a Debian server to determine the
+ connection status.
+ .
+ This is particularly useful for captive portal detection.
