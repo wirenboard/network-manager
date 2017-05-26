@@ -24,10 +24,6 @@ case "$1" in
         # org.freedesktop.NetworkManager.settings.modify.system without prior authentication
         addgroup --quiet --system netdev
 
-        if [ -x "/etc/init.d/dbus" ]; then
-            invoke-rc.d dbus force-reload || true
-        fi
-
         NIF=/etc/network/interfaces
         if [ -z "$2" ] && [ -f $NIF ]; then
             ifaces=`grep -v '^#' $NIF | awk '/iface/ {print $2}' | sort -u | sed -e 's/lo//' -e '/^$/d' -e 's/^/- /'`
