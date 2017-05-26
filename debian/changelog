@@ -1,3 +1,22 @@
+network-manager (1.8.0-3) experimental; urgency=medium
+
+  [ Rico Tzschichholz ]
+  * Enable vala bindings support
+
+  [ Michael Biebl ]
+  * Enable connectivity checking functionality.
+    Provide a new package called network-manager-config-connectivity-debian
+    which can be installed to enable NetworkManager's connectivity checking
+    functionality. This is particularly useful for captive portal detection.
+    (Closes: #729783, #859934)
+  * Reload NetworkManager after installing
+    network-manager-config-connectivity-debian
+  * Drop obsolete migration code
+  * Stop reloading dbus after installing network-manager.
+    Nowadays this is done automatically by dbus via dpkg file triggers.
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 26 May 2017 23:49:46 +0200
+
 network-manager (1.8.0-2) experimental; urgency=medium
 
   * core: fix reading device state file.
