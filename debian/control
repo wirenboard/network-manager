@@ -298,3 +298,7 @@ Description: NetworkManager configuration to enable connectivity checking
  connection status.
  .
  This is particularly useful for captive portal detection.
+ .
+ No user data is transmitted in the connectivity checks, but merely contacting
+ the Debian connectivity check servers reveals that the user is running a
+ Debian(-based) operating system with NetworkManager.
