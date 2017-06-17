@@ -25,7 +25,7 @@ case "$1" in
         # Replace /etc/resolv.conf symlink with an empty file on package
         # removal to signal other packages that NetworkManager is no longer
         # controlling the file. (See: #826366)
-        if [ "$(readlink /etc/resolv.conf)" = /var/run/NetworkManager/resolv.conf ] ; then
+        if [ "$(readlink /etc/resolv.conf)" = /run/NetworkManager/resolv.conf ] ; then
             rm -f /etc/resolv.conf
             touch /etc/resolv.conf
         fi

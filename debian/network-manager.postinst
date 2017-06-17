@@ -37,6 +37,13 @@ case "$1" in
                 echo "" 1>&2
             fi
         fi
+
+        # Fix up existing /etc/resolv.conf symlinks after the migration to /run
+        if dpkg --compare-versions "$2" lt-nl "1.8.0-4"; then
+            if [ "$(readlink /etc/resolv.conf)" = /var/run/NetworkManager/resolv.conf ] ; then
+                ln -sf  /run/NetworkManager/resolv.conf /etc/resolv.conf
+            fi
+        fi
         ;;
 
     abort-upgrade|abort-deconfigure|abort-remove)
