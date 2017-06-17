@@ -1,0 +1,26 @@
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Mon, 22 May 2017 17:04:48 +0200
+Subject: device: capture the IP6 configuration on the IP interface
+
+Fixes a crash with Bluetooth devices where the device is the BlueZ
+device and iface stays 0 while the IP interface is the actual BNEP link.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=782545
+(cherry picked from commit 30d06b2253b7277ed1153bcbbc81f9e1ca3e3474)
+---
+ src/devices/nm-device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index da581a0..9c46e81 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -7725,7 +7725,7 @@ act_stage3_ip6_config_start (NMDevice *self,
+ 	nm_platform_process_events (nm_device_get_platform (self));
+ 	g_clear_object (&priv->ext_ip6_config_captured);
+ 	priv->ext_ip6_config_captured = nm_ip6_config_capture (nm_device_get_platform (self),
+-	                                                       nm_device_get_ifindex (self),
++	                                                       nm_device_get_ip_ifindex (self),
+ 	                                                       FALSE,
+ 	                                                       NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN);
+ 
