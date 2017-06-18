@@ -1,3 +1,21 @@
+network-manager (1.8.0-5) unstable; urgency=medium
+
+  * Install ifupdown dispatcher script via network-manager.install.
+    This avoids a FTBFS when doing arch:all builds.
+    Rename the script to 01-ifupdown while at it for consistencies sake.
+    (Closes: #864980)
+  * Fix creation of network-manager.service symlink.
+    Explicitly specify the network-manager package when creating the
+    symlink. Otherwise the symlink is created for the wrong package when
+    doing arch:all builds where the first package is not network-manager.
+  * Add gir related lintian overrides.
+    We deliberately ship NMClient-1.0.typelib alongside
+    NetworkManager-1.0.typelib in gir1.2-networkmanager-1.0.
+    Add overrides for typelib-package-name-does-not-match and
+    gir-missing-typelib-dependency.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 18 Jun 2017 21:23:48 +0200
+
 network-manager (1.8.0-4) unstable; urgency=medium
 
   * Mention privacy implications of the connectivity checks.
