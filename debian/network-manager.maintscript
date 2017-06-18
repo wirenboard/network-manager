@@ -1,1 +1,2 @@
 rm_conffile /etc/dbus-1/system.d/nm-avahi-autoipd.conf 1.1.90-2~
+mv_conffile /etc/NetworkManager/dispatcher.d/01ifupdown /etc/NetworkManager/dispatcher.d/01-ifupdown 1.8.0-5~
