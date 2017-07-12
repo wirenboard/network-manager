@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>org.freedesktop.NetworkManager: NetworkManager Reference Manual</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
 <link rel="up" href="ref-dbus-manager.html" title="The /org/freedesktop/NetworkManager object">
 <link rel="prev" href="ref-dbus-manager.html" title="The /org/freedesktop/NetworkManager object">
@@ -478,11 +478,6 @@ CheckpointCreate (IN  ao devices,
                   IN  u  flags,
                   OUT o  checkpoint);
 </pre>
-<p>        <em class="parameter"><code>devices</code></em>: a list of device paths for which a checkpoint should be created. An empty list means all devices.
-        <em class="parameter"><code>rollback_timeout</code></em>: the time in seconds until NetworkManager will automatically rollback to the checkpoint. Set to zero for infinite.
-        <em class="parameter"><code>flags</code></em>: optional flags that influence the creation.
-        <em class="parameter"><code>checkpoint</code></em>: on success, returns the path of the checkpoint.
-</p>
 <p>        Create a checkpoint of the current networking configuration
         for given interfaces. If <em class="parameter"><code>rollback_timeout</code></em> is not zero, a
         rollback is automatically performed after the given timeout.
@@ -495,19 +490,19 @@ CheckpointCreate (IN  ao devices,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">IN ao <em class="parameter"><code>devices</code></em></code>:</span></p></td>
-<td><p></p></td>
+<td><p>A list of device paths for which a checkpoint should be created. An empty list means all devices.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">IN u <em class="parameter"><code>rollback_timeout</code></em></code>:</span></p></td>
-<td><p></p></td>
+<td><p>The time in seconds until NetworkManager will automatically rollback to the checkpoint. Set to zero for infinite.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">IN u <em class="parameter"><code>flags</code></em></code>:</span></p></td>
-<td><p></p></td>
+<td><p>(<a class="link" href="nm-dbus-types.html#NMCheckpointCreateFlags" title="enum NMCheckpointCreateFlags">NMCheckpointCreateFlags</a>) Flags for the creation.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">OUT o <em class="parameter"><code>checkpoint</code></em></code>:</span></p></td>
-<td><p></p></td>
+<td><p>On success, the path of the new checkpoint.</p></td>
 </tr>
 </tbody>
 </table></div>
@@ -527,7 +522,7 @@ CheckpointDestroy (IN  o checkpoint);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">IN o <em class="parameter"><code>checkpoint</code></em></code>:</span></p></td>
-<td><p>the checkpoint to be destroyed. Set to empty to cancel all pending checkpoints.</p></td>
+<td><p>The checkpoint to be destroyed. Set to empty to cancel all pending checkpoints.</p></td>
 </tr></tbody>
 </table></div>
 </div>
@@ -548,11 +543,11 @@ CheckpointRollback (IN  o     checkpoint,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">IN o <em class="parameter"><code>checkpoint</code></em></code>:</span></p></td>
-<td><p>the checkpoint to be rolled back.</p></td>
+<td><p>The checkpoint to be rolled back.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">OUT a{su} <em class="parameter"><code>result</code></em></code>:</span></p></td>
-<td><p>on return, a dictionary of devices and results. Devices are represented by their original D-Bus path; each result is a <a class="link" href="nm-dbus-types.html#NMRollbackResult" title="enum NMRollbackResult">RollbackResult</a>.</p></td>
+<td><p>On return, a dictionary of devices and results. Devices are represented by their original D-Bus path; each result is a <a class="link" href="nm-dbus-types.html#NMRollbackResult" title="enum NMRollbackResult">RollbackResult</a>.</p></td>
 </tr>
 </tbody>
 </table></div>

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NetworkManager.conf: NetworkManager Reference Manual</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
 <link rel="up" href="manpages.html" title="Part I. Manual Pages">
 <link rel="prev" href="NetworkManager.html" title="NetworkManager">
@@ -396,6 +396,17 @@ no-auto-default=*
             times.
           </p></td>
 </tr>
+<tr>
+<td><p><span class="term"><code class="varname">slaves-order</code></span></p></td>
+<td><p>
+            This key specifies in which order slave connections are
+            auto-activated on boot or when the master activates
+            them. Allowed values are <code class="literal">name</code> (order
+            connection by interface name, the default), or
+            <code class="literal">index</code> (order slaves by their kernel
+            index).
+          </p></td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -609,7 +620,7 @@ ipv6.ip6-privacy=0
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">ethernet.mtu</code></span></p></td>
-<td><p>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500.</p></td>
+<td><p>If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or the MTU is not reconfigured during activation.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">ethernet.wake-on-lan</code></span></p></td>

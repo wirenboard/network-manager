@@ -206,6 +206,8 @@ Udi  readable   s
         each device in your application, use the object path. If you're looking
         for a way to track a specific piece of hardware across reboot or hotplug,
         use a MAC address or USB serial number.
+</para><para>        Note that non-UTF-8 characters are backslash escaped. Use g_strcompress()
+        to obtain the true (non-UTF-8) string.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device.Interface">
@@ -215,6 +217,9 @@ Udi  readable   s
 Interface  readable   s
 </programlisting>
 <para>        The name of the device's control (and often data) interface.
+        Note that non UTF-8 characters are backslash escaped, so the
+        resulting name may be longer then 15 characters. Use g_strcompress()
+        to revert the escaping.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device.IpInterface">
@@ -227,6 +232,9 @@ IpInterface  readable   s
         not refer to the actual data interface until the device has successfully
         established a data connection, indicated by the device's State becoming
         ACTIVATED.
+        Note that non UTF-8 characters are backslash escaped, so the
+        resulting name may be longer then 15 characters. Use g_strcompress()
+        to revert the escaping.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device.Driver">
@@ -236,6 +244,8 @@ IpInterface  readable   s
 Driver  readable   s
 </programlisting>
 <para>        The driver handling the device.
+        Non-UTF-8 sequences are backslash escaped. Use g_strcompress()
+        to revert.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device.DriverVersion">
@@ -245,6 +255,8 @@ Driver  readable   s
 DriverVersion  readable   s
 </programlisting>
 <para>        The version of the driver handling the device.
+        Non-UTF-8 sequences are backslash escaped. Use g_strcompress()
+        to revert.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device.FirmwareVersion">
@@ -254,6 +266,8 @@ DriverVersion  readable   s
 FirmwareVersion  readable   s
 </programlisting>
 <para>        The firmware version for the device.
+        Non-UTF-8 sequences are backslash escaped. Use g_strcompress()
+        to revert.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device.Capabilities">

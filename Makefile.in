@@ -995,10 +995,14 @@ libnm_util_libtest_crypto_la_OBJECTS =  \
 	$(am_libnm_util_libtest_crypto_la_OBJECTS)
 @ENABLE_TESTS_FALSE@@WITH_LEGACY_LIBRARIES_TRUE@am_libnm_util_libtest_crypto_la_rpath =
 @ENABLE_TESTS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am_libnm_util_libtest_crypto_la_rpath =
-libnm_libnm_la_DEPENDENCIES = libnm-core/libnm-core.la \
-	introspection/libnmdbus.la $(am__DEPENDENCIES_1) \
+libnm_libnm_utils_la_DEPENDENCIES = libnm-core/libnm-core.la \
+	introspection/libnmdbus.la $(am__DEPENDENCIES_1)
+am_libnm_libnm_utils_la_OBJECTS =  \
+	libnm/libnm_libnm_utils_la-nm-libnm-utils.lo
+libnm_libnm_utils_la_OBJECTS = $(am_libnm_libnm_utils_la_OBJECTS)
+libnm_libnm_la_DEPENDENCIES = libnm/libnm-utils.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__objects_17 = libnm/libnm_libnm_la-nm-access-point.lo \
 	libnm/libnm_libnm_la-nm-active-connection.lo \
 	libnm/libnm_libnm_la-nm-client.lo \
@@ -1657,7 +1661,8 @@ src_settings_plugins_ifupdown_libnms_ifupdown_core_la_OBJECTS = $(am_src_setting
 @CONFIG_PLUGIN_IFUPDOWN_TRUE@am_src_settings_plugins_ifupdown_libnms_ifupdown_core_la_rpath =
 @BUILD_NMCLI_TRUE@am__EXEEXT_1 = clients/cli/nmcli$(EXEEXT)
 @BUILD_NMTUI_TRUE@am__EXEEXT_2 = clients/tui/nmtui$(EXEEXT)
-am__EXEEXT_3 = libnm/tests/test-nm-client$(EXEEXT) \
+am__EXEEXT_3 = libnm/tests/test-general$(EXEEXT) \
+	libnm/tests/test-nm-client$(EXEEXT) \
 	libnm/tests/test-remote-settings-client$(EXEEXT) \
 	libnm/tests/test-secret-agent$(EXEEXT)
 @CONFIG_PLUGIN_IBFT_TRUE@am__EXEEXT_4 = src/settings/plugins/ibft/tests/test-ibft$(EXEEXT)
@@ -2086,11 +2091,17 @@ libnm_util_tests_test_settings_defaults_SOURCES =  \
 libnm_util_tests_test_settings_defaults_OBJECTS = libnm-util/tests/libnm_util_tests_test_settings_defaults-test-settings-defaults.$(OBJEXT)
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_tests_test_settings_defaults_DEPENDENCIES =  \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(am__DEPENDENCIES_11)
+am_libnm_tests_test_general_OBJECTS =  \
+	libnm/tests/libnm_tests_test_general-test-general.$(OBJEXT)
+libnm_tests_test_general_OBJECTS =  \
+	$(am_libnm_tests_test_general_OBJECTS)
+am__DEPENDENCIES_12 = libnm/libnm.la $(am__DEPENDENCIES_1)
+libnm_tests_test_general_DEPENDENCIES = libnm/libnm-utils.la \
+	$(am__DEPENDENCIES_12)
 am_libnm_tests_test_nm_client_OBJECTS = shared/libnm_tests_test_nm_client-nm-test-utils-impl.$(OBJEXT) \
 	libnm/tests/libnm_tests_test_nm_client-test-nm-client.$(OBJEXT)
 libnm_tests_test_nm_client_OBJECTS =  \
 	$(am_libnm_tests_test_nm_client_OBJECTS)
-am__DEPENDENCIES_12 = libnm/libnm.la $(am__DEPENDENCIES_1)
 libnm_tests_test_nm_client_DEPENDENCIES = $(am__DEPENDENCIES_12)
 am_libnm_tests_test_remote_settings_client_OBJECTS = shared/libnm_tests_test_remote_settings_client-nm-test-utils-impl.$(OBJEXT) \
 	libnm/tests/libnm_tests_test_remote_settings_client-test-remote-settings-client.$(OBJEXT)
@@ -2510,7 +2521,8 @@ SOURCES = $(clients_tui_newt_libnmt_newt_a_SOURCES) \
 	$(libnm_util_libnm_util_la_SOURCES) \
 	$(nodist_libnm_util_libnm_util_la_SOURCES) \
 	$(libnm_util_libtest_crypto_la_SOURCES) \
-	$(libnm_libnm_la_SOURCES) $(nodist_libnm_libnm_la_SOURCES) \
+	$(libnm_libnm_utils_la_SOURCES) $(libnm_libnm_la_SOURCES) \
+	$(nodist_libnm_libnm_la_SOURCES) \
 	$(libnm_tests_libnm_vpn_plugin_utils_test_la_SOURCES) \
 	$(src_devices_adsl_libnm_device_plugin_adsl_la_SOURCES) \
 	$(src_devices_bluetooth_libnm_device_plugin_bluetooth_la_SOURCES) \
@@ -2568,6 +2580,7 @@ SOURCES = $(clients_tui_newt_libnmt_newt_a_SOURCES) \
 	libnm-util/tests/test-setting-8021x.c \
 	libnm-util/tests/test-setting-dcb.c \
 	libnm-util/tests/test-settings-defaults.c \
+	$(libnm_tests_test_general_SOURCES) \
 	$(libnm_tests_test_nm_client_SOURCES) \
 	$(libnm_tests_test_remote_settings_client_SOURCES) \
 	$(libnm_tests_test_secret_agent_SOURCES) \
@@ -2613,7 +2626,7 @@ DIST_SOURCES = $(am__clients_tui_newt_libnmt_newt_a_SOURCES_DIST) \
 	$(am__libnm_glib_libnm_glib_la_SOURCES_DIST) \
 	$(am__libnm_util_libnm_util_la_SOURCES_DIST) \
 	$(am__libnm_util_libtest_crypto_la_SOURCES_DIST) \
-	$(libnm_libnm_la_SOURCES) \
+	$(libnm_libnm_utils_la_SOURCES) $(libnm_libnm_la_SOURCES) \
 	$(libnm_tests_libnm_vpn_plugin_utils_test_la_SOURCES) \
 	$(src_devices_adsl_libnm_device_plugin_adsl_la_SOURCES) \
 	$(am__src_devices_bluetooth_libnm_device_plugin_bluetooth_la_SOURCES_DIST) \
@@ -2668,6 +2681,7 @@ DIST_SOURCES = $(am__clients_tui_newt_libnmt_newt_a_SOURCES_DIST) \
 	libnm-util/tests/test-setting-8021x.c \
 	libnm-util/tests/test-setting-dcb.c \
 	libnm-util/tests/test-settings-defaults.c \
+	$(libnm_tests_test_general_SOURCES) \
 	$(libnm_tests_test_nm_client_SOURCES) \
 	$(libnm_tests_test_remote_settings_client_SOURCES) \
 	$(libnm_tests_test_secret_agent_SOURCES) \
@@ -3345,10 +3359,13 @@ _vapi_name = $(subst /,_,$(subst -,_,$(subst .,_,$(1))))
 AUTOMAKE_OPTIONS = subdir-objects
 
 ###############################################################################
+
+###############################################################################
 noinst_LTLIBRARIES = introspection/libnmdbus.la \
-	libnm-core/libnm-core.la src/libNetworkManagerBase.la \
-	src/libNetworkManager.la src/libsystemd-nm.la $(am__append_22) \
-	$(am__append_27) $(am__append_33) $(am__append_37) \
+	libnm-core/libnm-core.la libnm/libnm-utils.la \
+	src/libNetworkManagerBase.la src/libNetworkManager.la \
+	src/libsystemd-nm.la $(am__append_22) $(am__append_27) \
+	$(am__append_33) $(am__append_37) \
 	dispatcher/libnm-dispatcher-core.la $(am__append_85) \
 	$(am__append_100)
 check_LTLIBRARIES = $(am__append_102)
@@ -3465,165 +3482,10 @@ EXTRA_DIST = $(dbusinterfaces_DATA) libnm-core/crypto_gnutls.c \
 	src/settings/plugins/keyfile/tests/keyfiles/test-ca-cert.pem \
 	src/settings/plugins/keyfile/tests/keyfiles/test-key-and-cert.pem \
 	$(am__append_24) \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-minimal \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-misc-variables \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-variables-corner-cases-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-nm-controlled \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-nm-controlled-unrecognized \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-unrecognized \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-bootproto \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-plus-ip \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-shared-plus-ip \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-send-hostname \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcpv6-hostname-fallback \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp6-only \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-autoip \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway-ignore \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway-ignore \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-obsolete-gateway-n \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-never-default \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-never-default \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no-gatewaydev-yes \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-defroute-no-gatewaydev-yes \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-peap-mschapv2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wired-8021x-peap-mschapv2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-agent \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-always \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1X-subj-matches \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1x-ttls-eapgtc \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-onboot-no \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-noip \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-auto \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-quoted \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-quoted \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-hex \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-hex \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-bad-hex \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-adhoc \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-adhoc \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-eap-ttls-chap \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-eap-ttls-chap \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-leap \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-agent \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-always-ask \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-adhoc \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-adhoc \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-hex \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-hex \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-tls \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-tls \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-ttls-tls \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-ttls-tls \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-hidden \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a-channel-mismatch \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-bg-channel-mismatch \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-always \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-never \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-default \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-missing \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/test_ca_cert.pem \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/test1_key_and_cert.pem \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ibft \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-static-routes-legacy \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-sit-ignore \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes-legacy \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes-legacy \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-3 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-4 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-manual \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/route6-test-wired-ipv6-manual \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-8 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-16 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-24 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-passphrase \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-passphrase \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-40-ascii \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-40-ascii \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-104-ascii \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-104-ascii \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-qeth-static \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ctc-static \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-main \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-component \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-missing-stp \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-interface \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-vlanid \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-device \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-physdev \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-no-keys \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-permissions \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-agent-keys \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-dynamic-wep-leap \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-dynamic-wep-leap \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-infiniband \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-eth-type \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-main \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave-ib \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-mode-numeric \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-default-app-priorities \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-booleans \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-booleans \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-uints \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-uints \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-percent \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-percent \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-pgpct-not-100 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-fabric \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-vn2vn \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-invalid \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-empty-config \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-read-proxy-basic \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-trailing-spaces \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dns-options \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-wake-on-lan \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-auto-negotiate-on \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-unknown-ethtool-opt \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-1 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-1.expected \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-2 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-2.expected \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-3 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-3.expected \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-4 \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-4.expected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-bridge-component-a.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-bridge-component-b.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-System_test-wired-802-1X-subj-matches.cexpected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_User_1.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Bond_Main.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Bridge_Component.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Permissions.cexpected \
@@ -3642,12 +3504,169 @@ EXTRA_DIST = $(dbusinterfaces_DATA) libnm-core/crypto_gnutls.c \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_Write_Wired_Wake-on-LAN.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Vlan_test-vlan-interface.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-dcb-test.cexpected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-netmask-1.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-random_wifi_connection_2.cexpected \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-team-slave-enp31s0f1-142.cexpected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-eth-type \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-main \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-mode-numeric \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bond-slave-ib \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-component \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-main \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-bridge-missing-stp \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-booleans \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-percent \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-bad-uints \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-default-app-priorities \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-pgpct-not-100 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-booleans \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-percent \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dcb-short-uints \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-dns-options \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-fabric \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-fcoe-vn2vn \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ibft \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-infiniband \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-minimal \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-misc-variables \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-nm-controlled \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-nm-controlled-unrecognized \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-noip \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-onboot-no \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-permissions \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-read-proxy-basic \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-sit-ignore \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy \
 	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-static-routes-legacy.cexpected \
-	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-Test_User_1.cexpected \
-	src/settings/plugins/ifcfg-rh/nm-ifcfg-rh.conf \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-master-invalid \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-team-port-empty-config \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-unrecognized \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-variables-corner-cases-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-flags-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-interface \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-device \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-only-vlanid \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-physdev \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-reorder-hdr-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-vlan-trailing-spaces \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-a-channel-mismatch \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-band-bg-channel-mismatch \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-dynamic-wep-leap \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-hidden \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-agent \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-leap-always-ask \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-always \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-default \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-missing \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-mac-random-never \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-auto \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-bad-hex \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-hex \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-hex \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-long-quoted \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-open-ssid-quoted \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-104-ascii \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-40-ascii \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-adhoc \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-agent-keys \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-eap-ttls-chap \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-no-keys \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wep-passphrase \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-tls \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-eap-ttls-tls \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-adhoc \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-hex \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wifi-wpa-psk-unquoted2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1X-subj-matches \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-802-1x-ttls-eapgtc \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-peap-mschapv2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-agent \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-8021x-tls-always \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-auto-negotiate-on \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-autoip \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ctc-static \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-defroute-no-gatewaydev-yes \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-plus-ip \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp-send-hostname \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcp6-only \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-dhcpv6-hostname-fallback \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-global-gateway-ignore \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-3 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv4-manual-4 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-manual \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-ipv6-only-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-never-default \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-obsolete-gateway-n \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-qeth-static \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-shared-plus-ip \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-bootproto \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-16 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-24 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-no-prefix-8 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-static-routes-legacy \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-unknown-ethtool-opt \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-wired-wake-on-lan \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-1 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-1.expected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-2.expected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-3 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-3.expected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-4 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-write-unknown-4.expected \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-dynamic-wep-leap \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-leap \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-104-ascii \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-40-ascii \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-adhoc \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-eap-ttls-chap \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wep-passphrase \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-tls \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-eap-ttls-tls \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-adhoc \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-hex \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wifi-wpa-psk-unquoted2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/keys-test-wired-8021x-peap-mschapv2 \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-defroute-no-gatewaydev-yes \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-global-gateway-ignore \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/network-test-wired-never-default \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-static-routes-legacy \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/route-test-wired-static-routes-legacy \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/route6-test-wired-ipv6-manual \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/test1_key_and_cert.pem \
+	src/settings/plugins/ifcfg-rh/tests/network-scripts/test_ca_cert.pem \
+	$(NULL) src/settings/plugins/ifcfg-rh/nm-ifcfg-rh.conf \
 	src/settings/plugins/ifcfg-rh/nm-ifcfg-rh.xml \
 	src/settings/plugins/ifupdown/tests/test1 \
 	src/settings/plugins/ifupdown/tests/test2 \
@@ -4340,6 +4359,7 @@ libnm_lib_h_pub_mkenums = \
 	libnm/nm-enum-types.h
 
 libnm_lib_h_priv = \
+	libnm/nm-libnm-utils.h \
 	libnm/nm-dbus-helpers.h \
 	libnm/nm-device-private.h \
 	libnm/nm-dhcp4-config.h \
@@ -4398,6 +4418,25 @@ libnm_lib_c_real = \
 libnm_lib_c_mkenums = \
 	libnm/nm-enum-types.c
 
+libnm_lib_cppflags = \
+	$(dflt_cppflags_libnm_core) \
+	-I$(srcdir)/libnm \
+	-I$(builddir)/libnm \
+	-DG_LOG_DOMAIN=\""libnm"\" \
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
+	-DNMRUNDIR=\"$(nmrundir)\"
+
+libnm_libnm_utils_la_CPPFLAGS = \
+	$(libnm_lib_cppflags)
+
+libnm_libnm_utils_la_SOURCES = \
+	libnm/nm-libnm-utils.c
+
+libnm_libnm_utils_la_LIBADD = \
+	libnm-core/libnm-core.la \
+	introspection/libnmdbus.la \
+	$(GLIB_LIBS)
+
 nm_enum_types_sources = \
 	$(libnm_lib_h_pub_mkenums) \
 	$(libnm_lib_h_pub_real) \
@@ -4406,13 +4445,8 @@ nm_enum_types_sources = \
 nm_enum_types_MKENUMS_H_FLAGS = --identifier-prefix NM --fhead '\#include <nm-core-enum-types.h>\n'
 nm_enum_types_MKENUMS_C_FLAGS = --identifier-prefix NM --fhead '\#include "nm-default.h"\n'
 libnm_libnm_la_CPPFLAGS = \
-	$(dflt_cppflags_libnm_core) \
-	-I$(srcdir)/libnm \
-	-I$(builddir)/libnm \
-	$(LIBUDEV_CFLAGS) \
-	-DG_LOG_DOMAIN=\""libnm"\" \
-	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
-	-DNMRUNDIR=\"$(nmrundir)\"
+	$(libnm_lib_cppflags) \
+	$(LIBUDEV_CFLAGS)
 
 libnm_libnm_la_SOURCES = \
 	$(libnm_lib_h_pub_real) \
@@ -4428,8 +4462,7 @@ EXTRA_libnm_libnm_la_DEPENDENCIES = \
 	libnm/libnm.ver
 
 libnm_libnm_la_LIBADD = \
-	libnm-core/libnm-core.la \
-	introspection/libnmdbus.la \
+	libnm/libnm-utils.la \
 	$(DL_LIBS) \
 	$(GLIB_LIBS) \
 	$(UUID_LIBS) \
@@ -4468,6 +4501,7 @@ libnm_libnm_la_LDFLAGS = \
 
 ###############################################################################
 libnm_tests_programs = \
+	libnm/tests/test-general \
 	libnm/tests/test-nm-client \
 	libnm/tests/test-remote-settings-client \
 	libnm/tests/test-secret-agent
@@ -4483,9 +4517,13 @@ libnm_tests_ldadd = \
 	libnm/libnm.la \
 	$(GLIB_LIBS)
 
+libnm_tests_test_general_CPPFLAGS = $(libnm_tests_cppflags)
 libnm_tests_test_nm_client_CPPFLAGS = $(libnm_tests_cppflags)
 libnm_tests_test_remote_settings_client_CPPFLAGS = $(libnm_tests_cppflags)
 libnm_tests_test_secret_agent_CPPFLAGS = $(libnm_tests_cppflags)
+libnm_tests_test_general_SOURCES = \
+	libnm/tests/test-general.c
+
 libnm_tests_test_nm_client_SOURCES = \
 	shared/nm-test-utils-impl.c \
 	shared/nm-test-libnm-utils.h \
@@ -4500,6 +4538,10 @@ libnm_tests_test_secret_agent_SOURCES = \
 	shared/nm-test-utils-impl.c \
 	shared/nm-test-libnm-utils.h \
 	libnm/tests/test-secret-agent.c
+
+libnm_tests_test_general_LDADD = \
+	libnm/libnm-utils.la \
+	$(libnm_tests_ldadd)
 
 libnm_tests_test_nm_client_LDADD = $(libnm_tests_ldadd)
 libnm_tests_test_remote_settings_client_LDADD = $(libnm_tests_ldadd)
@@ -7336,6 +7378,11 @@ libnm/$(am__dirstamp):
 libnm/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) libnm/$(DEPDIR)
 	@: > libnm/$(DEPDIR)/$(am__dirstamp)
+libnm/libnm_libnm_utils_la-nm-libnm-utils.lo: libnm/$(am__dirstamp) \
+	libnm/$(DEPDIR)/$(am__dirstamp)
+
+libnm/libnm-utils.la: $(libnm_libnm_utils_la_OBJECTS) $(libnm_libnm_utils_la_DEPENDENCIES) $(EXTRA_libnm_libnm_utils_la_DEPENDENCIES) libnm/$(am__dirstamp)
+	$(AM_V_CCLD)$(LINK)  $(libnm_libnm_utils_la_OBJECTS) $(libnm_libnm_utils_la_LIBADD) $(LIBS)
 libnm/libnm_libnm_la-nm-access-point.lo: libnm/$(am__dirstamp) \
 	libnm/$(DEPDIR)/$(am__dirstamp)
 libnm/libnm_libnm_la-nm-active-connection.lo: libnm/$(am__dirstamp) \
@@ -8840,11 +8887,18 @@ libnm-util/tests/libnm_util_tests_test_settings_defaults-test-settings-defaults.
 libnm-util/tests/test-settings-defaults$(EXEEXT): $(libnm_util_tests_test_settings_defaults_OBJECTS) $(libnm_util_tests_test_settings_defaults_DEPENDENCIES) $(EXTRA_libnm_util_tests_test_settings_defaults_DEPENDENCIES) libnm-util/tests/$(am__dirstamp)
 	@rm -f libnm-util/tests/test-settings-defaults$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(libnm_util_tests_test_settings_defaults_OBJECTS) $(libnm_util_tests_test_settings_defaults_LDADD) $(LIBS)
-shared/libnm_tests_test_nm_client-nm-test-utils-impl.$(OBJEXT):  \
-	shared/$(am__dirstamp) shared/$(DEPDIR)/$(am__dirstamp)
 libnm/tests/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) libnm/tests/$(DEPDIR)
 	@: > libnm/tests/$(DEPDIR)/$(am__dirstamp)
+libnm/tests/libnm_tests_test_general-test-general.$(OBJEXT):  \
+	libnm/tests/$(am__dirstamp) \
+	libnm/tests/$(DEPDIR)/$(am__dirstamp)
+
+libnm/tests/test-general$(EXEEXT): $(libnm_tests_test_general_OBJECTS) $(libnm_tests_test_general_DEPENDENCIES) $(EXTRA_libnm_tests_test_general_DEPENDENCIES) libnm/tests/$(am__dirstamp)
+	@rm -f libnm/tests/test-general$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(libnm_tests_test_general_OBJECTS) $(libnm_tests_test_general_LDADD) $(LIBS)
+shared/libnm_tests_test_nm_client-nm-test-utils-impl.$(OBJEXT):  \
+	shared/$(am__dirstamp) shared/$(DEPDIR)/$(am__dirstamp)
 libnm/tests/libnm_tests_test_nm_client-test-nm-client.$(OBJEXT):  \
 	libnm/tests/$(am__dirstamp) \
 	libnm/tests/$(DEPDIR)/$(am__dirstamp)
@@ -9647,6 +9701,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@libnm/$(DEPDIR)/libnm_libnm_la-nm-vpn-plugin-old.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@libnm/$(DEPDIR)/libnm_libnm_la-nm-vpn-service-plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@libnm/$(DEPDIR)/libnm_libnm_la-nm-wimax-nsp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@libnm/$(DEPDIR)/libnm_libnm_utils_la-nm-libnm-utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@libnm/tests/$(DEPDIR)/libnm_tests_test_nm_client-test-nm-client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@libnm/tests/$(DEPDIR)/libnm_tests_test_remote_settings_client-test-remote-settings-client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@libnm/tests/$(DEPDIR)/libnm_tests_test_secret_agent-test-secret-agent.Po@am__quote@
@@ -11384,6 +11440,13 @@ libnm-util/libnm_util_libtest_crypto_la-crypto_nss.lo: libnm-util/crypto_nss.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='libnm-util/crypto_nss.c' object='libnm-util/libnm_util_libtest_crypto_la-crypto_nss.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm-util/libnm_util_libtest_crypto_la-crypto_nss.lo `test -f 'libnm-util/crypto_nss.c' || echo '$(srcdir)/'`libnm-util/crypto_nss.c
+
+libnm/libnm_libnm_utils_la-nm-libnm-utils.lo: libnm/nm-libnm-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_libnm_utils_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm/libnm_libnm_utils_la-nm-libnm-utils.lo -MD -MP -MF libnm/$(DEPDIR)/libnm_libnm_utils_la-nm-libnm-utils.Tpo -c -o libnm/libnm_libnm_utils_la-nm-libnm-utils.lo `test -f 'libnm/nm-libnm-utils.c' || echo '$(srcdir)/'`libnm/nm-libnm-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) libnm/$(DEPDIR)/libnm_libnm_utils_la-nm-libnm-utils.Tpo libnm/$(DEPDIR)/libnm_libnm_utils_la-nm-libnm-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='libnm/nm-libnm-utils.c' object='libnm/libnm_libnm_utils_la-nm-libnm-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_libnm_utils_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm/libnm_libnm_utils_la-nm-libnm-utils.lo `test -f 'libnm/nm-libnm-utils.c' || echo '$(srcdir)/'`libnm/nm-libnm-utils.c
 
 libnm/libnm_libnm_la-nm-access-point.lo: libnm/nm-access-point.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_libnm_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm/libnm_libnm_la-nm-access-point.lo -MD -MP -MF libnm/$(DEPDIR)/libnm_libnm_la-nm-access-point.Tpo -c -o libnm/libnm_libnm_la-nm-access-point.lo `test -f 'libnm/nm-access-point.c' || echo '$(srcdir)/'`libnm/nm-access-point.c
@@ -14269,6 +14332,20 @@ libnm-util/tests/libnm_util_tests_test_settings_defaults-test-settings-defaults.
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_tests_test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm-util/tests/libnm_util_tests_test_settings_defaults-test-settings-defaults.obj `if test -f 'libnm-util/tests/test-settings-defaults.c'; then $(CYGPATH_W) 'libnm-util/tests/test-settings-defaults.c'; else $(CYGPATH_W) '$(srcdir)/libnm-util/tests/test-settings-defaults.c'; fi`
 
+libnm/tests/libnm_tests_test_general-test-general.o: libnm/tests/test-general.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_tests_test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm/tests/libnm_tests_test_general-test-general.o -MD -MP -MF libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Tpo -c -o libnm/tests/libnm_tests_test_general-test-general.o `test -f 'libnm/tests/test-general.c' || echo '$(srcdir)/'`libnm/tests/test-general.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Tpo libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='libnm/tests/test-general.c' object='libnm/tests/libnm_tests_test_general-test-general.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_tests_test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm/tests/libnm_tests_test_general-test-general.o `test -f 'libnm/tests/test-general.c' || echo '$(srcdir)/'`libnm/tests/test-general.c
+
+libnm/tests/libnm_tests_test_general-test-general.obj: libnm/tests/test-general.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_tests_test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm/tests/libnm_tests_test_general-test-general.obj -MD -MP -MF libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Tpo -c -o libnm/tests/libnm_tests_test_general-test-general.obj `if test -f 'libnm/tests/test-general.c'; then $(CYGPATH_W) 'libnm/tests/test-general.c'; else $(CYGPATH_W) '$(srcdir)/libnm/tests/test-general.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Tpo libnm/tests/$(DEPDIR)/libnm_tests_test_general-test-general.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='libnm/tests/test-general.c' object='libnm/tests/libnm_tests_test_general-test-general.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_tests_test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm/tests/libnm_tests_test_general-test-general.obj `if test -f 'libnm/tests/test-general.c'; then $(CYGPATH_W) 'libnm/tests/test-general.c'; else $(CYGPATH_W) '$(srcdir)/libnm/tests/test-general.c'; fi`
+
 shared/libnm_tests_test_nm_client-nm-test-utils-impl.o: shared/nm-test-utils-impl.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_tests_test_nm_client_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT shared/libnm_tests_test_nm_client-nm-test-utils-impl.o -MD -MP -MF shared/$(DEPDIR)/libnm_tests_test_nm_client-nm-test-utils-impl.Tpo -c -o shared/libnm_tests_test_nm_client-nm-test-utils-impl.o `test -f 'shared/nm-test-utils-impl.c' || echo '$(srcdir)/'`shared/nm-test-utils-impl.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) shared/$(DEPDIR)/libnm_tests_test_nm_client-nm-test-utils-impl.Tpo shared/$(DEPDIR)/libnm_tests_test_nm_client-nm-test-utils-impl.Po
@@ -16025,6 +16102,13 @@ libnm-core/tests/test-settings-defaults.log: libnm-core/tests/test-settings-defa
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+libnm/tests/test-general.log: libnm/tests/test-general$(EXEEXT)
+	@p='libnm/tests/test-general$(EXEEXT)'; \
+	b='libnm/tests/test-general'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 libnm/tests/test-nm-client.log: libnm/tests/test-nm-client$(EXEEXT)
 	@p='libnm/tests/test-nm-client$(EXEEXT)'; \
 	b='libnm/tests/test-nm-client'; \
@@ -16991,6 +17075,9 @@ libnm-core/nm-dbus-types.xml: libnm-core/nm-dbus-interface.h tools/enums-to-docb
 	@$(MKDIR_P) libnm-core/
 	$(AM_V_GEN) @PERL@ $(srcdir)/tools/enums-to-docbook.pl 'nm-dbus-types' 'NetworkManager D-Bus API Types' $< >$@
 
+libnm-core/tests/nm-core-tests-enum-types.h.stamp: libnm-core/tests/.dirstamp
+libnm-core/tests/nm-core-tests-enum-types.c.stamp: libnm-core/tests/.dirstamp
+
 $(libnm_core_tests_test_general_OBJECTS): libnm-core/tests/nm-core-tests-enum-types.h
 
 $(libnm_core_tests_test_compare_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
@@ -17002,6 +17089,8 @@ $(libnm_core_tests_test_setting_8021x_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(libnm_core_tests_test_setting_bond_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(libnm_core_tests_test_setting_dcb_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(libnm_core_tests_test_settings_defaults_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
+
+$(libnm_libnm_utils_la_OBJECTS) : $(libnm_lib_h_pub_mkenums)
 
 $(dispatcher_nm_dispatcher_OBJECTS):                    $(libnm_lib_h_pub_mkenums)
 $(dispatcher_libnm_dispatcher_core_la_OBJECTS):         $(libnm_lib_h_pub_mkenums)
@@ -17048,6 +17137,7 @@ check-local-exports-libnm: libnm/libnm.la
 @HAVE_INTROSPECTION_TRUE@libnm/nm-settings-ifcfg-rh-docs.xml: libnm/generate-plugin-docs.pl $(libnm_docs_sources)
 @HAVE_INTROSPECTION_TRUE@	$(AM_V_GEN) $(srcdir)/libnm/generate-plugin-docs.pl ifcfg-rh "$(srcdir)" $@
 
+$(libnm_tests_test_general_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(libnm_tests_test_nm_client_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(libnm_tests_test_remote_settings_client_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(libnm_tests_test_secret_agent_OBJECTS): $(libnm_core_lib_h_pub_mkenums)

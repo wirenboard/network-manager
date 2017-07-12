@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: NetworkManager.conf
 .\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 05/10/2017
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/07/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.8.0
+.\"    Source: NetworkManager 1.8.2
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.8\&.0" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.8\&.2" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -294,6 +294,15 @@ fatal\-warnings: set g_log_set_always_fatal() to core dump on warning messages f
 The number of times a connection activation should be automatically tried before switching to another one\&. This value applies only to connections that can auto\-connect and have a
 connection\&.autoconnect\-retries
 property set to \-1\&. If not specified, connections will be retried 4 times\&.
+.RE
+.PP
+\fIslaves\-order\fR
+.RS 4
+This key specifies in which order slave connections are auto\-activated on boot or when the master activates them\&. Allowed values are
+name
+(order connection by interface name, the default), or
+index
+(order slaves by their kernel index)\&.
 .RE
 .SH "KEYFILE SECTION"
 .PP
@@ -593,7 +602,7 @@ If left unspecified, it defaults to "preserve"\&.
 .PP
 \fIethernet\&.mtu\fR
 .RS 4
-If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints\&. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or a default of 1500\&.
+If configured explicitly to 0, the MTU is not reconfigured during device activation unless it is required due to IPv6 constraints\&. If left unspecified, a DHCP/IPv6 SLAAC provided value is used or the MTU is not reconfigured during activation\&.
 .RE
 .PP
 \fIethernet\&.wake\-on\-lan\fR
