@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>org.freedesktop.NetworkManager.Device: NetworkManager Reference Manual</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
 <link rel="up" href="ref-dbus-devices.html" title="The /org/freedesktop/NetworkManager/Devices/* objects">
 <link rel="prev" href="ref-dbus-devices.html" title="The /org/freedesktop/NetworkManager/Devices/* objects">
@@ -250,6 +250,9 @@ Udi  readable   s
         for a way to track a specific piece of hardware across reboot or hotplug,
         use a MAC address or USB serial number.
 </p>
+<p>        Note that non-UTF-8 characters are backslash escaped. Use g_strcompress()
+        to obtain the true (non-UTF-8) string.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -258,6 +261,9 @@ Udi  readable   s
 Interface  readable   s
 </pre>
 <p>        The name of the device's control (and often data) interface.
+        Note that non UTF-8 characters are backslash escaped, so the
+        resulting name may be longer then 15 characters. Use g_strcompress()
+        to revert the escaping.
 </p>
 </div>
 <hr>
@@ -270,6 +276,9 @@ IpInterface  readable   s
         not refer to the actual data interface until the device has successfully
         established a data connection, indicated by the device's State becoming
         ACTIVATED.
+        Note that non UTF-8 characters are backslash escaped, so the
+        resulting name may be longer then 15 characters. Use g_strcompress()
+        to revert the escaping.
 </p>
 </div>
 <hr>
@@ -279,6 +288,8 @@ IpInterface  readable   s
 Driver  readable   s
 </pre>
 <p>        The driver handling the device.
+        Non-UTF-8 sequences are backslash escaped. Use g_strcompress()
+        to revert.
 </p>
 </div>
 <hr>
@@ -288,6 +299,8 @@ Driver  readable   s
 DriverVersion  readable   s
 </pre>
 <p>        The version of the driver handling the device.
+        Non-UTF-8 sequences are backslash escaped. Use g_strcompress()
+        to revert.
 </p>
 </div>
 <hr>
@@ -297,6 +310,8 @@ DriverVersion  readable   s
 FirmwareVersion  readable   s
 </pre>
 <p>        The firmware version for the device.
+        Non-UTF-8 sequences are backslash escaped. Use g_strcompress()
+        to revert.
 </p>
 </div>
 <hr>

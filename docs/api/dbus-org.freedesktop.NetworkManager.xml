@@ -384,30 +384,26 @@ CheckpointCreate (IN  ao devices,
                   IN  u  flags,
                   OUT o  checkpoint);
 </programlisting>
-<para>        <parameter>devices</parameter>: a list of device paths for which a checkpoint should be created. An empty list means all devices.
-        <parameter>rollback_timeout</parameter>: the time in seconds until NetworkManager will automatically rollback to the checkpoint. Set to zero for infinite.
-        <parameter>flags</parameter>: optional flags that influence the creation.
-        <parameter>checkpoint</parameter>: on success, returns the path of the checkpoint.
-</para><para>        Create a checkpoint of the current networking configuration
+<para>        Create a checkpoint of the current networking configuration
         for given interfaces. If <parameter>rollback_timeout</parameter> is not zero, a
         rollback is automatically performed after the given timeout.
 </para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN ao <parameter>devices</parameter></literal>:</term>
-  <listitem><para></para></listitem>
+  <listitem><para>A list of device paths for which a checkpoint should be created. An empty list means all devices.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>IN u <parameter>rollback_timeout</parameter></literal>:</term>
-  <listitem><para></para></listitem>
+  <listitem><para>The time in seconds until NetworkManager will automatically rollback to the checkpoint. Set to zero for infinite.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>IN u <parameter>flags</parameter></literal>:</term>
-  <listitem><para></para></listitem>
+  <listitem><para>(<link linkend="NMCheckpointCreateFlags">NMCheckpointCreateFlags</link>) Flags for the creation.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>OUT o <parameter>checkpoint</parameter></literal>:</term>
-  <listitem><para></para></listitem>
+  <listitem><para>On success, the path of the new checkpoint.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -422,7 +418,7 @@ CheckpointDestroy (IN  o checkpoint);
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN o <parameter>checkpoint</parameter></literal>:</term>
-  <listitem><para>the checkpoint to be destroyed. Set to empty to cancel all pending checkpoints.</para></listitem>
+  <listitem><para>The checkpoint to be destroyed. Set to empty to cancel all pending checkpoints.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -438,11 +434,11 @@ CheckpointRollback (IN  o     checkpoint,
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN o <parameter>checkpoint</parameter></literal>:</term>
-  <listitem><para>the checkpoint to be rolled back.</para></listitem>
+  <listitem><para>The checkpoint to be rolled back.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>OUT a{su} <parameter>result</parameter></literal>:</term>
-  <listitem><para>on return, a dictionary of devices and results. Devices are represented by their original D-Bus path; each result is a <link linkend="NMRollbackResult">RollbackResult</link>.</para></listitem>
+  <listitem><para>On return, a dictionary of devices and results. Devices are represented by their original D-Bus path; each result is a <link linkend="NMRollbackResult">RollbackResult</link>.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>

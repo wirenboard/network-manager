@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMDevice: libnm Reference Manual</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
+<meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="ch04.html" title="Device and Runtime Configuration API Reference">
@@ -1635,6 +1635,8 @@ nm_device_get_product (<em class="parameter"><code><a class="link" href="NMDevic
 <a name="nm-device-get-product.returns"></a><h4>Returns</h4>
 <p> the product name of the device. This is the internal string used by the
 device, and must not be modified.</p>
+<p>The string is backslash escaped (C escaping) for invalid characters. The escaping
+can be reverted with <code class="function">g_strcompress()</code>, however the result may not be valid UTF-8.</p>
 </div>
 </div>
 <hr>
@@ -1662,6 +1664,8 @@ nm_device_get_vendor (<em class="parameter"><code><a class="link" href="NMDevice
 <a name="nm-device-get-vendor.returns"></a><h4>Returns</h4>
 <p> the vendor name of the device. This is the internal string used by the
 device, and must not be modified.</p>
+<p>The string is backslash escaped (C escaping) for invalid characters. The escaping
+can be reverted with <code class="function">g_strcompress()</code>, however the result may not be valid UTF-8.</p>
 </div>
 </div>
 <hr>

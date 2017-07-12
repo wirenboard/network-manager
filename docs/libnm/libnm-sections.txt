@@ -1220,6 +1220,11 @@ nm_ip_config_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-libnm-utils</FILE>
+nm_utils_fixup_desc_string
+</SECTION>
+
+<SECTION>
 <FILE>nm-object</FILE>
 <TITLE>NMObject</TITLE>
 NM_OBJECT_PATH
