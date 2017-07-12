@@ -12,7 +12,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 117 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index a740219..019bb0e 100644
+index 7662c2e..413ec0b 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
 @@ -60,6 +60,8 @@
@@ -35,7 +35,7 @@ index a740219..019bb0e 100644
  	guint timestamp_update_id;
  
  	guint devices_inited_id;
-@@ -815,6 +821,29 @@ find_best_device_state (NMManager *manager)
+@@ -860,6 +866,29 @@ find_best_device_state (NMManager *manager)
  	return best_state;
  }
  
@@ -65,7 +65,7 @@ index a740219..019bb0e 100644
  static void
  nm_manager_update_metered (NMManager *self)
  {
-@@ -853,6 +882,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -898,6 +927,9 @@ nm_manager_update_state (NMManager *manager)
  	else
  		new_state = find_best_device_state (manager);
  
@@ -75,7 +75,7 @@ index a740219..019bb0e 100644
  	if (   new_state >= NM_STATE_CONNECTED_LOCAL
  	    && priv->connectivity_state == NM_CONNECTIVITY_FULL) {
  		new_state = NM_STATE_CONNECTED_GLOBAL;
-@@ -4979,6 +5011,62 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -5062,6 +5094,62 @@ impl_manager_check_connectivity (NMManager *self,
  }
  
  static void
@@ -138,7 +138,7 @@ index a740219..019bb0e 100644
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
  	nm_device_factory_start (factory);
-@@ -5116,6 +5204,9 @@ nm_manager_start (NMManager *self, GError **error)
+@@ -5203,6 +5291,9 @@ nm_manager_start (NMManager *self, GError **error)
  	nm_clear_g_source (&priv->devices_inited_id);
  	priv->devices_inited_id = g_idle_add_full (G_PRIORITY_LOW + 10, devices_inited_cb, self, NULL);
  
@@ -148,7 +148,7 @@ index a740219..019bb0e 100644
  	return TRUE;
  }
  
-@@ -6102,6 +6193,22 @@ nm_manager_init (NMManager *self)
+@@ -6188,6 +6279,22 @@ nm_manager_init (NMManager *self)
  		       KERNEL_FIRMWARE_DIR);
  	}
  
@@ -171,7 +171,7 @@ index a740219..019bb0e 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
  
-@@ -6339,6 +6446,16 @@ dispose (GObject *object)
+@@ -6425,6 +6532,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
