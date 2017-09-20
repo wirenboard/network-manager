@@ -1,8 +1,10 @@
-network-manager (1.8.4-1) UNRELEASED; urgency=medium
+network-manager (1.8.4-1) unstable; urgency=medium
 
   * New upstream version 1.8.4
+  * Rebase patches
+  * Switch to dh_missing and abort on uninstalled files
 
- -- Michael Biebl <biebl@debian.org>  Wed, 20 Sep 2017 21:09:40 +0200
+ -- Michael Biebl <biebl@debian.org>  Wed, 20 Sep 2017 22:05:36 +0200
 
 network-manager (1.8.2-1) unstable; urgency=medium
 
