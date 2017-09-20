@@ -51,8 +51,10 @@ override_dh_auto_configure:
 		--with-selinux=yes \
 		--with-libaudit=yes
 
-override_dh_install:
-	dh_install -X.la --list-missing
+override_dh_missing:
+	find debian/tmp -name '*.la' -print -delete
+	rm debian/tmp/usr/share/doc/NetworkManager/examples/server.conf
+	dh_missing --fail-missing
 
 override_dh_makeshlibs:
 	dh_makeshlibs -X/usr/lib/$(DEB_HOST_MULTIARCH)/NetworkManager/ -X/usr/lib/pppd/
