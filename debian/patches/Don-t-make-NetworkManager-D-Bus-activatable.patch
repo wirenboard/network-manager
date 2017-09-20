@@ -10,10 +10,10 @@ to be autostarted by a client request.
  2 files changed, 6 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 9c5b666..fe39131 100644
+index 5c49eab..698162c 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -3516,11 +3516,6 @@ endif
+@@ -3515,11 +3515,6 @@ endif
  data/NetworkManager-dispatcher.service: $(srcdir)/data/NetworkManager-dispatcher.service.in
  	$(AM_V_GEN) $(data_edit) $< >$@
  
@@ -22,9 +22,9 @@ index 9c5b666..fe39131 100644
 -
 -service_DATA += data/org.freedesktop.NetworkManager.service
 -
- install-exec-local-data:
- 	install -d $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
- 	ln -sf $(systemdsystemunitdir)/NetworkManager-wait-online.service $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
+ endif
+ 
+ examples_DATA += data/server.conf
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
 index a9e8731..e6cd392 100644
 --- a/data/NetworkManager.service.in

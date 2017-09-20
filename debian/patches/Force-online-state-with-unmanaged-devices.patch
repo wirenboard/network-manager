@@ -75,10 +75,11 @@ index 7662c2e..413ec0b 100644
  	if (   new_state >= NM_STATE_CONNECTED_LOCAL
  	    && priv->connectivity_state == NM_CONNECTIVITY_FULL) {
  		new_state = NM_STATE_CONNECTED_GLOBAL;
-@@ -5062,6 +5094,62 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -5061,6 +5093,62 @@ impl_manager_check_connectivity (NMManager *self,
+ 	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_NETWORK_CONTROL, TRUE);
  }
  
- static void
++static void
 +check_ifstate_file (gpointer user_data)
 +{
 +	NMManager *self = NM_MANAGER (user_data);
@@ -134,10 +135,9 @@ index 7662c2e..413ec0b 100644
 +	}
 +}
 +
-+static void
+ static void
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
- 	nm_device_factory_start (factory);
 @@ -5203,6 +5291,9 @@ nm_manager_start (NMManager *self, GError **error)
  	nm_clear_g_source (&priv->devices_inited_id);
  	priv->devices_inited_id = g_idle_add_full (G_PRIORITY_LOW + 10, devices_inited_cb, self, NULL);
