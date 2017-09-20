@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 07/07/2017
+.\"      Date: 09/20/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.8.2
+.\"    Source: NetworkManager 1.8.4
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.8\&.2" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.8\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1027,7 +1027,7 @@ USERS\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
-USERS restrict the access for this conenction to certain users only\&.\fB
+Restrict to certain users the access to this connection, and allow the connection to be active only when at least one of the specified users is logged into an active session\&.\fB
 
 Example: \fRUSERS="joe bob"
 T}
@@ -1098,7 +1098,7 @@ T}
 T{
 autoconnect\-slaves
 T}:T{
-AUTOCONNECT\-SLAVES\fI(+)\fR
+AUTOCONNECT_SLAVES\fI(+)\fR
 T}:T{
 missing variable means global default
 T}:T{
@@ -1626,9 +1626,9 @@ DHCP_CLIENT_ID\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
-A string sent to the DHCP server to identify the local machine\&.\fB
+A string sent to the DHCP server to identify the local machine\&. A binary value can be specified using hex notation (\*(Aqaa:bb:cc\*(Aq)\&.\fB
 
-Example: \fRDHCP_CLIENT_ID=ax\-srv\-1
+Example: \fRDHCP_CLIENT_ID=ax\-srv\-1; DHCP_CLIENT_ID=01:44:44:44:44:44:44"
 T}
 T{
 dad\-timeout

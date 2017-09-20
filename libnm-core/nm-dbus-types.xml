@@ -1450,12 +1450,12 @@
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_DELETE_NEW_CONNECTIONS</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>0x02</literal></para><para></para></entry>
-              <entry role="enum_member_description"><para>upon rollback, delete any new connection added after the checkpoint.</para><para></para></entry>
+              <entry role="enum_member_description"><para>upon rollback, delete any new connection added after the checkpoint (Since: 1.6)</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_DISCONNECT_NEW_DEVICES</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>0x04</literal></para><para></para></entry>
-              <entry role="enum_member_description"><para>upon rollback, disconnect any new device appeared after the checkpoint.</para><para></para></entry>
+              <entry role="enum_member_description"><para>upon rollback, disconnect any new device appeared after the checkpoint (Since: 1.6)</para><para></para></entry>
             </row>
           </tbody>
         </tgroup>

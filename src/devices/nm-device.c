@@ -3422,6 +3422,7 @@ slave_state_changed (NMDevice *slave,
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	gboolean release = FALSE;
+	gboolean configure;
 
 	_LOGD (LOGD_DEVICE, "slave %s state change %d (%s) -> %d (%s)",
 	       nm_device_get_iface (slave),
@@ -3445,8 +3446,11 @@ slave_state_changed (NMDevice *slave,
 	}
 
 	if (release) {
+		configure =    priv->sys_iface_state == NM_DEVICE_SYS_IFACE_STATE_MANAGED
+		            && nm_device_sys_iface_state_get (slave) != NM_DEVICE_SYS_IFACE_STATE_EXTERNAL;
+
 		nm_device_master_release_one_slave (self, slave,
-		                                    priv->sys_iface_state == NM_DEVICE_SYS_IFACE_STATE_MANAGED,
+		                                    configure,
 		                                    reason);
 		/* Bridge/bond/team interfaces are left up until manually deactivated */
 		if (priv->slaves == NULL && priv->state == NM_DEVICE_STATE_ACTIVATED)
@@ -3691,13 +3695,6 @@ nm_device_slave_notify_enslave (NMDevice *self, gboolean success)
 				_LOGI (LOGD_DEVICE, "enslaved to %s", nm_device_get_iface (priv->master));
 
 			priv->is_enslaved = TRUE;
-
-			if (   NM_IN_SET_TYPED (NMDeviceSysIfaceState,
-			                        priv->sys_iface_state,
-			                        NM_DEVICE_SYS_IFACE_STATE_EXTERNAL,
-			                        NM_DEVICE_SYS_IFACE_STATE_ASSUME)
-			    && nm_device_sys_iface_state_get (priv->master) == NM_DEVICE_SYS_IFACE_STATE_MANAGED)
-				nm_device_sys_iface_state_set (self, NM_DEVICE_SYS_IFACE_STATE_MANAGED);
 
 			_notify (self, PROP_MASTER);
 			_notify (priv->master, PROP_SLAVES);
@@ -13475,8 +13472,17 @@ _hw_addr_get_cloned (NMDevice *self, NMConnection *connection, gboolean is_wifi,
 	}
 
 	if (nm_streq (addr, NM_CLONED_MAC_PERMANENT)) {
-		addr = nm_device_get_permanent_hw_address (self);
-		if (!addr) {
+		gboolean is_fake;
+
+		addr = nm_device_get_permanent_hw_address_full (self, TRUE, &is_fake);
+		if (is_fake) {
+			/* Preserve the current address if the permanent address if fake */
+			NM_SET_OUT (preserve, TRUE);
+			NM_SET_OUT (hwaddr, NULL);
+			NM_SET_OUT (hwaddr_type, HW_ADDR_TYPE_UNSET);
+			NM_SET_OUT (hwaddr_detail, g_steal_pointer (&addr_setting_free) ?: g_strdup (addr_setting));
+			return TRUE;
+		} else if (!addr) {
 			g_set_error_literal (error,
 			                     NM_DEVICE_ERROR,
 			                     NM_DEVICE_ERROR_FAILED,
