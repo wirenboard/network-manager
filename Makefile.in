@@ -292,28 +292,27 @@ TESTS = $(am__EXEEXT_10)
 @BUILD_NMTUI_TRUE@am__append_60 = install-exec-hook-nmtui
 @BUILD_NMTUI_TRUE@am__append_61 = uninstall-hook-nmtui
 @HAVE_SYSTEMD_TRUE@am__append_62 = data/org.freedesktop.NetworkManager.service
-@HAVE_SYSTEMD_TRUE@am__append_63 = install-exec-local-data
 
 ###############################################################################
 # libnm-util
 ###############################################################################
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_64 = libnm-util/libnm-util.la \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_63 = libnm-util/libnm-util.la \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib.la \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib-vpn.la
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_65 =  \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_64 =  \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(libnm_util_lib_h_pub_mkenums) \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(libnm_util_lib_c_mkenums) \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(libnm_glib_lib_h_pub_mkenums) \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(libnm_glib_lib_c_mkenums) \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(libnm_glib_vpn_h_mkenums) \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(libnm_glib_vpn_c_mkenums)
-@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_66 = $(GNUTLS_CFLAGS)
-@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_67 = libnm-util/crypto_gnutls.c
-@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_68 = $(GNUTLS_LIBS)
-@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_69 = $(NSS_CFLAGS)
-@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_70 = libnm-util/crypto_nss.c
-@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_71 = $(NSS_LIBS)
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_72 =  \
+@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_65 = $(GNUTLS_CFLAGS)
+@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_66 = libnm-util/crypto_gnutls.c
+@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_67 = $(GNUTLS_LIBS)
+@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_68 = $(NSS_CFLAGS)
+@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_69 = libnm-util/crypto_nss.c
+@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_70 = $(NSS_LIBS)
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_71 =  \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/crypto_gnutls.c \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/crypto_nss.c \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/COPYING \
@@ -323,26 +322,26 @@ TESTS = $(am__EXEEXT_10)
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib-vpn.pc.in \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib.ver \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib-vpn.ver
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_73 = libnm-util/libtest-crypto.la
-@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_74 = libnm-util/crypto_gnutls.c
-@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_75 = $(GNUTLS_LIBS)
-@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_76 = libnm-util/crypto_nss.c
-@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_77 = $(NSS_LIBS)
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_78 = libnm-util/libnm-util.pc \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_72 = libnm-util/libtest-crypto.la
+@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_73 = libnm-util/crypto_gnutls.c
+@WITH_GNUTLS_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_74 = $(GNUTLS_LIBS)
+@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_75 = libnm-util/crypto_nss.c
+@WITH_LEGACY_LIBRARIES_TRUE@@WITH_NSS_TRUE@am__append_76 = $(NSS_LIBS)
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_77 = libnm-util/libnm-util.pc \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib.pc \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib-vpn.pc
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_79 = libnm-util/libnm-util.pc \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_78 = libnm-util/libnm-util.pc \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib.pc \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib.pc
-@HAVE_INTROSPECTION_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_80 = libnm-util/NetworkManager-1.0.gir \
+@HAVE_INTROSPECTION_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_79 = libnm-util/NetworkManager-1.0.gir \
 @HAVE_INTROSPECTION_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/NMClient-1.0.gir
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_81 =  \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_80 =  \
 @WITH_LEGACY_LIBRARIES_TRUE@	check-local-exports-libnm-util \
 @WITH_LEGACY_LIBRARIES_TRUE@	check-local-exports-libnm-glib
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_82 = libnm-util/libnm-util.la \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_81 = libnm-util/libnm-util.la \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib.la \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib-vpn.la
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_83 = libnm-util/tests/test-settings-defaults \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_82 = libnm-util/tests/test-settings-defaults \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/tests/test-crypto \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/tests/test-secrets \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/tests/test-general \
@@ -350,50 +349,50 @@ TESTS = $(am__EXEEXT_10)
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/tests/test-setting-dcb \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/tests/test-nm-client \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/tests/test-remote-settings-client
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_84 = libnm-util/tests/test-libnm-linking \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_83 = libnm-util/tests/test-libnm-linking \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/libnm-glib-test
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_85 = libnm-glib/libdeprecated-nm-glib.la
-@WITH_LEGACY_LIBRARIES_TRUE@am__append_86 = \
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_84 = libnm-glib/libdeprecated-nm-glib.la
+@WITH_LEGACY_LIBRARIES_TRUE@am__append_85 = \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/nm-vpn-plugin-glue.h \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-glib/nm-secret-agent-glue.h
 
-@HAVE_INTROSPECTION_TRUE@am__append_87 = $(man_nm_settings_xml)
-@CONFIG_PLUGIN_IFCFG_RH_TRUE@am__append_88 = man/nm-settings-ifcfg-rh.5
+@HAVE_INTROSPECTION_TRUE@am__append_86 = $(man_nm_settings_xml)
+@CONFIG_PLUGIN_IFCFG_RH_TRUE@am__append_87 = man/nm-settings-ifcfg-rh.5
+@CONFIG_PLUGIN_IFCFG_RH_FALSE@am__append_88 = man/nm-settings-ifcfg-rh.5
 @CONFIG_PLUGIN_IFCFG_RH_FALSE@am__append_89 = man/nm-settings-ifcfg-rh.5
-@CONFIG_PLUGIN_IFCFG_RH_FALSE@am__append_90 = man/nm-settings-ifcfg-rh.5
-@HAVE_DOCS_TRUE@am__append_91 = install-data-hook-man
-@HAVE_DOCS_TRUE@am__append_92 = uninstall-hook-man
-@HAVE_DOCS_TRUE@am__append_93 = $(man_pages) $(man_pages_autogen)
-@BUILD_DOCS_TRUE@am__append_94 = $(man_pages) $(man_pages_autogen)
+@HAVE_DOCS_TRUE@am__append_90 = install-data-hook-man
+@HAVE_DOCS_TRUE@am__append_91 = uninstall-hook-man
+@HAVE_DOCS_TRUE@am__append_92 = $(man_pages) $(man_pages_autogen)
+@BUILD_DOCS_TRUE@am__append_93 = $(man_pages) $(man_pages_autogen)
 
 ###############################################################################
 # vapi
 ###############################################################################
-@ENABLE_VAPIGEN_TRUE@am__append_95 = \
+@ENABLE_VAPIGEN_TRUE@am__append_94 = \
 @ENABLE_VAPIGEN_TRUE@	vapi/libnm.vapi
 
-@ENABLE_VAPIGEN_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_96 = \
+@ENABLE_VAPIGEN_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@am__append_95 = \
 @ENABLE_VAPIGEN_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@	vapi/libnm-util.vapi \
 @ENABLE_VAPIGEN_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@	vapi/libnm-glib.vapi
 
-@ENABLE_VAPIGEN_TRUE@am__append_97 = \
+@ENABLE_VAPIGEN_TRUE@am__append_96 = \
 @ENABLE_VAPIGEN_TRUE@	$(VAPIGEN_VAPIS) \
 @ENABLE_VAPIGEN_TRUE@	$(VAPIGEN_VAPIS:.vapi=.deps)
 
-@ENABLE_VAPIGEN_TRUE@am__append_98 = $(VAPIGEN_VAPIS)
+@ENABLE_VAPIGEN_TRUE@am__append_97 = $(VAPIGEN_VAPIS)
 
 ###############################################################################
-@ENABLE_TESTS_TRUE@am__append_99 = $(check_programs) $(check_programs_norun)
-@ENABLE_TESTS_TRUE@am__append_100 = $(check_ltlibraries)
-@ENABLE_TESTS_FALSE@am__append_101 = $(check_programs) $(check_programs_norun)
-@ENABLE_TESTS_FALSE@am__append_102 = $(check_ltlibraries)
-@WITH_QT_TRUE@am__append_103 = \
+@ENABLE_TESTS_TRUE@am__append_98 = $(check_programs) $(check_programs_norun)
+@ENABLE_TESTS_TRUE@am__append_99 = $(check_ltlibraries)
+@ENABLE_TESTS_FALSE@am__append_100 = $(check_programs) $(check_programs_norun)
+@ENABLE_TESTS_FALSE@am__append_101 = $(check_ltlibraries)
+@WITH_QT_TRUE@am__append_102 = \
 @WITH_QT_TRUE@	examples/C/qt/add-connection-wired \
 @WITH_QT_TRUE@	examples/C/qt/list-connections \
 @WITH_QT_TRUE@	examples/C/qt/change-ipv4-addresses \
 @WITH_QT_TRUE@	examples/C/qt/monitor-nm-running
 
-@WITH_QT_TRUE@am__append_104 = \
+@WITH_QT_TRUE@am__append_103 = \
 @WITH_QT_TRUE@	examples/C/qt/monitor-nm-running.moc
 
 subdir = .
@@ -3366,14 +3365,14 @@ noinst_LTLIBRARIES = introspection/libnmdbus.la \
 	src/libNetworkManagerBase.la src/libNetworkManager.la \
 	src/libsystemd-nm.la $(am__append_22) $(am__append_27) \
 	$(am__append_33) $(am__append_37) \
-	dispatcher/libnm-dispatcher-core.la $(am__append_85) \
-	$(am__append_100)
-check_LTLIBRARIES = $(am__append_102)
+	dispatcher/libnm-dispatcher-core.la $(am__append_84) \
+	$(am__append_99)
+check_LTLIBRARIES = $(am__append_101)
 noinst_LIBRARIES = $(am__append_58)
 noinst_DATA = $(am__append_14)
 
 ###############################################################################
-lib_LTLIBRARIES = libnm/libnm.la $(am__append_64)
+lib_LTLIBRARIES = libnm/libnm.la $(am__append_63)
 pkglib_LTLIBRARIES = $(core_plugins)
 
 ###############################################################################
@@ -3384,7 +3383,7 @@ core_plugins = $(am__append_19) $(am__append_21) $(am__append_26) \
 	src/devices/adsl/libnm-device-plugin-adsl.la $(am__append_40) \
 	$(am__append_46) $(am__append_49)
 service_DATA = $(am__append_62)
-man_MANS = $(am__append_93)
+man_MANS = $(am__append_92)
 examples_DATA = data/server.conf
 CLEANFILES = $(introspection_sources) $(DBUS_INTERFACE_DOCS) \
 	src/NetworkManager.ver $(am__append_28) \
@@ -3394,13 +3393,13 @@ CLEANFILES = $(introspection_sources) $(DBUS_INTERFACE_DOCS) \
 	data/NetworkManager-wait-online.service \
 	data/NetworkManager-dispatcher.service \
 	data/org.freedesktop.NetworkManager.service data/server.conf \
-	$(am__append_86) $(am__append_87) man/common.ent \
-	$(am__append_94) $(am__append_98) $(GLIB_GENERATED) \
+	$(am__append_85) $(am__append_86) man/common.ent \
+	$(am__append_93) $(am__append_97) $(GLIB_GENERATED) \
 	$(INTROSPECTION_GIRS) $(typelib_DATA) cscope.in.out cscope.out \
-	cscope.po.out $(NULL) $(am__append_104)
+	cscope.po.out $(NULL) $(am__append_103)
 DISTCLEANFILES = intltool-extract intltool-merge intltool-update \
 	$(polkit_policy_DATA) libnm/libnm.pc $(am__append_57) \
-	$(am__append_79)
+	$(am__append_78)
 
 # test-cert.p12 created with:
 #
@@ -3724,7 +3723,7 @@ EXTRA_DIST = $(dbusinterfaces_DATA) libnm-core/crypto_gnutls.c \
 	data/NetworkManager-dispatcher.service.in \
 	data/org.freedesktop.NetworkManager.service.in \
 	data/84-nm-drivers.rules data/85-nm-unmanaged.rules \
-	data/server.conf.in $(am__append_72) $(am__append_89) \
+	data/server.conf.in $(am__append_71) $(am__append_88) \
 	man/common.ent.in $(man_nm_settings_xml) $(addsuffix \
 	.xsl,$(basename $(man_nm_settings_xml))) $(man_pages) \
 	$(addsuffix .xml,$(basename $(man_pages))) \
@@ -3806,14 +3805,13 @@ EXTRA_DIST = $(dbusinterfaces_DATA) libnm-core/crypto_gnutls.c \
 	examples/shell/active-wifi.sh $(NULL)
 dist_hook = dist-hook-settings-ifcfg-rh-alias-files
 dist_dependencies = libnm-core/nm-vpn-dbus-types.xml \
-	libnm-core/nm-dbus-types.xml $(am__append_82) $(am__append_90) \
+	libnm-core/nm-dbus-types.xml $(am__append_81) $(am__append_89) \
 	$(man_pages) $(man_pages_autogen)
 dist_configure_check = $(am__append_3) $(am__append_4)
 install_data_hook = install-data-hook-dispatcher $(am__append_55) \
-	$(am__append_91)
+	$(am__append_90)
 install_exec_hook = $(am__append_60)
-install_exec_local = $(am__append_63)
-uninstall_hook = $(am__append_56) $(am__append_61) $(am__append_92)
+uninstall_hook = $(am__append_56) $(am__append_61) $(am__append_91)
 BUILT_SOURCES = libnm-core/nm-vpn-dbus-types.xml \
 	libnm-core/nm-dbus-types.xml $(gir_DATA) $(typelib_DATA)
 GLIB_GENERATED = $(libnm_core_lib_h_pub_mkenums) \
@@ -3821,11 +3819,11 @@ GLIB_GENERATED = $(libnm_core_lib_h_pub_mkenums) \
 	libnm-core/tests/nm-core-tests-enum-types.h \
 	libnm-core/tests/nm-core-tests-enum-types.c \
 	$(libnm_lib_h_pub_mkenums) $(libnm_lib_c_mkenums) \
-	$(am__append_65)
+	$(am__append_64)
 man_pages = man/NetworkManager.8 man/NetworkManager.conf.5 \
 	man/nm-online.1 man/nmcli-examples.7 man/nmcli.1 man/nmtui.1
 man_pages_autogen = man/nm-settings-keyfile.5 man/nm-settings.5 \
-	$(am__append_88)
+	$(am__append_87)
 
 ###############################################################################
 
@@ -3880,9 +3878,9 @@ check_programs = libnm-core/tests/test-compare \
 	src/tests/test-route-manager-fake src/tests/test-dcb \
 	src/tests/test-systemd src/tests/test-resolvconf-capture \
 	src/tests/test-wired-defname src/tests/test-utils \
-	dispatcher/tests/test-dispatcher-envp $(am__append_83)
+	dispatcher/tests/test-dispatcher-envp $(am__append_82)
 check_programs_norun = src/platform/tests/monitor \
-	src/ndisc/tests/test-ndisc-linux $(am__append_84) \
+	src/ndisc/tests/test-ndisc-linux $(am__append_83) \
 	examples/C/glib/add-connection-gdbus \
 	examples/C/glib/add-connection-libnm \
 	examples/C/glib/get-active-connections-gdbus \
@@ -3890,7 +3888,7 @@ check_programs_norun = src/platform/tests/monitor \
 	examples/C/glib/list-connections-gdbus \
 	examples/C/glib/list-connections-libnm \
 	examples/C/glib/monitor-nm-running-gdbus \
-	examples/C/glib/monitor-nm-state-gdbus $(am__append_103)
+	examples/C/glib/monitor-nm-state-gdbus $(am__append_102)
 
 ###############################################################################
 
@@ -3898,17 +3896,17 @@ check_programs_norun = src/platform/tests/monitor \
 
 ###############################################################################
 check_ltlibraries = libnm/tests/libnm-vpn-plugin-utils-test.la \
-	src/libNetworkManagerTest.la $(am__append_73)
+	src/libNetworkManagerTest.la $(am__append_72)
 check_local = check-local-exports-libnm $(am__append_25) \
 	$(am__append_29) $(am__append_34) $(am__append_38) \
 	check-local-devices-adsl $(am__append_42) $(am__append_47) \
-	$(am__append_50) $(am__append_81)
-VAPIGEN_VAPIS = $(am__append_95) $(am__append_96)
+	$(am__append_50) $(am__append_80)
+VAPIGEN_VAPIS = $(am__append_94) $(am__append_95)
 dbusservice_DATA = $(am__append_31) dispatcher/nm-dispatcher.conf \
 	src/org.freedesktop.NetworkManager.conf
 dbusactivation_DATA =  \
 	dispatcher/org.freedesktop.nm_dispatcher.service
-INTROSPECTION_GIRS = $(am__append_13) $(am__append_80)
+INTROSPECTION_GIRS = $(am__append_13) $(am__append_79)
 INTROSPECTION_SCANNER_ARGS = 
 INTROSPECTION_COMPILER_ARGS = 
 # Pass SANITIZER_ENV where a command that uses built libraries is
@@ -3922,11 +3920,11 @@ nodist_libnminclude_HEADERS = $(libnm_core_lib_h_pub_mkenums) \
 pkgconfigdir = $(libdir)/pkgconfig
 
 ###############################################################################
-pkgconfig_DATA = NetworkManager.pc libnm/libnm.pc $(am__append_78)
+pkgconfig_DATA = NetworkManager.pc libnm/libnm.pc $(am__append_77)
 pppd_plugindir = $(PPPD_PLUGIN_DIR)
 pppd_plugin_LTLIBRARIES = $(am__append_20)
 vapidir = $(datadir)/vala/vapi
-vapi_DATA = $(am__append_97)
+vapi_DATA = $(am__append_96)
 examplesdir = $(docdir)/examples
 rundir = $(runstatedir)/NetworkManager
 statedir = $(localstatedir)/lib/NetworkManager
@@ -5986,8 +5984,8 @@ data_edit = sed \
 @WITH_LEGACY_LIBRARIES_TRUE@	-DLOCALEDIR=\"$(datadir)/locale\" \
 @WITH_LEGACY_LIBRARIES_TRUE@	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(GLIB_CFLAGS) $(DBUS_CFLAGS) \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(UUID_CFLAGS) $(am__append_66) \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_69)
+@WITH_LEGACY_LIBRARIES_TRUE@	$(UUID_CFLAGS) $(am__append_65) \
+@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_68)
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_lib_h_pub_real = \
 @WITH_LEGACY_LIBRARIES_TRUE@	shared/nm-version-macros.h \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/NetworkManager.h \
@@ -6075,7 +6073,7 @@ data_edit = sed \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/nm-setting-vpn.c \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/nm-utils.c \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/nm-value-transforms.c \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_67) $(am__append_70)
+@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_66) $(am__append_69)
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_lib_c_mkenums = \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/nm-utils-enum-types.c
 
@@ -6092,19 +6090,19 @@ data_edit = sed \
 @WITH_LEGACY_LIBRARIES_TRUE@nm_utils_enum_types_sources = $(filter-out libnm-util/NetworkManager%,$(libnm_util_lib_h_pub_real))
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_libnm_util_la_LIBADD =  \
 @WITH_LEGACY_LIBRARIES_TRUE@	$(GLIB_LIBS) $(DBUS_LIBS) \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(UUID_LIBS) $(am__append_68) \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_71)
+@WITH_LEGACY_LIBRARIES_TRUE@	$(UUID_LIBS) $(am__append_67) \
+@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_70)
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_libnm_util_la_LDFLAGS = \
 @WITH_LEGACY_LIBRARIES_TRUE@	-Wl,--version-script=$(srcdir)/libnm-util/libnm-util.ver \
 @WITH_LEGACY_LIBRARIES_TRUE@	-version-info "9:0:7"
 
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_libtest_crypto_la_SOURCES =  \
 @WITH_LEGACY_LIBRARIES_TRUE@	libnm-util/crypto.c \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_74) $(am__append_76)
+@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_73) $(am__append_75)
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_libtest_crypto_la_CPPFLAGS = $(libnm_util_cppflags)
 @WITH_LEGACY_LIBRARIES_TRUE@libnm_util_libtest_crypto_la_LIBADD =  \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(GLIB_LIBS) $(am__append_75) \
-@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_77)
+@WITH_LEGACY_LIBRARIES_TRUE@	$(GLIB_LIBS) $(am__append_74) \
+@WITH_LEGACY_LIBRARIES_TRUE@	$(am__append_76)
 @HAVE_INTROSPECTION_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@libnm_util_NetworkManager_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
 @HAVE_INTROSPECTION_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@libnm_util_NetworkManager_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1
 @HAVE_INTROSPECTION_TRUE@@WITH_LEGACY_LIBRARIES_TRUE@libnm_util_NetworkManager_1_0_gir_EXPORT_PACKAGES = libnm-util
@@ -16867,9 +16865,9 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-exec-local \
-	install-libLTLIBRARIES install-libexecPROGRAMS \
-	install-pkglibLTLIBRARIES install-sbinPROGRAMS
+install-exec-am: install-binPROGRAMS install-libLTLIBRARIES \
+	install-libexecPROGRAMS install-pkglibLTLIBRARIES \
+	install-sbinPROGRAMS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-recursive
@@ -16955,11 +16953,10 @@ uninstall-man: uninstall-man1 uninstall-man5 uninstall-man7 \
 	install-data-am install-data-hook install-dbusactivationDATA \
 	install-dbusinterfacesDATA install-dbusserviceDATA install-dvi \
 	install-dvi-am install-examplesDATA install-exec \
-	install-exec-am install-exec-hook install-exec-local \
-	install-girDATA install-html install-html-am install-info \
-	install-info-am install-libLTLIBRARIES \
-	install-libdeprecatedHEADERS install-libexecPROGRAMS \
-	install-libnm_glib_libnmincludeHEADERS \
+	install-exec-am install-exec-hook install-girDATA install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-libdeprecatedHEADERS \
+	install-libexecPROGRAMS install-libnm_glib_libnmincludeHEADERS \
 	install-libnm_glib_libnmvpnHEADERS \
 	install-libnm_util_libnm_util_includeHEADERS \
 	install-libnmincludeHEADERS install-man install-man1 \
@@ -17350,10 +17347,6 @@ $(clients_nm_online_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 @HAVE_SYSTEMD_TRUE@data/org.freedesktop.NetworkManager.service: $(srcdir)/data/org.freedesktop.NetworkManager.service.in
 @HAVE_SYSTEMD_TRUE@	$(AM_V_GEN) $(data_edit) $< >$@
 
-@HAVE_SYSTEMD_TRUE@install-exec-local-data:
-@HAVE_SYSTEMD_TRUE@	install -d $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
-@HAVE_SYSTEMD_TRUE@	ln -sf $(systemdsystemunitdir)/NetworkManager-wait-online.service $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
-
 data/server.conf: $(srcdir)/data/server.conf.in
 	@$(MKDIR_P) data/
 	$(AM_V_GEN) $(data_edit) $< >$@
@@ -17457,8 +17450,6 @@ dist-hook: $(dist_hook)
 ###############################################################################
 
 install-exec-hook: $(install_exec_hook)
-
-install-exec-local: $(install_exec_local)
 
 install-data-hook: $(install_data_hook)
 	$(mkinstalldirs) -m 0755 $(DESTDIR)$(nmconfdir)/conf.d

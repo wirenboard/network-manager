@@ -80,8 +80,9 @@ can be left out when the profile should apply for more devices. Note that DEVICE
 can be required for some connection types."/>
 <property name="type" variable="TYPE (DEVICETYPE, DEVICE)" format="" values="Ethernet, Wireless, InfiniBand, Bridge, Bond, Vlan, Team, TeamPort" default="" example="TYPE=Ethernet; TYPE=Bond; TYPE=Bridge; DEVICETYPE=TeamPort" description="Base type of the connection. DEVICETYPE is used for teaming
 connections."/>
-<property name="permissions" variable="USERS(+)" format="" values="" default="" example="USERS=&quot;joe bob&quot;" description="USERS restrict the access for this conenction to certain
-users only."/>
+<property name="permissions" variable="USERS(+)" format="" values="" default="" example="USERS=&quot;joe bob&quot;" description="Restrict to certain users the access to this connection, and
+allow the connection to be active only when at least one of the
+specified users is logged into an active session."/>
 <property name="autoconnect" variable="ONBOOT" format="" values="" default="yes" example="" description="Whether the connection should be autoconnected (not only while booting)."/>
 <property name="autoconnect-priority" variable="AUTOCONNECT_PRIORITY(+)" format="" values="-999 to 999" default="0" example="AUTOCONNECT_PRIORITY=20" description="Connection priority for automatic activation. Connections with
 higher numbers are preferred when selecting profiles for automatic activation."/>
@@ -98,7 +99,7 @@ BRIDGE, BRIDGE_UUID" format="" values="" default="" example="" description="Slav
 recognized using different variables.  MASTER and MASTER_UUID for bonding,
 TEAM_MASTER, TEAM_MASTER_UUID and DEVICETYPE for teaming, BRIDGE
 and BRIDGE_UUID for bridging."/>
-<property name="autoconnect-slaves" variable="AUTOCONNECT-SLAVES(+)" format="" values="" default="missing variable means global default" example="" description="Whether slaves of this connection should be auto-connected
+<property name="autoconnect-slaves" variable="AUTOCONNECT_SLAVES(+)" format="" values="" default="missing variable means global default" example="" description="Whether slaves of this connection should be auto-connected
 when this connection is activated."/>
 <property name="secondaries" variable="SECONDARY_UUIDS(+)" format="" values="" default="" example="" description="UUID of VPN connections that should be activated
 together with this connection."/>
@@ -175,7 +176,8 @@ If set to -1, a default metric based on the device type is used."/>
 <property name="dns-priority" variable="IPV4_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV4_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
 If zero, the default value will be used (50 for VPNs, 100 for other connections).
 A negative value prevents DNS from other connections with greater values to be used."/>
-<property name="dhcp-client-id" variable="DHCP_CLIENT_ID(+)" format="" values="" default="" example="DHCP_CLIENT_ID=ax-srv-1" description="A string sent to the DHCP server to identify the local machine."/>
+<property name="dhcp-client-id" variable="DHCP_CLIENT_ID(+)" format="" values="" default="" example="DHCP_CLIENT_ID=ax-srv-1; DHCP_CLIENT_ID=01:44:44:44:44:44:44&quot;" description="A string sent to the DHCP server to identify the local machine.
+A binary value can be specified using hex notation (&apos;aa:bb:cc&apos;)."/>
 <property name="dad-timeout" variable="ARPING_WAIT" format="" values="" default="missing variable means global default (config override or 3)" example="ARPING_WAIT=2" description="Timeout (in seconds) for performing DAD before configuring
 IPv4 addresses. 0 turns off the DAD completely, -1 means default value."/>
 <property name="dhcp-timeout" variable="IPV4_DHCP_TIMEOUT(+)" format="" values="" default="" example="IPV4_DHCP_TIMEOUT=10" description="A timeout after which the DHCP transaction fails in case of no response."/>

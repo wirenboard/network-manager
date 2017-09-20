@@ -748,7 +748,7 @@ Allowed values: </strong></span>Ethernet, Wireless, InfiniBand, Bridge, Bond, Vl
 <td align="left">USERS<span class="emphasis"><em>(+)</em></span>
 </td>
 <td align="left"> </td>
-<td align="left">USERS restrict the access for this conenction to certain users only.<span class="bold"><strong>
+<td align="left">Restrict to certain users the access to this connection, and allow the connection to be active only when at least one of the specified users is logged into an active session.<span class="bold"><strong>
 
 Example: </strong></span>USERS="joe bob"</td>
 </tr>
@@ -803,7 +803,7 @@ Example: </strong></span>ZONE=Work</td>
 </tr>
 <tr>
 <td align="left">autoconnect-slaves</td>
-<td align="left">AUTOCONNECT-SLAVES<span class="emphasis"><em>(+)</em></span>
+<td align="left">AUTOCONNECT_SLAVES<span class="emphasis"><em>(+)</em></span>
 </td>
 <td align="left">missing variable means global default</td>
 <td align="left">Whether slaves of this connection should be auto-connected when this connection is activated.</td>
@@ -1177,9 +1177,9 @@ Example: </strong></span>IPV4_DNS_PRIORITY=20</td>
 <td align="left">DHCP_CLIENT_ID<span class="emphasis"><em>(+)</em></span>
 </td>
 <td align="left"> </td>
-<td align="left">A string sent to the DHCP server to identify the local machine.<span class="bold"><strong>
+<td align="left">A string sent to the DHCP server to identify the local machine. A binary value can be specified using hex notation ('aa:bb:cc').<span class="bold"><strong>
 
-Example: </strong></span>DHCP_CLIENT_ID=ax-srv-1</td>
+Example: </strong></span>DHCP_CLIENT_ID=ax-srv-1; DHCP_CLIENT_ID=01:44:44:44:44:44:44"</td>
 </tr>
 <tr>
 <td align="left">dad-timeout</td>
