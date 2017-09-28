@@ -1,3 +1,11 @@
+network-manager (1.8.4-2) unstable; urgency=medium
+
+  * Drop dependency on gir1.2-nm-1.0 from gir1.2-networkmanager-1.0
+  * Do not mark python-gi as <!nocheck>
+    It is needed to build the settings documentation. (Closes: #871519)
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 28 Sep 2017 19:37:16 +0200
+
 network-manager (1.8.4-1) unstable; urgency=medium
 
   * New upstream version 1.8.4
