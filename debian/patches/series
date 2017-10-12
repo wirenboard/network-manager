@@ -3,3 +3,4 @@ Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
 Fix-arping-path.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Fix-iscsiadm-path.patch
+manager-Disconnect-from-signals-on-the-proxy-when-we-re-d.patch
