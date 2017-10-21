@@ -51,9 +51,12 @@ override_dh_auto_configure:
 		--with-selinux=yes \
 		--with-libaudit=yes
 
-override_dh_missing:
+override_dh_install:
 	find debian/tmp -name '*.la' -print -delete
 	rm debian/tmp/usr/share/doc/NetworkManager/examples/server.conf
+	dh_install
+
+override_dh_missing:
 	dh_missing --fail-missing
 
 override_dh_makeshlibs:
