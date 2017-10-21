@@ -1,0 +1,82 @@
+From b363a6cfad5996b5436b6f7c1d9337068fcb4c99 Mon Sep 17 00:00:00 2001
+From: Iain Lane <iain@orangesquash.org.uk>
+Date: Fri, 22 Sep 2017 11:48:05 +0100
+Subject: [PATCH 2/2] {vpn,remote}-connection: disconnect signal handlers when
+ disposed
+
+GNOME Settings 3.26 is crashing every time a VPN connection changed its
+state. After some digging, a debug message was put on dispose, and this
+issue was found:
+
+libnm-Message: Object 0x55555633c070 disposed
+libnm-Message: Object 0x55555633c730 disposed
+libnm-Message: Object 0x55555633eae0 disposed
+libnm-Message: Object 0x555556340a80 disposed
+
+Thread 1 "gnome-control-c" received signal SIGSEGV, Segmentation fault.
+g_type_check_instance_cast (type_instance=type_instance@entry=0x55555633c070, iface_type=93825006537856) at /.../glib/gobject/gtype.c:4057
+4057		  node = lookup_type_node_I (type_instance->g_class->g_type);
+(gdb) bt
+
+NetworkManager is calling callbacks on disposed objects, which leads to
+crashes in clients (e.g. GNOME Settings).
+
+Fix this issue by disconnecting signal handlers when the objects are
+disposed.
+
+Patch originally by Georges Basile Stavracas Neto <georges.stavracas@gmail.com>
+
+https://bugzilla.gnome.org/show_bug.cgi?id=787893
+(cherry picked from commit b18896f77048399e7a8b6ddd4fa0961e603836fa)
+
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/1718006
+Origin: upstream
+Applied-Upstream: 1.8.5
+
+---
+ libnm/nm-remote-connection.c | 6 +++---
+ libnm/nm-vpn-connection.c    | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/libnm/nm-remote-connection.c b/libnm/nm-remote-connection.c
+index 0f7ea58ef..5cd42555f 100644
+--- a/libnm/nm-remote-connection.c
++++ b/libnm/nm-remote-connection.c
+@@ -641,7 +641,7 @@ init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
+ 	GVariant *settings;
+ 
+ 	priv->proxy = NMDBUS_SETTINGS_CONNECTION (_nm_object_get_proxy (NM_OBJECT (initable), NM_DBUS_INTERFACE_SETTINGS_CONNECTION));
+-	g_signal_connect (priv->proxy, "updated", G_CALLBACK (updated_cb), initable);
++	g_signal_connect_object (priv->proxy, "updated", G_CALLBACK (updated_cb), initable, 0);
+ 
+ 	if (nmdbus_settings_connection_call_get_settings_sync (priv->proxy,
+ 	                                                       &settings,
+@@ -730,8 +730,8 @@ init_async (GAsyncInitable *initable, int io_priority,
+ 	priv->proxy = NMDBUS_SETTINGS_CONNECTION (_nm_object_get_proxy (NM_OBJECT (initable),
+ 	                                          NM_DBUS_INTERFACE_SETTINGS_CONNECTION));
+ 
+-	g_signal_connect (priv->proxy, "updated",
+-	                  G_CALLBACK (updated_cb), initable);
++	g_signal_connect_object (priv->proxy, "updated",
++	                         G_CALLBACK (updated_cb), initable, 0);
+ 
+ 	nmdbus_settings_connection_call_get_settings (NM_REMOTE_CONNECTION_GET_PRIVATE (init_data->initable)->proxy,
+ 	                                              init_data->cancellable,
+diff --git a/libnm/nm-vpn-connection.c b/libnm/nm-vpn-connection.c
+index 814f45f0f..636c39507 100644
+--- a/libnm/nm-vpn-connection.c
++++ b/libnm/nm-vpn-connection.c
+@@ -144,8 +144,8 @@ init_dbus (NMObject *object)
+ 	                                property_info);
+ 
+ 	proxy = _nm_object_get_proxy (object, NM_DBUS_INTERFACE_VPN_CONNECTION);
+-	g_signal_connect (proxy, "vpn-state-changed",
+-	                  G_CALLBACK (vpn_state_changed_proxy), object);
++	g_signal_connect_object (proxy, "vpn-state-changed",
++	                         G_CALLBACK (vpn_state_changed_proxy), object, 0);
+ 	g_object_unref (proxy);
+ }
+ 
+-- 
+2.14.1
+

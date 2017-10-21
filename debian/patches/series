@@ -4,3 +4,4 @@ Fix-arping-path.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Fix-iscsiadm-path.patch
 manager-Disconnect-from-signals-on-the-proxy-when-we-re-d.patch
+vpn-remote-connection-disconnect-signal-handlers-whe.patch
