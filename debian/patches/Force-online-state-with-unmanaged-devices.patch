@@ -12,10 +12,10 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 117 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index 7662c2e..413ec0b 100644
+index 3b2b486..5188806 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
-@@ -60,6 +60,8 @@
+@@ -62,6 +62,8 @@
  #include "introspection/org.freedesktop.NetworkManager.h"
  #include "introspection/org.freedesktop.NetworkManager.Device.h"
  
@@ -24,7 +24,7 @@ index 7662c2e..413ec0b 100644
  static gboolean add_device (NMManager *self, NMDevice *device, GError **error);
  
  static NMActiveConnection *_new_active_connection (NMManager *self,
-@@ -148,6 +150,10 @@ typedef struct {
+@@ -157,6 +159,10 @@ typedef struct {
  	GFileMonitor *fw_monitor;
  	guint fw_changed_id;
  
@@ -35,7 +35,7 @@ index 7662c2e..413ec0b 100644
  	guint timestamp_update_id;
  
  	guint devices_inited_id;
-@@ -860,6 +866,29 @@ find_best_device_state (NMManager *manager)
+@@ -870,6 +876,29 @@ find_best_device_state (NMManager *manager)
  	return best_state;
  }
  
@@ -65,7 +65,7 @@ index 7662c2e..413ec0b 100644
  static void
  nm_manager_update_metered (NMManager *self)
  {
-@@ -898,6 +927,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -908,6 +937,9 @@ nm_manager_update_state (NMManager *manager)
  	else
  		new_state = find_best_device_state (manager);
  
@@ -75,7 +75,7 @@ index 7662c2e..413ec0b 100644
  	if (   new_state >= NM_STATE_CONNECTED_LOCAL
  	    && priv->connectivity_state == NM_CONNECTIVITY_FULL) {
  		new_state = NM_STATE_CONNECTED_GLOBAL;
-@@ -5061,6 +5093,62 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -5114,6 +5146,62 @@ impl_manager_check_connectivity (NMManager *self,
  	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_NETWORK_CONTROL, TRUE);
  }
  
@@ -138,7 +138,7 @@ index 7662c2e..413ec0b 100644
  static void
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
-@@ -5203,6 +5291,9 @@ nm_manager_start (NMManager *self, GError **error)
+@@ -5256,6 +5344,9 @@ nm_manager_start (NMManager *self, GError **error)
  	nm_clear_g_source (&priv->devices_inited_id);
  	priv->devices_inited_id = g_idle_add_full (G_PRIORITY_LOW + 10, devices_inited_cb, self, NULL);
  
@@ -148,7 +148,7 @@ index 7662c2e..413ec0b 100644
  	return TRUE;
  }
  
-@@ -6188,6 +6279,22 @@ nm_manager_init (NMManager *self)
+@@ -6252,6 +6343,22 @@ nm_manager_init (NMManager *self)
  		       KERNEL_FIRMWARE_DIR);
  	}
  
@@ -171,12 +171,12 @@ index 7662c2e..413ec0b 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
  
-@@ -6425,6 +6532,16 @@ dispose (GObject *object)
+@@ -6513,6 +6620,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
 +	if (priv->ifstate_monitor) {
-+		g_signal_handlers_disconnect_by_func (priv->ifstate_monitor, ifstate_file_changed, manager);
++		g_signal_handlers_disconnect_by_func (priv->ifstate_monitor, ifstate_file_changed, self);
 +
 +		if (priv->ifstate_force_online)
 +			g_source_remove (priv->ifstate_force_online);
@@ -186,5 +186,5 @@ index 7662c2e..413ec0b 100644
 +	}
 +
  	if (priv->rfkill_mgr) {
- 		g_signal_handlers_disconnect_by_func (priv->rfkill_mgr, rfkill_manager_rfkill_changed_cb, manager);
+ 		g_signal_handlers_disconnect_by_func (priv->rfkill_mgr, rfkill_manager_rfkill_changed_cb, self);
  		g_clear_object (&priv->rfkill_mgr);

@@ -10,10 +10,10 @@ to be autostarted by a client request.
  2 files changed, 6 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index 5c49eab..698162c 100644
+index cda851a..8b1d8bb 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -3515,11 +3515,6 @@ endif
+@@ -3686,11 +3686,6 @@ endif
  data/NetworkManager-dispatcher.service: $(srcdir)/data/NetworkManager-dispatcher.service.in
  	$(AM_V_GEN) $(data_edit) $< >$@
  
@@ -26,7 +26,7 @@ index 5c49eab..698162c 100644
  
  examples_DATA += data/server.conf
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index a9e8731..e6cd392 100644
+index 95d58f9..1502b89 100644
 --- a/data/NetworkManager.service.in
 +++ b/data/NetworkManager.service.in
 @@ -24,6 +24,5 @@ ProtectHome=read-only

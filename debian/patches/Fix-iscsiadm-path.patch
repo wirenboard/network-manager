@@ -12,7 +12,7 @@ binary as /sbin/iscsiadm (and /usr/bin/iscsiadm is a compat symlink).
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/settings/plugins/ibft/nms-ibft-plugin.c b/src/settings/plugins/ibft/nms-ibft-plugin.c
-index c9069dc..9dcf7dc 100644
+index 9b1f5cc..8cc1313 100644
 --- a/src/settings/plugins/ibft/nms-ibft-plugin.c
 +++ b/src/settings/plugins/ibft/nms-ibft-plugin.c
 @@ -74,7 +74,7 @@ read_connections (NMSIbftPlugin *self)
