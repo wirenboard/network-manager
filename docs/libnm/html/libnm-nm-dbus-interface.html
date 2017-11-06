@@ -86,6 +86,18 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-OVS-INTERFACE:CAPS" title="NM_DBUS_INTERFACE_DEVICE_OVS_INTERFACE">NM_DBUS_INTERFACE_DEVICE_OVS_INTERFACE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-OVS-PORT:CAPS" title="NM_DBUS_INTERFACE_DEVICE_OVS_PORT">NM_DBUS_INTERFACE_DEVICE_OVS_PORT</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-OVS-BRIDGE:CAPS" title="NM_DBUS_INTERFACE_DEVICE_OVS_BRIDGE">NM_DBUS_INTERFACE_DEVICE_OVS_BRIDGE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-ACCESS-POINT:CAPS" title="NM_DBUS_PATH_ACCESS_POINT">NM_DBUS_PATH_ACCESS_POINT</a></td>
 </tr>
 <tr>
@@ -171,6 +183,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS" title="NM_DBUS_INTERFACE_DEVICE_MACVLAN">NM_DBUS_INTERFACE_DEVICE_MACVLAN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-PPP:CAPS" title="NM_DBUS_INTERFACE_DEVICE_PPP">NM_DBUS_INTERFACE_DEVICE_PPP</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -388,12 +404,16 @@
 <td class="datatype_keyword">enum</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMRollbackResult" title="enum NMRollbackResult">NMRollbackResult</a></td>
 </tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMActivationStateFlags" title="enum NMActivationStateFlags">NMActivationStateFlags</a></td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <div class="refsect1">
 <a name="libnm-nm-dbus-interface.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NM80211Mode
     <span class="lineart">├──</span> NMActiveConnectionState
     <span class="lineart">├──</span> NMActiveConnectionStateReason
@@ -406,9 +426,10 @@
     <span class="lineart">├──</span> NMMetered
     <span class="lineart">├──</span> NMState
     <span class="lineart">╰──</span> NMWimaxNspNetworkType
-    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
     <span class="lineart">├──</span> NM80211ApFlags
     <span class="lineart">├──</span> NM80211ApSecurityFlags
+    <span class="lineart">├──</span> NMActivationStateFlags
     <span class="lineart">├──</span> NMBluetoothCapabilities
     <span class="lineart">├──</span> NMDeviceCapabilities
     <span class="lineart">├──</span> NMDeviceModemCapabilities
@@ -438,211 +459,235 @@
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-SERVICE:CAPS"></a><h3>NM_DBUS_SERVICE</h3>
-<pre class="programlisting">#define NM_DBUS_SERVICE                     "org.freedesktop.NetworkManager"
+<pre class="programlisting">#define NM_DBUS_SERVICE                        "org.freedesktop.NetworkManager"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-PATH:CAPS"></a><h3>NM_DBUS_PATH</h3>
-<pre class="programlisting">#define NM_DBUS_PATH                        "/org/freedesktop/NetworkManager"
+<pre class="programlisting">#define NM_DBUS_PATH                           "/org/freedesktop/NetworkManager"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE:CAPS"></a><h3>NM_DBUS_INTERFACE</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE                   "org.freedesktop.NetworkManager"
+<pre class="programlisting">#define NM_DBUS_INTERFACE                      "org.freedesktop.NetworkManager"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE            NM_DBUS_INTERFACE ".Device"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE               NM_DBUS_INTERFACE ".Device"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-WIRED:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_WIRED</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIRED      NM_DBUS_INTERFACE_DEVICE ".Wired"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIRED         NM_DBUS_INTERFACE_DEVICE ".Wired"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-ADSL:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_ADSL</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_ADSL       NM_DBUS_INTERFACE_DEVICE ".Adsl"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_ADSL          NM_DBUS_INTERFACE_DEVICE ".Adsl"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-WIRELESS:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_WIRELESS</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIRELESS   NM_DBUS_INTERFACE_DEVICE ".Wireless"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIRELESS      NM_DBUS_INTERFACE_DEVICE ".Wireless"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-BLUETOOTH:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BLUETOOTH</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BLUETOOTH  NM_DBUS_INTERFACE_DEVICE ".Bluetooth"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BLUETOOTH     NM_DBUS_INTERFACE_DEVICE ".Bluetooth"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-OLPC-MESH:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_OLPC_MESH</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_OLPC_MESH  NM_DBUS_INTERFACE_DEVICE ".OlpcMesh"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_OLPC_MESH     NM_DBUS_INTERFACE_DEVICE ".OlpcMesh"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-OVS-INTERFACE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_OVS_INTERFACE</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_OVS_INTERFACE NM_DBUS_INTERFACE_DEVICE ".OvsInterface"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-OVS-PORT:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_OVS_PORT</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_OVS_PORT      NM_DBUS_INTERFACE_DEVICE ".OvsPort"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-OVS-BRIDGE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_OVS_BRIDGE</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_OVS_BRIDGE    NM_DBUS_INTERFACE_DEVICE ".OvsBridge"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-PATH-ACCESS-POINT:CAPS"></a><h3>NM_DBUS_PATH_ACCESS_POINT</h3>
-<pre class="programlisting">#define NM_DBUS_PATH_ACCESS_POINT           NM_DBUS_PATH "/AccessPoint"
+<pre class="programlisting">#define NM_DBUS_PATH_ACCESS_POINT              NM_DBUS_PATH "/AccessPoint"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-ACCESS-POINT:CAPS"></a><h3>NM_DBUS_INTERFACE_ACCESS_POINT</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_ACCESS_POINT      NM_DBUS_INTERFACE ".AccessPoint"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_ACCESS_POINT         NM_DBUS_INTERFACE ".AccessPoint"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-MODEM:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MODEM</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MODEM      NM_DBUS_INTERFACE_DEVICE ".Modem"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MODEM         NM_DBUS_INTERFACE_DEVICE ".Modem"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-WIMAX:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_WIMAX</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIMAX      NM_DBUS_INTERFACE_DEVICE ".WiMax"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIMAX         NM_DBUS_INTERFACE_DEVICE ".WiMax"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-WIMAX-NSP:CAPS"></a><h3>NM_DBUS_INTERFACE_WIMAX_NSP</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_WIMAX_NSP         NM_DBUS_INTERFACE ".WiMax.Nsp"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_WIMAX_NSP            NM_DBUS_INTERFACE ".WiMax.Nsp"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-PATH-WIMAX-NSP:CAPS"></a><h3>NM_DBUS_PATH_WIMAX_NSP</h3>
-<pre class="programlisting">#define NM_DBUS_PATH_WIMAX_NSP              NM_DBUS_PATH "/Nsp"
+<pre class="programlisting">#define NM_DBUS_PATH_WIMAX_NSP                 NM_DBUS_PATH "/Nsp"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-ACTIVE-CONNECTION:CAPS"></a><h3>NM_DBUS_INTERFACE_ACTIVE_CONNECTION</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_ACTIVE_CONNECTION NM_DBUS_INTERFACE ".Connection.Active"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_ACTIVE_CONNECTION    NM_DBUS_INTERFACE ".Connection.Active"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-IP4-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_IP4_CONFIG</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_IP4_CONFIG        NM_DBUS_INTERFACE ".IP4Config"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_IP4_CONFIG           NM_DBUS_INTERFACE ".IP4Config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DHCP4-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_DHCP4_CONFIG</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DHCP4_CONFIG      NM_DBUS_INTERFACE ".DHCP4Config"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DHCP4_CONFIG         NM_DBUS_INTERFACE ".DHCP4Config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-IP6-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_IP6_CONFIG</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_IP6_CONFIG        NM_DBUS_INTERFACE ".IP6Config"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_IP6_CONFIG           NM_DBUS_INTERFACE ".IP6Config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DHCP6-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_DHCP6_CONFIG</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DHCP6_CONFIG      NM_DBUS_INTERFACE ".DHCP6Config"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DHCP6_CONFIG         NM_DBUS_INTERFACE ".DHCP6Config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-INFINIBAND:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_INFINIBAND</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_INFINIBAND NM_DBUS_INTERFACE_DEVICE ".Infiniband"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_INFINIBAND    NM_DBUS_INTERFACE_DEVICE ".Infiniband"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-BOND:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BOND</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BOND          NM_DBUS_INTERFACE_DEVICE ".Bond"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-DUMMY:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_DUMMY</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_DUMMY      NM_DBUS_INTERFACE_DEVICE ".Dummy"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_DUMMY         NM_DBUS_INTERFACE_DEVICE ".Dummy"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-TEAM:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_TEAM</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_TEAM       NM_DBUS_INTERFACE_DEVICE ".Team"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_TEAM          NM_DBUS_INTERFACE_DEVICE ".Team"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-VLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_VLAN</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VLAN       NM_DBUS_INTERFACE_DEVICE ".Vlan"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VLAN          NM_DBUS_INTERFACE_DEVICE ".Vlan"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-BRIDGE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BRIDGE</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BRIDGE     NM_DBUS_INTERFACE_DEVICE ".Bridge"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BRIDGE        NM_DBUS_INTERFACE_DEVICE ".Bridge"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-GENERIC:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_GENERIC</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_GENERIC    NM_DBUS_INTERFACE_DEVICE ".Generic"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_GENERIC       NM_DBUS_INTERFACE_DEVICE ".Generic"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-VETH:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_VETH</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VETH       NM_DBUS_INTERFACE_DEVICE ".Veth"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VETH          NM_DBUS_INTERFACE_DEVICE ".Veth"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-TUN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_TUN</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_TUN        NM_DBUS_INTERFACE_DEVICE ".Tun"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_TUN           NM_DBUS_INTERFACE_DEVICE ".Tun"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-MACSEC:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MACSEC</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACSEC     NM_DBUS_INTERFACE_DEVICE ".Macsec"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACSEC        NM_DBUS_INTERFACE_DEVICE ".Macsec"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MACVLAN</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACVLAN    NM_DBUS_INTERFACE_DEVICE ".Macvlan"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACVLAN       NM_DBUS_INTERFACE_DEVICE ".Macvlan"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-PPP:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_PPP</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_PPP           NM_DBUS_INTERFACE_DEVICE ".Ppp"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-VXLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_VXLAN</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VXLAN      NM_DBUS_INTERFACE_DEVICE ".Vxlan"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VXLAN         NM_DBUS_INTERFACE_DEVICE ".Vxlan"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-GRE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_GRE</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_GRE        NM_DBUS_INTERFACE_DEVICE ".Gre"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_GRE           NM_DBUS_INTERFACE_DEVICE ".Gre"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-IP-TUNNEL:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_IP_TUNNEL</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_IP_TUNNEL  NM_DBUS_INTERFACE_DEVICE ".IPTunnel"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_IP_TUNNEL     NM_DBUS_INTERFACE_DEVICE ".IPTunnel"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DBUS-INTERFACE-DEVICE-STATISTICS:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_STATISTICS</h3>
-<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_STATISTICS NM_DBUS_INTERFACE_DEVICE ".Statistics"
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_STATISTICS    NM_DBUS_INTERFACE_DEVICE ".Statistics"
 </pre>
 </div>
 <hr>
@@ -1070,6 +1115,34 @@ GSM/UMTS, or LTE network access protocols</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-PPP:CAPS"></a>NM_DEVICE_TYPE_PPP</p></td>
+<td class="enum_member_description">
+<p>a PPP interface</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-OVS-INTERFACE:CAPS"></a>NM_DEVICE_TYPE_OVS_INTERFACE</p></td>
+<td class="enum_member_description">
+<p>a OpenVSwitch interface</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-OVS-PORT:CAPS"></a>NM_DEVICE_TYPE_OVS_PORT</p></td>
+<td class="enum_member_description">
+<p>a OpenVSwitch port</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-TYPE-OVS-BRIDGE:CAPS"></a>NM_DEVICE_TYPE_OVS_BRIDGE</p></td>
+<td class="enum_member_description">
+<p>a OpenVSwitch bridge</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -1252,6 +1325,27 @@ GSM/UMTS, or LTE network access protocols</p>
 <td class="enum_member_description">
 <p>access point requires authentication and
 encryption (usually means WEP)</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-802-11-AP-FLAGS-WPS:CAPS"></a>NM_802_11_AP_FLAGS_WPS</p></td>
+<td class="enum_member_description">
+<p>access point supports some WPS method</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-802-11-AP-FLAGS-WPS-PBC:CAPS"></a>NM_802_11_AP_FLAGS_WPS_PBC</p></td>
+<td class="enum_member_description">
+<p>access point supports push-button WPS</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-802-11-AP-FLAGS-WPS-PIN:CAPS"></a>NM_802_11_AP_FLAGS_WPS_PIN</p></td>
+<td class="enum_member_description">
+<p>access point supports PIN-based WPS</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -2138,6 +2232,13 @@ GPRS, EDGE, UMTS, HSDPA, HSUPA, or HSPA+ packet switched data capability</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-DEVICE-STATE-REASON-OVSDB-FAILED:CAPS"></a>NM_DEVICE_STATE_REASON_OVSDB_FAILED</p></td>
+<td class="enum_member_description">
+<p>problem communicating with OpenVSwitch database</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -2436,6 +2537,15 @@ network.</p>
   initiated by user-requested action via the D-Bus interface, as opposed to
   automatically initiated by NetworkManager in response to (for example) scan
   results or carrier changes.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-WPS-PBC-ACTIVE:CAPS"></a>NM_SECRET_AGENT_GET_SECRETS_FLAG_WPS_PBC_ACTIVE</p></td>
+<td class="enum_member_description">
+<p>indicates that WPS enrollment
+  is active with PBC method. The agent may suggest that the user pushes a button
+  on the router instead of supplying a PSK.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -2782,6 +2892,74 @@ VPN plugin authentication dialogs.</p>
 </table></div>
 </div>
 <p class="since">Since: 1.4</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMActivationStateFlags"></a><h3>enum NMActivationStateFlags</h3>
+<p>Flags describing the current activation state.</p>
+<div class="refsect3">
+<a name="NMActivationStateFlags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-NONE:CAPS"></a>NM_ACTIVATION_STATE_FLAG_NONE</p></td>
+<td class="enum_member_description">
+<p>an alias for numeric zero, no flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-IS-MASTER:CAPS"></a>NM_ACTIVATION_STATE_FLAG_IS_MASTER</p></td>
+<td class="enum_member_description">
+<p>the device is a master.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-IS-SLAVE:CAPS"></a>NM_ACTIVATION_STATE_FLAG_IS_SLAVE</p></td>
+<td class="enum_member_description">
+<p>the device is a slave.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-LAYER2-READY:CAPS"></a>NM_ACTIVATION_STATE_FLAG_LAYER2_READY</p></td>
+<td class="enum_member_description">
+<p>layer2 is activated and ready.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-IP4-READY:CAPS"></a>NM_ACTIVATION_STATE_FLAG_IP4_READY</p></td>
+<td class="enum_member_description">
+<p>IPv4 setting is completed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-IP6-READY:CAPS"></a>NM_ACTIVATION_STATE_FLAG_IP6_READY</p></td>
+<td class="enum_member_description">
+<p>IPv6 setting is completed.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-ACTIVATION-STATE-FLAG-MASTER-HAS-SLAVES:CAPS"></a>NM_ACTIVATION_STATE_FLAG_MASTER_HAS_SLAVES</p></td>
+<td class="enum_member_description">
+<p>The master has any slave devices attached.
+  This only makes sense if the device is a master.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.10</p>
 </div>
 </div>
 </div>

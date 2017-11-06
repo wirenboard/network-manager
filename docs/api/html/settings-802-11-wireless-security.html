@@ -34,11 +34,11 @@
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
 <div class="refsect1">
-<a name="id-1.3.3.35.2"></a><h2>
+<a name="id-1.3.3.39.2"></a><h2>
             Properties
         </h2>
 <div class="table">
-<a name="id-1.3.3.35.2.2.1"></a><p class="title"><b>Table 84. </b></p>
+<a name="id-1.3.3.39.2.2.1"></a><p class="title"><b>Table 92. </b></p>
 <div class="table-contents"><table class="table" border="1">
 <colgroup>
 <col>
@@ -102,6 +102,12 @@
 <td>A list of pairwise encryption algorithms which prevents connections to Wi-Fi networks that do not utilize one of the algorithms in the list. For maximum compatibility leave this property empty.  Each list element may be one of "tkip" or "ccmp".</td>
 </tr>
 <tr>
+<td><pre class="screen">pmf</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Indicates whether Protected Management Frames (802.11w) must be enabled for the connection.  One of NM_SETTING_WIRELESS_SECURITY_PMF_DEFAULT (0) (use global default value), NM_SETTING_WIRELESS_SECURITY_PMF_DISABLE (1) (disable PMF), NM_SETTING_WIRELESS_SECURITY_PMF_OPTIONAL (2) (enable PMF if the supplicant and the access point support it) or NM_SETTING_WIRELESS_SECURITY_PMF_REQUIRED (3) (enable PMF and fail if not supported).  When set to NM_SETTING_WIRELESS_SECURITY_PMF_DEFAULT (0) and no global default is set, PMF will be optionally enabled.</td>
+</tr>
+<tr>
 <td><pre class="screen">proto</pre></td>
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
@@ -160,6 +166,12 @@
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">0</pre></td>
 <td>When static WEP is used (ie, key-mgmt = "none") and a non-default WEP key index is used by the AP, put that WEP key index here.  Valid values are 0 (default key) through 3.  Note that some consumer access points (like the Linksys WRT54G) number the keys 1 - 4.</td>
+</tr>
+<tr>
+<td><pre class="screen">wps-method</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Flags indicating which mode of WPS is to be used if any. There's little point in changing the default setting as NetworkManager will automatically determine whether it's feasible to start WPS enrollment from the Access Point capabilities. WPS can be disabled by setting this property to a value of 1.</td>
 </tr>
 </tbody>
 </table></div>

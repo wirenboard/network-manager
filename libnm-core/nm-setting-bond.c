@@ -43,7 +43,7 @@
  **/
 
 G_DEFINE_TYPE_WITH_CODE (NMSettingBond, nm_setting_bond, NM_TYPE_SETTING,
-                         _nm_register_setting (BOND, 1))
+                         _nm_register_setting (BOND, NM_SETTING_PRIORITY_HW_BASE))
 NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_BOND)
 
 #define NM_SETTING_BOND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_BOND, NMSettingBondPrivate))
@@ -224,19 +224,34 @@ validate_list (const char *name, const char *value, const BondDefault *def)
 static gboolean
 validate_ip (const char *name, const char *value)
 {
-	char **ips, **iter;
-	gboolean success = TRUE;
+	gs_free char *value_clone = NULL;
 	struct in_addr addr;
 
 	if (!value || !value[0])
 		return FALSE;
 
-	ips = g_strsplit_set (value, ",", 0);
-	for (iter = ips; iter && *iter && success; iter++)
-		success = !!inet_aton (*iter, &addr);
-	g_strfreev (ips);
+	value_clone = g_strdup (value);
+	value = value_clone;
+	for (;;) {
+		char *eow;
 
-	return success;
+		/* we do not skip over empty words. E.g
+		 * "192.168.1.1," is an error.
+		 *
+		 * ... for no particular reason. */
+
+		eow = strchr (value, ',');
+		if (eow)
+			*eow = '\0';
+
+		if (inet_pton (AF_INET, value, &addr) != 1)
+			return FALSE;
+
+		if (!eow)
+			break;
+		value = eow + 1;
+	}
+	return TRUE;
 }
 
 static gboolean
@@ -627,7 +642,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 			g_set_error (error,
 			             NM_CONNECTION_ERROR,
 			             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			             _("'%s' is not a valid for '%s' option: %s"),
+			             _("'%s' is not valid for the '%s' option: %s"),
 			             primary, NM_SETTING_BOND_OPTION_PRIMARY, tmp_error->message);
 			g_prefix_error (error, "%s.%s: ", NM_SETTING_BOND_SETTING_NAME, NM_SETTING_BOND_OPTIONS);
 			g_error_free (tmp_error);
@@ -646,7 +661,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		}
 	}
 
-	if (nm_connection_get_setting_infiniband (connection)) {
+	if (connection && nm_connection_get_setting_infiniband (connection)) {
 		if (strcmp (mode_new, "active-backup") != 0) {
 			g_set_error (error,
 			             NM_CONNECTION_ERROR,

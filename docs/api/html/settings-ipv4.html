@@ -38,7 +38,7 @@
             Properties
         </h2>
 <div class="table">
-<a name="id-1.3.3.15.2.2.1"></a><p class="title"><b>Table 64. </b></p>
+<a name="id-1.3.3.15.2.2.1"></a><p class="title"><b>Table 68. </b></p>
 <div class="table-contents"><table class="table" border="1">
 <colgroup>
 <col>
@@ -177,7 +177,13 @@
 <td><pre class="screen">route-metric</pre></td>
 <td><pre class="screen">int64</pre></td>
 <td><pre class="screen">-1</pre></td>
-<td>The default metric for routes that don't explicitly specify a metric. The default value -1 means that the metric is choosen automatically based on the device type. The metric applies to dynamic routes, manual (static) routes that don't have an explicit metric setting, address prefix routes, and the default route. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default). Hence, setting this property to zero effectively mean setting it to 1024. For IPv4, zero is a regular value for the metric.</td>
+<td>The default metric for routes that don't explicitly specify a metric. The default value -1 means that the metric is chosen automatically based on the device type. The metric applies to dynamic routes, manual (static) routes that don't have an explicit metric setting, address prefix routes, and the default route. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default). Hence, setting this property to zero effectively mean setting it to 1024. For IPv4, zero is a regular value for the metric.</td>
+</tr>
+<tr>
+<td><pre class="screen">route-table</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Enable policy routing (source routing) and set the routing table used when adding routes. This affects all routes, including device-routes, IPv4LL, DHCP, SLAAC, default-routes and static routes. But note that static routes can individually overwrite the setting by explicitly specifying a non-zero routing table. If the table setting is left at zero, it is eligible to be overwritten via global configuration. If the property is zero even after applying the global configuration value, policy routing is disabled for the address family of this connection. Policy routing disabled means that NetworkManager will add all routes to the main table (except static routes that explicitly configure a different table). Additionally, NetworkManager will not delete any extraneous routes from tables except the main table. This is to preserve backward compatibility for users who manage routing tables outside of NetworkManager.</td>
 </tr>
 <tr>
 <td><pre class="screen">routes</pre></td>

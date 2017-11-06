@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 09/20/2017
+.\"      Date: 11/03/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.8.4
+.\"    Source: NetworkManager 1.9.90
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.8\&.4" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.9\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -93,7 +93,17 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
+T{
+auth\-retries
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+The number of retries for the authentication\&. Zero means to try indefinitely; \-1 means to use a global default\&. If the global default is not set, the authentication retries for 3 times before failing the connection\&. Currently this only applies to 802\-1x authentication\&.
+T}
 T{
 autoconnect
 T}:T{
@@ -119,7 +129,7 @@ int32
 T}:T{
 \-1
 T}:T{
-The number of times a connection should be tried when autoctivating before giving up\&. Zero means forever, \-1 means the global default (4 times if not overridden)\&.
+The number of times a connection should be tried when autoactivating before giving up\&. Zero means forever, \-1 means the global default (4 times if not overridden)\&. Setting this to 1 means to try activation only once before blocking autoconnect\&. Note that after a timeout, NetworkManager will try to autoconnect again\&.
 T}
 T{
 autoconnect\-slaves
@@ -236,7 +246,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Token to generate stable IDs for the connection\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. Note that also the interface name of the activating connection and a per\-host secret key is included into the address generation so that the same stable\-id on different hosts/devices yields different addresses\&. If the value is unset, an ID unique for the connection is used\&. Specifing a stable\-id allows multiple connections to generate the same addresses\&. Another use is to generate IDs at runtime via dynamic substitutions\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-boot, or every time\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot\&. Note that two connections only use the same effective id if their stable\-id is also identical before performing dynamic substitutions\&.
+Token to generate stable IDs for the connection\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. Note that also the interface name of the activating connection and a per\-host secret key is included into the address generation so that the same stable\-id on different hosts/devices yields different addresses\&. If the value is unset, an ID unique for the connection is used\&. Specifying a stable\-id allows multiple connections to generate the same addresses\&. Another use is to generate IDs at runtime via dynamic substitutions\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-boot, or every time\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot\&. Note that two connections only use the same effective id if their stable\-id is also identical before performing dynamic substitutions\&.
 T}
 T{
 timestamp
@@ -515,7 +525,7 @@ uint32
 T}:T{
 0
 T}:T{
-Specifies authentication flags to use in "phase 1" outer authentication using NMSetting8021xAuthFlags options\&. The invidual TLS versions can be explicitly disabled\&. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it\&. The TLS options map to tls_disable_tlsv1_x settings\&. See the wpa_supplicant documentation for more details\&.
+Specifies authentication flags to use in "phase 1" outer authentication using NMSetting8021xAuthFlags options\&. The individual TLS versions can be explicitly disabled\&. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it\&. The TLS options map to tls_disable_tlsv1_x settings\&. See the wpa_supplicant documentation for more details\&.
 T}
 T{
 phase1\-fast\-provisioning
@@ -963,6 +973,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 ageing\-time
@@ -981,6 +992,15 @@ T}:T{
 15
 T}:T{
 The Spanning Tree Protocol (STP) forwarding delay, in seconds\&.
+T}
+T{
+group\-forward\-mask
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+A mask of group addresses to forward\&. Usually, group addresses in the range from 01:80:C2:00:00:00 to 01:80:C2:00:00:0F are not forwarded according to standards\&. This property is a mask of 16 bits, each corresponding to a group address in that range that must be forwarded\&. The mask can\*(Aqt have bits 0, 1 or 2 set because they are used for STP, MAC pause frames and LACP\&.
 T}
 T{
 hello\-time
@@ -1007,7 +1027,7 @@ byte array
 T}:T{
 \ \&
 T}:T{
-If specified, the MAC address of bridge\&. When creating a new bridge, this MAC address will be set\&. When matching an existing (outside NetworkManager created) bridge, this MAC address must match\&.
+If specified, the MAC address of bridge\&. When creating a new bridge, this MAC address will be set\&. If this field is left unspecified, the "ethernet\&.cloned\-mac\-address" is referred instead to generate the initial MAC address\&. Note that setting "ethernet\&.cloned\-mac\-address" anyway overwrites the MAC address of the bridge later while activating the bridge\&. Hence, this property is deprecated\&.
 T}
 T{
 max\-age
@@ -1083,7 +1103,7 @@ boolean
 T}:T{
 FALSE
 T}:T{
-Enables or disabled "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on\&.
+Enables or disables "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on\&.
 T}
 T{
 name
@@ -1303,7 +1323,7 @@ array of uint32
 T}:T{
 [0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
-An array of 8 uint values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates the percentage of bandwidth of the priority\*(Aqs assigned group that the priority may use\&.  The sum of all percentages for priorities which belong to the same group must total 100 percent\&.
+An array of 8 uint values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates the percentage of bandwidth of the priority\*(Aqs assigned group that the priority may use\&.  The sum of all percentages for priorities which belong to the same group must total 100 percents\&.
 T}
 T{
 priority\-flow\-control
@@ -1330,7 +1350,7 @@ array of uint32
 T}:T{
 [0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
-An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 \- 7) and the value indicates the percentage of link bandwidth allocated to that group\&.  Allowed values are 0 \- 100, and the sum of all values must total 100 percent\&.
+An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 \- 7) and the value indicates the percentage of link bandwidth allocated to that group\&.  Allowed values are 0 \- 100, and the sum of all values must total 100 percents\&.
 T}
 T{
 priority\-group\-flags
@@ -1571,7 +1591,7 @@ string
 T}:T{
 \ \&
 T}:T{
-A MCC/MNC string like "310260" or "21601" identifying the specific mobile network operator which this connection applies to\&.  If given, the connection will apply to any device also allowed by "device\-id" and "sim\-id" which contains a SIM card provisioined by the given operator\&.
+A MCC/MNC string like "310260" or "21601" identifying the specific mobile network operator which this connection applies to\&.  If given, the connection will apply to any device also allowed by "device\-id" and "sim\-id" which contains a SIM card provisioned by the given operator\&.
 T}
 T{
 username
@@ -1678,6 +1698,7 @@ T}:T{
 Value Description
 T}
 .T&
+l l l l
 l l l l
 l l l l
 l l l l
@@ -1887,7 +1908,16 @@ int64
 T}:T{
 \-1
 T}:T{
-The default metric for routes that don\*(Aqt explicitly specify a metric\&. The default value \-1 means that the metric is choosen automatically based on the device type\&. The metric applies to dynamic routes, manual (static) routes that don\*(Aqt have an explicit metric setting, address prefix routes, and the default route\&. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default)\&. Hence, setting this property to zero effectively mean setting it to 1024\&. For IPv4, zero is a regular value for the metric\&.
+The default metric for routes that don\*(Aqt explicitly specify a metric\&. The default value \-1 means that the metric is chosen automatically based on the device type\&. The metric applies to dynamic routes, manual (static) routes that don\*(Aqt have an explicit metric setting, address prefix routes, and the default route\&. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default)\&. Hence, setting this property to zero effectively mean setting it to 1024\&. For IPv4, zero is a regular value for the metric\&.
+T}
+T{
+route\-table
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+Enable policy routing (source routing) and set the routing table used when adding routes\&. This affects all routes, including device\-routes, IPv4LL, DHCP, SLAAC, default\-routes and static routes\&. But note that static routes can individually overwrite the setting by explicitly specifying a non\-zero routing table\&. If the table setting is left at zero, it is eligible to be overwritten via global configuration\&. If the property is zero even after applying the global configuration value, policy routing is disabled for the address family of this connection\&. Policy routing disabled means that NetworkManager will add all routes to the main table (except static routes that explicitly configure a different table)\&. Additionally, NetworkManager will not delete any extraneous routes from tables except the main table\&. This is to preserve backward compatibility for users who manage routing tables outside of NetworkManager\&.
 T}
 T{
 routes
@@ -1938,6 +1968,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 addr\-gen\-mode
@@ -1946,7 +1977,7 @@ int32
 T}:T{
 1
 T}:T{
-Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration\&. The permitted values are: "eui64", or "stable\-privacy"\&. If the property is set to "eui64", the addresses will be generated using the interface tokens derived from  hardware address\&. This makes the host part of the address to stay constant, making it possible to track host\*(Aqs presence when it changes networks\&. The address changes when the interface hardware is replaced\&. The value of "stable\-privacy" enables use of cryptographically secure hash of a secret host\-specific key along with the connection\*(Aqs stable\-id and the network address as specified by RFC7217\&. This makes it impossible to use the address track host\*(Aqs presence, and makes the address stable when the network interface hardware is replaced\&. On D\-Bus, the absence of an addr\-gen\-mode setting equals enabling "stable\-privacy"\&. For keyfile plugin, the absence of the setting on disk means "eui64" so that the property doesn\*(Aqt change on upgrade from older versions\&. Note that this setting is distinct from the Privacy Extensions as configured by "ip6\-privacy" property and it does not affect the temporary addresses configured with this option\&.
+Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration\&. The permitted values are: NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64 (0) or NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_STABLE_PRIVACY (1)\&. If the property is set to EUI64, the addresses will be generated using the interface tokens derived from hardware address\&. This makes the host part of the address to stay constant, making it possible to track host\*(Aqs presence when it changes networks\&. The address changes when the interface hardware is replaced\&. The value of stable\-privacy enables use of cryptographically secure hash of a secret host\-specific key along with the connection\*(Aqs stable\-id and the network address as specified by RFC7217\&. This makes it impossible to use the address track host\*(Aqs presence, and makes the address stable when the network interface hardware is replaced\&. On D\-Bus, the absence of an addr\-gen\-mode setting equals enabling stable\-privacy\&. For keyfile plugin, the absence of the setting on disk means EUI64 so that the property doesn\*(Aqt change on upgrade from older versions\&. Note that this setting is distinct from the Privacy Extensions as configured by "ip6\-privacy" property and it does not affect the temporary addresses configured with this option\&.
 T}
 T{
 address\-data
@@ -2126,7 +2157,16 @@ int64
 T}:T{
 \-1
 T}:T{
-The default metric for routes that don\*(Aqt explicitly specify a metric\&. The default value \-1 means that the metric is choosen automatically based on the device type\&. The metric applies to dynamic routes, manual (static) routes that don\*(Aqt have an explicit metric setting, address prefix routes, and the default route\&. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default)\&. Hence, setting this property to zero effectively mean setting it to 1024\&. For IPv4, zero is a regular value for the metric\&.
+The default metric for routes that don\*(Aqt explicitly specify a metric\&. The default value \-1 means that the metric is chosen automatically based on the device type\&. The metric applies to dynamic routes, manual (static) routes that don\*(Aqt have an explicit metric setting, address prefix routes, and the default route\&. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default)\&. Hence, setting this property to zero effectively mean setting it to 1024\&. For IPv4, zero is a regular value for the metric\&.
+T}
+T{
+route\-table
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+Enable policy routing (source routing) and set the routing table used when adding routes\&. This affects all routes, including device\-routes, IPv4LL, DHCP, SLAAC, default\-routes and static routes\&. But note that static routes can individually overwrite the setting by explicitly specifying a non\-zero routing table\&. If the table setting is left at zero, it is eligible to be overwritten via global configuration\&. If the property is zero even after applying the global configuration value, policy routing is disabled for the address family of this connection\&. Policy routing disabled means that NetworkManager will add all routes to the main table (except static routes that explicitly configure a different table)\&. Additionally, NetworkManager will not delete any extraneous routes from tables except the main table\&. This is to preserve backward compatibility for users who manage routing tables outside of NetworkManager\&.
 T}
 T{
 routes
@@ -2229,7 +2269,7 @@ uint32
 T}:T{
 0
 T}:T{
-None
+If non\-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple fragments\&.
 T}
 T{
 name
@@ -2530,6 +2570,238 @@ SSID of the mesh network to join\&.
 T}
 .TE
 .sp 1
+.SS "ovs\-bridge setting"
+.PP
+OvsBridge Link Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+fail\-mode
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The bridge failure mode\&. One of "secure", "standalone" or empty\&.
+T}
+T{
+mcast\-snooping\-enable
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Enable or disable multicast snooping\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+ovs\-bridge
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+rstp\-enable
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Enable or disable RSTP\&.
+T}
+T{
+stp\-enable
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Enable or disable STP\&.
+T}
+.TE
+.sp 1
+.SS "ovs\-interface setting"
+.PP
+OpenVSwitch Interface Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l.
+T{
+name
+T}:T{
+string
+T}:T{
+ovs\-interface
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+type
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The interface type\&. Either "internal", or empty\&.
+T}
+.TE
+.sp 1
+.SS "ovs\-patch setting"
+.PP
+OvsPatch Link Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l.
+T{
+name
+T}:T{
+string
+T}:T{
+ovs\-patch
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+peer
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Specifies the unicast destination IP address of a remote OpenVSwitch bridge port to connect to\&.
+T}
+.TE
+.sp 1
+.SS "ovs\-port setting"
+.PP
+OvsPort Link Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+bond\-downdelay
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+The time port must be inactive in order to be considered down\&.
+T}
+T{
+bond\-mode
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Bonding mode\&. One of "active\-backup", "balance\-slb", or "balance\-tcp"\&.
+T}
+T{
+bond\-updelay
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+The time port must be active befor it starts forwarding traffic\&.
+T}
+T{
+lacp
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+LACP mode\&. One of "active", "off", or "passive"\&.
+T}
+T{
+name
+T}:T{
+string
+T}:T{
+ovs\-port
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+tag
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+The VLAN tag in the range 0\-4095\&.
+T}
+T{
+vlan\-mode
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The VLAN mode\&. One of "access", "native\-tagged", "native\-untagged", "trunk" or unset\&.
+T}
+.TE
+.sp 1
 .SS "ppp setting"
 .PP
 Point\-to\-Point Protocol Settings\&.
@@ -2725,7 +2997,7 @@ boolean
 T}:T{
 FALSE
 T}:T{
-If TRUE, MPPE (Microsoft Point\-to\-Point Encrpytion) will be required for the PPP session\&.  If either 64\-bit or 128\-bit MPPE is not available the session will fail\&.  Note that MPPE is not used on mobile broadband connections\&.
+If TRUE, MPPE (Microsoft Point\-to\-Point Encryption) will be required for the PPP session\&.  If either 64\-bit or 128\-bit MPPE is not available the session will fail\&.  Note that MPPE is not used on mobile broadband connections\&.
 T}
 T{
 require\-mppe\-128
@@ -2734,7 +3006,7 @@ boolean
 T}:T{
 FALSE
 T}:T{
-If TRUE, 128\-bit MPPE (Microsoft Point\-to\-Point Encrpytion) will be required for the PPP session, and the "require\-mppe" property must also be set to TRUE\&.  If 128\-bit MPPE is not available the session will fail\&.
+If TRUE, 128\-bit MPPE (Microsoft Point\-to\-Point Encryption) will be required for the PPP session, and the "require\-mppe" property must also be set to TRUE\&.  If 128\-bit MPPE is not available the session will fail\&.
 T}
 .TE
 .sp 1
@@ -2758,6 +3030,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 name
@@ -2767,6 +3040,15 @@ T}:T{
 pppoe
 T}:T{
 The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+parent
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+If given, specifies the parent interface name on which this PPPoE connection should be created\&.  If this property is not specified, the connection is activated on the interface specified in "interface\-name" of NMSettingConnection\&.
 T}
 T{
 password
@@ -3327,7 +3609,7 @@ uint32
 T}:T{
 0
 T}:T{
-Timeout for the VPN service to establish the connection\&. Some services may take quite a long time to connect\&. Value of 0 means a default timeout, which is 60 seconds (unless overriden by vpn\&.timeout in configuration file)\&. Values greater than zero mean timeout in seconds\&.
+Timeout for the VPN service to establish the connection\&. Some services may take quite a long time to connect\&. Value of 0 means a default timeout, which is 60 seconds (unless overridden by vpn\&.timeout in configuration file)\&. Values greater than zero mean timeout in seconds\&.
 T}
 T{
 user\-name
@@ -3398,7 +3680,7 @@ uint32
 T}:T{
 0
 T}:T{
-Specifies the VXLAN Network Identifer (or VXLAN Segment Identifier) to use\&.
+Specifies the VXLAN Network Identifier (or VXLAN Segment Identifier) to use\&.
 T}
 T{
 l2\-miss
@@ -3651,7 +3933,7 @@ string
 T}:T{
 \ \&
 T}:T{
-With "cloned\-mac\-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally\-administered, unicast MAC address is created\&. This property allows to specify that certain bits are fixed\&. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address\&. If the property is NULL, it is eligible to be overwritten by a default connection setting\&. If the value is still NULL or an empty string, the default is to create a locally\-administered, unicast MAC address\&. If the value contains one MAC address, this address is used as mask\&. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization\&. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm\&. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized\&. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized\&. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally\-administered, burned\-in MAC address\&. If the value contains more then one additional MAC addresses, one of them is chosen randomly\&. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered\&.
+With "cloned\-mac\-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally\-administered, unicast MAC address is created\&. This property allows to specify that certain bits are fixed\&. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address\&. If the property is NULL, it is eligible to be overwritten by a default connection setting\&. If the value is still NULL or an empty string, the default is to create a locally\-administered, unicast MAC address\&. If the value contains one MAC address, this address is used as mask\&. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization\&. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm\&. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized\&. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized\&. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally\-administered, burned\-in MAC address\&. If the value contains more than one additional MAC addresses, one of them is chosen randomly\&. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered\&.
 T}
 T{
 mac\-address
@@ -3696,7 +3978,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Specific port type to use if multiple the device supports multiple attachment methods\&.  One of "tp" (Twisted Pair), "aui" (Attachment Unit Interface), "bnc" (Thin Ethernet) or "mii" (Media Independent Interface\&. If the device supports only one port type, this setting is ignored\&.
+Specific port type to use if the device supports multiple attachment methods\&.  One of "tp" (Twisted Pair), "aui" (Attachment Unit Interface), "bnc" (Thin Ethernet) or "mii" (Media Independent Interface)\&. If the device supports only one port type, this setting is ignored\&.
 T}
 T{
 s390\-nettype
@@ -3732,7 +4014,7 @@ uint32
 T}:T{
 0
 T}:T{
-Can be set to a value grater than zero only when "auto\-negotiate" is "off"\&. In that case, statically configures the device to use that specified speed\&. In Mbit/s, ie 100 == 100Mbit/s\&. Must be set together with the "duplex" property when non\-zero\&. Before specifying a speed value be sure your device supports it\&.
+Can be set to a value greater than zero only when "auto\-negotiate" is "off"\&. In that case, statically configures the device to use that specified speed\&. In Mbit/s, ie 100 == 100Mbit/s\&. Must be set together with the "duplex" property when non\-zero\&. Before specifying a speed value be sure your device supports it\&.
 T}
 T{
 wake\-on\-lan
@@ -3841,7 +4123,7 @@ string
 T}:T{
 \ \&
 T}:T{
-With "cloned\-mac\-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally\-administered, unicast MAC address is created\&. This property allows to specify that certain bits are fixed\&. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address\&. If the property is NULL, it is eligible to be overwritten by a default connection setting\&. If the value is still NULL or an empty string, the default is to create a locally\-administered, unicast MAC address\&. If the value contains one MAC address, this address is used as mask\&. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization\&. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm\&. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized\&. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized\&. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally\-administered, burned\-in MAC address\&. If the value contains more then one additional MAC addresses, one of them is chosen randomly\&. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered\&.
+With "cloned\-mac\-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally\-administered, unicast MAC address is created\&. This property allows to specify that certain bits are fixed\&. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address\&. If the property is NULL, it is eligible to be overwritten by a default connection setting\&. If the value is still NULL or an empty string, the default is to create a locally\-administered, unicast MAC address\&. If the value contains one MAC address, this address is used as mask\&. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization\&. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm\&. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized\&. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized\&. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally\-administered, burned\-in MAC address\&. If the value contains more than one additional MAC addresses, one of them is chosen randomly\&. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered\&.
 T}
 T{
 hidden
@@ -3995,6 +4277,8 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
 T{
 auth\-alg
@@ -4067,6 +4351,15 @@ T}:T{
 []
 T}:T{
 A list of pairwise encryption algorithms which prevents connections to Wi\-Fi networks that do not utilize one of the algorithms in the list\&. For maximum compatibility leave this property empty\&.  Each list element may be one of "tkip" or "ccmp"\&.
+T}
+T{
+pmf
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Indicates whether Protected Management Frames (802\&.11w) must be enabled for the connection\&.  One of NM_SETTING_WIRELESS_SECURITY_PMF_DEFAULT (0) (use global default value), NM_SETTING_WIRELESS_SECURITY_PMF_DISABLE (1) (disable PMF), NM_SETTING_WIRELESS_SECURITY_PMF_OPTIONAL (2) (enable PMF if the supplicant and the access point support it) or NM_SETTING_WIRELESS_SECURITY_PMF_REQUIRED (3) (enable PMF and fail if not supported)\&.  When set to NM_SETTING_WIRELESS_SECURITY_PMF_DEFAULT (0) and no global default is set, PMF will be optionally enabled\&.
 T}
 T{
 proto
@@ -4158,11 +4451,20 @@ T}:T{
 T}:T{
 When static WEP is used (ie, key\-mgmt = "none") and a non\-default WEP key index is used by the AP, put that WEP key index here\&.  Valid values are 0 (default key) through 3\&.  Note that some consumer access points (like the Linksys WRT54G) number the keys 1 \- 4\&.
 T}
+T{
+wps\-method
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+Flags indicating which mode of WPS is to be used if any\&. There\*(Aqs little point in changing the default setting as NetworkManager will automatically determine whether it\*(Aqs feasible to start WPS enrollment from the Access Point capabilities\&. WPS can be disabled by setting this property to a value of 1\&.
+T}
 .TE
 .sp 1
 .SS "Secret flag types:"
 .PP
-Each secret property in a setting has an associated
+Each password or secret property in a setting has an associated
 \fIflags\fR
 property that describes how to handle that secret\&. The
 \fIflags\fR
@@ -4176,7 +4478,8 @@ property is a bitfield that contains zero or more of the following values logica
 .sp -1
 .IP \(bu 2.3
 .\}
-0x0 (none) \- the system is responsible for providing and storing this secret\&.
+0x0 (none) \- the system is responsible for providing and storing this secret\&. This may be required so that secrets are already available before the user logs in\&. It also commonly means that the secret will be stored in plain text on disk, accessible to root only\&. For example via the keyfile settings plugin as described in the "PLUGINS" section in
+\fBNetworkManager.conf\fR(5)\&.
 .RE
 .sp
 .RS 4

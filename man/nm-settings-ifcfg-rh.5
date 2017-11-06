@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 09/20/2017
+.\"      Date: 11/03/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.8.4
+.\"    Source: NetworkManager 1.9.90
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.8\&.4" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.9\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -625,11 +625,13 @@ T}
 T{
 password\-raw
 T}:T{
-(none)
+IEEE_8021X_PASSWORD_RAW\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
-The property is not handled by ifcfg\-rh plugin\&.
+password used for EAP, encoded as a hexadecimal string\&. It can also go to "key\-" lookaside file\&.\fB
+
+Example: \fRIEEE_8021X_PASSWORD_RAW=041c8320083aa4bf
 T}
 T{
 password\-raw\-flags
@@ -970,6 +972,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 id
@@ -1149,6 +1152,15 @@ whether LLDP is enabled for the connection\fB
 Example: \fRLLDP=no\fB
 
 Allowed values: \fRboolean value or \*(Aqrx\*(Aq
+T}
+T{
+auth\-retries
+T}:T{
+AUTH_RETRIES\fI(+)\fR
+T}:T{
+0
+T}:T{
+Number of retries for authentication\&.
 T}
 .TE
 .sp 1
@@ -1352,29 +1364,7 @@ All DCB related configuration is a NetworkManager extension\&. DCB=yes must be u
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&7.\ \&dummy setting
-.TS
-allbox tab(:);
-lB lB lB lB.
-T{
-Property
-T}:T{
-Ifcfg\-rh Variable
-T}:T{
-Default
-T}:T{
-Description
-T}
-.T&
-.
-.TE
-.sp 1
-.sp
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.B Table\ \&8.\ \&infiniband setting
+.B Table\ \&7.\ \&infiniband setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1451,7 +1441,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&9.\ \&ipv4 setting
+.B Table\ \&8.\ \&ipv4 setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1465,6 +1455,7 @@ T}:T{
 Description
 T}
 .T&
+l l l l
 l l l l
 l l l l
 l l l l
@@ -1609,6 +1600,15 @@ T}:T{
 IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection\&. If set to \-1, a default metric based on the device type is used\&.
 T}
 T{
+route\-table
+T}:T{
+IPV4_ROUTE_TABLE\fI(+)\fR
+T}:T{
+0
+T}:T{
+IPV4_ROUTE_TABLE enables policy\-routing and sets the default routing table\&.
+T}
+T{
 dns\-priority
 T}:T{
 IPV4_DNS_PRIORITY\fI(+)\fR
@@ -1670,7 +1670,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&10.\ \&ipv6 setting
+.B Table\ \&9.\ \&ipv6 setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1684,6 +1684,7 @@ T}:T{
 Description
 T}
 .T&
+l l l l
 l l l l
 l l l l
 l l l l
@@ -1813,6 +1814,15 @@ T}:T{
 IPV6_ROUTE_METRIC is the default IPv6 metric for routes on this connection\&. If set to \-1, a default metric based on the device type is used\&.
 T}
 T{
+route\-table
+T}:T{
+IPV6_ROUTE_TABLE\fI(+)\fR
+T}:T{
+0
+T}:T{
+IPV6_ROUTE_TABLE enables policy\-routing and sets the default routing table\&.
+T}
+T{
 dns\-priority
 T}:T{
 IPV6_DNS_PRIORITY\fI(+)\fR
@@ -1867,7 +1877,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&11.\ \&macsec setting
+.B Table\ \&10.\ \&ovs\-bridge setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1889,7 +1899,73 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&12.\ \&proxy setting
+.B Table\ \&11.\ \&ovs\-interface setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Property
+T}:T{
+Ifcfg\-rh Variable
+T}:T{
+Default
+T}:T{
+Description
+T}
+.T&
+.
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&12.\ \&ovs\-patch setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Property
+T}:T{
+Ifcfg\-rh Variable
+T}:T{
+Default
+T}:T{
+Description
+T}
+.T&
+.
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&13.\ \&ovs\-port setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Property
+T}:T{
+Ifcfg\-rh Variable
+T}:T{
+Default
+T}:T{
+Description
+T}
+.T&
+.
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&14.\ \&proxy setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1956,7 +2032,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&13.\ \&team\-port setting
+.B Table\ \&15.\ \&team\-port setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -1987,7 +2063,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&14.\ \&team setting
+.B Table\ \&16.\ \&team setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2018,7 +2094,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&15.\ \&user setting
+.B Table\ \&17.\ \&user setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2032,7 +2108,18 @@ T}:T{
 Description
 T}
 .T&
-.
+l l l l.
+T{
+data
+T}:T{
+NM_USER_*
+T}:T{
+\ \&
+T}:T{
+each key/value pair is stored as a separate variable with name composed by concatenating NM_USER_ with the encoded key\&. The key is encoded by substituting lowercase letters with uppercase and prepending uppercase letters with an underscore\&. A dot is encoded as a double underscore\&. Remaining characters are encoded as underscore followed by a 3 digit octal representation of the character\&.\fB
+
+Example: \fRNM_USER_FOO__BAR=something
+T}
 .TE
 .sp 1
 .sp
@@ -2040,7 +2127,96 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&16.\ \&802\-3\-ethernet setting
+.B Table\ \&18.\ \&vlan setting
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Property
+T}:T{
+Ifcfg\-rh Variable
+T}:T{
+Default
+T}:T{
+Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+parent
+T}:T{
+DEVICE or PHYSDEV
+T}:T{
+\ \&
+T}:T{
+Parent interface of the VLAN\&.
+T}
+T{
+id
+T}:T{
+VLAN_ID or DEVICE
+T}:T{
+\ \&
+T}:T{
+VLAN identifier\&.
+T}
+T{
+flags
+T}:T{
+GVRP, MVRP, VLAN_FLAGS
+T}:T{
+\ \&
+T}:T{
+VLAN flags\&.\fB
+
+Allowed values: \fR"yes or "no" for GVRP and MVRP; "LOOSE_BINDING" and "NO_REORDER_HDR" for VLAN_FLAGS
+T}
+T{
+ingress\-priority\-map
+T}:T{
+VLAN_INGRESS_PRIORITY_MAP
+T}:T{
+\ \&
+T}:T{
+Ingress priority mapping\&.\fB
+
+Example: \fRVLAN_INGRESS_PRIORITY_MAP=4:2,3:5
+T}
+T{
+egress\-priority\-map
+T}:T{
+VLAN_EGRESS_PRIORITY_MAP
+T}:T{
+\ \&
+T}:T{
+Egress priority mapping\&.\fB
+
+Example: \fRVLAN_EGRESS_PRIORITY_MAP=5:4,4:1,3:7
+T}
+T{
+interface\-name
+T}:T{
+PHYSDEV and VLAN_ID, or DEVICE
+T}:T{
+\ \&
+T}:T{
+VLAN interface name\&. If all variables are set, parent device from PHYSDEV takes precedence over DEVICE, but VLAN id from DEVICE takes precedence over VLAN_ID\&.\fB
+
+Example: \fRPHYSDEV=eth0, VLAN_ID=12; or DEVICE=eth0\&.12
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&19.\ \&802\-3\-ethernet setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2189,7 +2365,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&17.\ \&802\-11\-wireless\-security setting
+.B Table\ \&20.\ \&802\-11\-wireless\-security setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2203,6 +2379,8 @@ T}:T{
 Description
 T}
 .T&
+l l l l
+l l l l
 l l l l
 l l l l
 l l l l
@@ -2285,6 +2463,19 @@ T}:T{
 Restrict group/broadcast encryption algorithms, specified as a space separated list\&.\fB
 
 Allowed values: \fRCCMP, TKIP, WEP40, WEP104
+T}
+T{
+pmf
+T}:T{
+PMF\fI(+)\fR
+T}:T{
+\ \&
+T}:T{
+Enables or disables PMF (802\&.11w)\fB
+
+Example: \fRPMF=required\fB
+
+Allowed values: \fRdefault, disable, optional, required
 T}
 T{
 leap\-username
@@ -2389,6 +2580,17 @@ KEY is used for "key" type (10 or 26 hexadecimal characters, or 5 or 13 characte
 
 Example: \fRKEY1=s:ahoj, KEY1=0a1c45bc02, KEY_PASSPHRASE1=mysupersecretkey
 T}
+T{
+wps\-method
+T}:T{
+WPS_METHOD
+T}:T{
+\ \&
+T}:T{
+Used to control the WPS methods to be used Valid values are "default", "auto", "disabled", "pin" and "pbc"\&. If omitted, whatver the AP announces is used\&.\fB
+
+Example: \fRWPS_METHOD=disabled, WPS_METHOD="pin pbc"
+T}
 .TE
 .sp 1
 .sp
@@ -2396,7 +2598,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&18.\ \&802\-11\-wireless setting
+.B Table\ \&21.\ \&802\-11\-wireless setting
 .TS
 allbox tab(:);
 lB lB lB lB.
@@ -2607,7 +2809,7 @@ The following settings are not supported by
 \fIifcfg\-rh\fR
 plugin:
 .PP
-adsl, bluetooth, ppp, pppoe, serial, generic, gsm, cdma, 802\-11\-olpc\-mesh, wimax, vpn, macvlan, vxlan, tun, ip\-tunnel
+802\-11\-olpc\-mesh, adsl, bluetooth, cdma, dummy, generic, gsm, ip\-tunnel, macsec, macvlan, ppp, pppoe, serial, tun, vpn, vxlan, wimax
 .SS "Secret flags"
 .PP
 Each secret property in a NetworkManager setting has an associated

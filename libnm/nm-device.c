@@ -261,6 +261,9 @@ coerce_type (NMDeviceType type)
 	case NM_DEVICE_TYPE_WIFI:
 	case NM_DEVICE_TYPE_BT:
 	case NM_DEVICE_TYPE_OLPC_MESH:
+	case NM_DEVICE_TYPE_OVS_INTERFACE:
+	case NM_DEVICE_TYPE_OVS_PORT:
+	case NM_DEVICE_TYPE_OVS_BRIDGE:
 	case NM_DEVICE_TYPE_WIMAX:
 	case NM_DEVICE_TYPE_MODEM:
 	case NM_DEVICE_TYPE_INFINIBAND:
@@ -280,6 +283,7 @@ coerce_type (NMDeviceType type)
 	case NM_DEVICE_TYPE_UNUSED2:
 	case NM_DEVICE_TYPE_UNKNOWN:
 	case NM_DEVICE_TYPE_DUMMY:
+	case NM_DEVICE_TYPE_PPP:
 		return type;
 	}
 	return NM_DEVICE_TYPE_UNKNOWN;
@@ -1521,6 +1525,12 @@ get_type_name (NMDevice *device)
 		return _("Bluetooth");
 	case NM_DEVICE_TYPE_OLPC_MESH:
 		return _("OLPC Mesh");
+	case NM_DEVICE_TYPE_OVS_INTERFACE:
+		return _("OpenVSwitch Interface");
+	case NM_DEVICE_TYPE_OVS_PORT:
+		return _("OpenVSwitch Port");
+	case NM_DEVICE_TYPE_OVS_BRIDGE:
+		return _("OpenVSwitch Bridge");
 	case NM_DEVICE_TYPE_WIMAX:
 		return _("WiMAX");
 	case NM_DEVICE_TYPE_MODEM:
@@ -1551,6 +1561,8 @@ get_type_name (NMDevice *device)
 		return _("MACsec");
 	case NM_DEVICE_TYPE_DUMMY:
 		return _("Dummy");
+	case NM_DEVICE_TYPE_PPP:
+		return _("PPP");
 	case NM_DEVICE_TYPE_GENERIC:
 	case NM_DEVICE_TYPE_UNUSED1:
 	case NM_DEVICE_TYPE_UNUSED2:
@@ -2138,7 +2150,7 @@ out:
  * @callback: callback to be called when the reapply operation completes
  * @user_data: caller-specific data passed to @callback
  *
- * Asynchronously begins an get the a currently applied connection.
+ * Asynchronously begins and gets the currently applied connection.
  *
  * Since: 1.2
  **/

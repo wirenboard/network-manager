@@ -35,8 +35,6 @@ bridge&apos;s interface name."/>
 </setting>
 <setting name="infiniband">
 </setting>
-<setting name="">
-</setting>
 <setting name="ip-tunnel">
 </setting>
 <setting name="ipv4">
@@ -115,6 +113,14 @@ also exist on some routes."/>
 <setting name="macvlan">
 </setting>
 <setting name="802-11-olpc-mesh">
+</setting>
+<setting name="ovs-bridge">
+</setting>
+<setting name="ovs-interface">
+</setting>
+<setting name="ovs-patch">
+</setting>
+<setting name="ovs-port">
 </setting>
 <setting name="ppp">
 </setting>

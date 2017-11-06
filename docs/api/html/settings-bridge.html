@@ -38,7 +38,7 @@
             Properties
         </h2>
 <div class="table">
-<a name="id-1.3.3.7.2.2.1"></a><p class="title"><b>Table 56. </b></p>
+<a name="id-1.3.3.7.2.2.1"></a><p class="title"><b>Table 60. </b></p>
 <div class="table-contents"><table class="table" border="1">
 <colgroup>
 <col>
@@ -66,6 +66,12 @@
 <td>The Spanning Tree Protocol (STP) forwarding delay, in seconds.</td>
 </tr>
 <tr>
+<td><pre class="screen">group-forward-mask</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>A mask of group addresses to forward. Usually, group addresses in the range from 01:80:C2:00:00:00 to 01:80:C2:00:00:0F are not forwarded according to standards. This property is a mask of 16 bits, each corresponding to a group address in that range that must be forwarded. The mask can't have bits 0, 1 or 2 set because they are used for STP, MAC pause frames and LACP.</td>
+</tr>
+<tr>
 <td><pre class="screen">hello-time</pre></td>
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">2</pre></td>
@@ -81,7 +87,7 @@
 <td><pre class="screen">mac-address</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen"></pre></td>
-<td>If specified, the MAC address of bridge. When creating a new bridge, this MAC address will be set. When matching an existing (outside NetworkManager created) bridge, this MAC address must match.</td>
+<td>If specified, the MAC address of bridge. When creating a new bridge, this MAC address will be set. If this field is left unspecified, the "ethernet.cloned-mac-address" is referred instead to generate the initial MAC address. Note that setting "ethernet.cloned-mac-address" anyway overwrites the MAC address of the bridge later while activating the bridge. Hence, this property is deprecated.</td>
 </tr>
 <tr>
 <td><pre class="screen">max-age</pre></td>

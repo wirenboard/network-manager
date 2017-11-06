@@ -112,6 +112,13 @@
 <tbody>
 <tr>
 <td align="left">
+<a name="nm-settings.property.connection.auth-retries"></a>auth-retries</td>
+<td align="left">int32</td>
+<td align="left">-1</td>
+<td>The number of retries for the authentication. Zero means to try indefinitely; -1 means to use a global default. If the global default is not set, the authentication retries for 3 times before failing the connection. Currently this only applies to 802-1x authentication.</td>
+</tr>
+<tr>
+<td align="left">
 <a name="nm-settings.property.connection.autoconnect"></a>autoconnect</td>
 <td align="left">boolean</td>
 <td align="left">TRUE</td>
@@ -129,7 +136,7 @@
 <a name="nm-settings.property.connection.autoconnect-retries"></a>autoconnect-retries</td>
 <td align="left">int32</td>
 <td align="left">-1</td>
-<td>The number of times a connection should be tried when autoctivating before giving up. Zero means forever, -1 means the global default (4 times if not overridden).</td>
+<td>The number of times a connection should be tried when autoactivating before giving up. Zero means forever, -1 means the global default (4 times if not overridden). Setting this to 1 means to try activation only once before blocking autoconnect. Note that after a timeout, NetworkManager will try to autoconnect again.</td>
 </tr>
 <tr>
 <td align="left">
@@ -220,7 +227,7 @@
 <a name="nm-settings.property.connection.stable-id"></a>stable-id</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>Token to generate stable IDs for the connection. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. Note that also the interface name of the activating connection and a per-host secret key is included into the address generation so that the same stable-id on different hosts/devices yields different addresses. If the value is unset, an ID unique for the connection is used. Specifing a stable-id allows multiple connections to generate the same addresses. Another use is to generate IDs at runtime via dynamic substitutions. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-boot, or every time. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot. Note that two connections only use the same effective id if their stable-id is also identical before performing dynamic substitutions.</td>
+<td>Token to generate stable IDs for the connection. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. Note that also the interface name of the activating connection and a per-host secret key is included into the address generation so that the same stable-id on different hosts/devices yields different addresses. If the value is unset, an ID unique for the connection is used. Specifying a stable-id allows multiple connections to generate the same addresses. Another use is to generate IDs at runtime via dynamic substitutions. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-boot, or every time. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot. Note that two connections only use the same effective id if their stable-id is also identical before performing dynamic substitutions.</td>
 </tr>
 <tr>
 <td align="left">
@@ -409,7 +416,7 @@
 <a name="nm-settings.property.802-1x.phase1-auth-flags"></a>phase1-auth-flags</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>Specifies authentication flags to use in "phase 1" outer authentication using NMSetting8021xAuthFlags options. The invidual TLS versions can be explicitly disabled. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it. The TLS options map to tls_disable_tlsv1_x settings. See the wpa_supplicant documentation for more details.</td>
+<td>Specifies authentication flags to use in "phase 1" outer authentication using NMSetting8021xAuthFlags options. The individual TLS versions can be explicitly disabled. If a certain TLS disable flag is not set, it is up to the supplicant to allow or forbid it. The TLS options map to tls_disable_tlsv1_x settings. See the wpa_supplicant documentation for more details.</td>
 </tr>
 <tr>
 <td align="left">
@@ -784,6 +791,13 @@
 </tr>
 <tr>
 <td align="left">
+<a name="nm-settings.property.bridge.group-forward-mask"></a>group-forward-mask</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>A mask of group addresses to forward. Usually, group addresses in the range from 01:80:C2:00:00:00 to 01:80:C2:00:00:0F are not forwarded according to standards. This property is a mask of 16 bits, each corresponding to a group address in that range that must be forwarded. The mask can't have bits 0, 1 or 2 set because they are used for STP, MAC pause frames and LACP.</td>
+</tr>
+<tr>
+<td align="left">
 <a name="nm-settings.property.bridge.hello-time"></a>hello-time</td>
 <td align="left">uint32</td>
 <td align="left">2</td>
@@ -801,7 +815,7 @@
 <a name="nm-settings.property.bridge.mac-address"></a>mac-address</td>
 <td align="left">byte array</td>
 <td align="left"> </td>
-<td>If specified, the MAC address of bridge. When creating a new bridge, this MAC address will be set. When matching an existing (outside NetworkManager created) bridge, this MAC address must match.</td>
+<td>If specified, the MAC address of bridge. When creating a new bridge, this MAC address will be set. If this field is left unspecified, the "ethernet.cloned-mac-address" is referred instead to generate the initial MAC address. Note that setting "ethernet.cloned-mac-address" anyway overwrites the MAC address of the bridge later while activating the bridge. Hence, this property is deprecated.</td>
 </tr>
 <tr>
 <td align="left">
@@ -864,7 +878,7 @@
 <a name="nm-settings.property.bridge-port.hairpin-mode"></a>hairpin-mode</td>
 <td align="left">boolean</td>
 <td align="left">FALSE</td>
-<td>Enables or disabled "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on.</td>
+<td>Enables or disables "hairpin mode" for the port, which allows frames to be sent back out through the port the frame was received on.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1032,7 +1046,7 @@
 <a name="nm-settings.property.dcb.priority-bandwidth"></a>priority-bandwidth</td>
 <td align="left">array of uint32</td>
 <td align="left">[0, 0, 0, 0, 0, 0, 0, 0]</td>
-<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the percentage of bandwidth of the priority's assigned group that the priority may use.  The sum of all percentages for priorities which belong to the same group must total 100 percent.</td>
+<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the percentage of bandwidth of the priority's assigned group that the priority may use.  The sum of all percentages for priorities which belong to the same group must total 100 percents.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1053,7 +1067,7 @@
 <a name="nm-settings.property.dcb.priority-group-bandwidth"></a>priority-group-bandwidth</td>
 <td align="left">array of uint32</td>
 <td align="left">[0, 0, 0, 0, 0, 0, 0, 0]</td>
-<td>An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 - 7) and the value indicates the percentage of link bandwidth allocated to that group.  Allowed values are 0 - 100, and the sum of all values must total 100 percent.</td>
+<td>An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 - 7) and the value indicates the percentage of link bandwidth allocated to that group.  Allowed values are 0 - 100, and the sum of all values must total 100 percents.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1245,7 +1259,7 @@
 <a name="nm-settings.property.gsm.sim-operator-id"></a>sim-operator-id</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>A MCC/MNC string like "310260" or "21601" identifying the specific mobile network operator which this connection applies to.  If given, the connection will apply to any device also allowed by "device-id" and "sim-id" which contains a SIM card provisioined by the given operator.</td>
+<td>A MCC/MNC string like "310260" or "21601" identifying the specific mobile network operator which this connection applies to.  If given, the connection will apply to any device also allowed by "device-id" and "sim-id" which contains a SIM card provisioned by the given operator.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1483,7 +1497,14 @@
 <a name="nm-settings.property.ipv4.route-metric"></a>route-metric</td>
 <td align="left">int64</td>
 <td align="left">-1</td>
-<td>The default metric for routes that don't explicitly specify a metric. The default value -1 means that the metric is choosen automatically based on the device type. The metric applies to dynamic routes, manual (static) routes that don't have an explicit metric setting, address prefix routes, and the default route. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default). Hence, setting this property to zero effectively mean setting it to 1024. For IPv4, zero is a regular value for the metric.</td>
+<td>The default metric for routes that don't explicitly specify a metric. The default value -1 means that the metric is chosen automatically based on the device type. The metric applies to dynamic routes, manual (static) routes that don't have an explicit metric setting, address prefix routes, and the default route. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default). Hence, setting this property to zero effectively mean setting it to 1024. For IPv4, zero is a regular value for the metric.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ipv4.route-table"></a>route-table</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>Enable policy routing (source routing) and set the routing table used when adding routes. This affects all routes, including device-routes, IPv4LL, DHCP, SLAAC, default-routes and static routes. But note that static routes can individually overwrite the setting by explicitly specifying a non-zero routing table. If the table setting is left at zero, it is eligible to be overwritten via global configuration. If the property is zero even after applying the global configuration value, policy routing is disabled for the address family of this connection. Policy routing disabled means that NetworkManager will add all routes to the main table (except static routes that explicitly configure a different table). Additionally, NetworkManager will not delete any extraneous routes from tables except the main table. This is to preserve backward compatibility for users who manage routing tables outside of NetworkManager.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1518,7 +1539,7 @@
 <a name="nm-settings.property.ipv6.addr-gen-mode"></a>addr-gen-mode</td>
 <td align="left">int32</td>
 <td align="left">1</td>
-<td>Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration. The permitted values are: "eui64", or "stable-privacy". If the property is set to "eui64", the addresses will be generated using the interface tokens derived from  hardware address. This makes the host part of the address to stay constant, making it possible to track host's presence when it changes networks. The address changes when the interface hardware is replaced. The value of "stable-privacy" enables use of cryptographically secure hash of a secret host-specific key along with the connection's stable-id and the network address as specified by RFC7217. This makes it impossible to use the address track host's presence, and makes the address stable when the network interface hardware is replaced. On D-Bus, the absence of an addr-gen-mode setting equals enabling "stable-privacy". For keyfile plugin, the absence of the setting on disk means "eui64" so that the property doesn't change on upgrade from older versions. Note that this setting is distinct from the Privacy Extensions as configured by "ip6-privacy" property and it does not affect the temporary addresses configured with this option.</td>
+<td>Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration. The permitted values are: NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64 (0) or NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_STABLE_PRIVACY (1). If the property is set to EUI64, the addresses will be generated using the interface tokens derived from hardware address. This makes the host part of the address to stay constant, making it possible to track host's presence when it changes networks. The address changes when the interface hardware is replaced. The value of stable-privacy enables use of cryptographically secure hash of a secret host-specific key along with the connection's stable-id and the network address as specified by RFC7217. This makes it impossible to use the address track host's presence, and makes the address stable when the network interface hardware is replaced. On D-Bus, the absence of an addr-gen-mode setting equals enabling stable-privacy. For keyfile plugin, the absence of the setting on disk means EUI64 so that the property doesn't change on upgrade from older versions. Note that this setting is distinct from the Privacy Extensions as configured by "ip6-privacy" property and it does not affect the temporary addresses configured with this option.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1658,7 +1679,14 @@
 <a name="nm-settings.property.ipv6.route-metric"></a>route-metric</td>
 <td align="left">int64</td>
 <td align="left">-1</td>
-<td>The default metric for routes that don't explicitly specify a metric. The default value -1 means that the metric is choosen automatically based on the device type. The metric applies to dynamic routes, manual (static) routes that don't have an explicit metric setting, address prefix routes, and the default route. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default). Hence, setting this property to zero effectively mean setting it to 1024. For IPv4, zero is a regular value for the metric.</td>
+<td>The default metric for routes that don't explicitly specify a metric. The default value -1 means that the metric is chosen automatically based on the device type. The metric applies to dynamic routes, manual (static) routes that don't have an explicit metric setting, address prefix routes, and the default route. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default). Hence, setting this property to zero effectively mean setting it to 1024. For IPv4, zero is a regular value for the metric.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ipv6.route-table"></a>route-table</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>Enable policy routing (source routing) and set the routing table used when adding routes. This affects all routes, including device-routes, IPv4LL, DHCP, SLAAC, default-routes and static routes. But note that static routes can individually overwrite the setting by explicitly specifying a non-zero routing table. If the table setting is left at zero, it is eligible to be overwritten via global configuration. If the property is zero even after applying the global configuration value, policy routing is disabled for the address family of this connection. Policy routing disabled means that NetworkManager will add all routes to the main table (except static routes that explicitly configure a different table). Additionally, NetworkManager will not delete any extraneous routes from tables except the main table. This is to preserve backward compatibility for users who manage routing tables outside of NetworkManager.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1735,7 +1763,7 @@
 <a name="nm-settings.property.ip-tunnel.mtu"></a>mtu</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>None</td>
+<td>If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple fragments.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1980,7 +2008,203 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.22"></a><h3>ppp setting</h3>
+<a name="id-1.2.7.4.22"></a><h3>ovs-bridge setting</h3>
+<p>OvsBridge Link Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-bridge.fail-mode"></a>fail-mode</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The bridge failure mode. One of "secure", "standalone" or empty.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-bridge.mcast-snooping-enable"></a>mcast-snooping-enable</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Enable or disable multicast snooping.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-bridge.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">ovs-bridge</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-bridge.rstp-enable"></a>rstp-enable</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Enable or disable RSTP.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-bridge.stp-enable"></a>stp-enable</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Enable or disable STP.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.23"></a><h3>ovs-interface setting</h3>
+<p>OpenVSwitch Interface Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-interface.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">ovs-interface</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-interface.type"></a>type</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The interface type. Either "internal", or empty.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.24"></a><h3>ovs-patch setting</h3>
+<p>OvsPatch Link Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-patch.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">ovs-patch</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-patch.peer"></a>peer</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Specifies the unicast destination IP address of a remote OpenVSwitch bridge port to connect to.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.25"></a><h3>ovs-port setting</h3>
+<p>OvsPort Link Settings.</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.bond-downdelay"></a>bond-downdelay</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>The time port must be inactive in order to be considered down.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.bond-mode"></a>bond-mode</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Bonding mode. One of "active-backup", "balance-slb", or "balance-tcp".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.bond-updelay"></a>bond-updelay</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>The time port must be active befor it starts forwarding traffic.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.lacp"></a>lacp</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>LACP mode. One of "active", "off", or "passive".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">ovs-port</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.tag"></a>tag</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>The VLAN tag in the range 0-4095.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.ovs-port.vlan-mode"></a>vlan-mode</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>The VLAN mode. One of "access", "native-tagged", "native-untagged", "trunk" or unset.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.26"></a><h3>ppp setting</h3>
 <p>Point-to-Point Protocol Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2120,21 +2344,21 @@
 <a name="nm-settings.property.ppp.require-mppe"></a>require-mppe</td>
 <td align="left">boolean</td>
 <td align="left">FALSE</td>
-<td>If TRUE, MPPE (Microsoft Point-to-Point Encrpytion) will be required for the PPP session.  If either 64-bit or 128-bit MPPE is not available the session will fail.  Note that MPPE is not used on mobile broadband connections.</td>
+<td>If TRUE, MPPE (Microsoft Point-to-Point Encryption) will be required for the PPP session.  If either 64-bit or 128-bit MPPE is not available the session will fail.  Note that MPPE is not used on mobile broadband connections.</td>
 </tr>
 <tr>
 <td align="left">
 <a name="nm-settings.property.ppp.require-mppe-128"></a>require-mppe-128</td>
 <td align="left">boolean</td>
 <td align="left">FALSE</td>
-<td>If TRUE, 128-bit MPPE (Microsoft Point-to-Point Encrpytion) will be required for the PPP session, and the "require-mppe" property must also be set to TRUE.  If 128-bit MPPE is not available the session will fail.</td>
+<td>If TRUE, 128-bit MPPE (Microsoft Point-to-Point Encryption) will be required for the PPP session, and the "require-mppe" property must also be set to TRUE.  If 128-bit MPPE is not available the session will fail.</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.23"></a><h3>pppoe setting</h3>
+<a name="id-1.2.7.4.27"></a><h3>pppoe setting</h3>
 <p>PPP-over-Ethernet Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2156,6 +2380,13 @@
 <td align="left">string</td>
 <td align="left">pppoe</td>
 <td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.pppoe.parent"></a>parent</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>If given, specifies the parent interface name on which this PPPoE connection should be created.  If this property is not specified, the connection is activated on the interface specified in "interface-name" of NMSettingConnection.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2190,7 +2421,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.24"></a><h3>proxy setting</h3>
+<a name="id-1.2.7.4.28"></a><h3>proxy setting</h3>
 <p>WWW Proxy Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2246,7 +2477,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.25"></a><h3>serial setting</h3>
+<a name="id-1.2.7.4.29"></a><h3>serial setting</h3>
 <p>Serial Link Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2309,7 +2540,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.26"></a><h3>team setting</h3>
+<a name="id-1.2.7.4.30"></a><h3>team setting</h3>
 <p>Teaming Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2351,7 +2582,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.27"></a><h3>team-port setting</h3>
+<a name="id-1.2.7.4.31"></a><h3>team-port setting</h3>
 <p>Team Port Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2386,7 +2617,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.28"></a><h3>tun setting</h3>
+<a name="id-1.2.7.4.32"></a><h3>tun setting</h3>
 <p>Tunnel Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2456,7 +2687,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.29"></a><h3>user setting</h3>
+<a name="id-1.2.7.4.33"></a><h3>user setting</h3>
 <p>General User Profile Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2491,7 +2722,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.30"></a><h3>vlan setting</h3>
+<a name="id-1.2.7.4.34"></a><h3>vlan setting</h3>
 <p>VLAN Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2561,7 +2792,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.31"></a><h3>vpn setting</h3>
+<a name="id-1.2.7.4.35"></a><h3>vpn setting</h3>
 <p>VPN Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2617,7 +2848,7 @@
 <a name="nm-settings.property.vpn.timeout"></a>timeout</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>Timeout for the VPN service to establish the connection. Some services may take quite a long time to connect. Value of 0 means a default timeout, which is 60 seconds (unless overriden by vpn.timeout in configuration file). Values greater than zero mean timeout in seconds.</td>
+<td>Timeout for the VPN service to establish the connection. Some services may take quite a long time to connect. Value of 0 means a default timeout, which is 60 seconds (unless overridden by vpn.timeout in configuration file). Values greater than zero mean timeout in seconds.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2631,7 +2862,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.32"></a><h3>vxlan setting</h3>
+<a name="id-1.2.7.4.36"></a><h3>vxlan setting</h3>
 <p>VXLAN Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2666,7 +2897,7 @@
 <a name="nm-settings.property.vxlan.id"></a>id</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>Specifies the VXLAN Network Identifer (or VXLAN Segment Identifier) to use.</td>
+<td>Specifies the VXLAN Network Identifier (or VXLAN Segment Identifier) to use.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2771,7 +3002,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.33"></a><h3>wimax setting</h3>
+<a name="id-1.2.7.4.37"></a><h3>wimax setting</h3>
 <p>WiMax Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2813,7 +3044,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.34"></a><h3>802-3-ethernet setting</h3>
+<a name="id-1.2.7.4.38"></a><h3>802-3-ethernet setting</h3>
 <p>Wired Ethernet Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2862,7 +3093,7 @@
 <a name="nm-settings.property.802-3-ethernet.generate-mac-address-mask"></a>generate-mac-address-mask</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>With "cloned-mac-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally-administered, unicast MAC address is created. This property allows to specify that certain bits are fixed. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address. If the property is NULL, it is eligible to be overwritten by a default connection setting. If the value is still NULL or an empty string, the default is to create a locally-administered, unicast MAC address. If the value contains one MAC address, this address is used as mask. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally-administered, burned-in MAC address. If the value contains more then one additional MAC addresses, one of them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered.</td>
+<td>With "cloned-mac-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally-administered, unicast MAC address is created. This property allows to specify that certain bits are fixed. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address. If the property is NULL, it is eligible to be overwritten by a default connection setting. If the value is still NULL or an empty string, the default is to create a locally-administered, unicast MAC address. If the value contains one MAC address, this address is used as mask. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally-administered, burned-in MAC address. If the value contains more than one additional MAC addresses, one of them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2897,7 +3128,7 @@
 <a name="nm-settings.property.802-3-ethernet.port"></a>port</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>Specific port type to use if multiple the device supports multiple attachment methods.  One of "tp" (Twisted Pair), "aui" (Attachment Unit Interface), "bnc" (Thin Ethernet) or "mii" (Media Independent Interface. If the device supports only one port type, this setting is ignored.</td>
+<td>Specific port type to use if the device supports multiple attachment methods.  One of "tp" (Twisted Pair), "aui" (Attachment Unit Interface), "bnc" (Thin Ethernet) or "mii" (Media Independent Interface). If the device supports only one port type, this setting is ignored.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2925,7 +3156,7 @@
 <a name="nm-settings.property.802-3-ethernet.speed"></a>speed</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>Can be set to a value grater than zero only when "auto-negotiate" is "off". In that case, statically configures the device to use that specified speed. In Mbit/s, ie 100 == 100Mbit/s. Must be set together with the "duplex" property when non-zero. Before specifying a speed value be sure your device supports it.</td>
+<td>Can be set to a value greater than zero only when "auto-negotiate" is "off". In that case, statically configures the device to use that specified speed. In Mbit/s, ie 100 == 100Mbit/s. Must be set together with the "duplex" property when non-zero. Before specifying a speed value be sure your device supports it.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2946,7 +3177,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.35"></a><h3>802-11-wireless setting</h3>
+<a name="id-1.2.7.4.39"></a><h3>802-11-wireless setting</h3>
 <p>Wi-Fi Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3002,7 +3233,7 @@
 <a name="nm-settings.property.802-11-wireless.generate-mac-address-mask"></a>generate-mac-address-mask</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>With "cloned-mac-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally-administered, unicast MAC address is created. This property allows to specify that certain bits are fixed. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address. If the property is NULL, it is eligible to be overwritten by a default connection setting. If the value is still NULL or an empty string, the default is to create a locally-administered, unicast MAC address. If the value contains one MAC address, this address is used as mask. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally-administered, burned-in MAC address. If the value contains more then one additional MAC addresses, one of them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered.</td>
+<td>With "cloned-mac-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally-administered, unicast MAC address is created. This property allows to specify that certain bits are fixed. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address. If the property is NULL, it is eligible to be overwritten by a default connection setting. If the value is still NULL or an empty string, the default is to create a locally-administered, unicast MAC address. If the value contains one MAC address, this address is used as mask. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally-administered, burned-in MAC address. If the value contains more than one additional MAC addresses, one of them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3100,7 +3331,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.36"></a><h3>802-11-wireless-security setting</h3>
+<a name="id-1.2.7.4.40"></a><h3>802-11-wireless-security setting</h3>
 <p>Wi-Fi Security Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3174,6 +3405,13 @@
 </tr>
 <tr>
 <td align="left">
+<a name="nm-settings.property.802-11-wireless-security.pmf"></a>pmf</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Indicates whether Protected Management Frames (802.11w) must be enabled for the connection.  One of NM_SETTING_WIRELESS_SECURITY_PMF_DEFAULT (0) (use global default value), NM_SETTING_WIRELESS_SECURITY_PMF_DISABLE (1) (disable PMF), NM_SETTING_WIRELESS_SECURITY_PMF_OPTIONAL (2) (enable PMF if the supplicant and the access point support it) or NM_SETTING_WIRELESS_SECURITY_PMF_REQUIRED (3) (enable PMF and fail if not supported).  When set to NM_SETTING_WIRELESS_SECURITY_PMF_DEFAULT (0) and no global default is set, PMF will be optionally enabled.</td>
+</tr>
+<tr>
+<td align="left">
 <a name="nm-settings.property.802-11-wireless-security.proto"></a>proto</td>
 <td align="left">array of string</td>
 <td align="left">[]</td>
@@ -3242,6 +3480,13 @@
 <td align="left">0</td>
 <td>When static WEP is used (ie, key-mgmt = "none") and a non-default WEP key index is used by the AP, put that WEP key index here.  Valid values are 0 (default key) through 3.  Note that some consumer access points (like the Linksys WRT54G) number the keys 1 - 4.</td>
 </tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-11-wireless-security.wps-method"></a>wps-method</td>
+<td align="left">uint32</td>
+<td align="left">0</td>
+<td>Flags indicating which mode of WPS is to be used if any. There's little point in changing the default setting as NetworkManager will automatically determine whether it's feasible to start WPS enrollment from the Access Point capabilities. WPS can be disabled by setting this property to a value of 1.</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -3249,12 +3494,17 @@
 <div class="refsect2">
 <a name="secrets-flags"></a><h3>Secret flag types:</h3>
 <p>
-            Each secret property in a setting has an associated <span class="emphasis"><em>flags</em></span> property
+            Each password or secret property in a setting has an associated <span class="emphasis"><em>flags</em></span> property
             that describes how to handle that secret. The <span class="emphasis"><em>flags</em></span> property is a bitfield
             that contains zero or more of the following values logically OR-ed together.
           </p>
 <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
-<li class="listitem"><p>0x0 (none) - the system is responsible for providing and storing this secret.</p></li>
+<li class="listitem"><p>0x0 (none) - the system is responsible for providing and storing this secret. This
+              may be required so that secrets are already available before the user logs in.
+              It also commonly means that the secret will be stored in plain text on disk, accessible
+              to root only. For example via the keyfile settings plugin as described in the "PLUGINS" section
+              in <a class="link" href="NetworkManager.conf.html" title="NetworkManager.conf"><span class="citerefentry"><span class="refentrytitle">NetworkManager.conf</span>(5)</span></a>.
+              </p></li>
 <li class="listitem"><p>0x1 (agent-owned) - a user-session secret agent is responsible for providing and storing
               this secret; when it is required, agents will be asked to provide it.</p></li>
 <li class="listitem"><p>0x2 (not-saved) - this secret should not be saved but should be requested from the user

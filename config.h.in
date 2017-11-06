@@ -38,8 +38,15 @@
    you don't. */
 #undef HAVE_DECL_EXPLICIT_BZERO
 
+/* Define to 1 if you have the declaration of `getrandom', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETRANDOM
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* has getrandom */
+#undef HAVE_GETRANDOM
 
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
@@ -103,6 +110,9 @@
 
 /* Define if systemd support is available */
 #undef HAVE_SYSTEMD
+
+/* Define to 1 if you have the <sys/auxv.h> header file. */
+#undef HAVE_SYS_AUXV_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -262,6 +272,9 @@
 #endif
 
 
+/* sys/random.h is usable */
+#undef USE_SYS_RANDOM_H
+
 /* Version number of package */
 #undef VERSION
 
@@ -273,6 +286,9 @@
 
 /* Define if you have dhclient */
 #undef WITH_DHCLIENT
+
+/* Define if you have dhcpcanon */
+#undef WITH_DHCPCANON
 
 /* Define if you have dhcpcd */
 #undef WITH_DHCPCD
@@ -288,6 +304,9 @@
 
 /* Define if you have oFono support (experimental) */
 #undef WITH_OFONO
+
+/* Define if you have OpenVSwitch support */
+#undef WITH_OPENVSWITCH
 
 /* whether to compile polkit support */
 #undef WITH_POLKIT

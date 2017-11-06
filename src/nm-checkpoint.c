@@ -259,8 +259,8 @@ activate:
 					nm_connection_replace_settings_from_connection (NM_CONNECTION (connection),
 					                                                dev_checkpoint->settings_connection);
 					nm_settings_connection_commit_changes (connection,
-					                                       NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE,
 					                                       NULL,
+					                                       NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE,
 					                                       NULL);
 				}
 			} else {
@@ -343,7 +343,7 @@ next_dev:
 			                            nm_settings_connection_get_uuid (con))) {
 				_LOGD ("rollback: deleting new connection %s",
 				       nm_settings_connection_get_uuid (con));
-				nm_settings_connection_delete (con, NULL, NULL);
+				nm_settings_connection_delete (con, NULL);
 			}
 		}
 	}
@@ -506,7 +506,7 @@ nm_checkpoint_new (NMManager *manager, GPtrArray *devices, guint32 rollback_time
 	priv->flags = flags;
 
 	if (NM_FLAGS_HAS (flags, NM_CHECKPOINT_CREATE_FLAG_DELETE_NEW_CONNECTIONS)) {
-		priv->connection_uuids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+		priv->connection_uuids = g_hash_table_new_full (nm_str_hash, g_str_equal, g_free, NULL);
 		for (con = nm_settings_get_connections (nm_settings_get (), NULL); *con; con++) {
 			g_hash_table_add (priv->connection_uuids,
 			                  g_strdup (nm_settings_connection_get_uuid (*con)));

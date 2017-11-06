@@ -34,8 +34,6 @@ or semicolon separated list of 6 decimal bytes (obsolete)"/>
 <property name="mac-address" variable="mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="mac-address= 80:00:00:6d:fe:80:00:00:00:00:00:00:00:02:55:00:70:33:cf:01" description="MAC address in traditional hex-digits-and-colons notation, or
 or semicolon separated list of 20 decimal bytes (obsolete)"/>
 </setting>
-<setting name="">
-</setting>
 <setting name="ip-tunnel">
 </setting>
 <setting name="ipv4">
@@ -56,6 +54,14 @@ route2=7.7.0.0/16" description="List of IP routes."/>
 <setting name="macvlan">
 </setting>
 <setting name="802-11-olpc-mesh">
+</setting>
+<setting name="ovs-bridge">
+</setting>
+<setting name="ovs-interface">
+</setting>
+<setting name="ovs-patch">
+</setting>
+<setting name="ovs-port">
 </setting>
 <setting name="ppp">
 </setting>

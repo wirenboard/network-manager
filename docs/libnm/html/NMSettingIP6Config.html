@@ -85,7 +85,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="property_type"><span class="type">gint</span></td>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
 <td class="property_name"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--addr-gen-mode" title="The “addr-gen-mode” property">addr-gen-mode</a></td>
 <td class="property_flags">Read / Write / Construct</td>
 </tr>
@@ -96,7 +96,7 @@
 </tr>
 <tr>
 <td class="property_type">
-<span class="type">gchar</span> *</td>
+<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--token" title="The “token” property">token</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -168,10 +168,10 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingIP6Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NMSettingIP6ConfigAddrGenMode
     <span class="lineart">╰──</span> NMSettingIP6ConfigPrivacy
-    GObject
+    <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
             <span class="lineart">╰──</span> NMSettingIP6Config
@@ -467,24 +467,25 @@ specified by RFC7217.</p>
 <a name="NMSettingIP6Config.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingIP6Config--addr-gen-mode"></a><h3>The <code class="literal">“addr-gen-mode”</code> property</h3>
-<pre class="programlisting">  “addr-gen-mode”            <span class="type">gint</span></pre>
+<pre class="programlisting">  “addr-gen-mode”            <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
 <p>Configure method for creating the address for use with RFC4862 IPv6
-Stateless Address Autoconfiguration. The permitted values are: "eui64",
-or "stable-privacy".</p>
-<p>If the property is set to "eui64", the addresses will be generated
-using the interface tokens derived from  hardware address. This makes
+Stateless Address Autoconfiguration. The permitted values are:
+<a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ADDR-GEN-MODE-EUI64:CAPS"><code class="literal">NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64</code></a> or
+<a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ADDR-GEN-MODE-STABLE-PRIVACY:CAPS"><code class="literal">NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_STABLE_PRIVACY</code></a>.</p>
+<p>If the property is set to EUI64, the addresses will be generated
+using the interface tokens derived from hardware address. This makes
 the host part of the address to stay constant, making it possible
 to track host's presence when it changes networks. The address changes
 when the interface hardware is replaced.</p>
-<p>The value of "stable-privacy" enables use of cryptographically
+<p>The value of stable-privacy enables use of cryptographically
 secure hash of a secret host-specific key along with the connection's
 stable-id and the network address as specified by RFC7217.
 This makes it impossible to use the address track host's presence,
 and makes the address stable when the network interface hardware is
 replaced.</p>
 <p>On D-Bus, the absence of an addr-gen-mode setting equals enabling
-"stable-privacy". For keyfile plugin, the absence of the setting
-on disk means "eui64" so that the property doesn't change on upgrade
+stable-privacy. For keyfile plugin, the absence of the setting
+on disk means EUI64 so that the property doesn't change on upgrade
 from older versions.</p>
 <p>Note that this setting is distinct from the Privacy Extensions as
 configured by "ip6-privacy" property and it does not affect the
@@ -517,7 +518,7 @@ setting as another way of avoiding host tracking with IPv6 addresses.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--token"></a><h3>The <code class="literal">“token”</code> property</h3>
-<pre class="programlisting">  “token”                    <span class="type">gchar</span> *</pre>
+<pre class="programlisting">  “token”                    <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
 <p>Configure the token for draft-chown-6man-tokenised-ipv6-identifiers-02
 IPv6 tokenized interface identifiers. Useful with eui64 addr-gen-mode.</p>
 <p>Flags: Read / Write</p>
