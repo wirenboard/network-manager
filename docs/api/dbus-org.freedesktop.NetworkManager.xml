@@ -54,26 +54,28 @@
   <refsect1 role="properties">
     <title role="properties.title">Properties</title>
     <synopsis>
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.Devices">Devices</link>                  readable   ao
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.AllDevices">AllDevices</link>               readable   ao
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.NetworkingEnabled">NetworkingEnabled</link>        readable   b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.WirelessEnabled">WirelessEnabled</link>          readwrite  b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.WirelessHardwareEnabled">WirelessHardwareEnabled</link>  readable   b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.WwanEnabled">WwanEnabled</link>              readwrite  b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.WwanHardwareEnabled">WwanHardwareEnabled</link>      readable   b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.WimaxEnabled">WimaxEnabled</link>             readwrite  b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.WimaxHardwareEnabled">WimaxHardwareEnabled</link>     readable   b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.ActiveConnections">ActiveConnections</link>        readable   ao
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.PrimaryConnection">PrimaryConnection</link>        readable   o
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.PrimaryConnectionType">PrimaryConnectionType</link>    readable   s
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.Metered">Metered</link>                  readable   u
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.ActivatingConnection">ActivatingConnection</link>     readable   o
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.Startup">Startup</link>                  readable   b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.Version">Version</link>                  readable   s
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.Capabilities">Capabilities</link>             readable   au
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.State">State</link>                    readable   u
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.Connectivity">Connectivity</link>             readable   u
-<link linkend="gdbus-property-org-freedesktop-NetworkManager.GlobalDnsConfiguration">GlobalDnsConfiguration</link>   readwrite  a{sv}
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.Devices">Devices</link>                     readable   ao
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.AllDevices">AllDevices</link>                  readable   ao
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.NetworkingEnabled">NetworkingEnabled</link>           readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.WirelessEnabled">WirelessEnabled</link>             readwrite  b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.WirelessHardwareEnabled">WirelessHardwareEnabled</link>     readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.WwanEnabled">WwanEnabled</link>                 readwrite  b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.WwanHardwareEnabled">WwanHardwareEnabled</link>         readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.WimaxEnabled">WimaxEnabled</link>                readwrite  b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.WimaxHardwareEnabled">WimaxHardwareEnabled</link>        readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.ActiveConnections">ActiveConnections</link>           readable   ao
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.PrimaryConnection">PrimaryConnection</link>           readable   o
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.PrimaryConnectionType">PrimaryConnectionType</link>       readable   s
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.Metered">Metered</link>                     readable   u
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.ActivatingConnection">ActivatingConnection</link>        readable   o
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.Startup">Startup</link>                     readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.Version">Version</link>                     readable   s
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.Capabilities">Capabilities</link>                readable   au
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.State">State</link>                       readable   u
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.Connectivity">Connectivity</link>                readable   u
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.ConnectivityCheckAvailable">ConnectivityCheckAvailable</link>  readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.ConnectivityCheckEnabled">ConnectivityCheckEnabled</link>    readwrite  b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager.GlobalDnsConfiguration">GlobalDnsConfiguration</link>      readwrite  a{sv}
 </synopsis>
   </refsect1>
 <refsect1 role="desc" id="gdbus-interface-org-freedesktop-NetworkManager">
@@ -729,6 +731,31 @@ Connectivity  readable   u
         with captive portals (e.g. to provide a network connection indicator or disable
         controls that require Internet access), the "State" property is more suitable.
 </para><para>        Returns: <link linkend="NMConnectivityState">NMConnectivityState</link>
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.ConnectivityCheckAvailable">
+  <title>The "ConnectivityCheckAvailable" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager.ConnectivityCheckAvailable"><primary sortas="Manager:ConnectivityCheckAvailable">org.freedesktop.NetworkManager:ConnectivityCheckAvailable</primary></indexterm>
+<programlisting>
+ConnectivityCheckAvailable  readable   b
+</programlisting>
+<para>        Indicates whether connectivity checking service has been
+        configured.  This may return true even if the service is not
+        currently enabled.
+</para><para>        This is primarily intended for use in a privacy control panel,
+        as a way to determine whether to show an option to
+        enable/disable the feature.
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.ConnectivityCheckEnabled">
+  <title>The "ConnectivityCheckEnabled" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager.ConnectivityCheckEnabled"><primary sortas="Manager:ConnectivityCheckEnabled">org.freedesktop.NetworkManager:ConnectivityCheckEnabled</primary></indexterm>
+<programlisting>
+ConnectivityCheckEnabled  readwrite  b
+</programlisting>
+<para>        Indicates whether connectivity checking is enabled.  This
+        property can also be written to to disable connectivity
+        checking (as a privacy control panel might want to do).
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.GlobalDnsConfiguration">

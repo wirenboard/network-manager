@@ -75,6 +75,7 @@
 #define NM_CONFIG_KEYFILE_KEY_IFUPDOWN_MANAGED              "managed"
 #define NM_CONFIG_KEYFILE_KEY_AUDIT                         "audit"
 
+#define NM_CONFIG_KEYFILE_KEY_DEVICE_MANAGED                "managed"
 #define NM_CONFIG_KEYFILE_KEY_DEVICE_IGNORE_CARRIER         "ignore-carrier"
 #define NM_CONFIG_KEYFILE_KEY_DEVICE_SRIOV_NUM_VFS          "sriov-num-vfs"
 
@@ -178,6 +179,8 @@ GSList *nm_config_get_match_spec (const GKeyFile *keyfile, const char *group, co
 void _nm_config_sort_groups (char **groups, gsize ngroups);
 
 gboolean nm_config_set_global_dns (NMConfig *self, NMGlobalDnsConfig *global_dns, GError **error);
+
+void nm_config_set_connectivity_check_enabled (NMConfig *self, gboolean enabled);
 
 /* internal defines ... */
 extern guint _nm_config_match_nm_version;

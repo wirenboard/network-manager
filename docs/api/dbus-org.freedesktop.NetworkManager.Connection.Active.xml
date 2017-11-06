@@ -23,6 +23,7 @@
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.Type">Type</link>            readable   s
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.Devices">Devices</link>         readable   ao
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.State">State</link>           readable   u
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.StateFlags">StateFlags</link>      readable   u
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.Default">Default</link>         readable   b
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.Ip4Config">Ip4Config</link>       readable   o
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.Dhcp4Config">Dhcp4Config</link>     readable   o
@@ -160,6 +161,16 @@ State  readable   u
 </programlisting>
 <para>        The state of this active connection.
 </para><para>        Returns: <link linkend="NMActiveConnectionState">NMActiveConnectionState</link>
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.StateFlags">
+  <title>The "StateFlags" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.StateFlags"><primary sortas="ActiveConnection:StateFlags">org.freedesktop.NetworkManager.Connection.Active:StateFlags</primary></indexterm>
+<programlisting>
+StateFlags  readable   u
+</programlisting>
+<para>        The state flags of this active connection.
+</para><para>        Returns: <link linkend="NMActivationStateFlags">NMActivationStateFlags</link>
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Connection-Active.Default">

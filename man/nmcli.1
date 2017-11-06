@@ -2,12 +2,12 @@
 .\"     Title: nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 09/20/2017
+.\"      Date: 11/03/2017
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.8.4
+.\"    Source: NetworkManager 1.9.90
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.8\&.4" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.9\&.90" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1336,7 +1336,7 @@ type
 T}:T{
 connection\&.type
 T}:T{
-This option also accepts values of \fBbond\-slave\fR,
+This alias also accepts values of \fBbond\-slave\fR,
 \fBteam\-slave\fR and \fBbridge\-slave\fR\&. They create
 \fBethernet\fR connection profiles\&. Their use is discouraged in
 favor of using a specific type with \fBmaster\fR option\&.
@@ -1400,6 +1400,7 @@ T}
 .T&
 l l
 l l
+l l
 l l.
 T{
 username
@@ -1415,6 +1416,11 @@ T{
 service
 T}:T{
 pppoe\&.service
+T}
+T{
+parent
+T}:T{
+pppoe\&.parent
 T}
 .TE
 .sp 1
@@ -1671,10 +1677,10 @@ bt\-type
 T}:T{
 bluetooth\&.type
 T}:T{
-Apart from the usual dun and
-panu options, the values of dun\-gsm
-and dun\-cdma can be used for compatibility with older
-versions\&. They are equivalent to using dun and setting
+Apart from the usual panu,
+nap and dun options, the values of
+dun\-gsm and dun\-cdma can be used for compatibility
+with older versions\&. They are equivalent to using dun and setting
 appropriate gsm\&.* or cdma\&.* properties\&.
 T}
 .TE
@@ -1757,7 +1763,7 @@ T}:T{
 bond\&.options
 T}:T{
 Setting each of these adds the option to bond\&.options property\&.
-It\*(Aqs equivalent of using the +bond\&.options \*(Aqoption=value\*(Aq syntax\&.
+It\*(Aqs equivalent to the +bond\&.options \*(Aqoption=value\*(Aq syntax\&.
 T}
 T{
 primary
@@ -1861,6 +1867,7 @@ l l
 l l
 l l
 l l
+l l
 l l.
 T{
 stp
@@ -1891,6 +1898,11 @@ T{
 ageing\-time
 T}:T{
 bridge\&.ageing\-time
+T}
+T{
+group\-forward\-mask
+T}:T{
+bridge\&.group\-forward\-mask
 T}
 T{
 multicast\-snooping
@@ -2064,7 +2076,60 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&19.\ \&VxLAN options
+.B Table\ \&19.\ \&MACsec options
+.TS
+allbox tab(:);
+lB lB.
+T{
+Alias
+T}:T{
+Property
+T}
+.T&
+l l
+l l
+l l
+l l
+l l
+l l.
+T{
+dev
+T}:T{
+macsec\&.parent
+T}
+T{
+mode
+T}:T{
+macsec\&.mode
+T}
+T{
+encrypt
+T}:T{
+macsec\&.encrypt
+T}
+T{
+cak
+T}:T{
+macsec\&.cak
+T}
+T{
+ckn
+T}:T{
+macsec\&.ckn
+T}
+T{
+port
+T}:T{
+macsec\&.port
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&20.\ \&VxLAN options
 .TS
 allbox tab(:);
 lB lB.
@@ -2123,7 +2188,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&20.\ \&Tun options
+.B Table\ \&21.\ \&Tun options
 .TS
 allbox tab(:);
 lB lB.
@@ -2176,7 +2241,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&21.\ \&IP tunneling options
+.B Table\ \&22.\ \&IP tunneling options
 .TS
 allbox tab(:);
 lB lB.
@@ -2217,7 +2282,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&22.\ \&IPv4 options
+.B Table\ \&23.\ \&IPv4 options
 .TS
 allbox tab(:);
 lB lB lB.
@@ -2234,11 +2299,9 @@ l l l.
 T{
 ip4
 T}:T{
-ipv4\&.addresses
-                            ipv4\&.method
+ipv4\&.addresses ipv4\&.method
 T}:T{
-This option can be specified multiple times\&.
-It\*(Aqs equivalent of using +ipv4\&.addresses syntax and setting ipv4\&.method to manual\&.
+The alias is equivalent to the +ipv4\&.addresses syntax and also sets ipv4\&.method to manual\&. It can be specified multiple times\&.
 T}
 T{
 gw4
@@ -2254,7 +2317,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&23.\ \&IPv6 options
+.B Table\ \&24.\ \&IPv6 options
 .TS
 allbox tab(:);
 lB lB lB.
@@ -2271,11 +2334,9 @@ l l l.
 T{
 ip6
 T}:T{
-ipv6\&.addresses
-                            ipv6\&.method
+ipv6\&.addresses ipv6\&.method
 T}:T{
-This option can be specified multiple times\&.
-It\*(Aqs equivalent of using +ipv6\&.addresses syntax and setting ipv6\&.method to manual\&.
+The alias is equivalent to the +ipv6\&.addresses syntax and also sets ipv6\&.method to manual\&. It can be specified multiple times\&.
 T}
 T{
 gw6
@@ -2291,7 +2352,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&24.\ \&Proxy options
+.B Table\ \&25.\ \&Proxy options
 .TS
 allbox tab(:);
 lB lB lB.
@@ -2303,13 +2364,37 @@ T}:T{
 Note
 T}
 .T&
+l l l
+l l l
+l l l
 l l lt.
 T{
+method
+T}:T{
+proxy\&.method
+T}:T{
 \ \&
+T}
+T{
+browser\-only
+T}:T{
+proxy\&.browser\-only
+T}:T{
+\ \&
+T}
+T{
+pac\-url
+T}:T{
+proxy\&.pac\-url
+T}:T{
+\ \&
+T}
+T{
+pac\-script
 T}:T{
 proxy\&.pac\-script
 T}:T{
-Read the java script pac\-script from file or pass it directly on the command line\&. Prefix the value with "file://" or "js://" to force one or the other\&.
+Read the JavaScript PAC (proxy auto\-config) script from file or pass it directly on the command line\&. Prefix the value with "file://" or "js://" to force one or the other\&.
 T}
 .TE
 .sp 1

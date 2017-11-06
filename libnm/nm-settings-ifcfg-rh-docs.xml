@@ -29,7 +29,8 @@ IEEE_8021X_INNER_AUTH_METHODS is also used for &apos;phase2-auth&apos; values."/
 <property name="password" variable="IEEE_8021X_PASSWORD(+)" format="" values="" default="" example="" description="UTF-8 encoded password used for EAP. It can also go to &quot;key-&quot;
 lookaside file, or it can be owned by a secret agent."/>
 <property name="password-flags" variable="IEEE_8021X_PASSWORD_FLAGS(+)" format="NMSettingSecretFlags" values="" default="" example="" description="Password flags for IEEE_8021X_PASSWORD password."/>
-<property name="password-raw" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
+<property name="password-raw" variable="IEEE_8021X_PASSWORD_RAW(+)" format="" values="" default="" example="IEEE_8021X_PASSWORD_RAW=041c8320083aa4bf" description="password used for EAP, encoded as a hexadecimal string. It
+can also go to &quot;key-&quot; lookaside file."/>
 <property name="password-raw-flags" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
 <property name="private-key" variable="IEEE_8021X_PRIVATE_KEY(+)" format="" values="" default="" example="IEEE_8021X_PRIVATE_KEY=/home/joe/mykey.p12" description="Private key for EAP-TLS."/>
 <property name="private-key-password" variable="IEEE_8021X_PRIVATE_KEY_PASSWORD(+)" format="" values="" default="" example="" description="Password for IEEE_8021X_PRIVATE_KEY. It can also go to &quot;key-&quot;
@@ -107,6 +108,7 @@ together with this connection."/>
 pinging the gateway and waiting for the specified timeout (in seconds)."/>
 <property name="metered" variable="CONNECTION_METERED(+)" format="" values="yes,no,unknown" default="" example="CONNECTION_METERED=yes" description="Whether the device is metered"/>
 <property name="lldp" variable="LLDP(+)" format="" values="boolean value or &apos;rx&apos;" default="missing variable means global default" example="LLDP=no" description="whether LLDP is enabled for the connection"/>
+<property name="auth-retries" variable="AUTH_RETRIES(+)" format="" values="" default="0" example="" description="Number of retries for authentication."/>
 </setting>
 <setting name="dcb">
 <property name="app-fcoe-flags" variable="DCB_APP_FCOE_ENABLE, DCB_APP_FCOE_ADVERTISE, DCB_APP_FCOE_WILLING" format="" values="" default="no" example="DCB_APP_FCOE_ENABLE=yes DCB_APP_FCOE_ADVERTISE=yes" description="FCOE flags."/>
@@ -149,8 +151,6 @@ or a decimal number.
 When PKEY_ID is specified, PHYSDEV and DEVICE also must be specified."/>
 <property name="parent" variable="PHYSDEV (PKEY=yes)" format="" values="" default="PKEY=no" example="PHYSDEV=ib0" description="InfiniBand parent device."/>
 </setting>
-<setting name="">
-</setting>
 <setting name="ip-tunnel">
 </setting>
 <setting name="ipv4">
@@ -173,6 +173,7 @@ meaning as &apos;never-default&apos; property."/>
 <property name="may-fail" variable="IPV4_FAILURE_FATAL(+)" format="" values="" default="no" example="" description="IPV4_FAILURE_FATAL has the opposite meaning as &apos;may-fail&apos; property."/>
 <property name="route-metric" variable="IPV4_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection.
 If set to -1, a default metric based on the device type is used."/>
+<property name="route-table" variable="IPV4_ROUTE_TABLE(+)" format="" values="" default="0" example="" description="IPV4_ROUTE_TABLE enables policy-routing and sets the default routing table."/>
 <property name="dns-priority" variable="IPV4_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV4_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
 If zero, the default value will be used (50 for VPNs, 100 for other connections).
 A negative value prevents DNS from other connections with greater values to be used."/>
@@ -204,6 +205,7 @@ meaning as &apos;never-default&apos; property."/>
 <property name="may-fail" variable="IPV6_FAILURE_FATAL(+)" format="" values="" default="no" example="" description="IPV6_FAILURE_FATAL has the opposite meaning as &apos;may-fail&apos; property."/>
 <property name="route-metric" variable="IPV6_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV6_ROUTE_METRIC is the default IPv6 metric for routes on this connection.
 If set to -1, a default metric based on the device type is used."/>
+<property name="route-table" variable="IPV6_ROUTE_TABLE(+)" format="" values="" default="0" example="" description="IPV6_ROUTE_TABLE enables policy-routing and sets the default routing table."/>
 <property name="dns-priority" variable="IPV6_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV6_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
 If zero, the default value will be used (50 for VPNs, 100 for other connections).
 A negative value prevents DNS from other connections with greater values to be used."/>
@@ -217,6 +219,14 @@ IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no" default="no" example="IPV6_PRIVACY=rfc30
 <setting name="macvlan">
 </setting>
 <setting name="802-11-olpc-mesh">
+</setting>
+<setting name="ovs-bridge">
+</setting>
+<setting name="ovs-interface">
+</setting>
+<setting name="ovs-patch">
+</setting>
+<setting name="ovs-port">
 </setting>
 <setting name="ppp">
 </setting>
@@ -240,6 +250,12 @@ proxy configuration, or set the PAC file via PAC_URL or PAC_SCRIPT."/>
 <setting name="tun">
 </setting>
 <setting name="user">
+<property name="data" variable="NM_USER_*" format="" values="" default="" example="NM_USER_FOO__BAR=something" description="each key/value pair is stored as a separate variable with
+name composed by concatenating NM_USER_ with the encoded key. The key is
+encoded by substituting lowercase letters with uppercase and prepending
+uppercase letters with an underscore. A dot is encoded as a double
+underscore. Remaining characters are encoded as underscore followed by a
+3 digit octal representation of the character."/>
 </setting>
 <setting name="vlan">
 <property name="parent" variable="DEVICE or PHYSDEV" format="" values="" default="" example="" description="Parent interface of the VLAN."/>
@@ -292,6 +308,7 @@ is listed."/>
 separated list."/>
 <property name="group" variable="CIPHER_GROUP(+)" format="" values="CCMP, TKIP, WEP40, WEP104" default="" example="" description="Restrict group/broadcast encryption algorithms, specified as a space
 separated list."/>
+<property name="pmf" variable="PMF(+)" format="" values="default, disable, optional, required" default="" example="PMF=required" description="Enables or disables PMF (802.11w)"/>
 <property name="leap-username" variable="IEEE_8021X_IDENTITY(+)" format="" values="" default="" example="" description="Login name for LEAP."/>
 <property name="wep-key0" variable="KEY1, KEY_PASSPHRASE1(+)" format="" values="" default="" example="" description="The first WEP key (used in most networks). See also DEFAULTKEY for key index."/>
 <property name="wep-key1" variable="KEY2, KEY_PASSPHRASE2(+)" format="" values="" default="" example="" description="WEP key with index 1. See also DEFAULTKEY for key index."/>
@@ -306,6 +323,9 @@ lookaside file, or it can be owned by a secret agent."/>
 <property name="wep-key-type" variable="KEY&lt;i&gt; or KEY_PASSPHRASE&lt;i&gt;(+)" format="" values="" default="" example="KEY1=s:ahoj, KEY1=0a1c45bc02, KEY_PASSPHRASE1=mysupersecretkey" description="KEY is used for &quot;key&quot; type (10 or 26 hexadecimal characters,
 or 5 or 13 character string prefixed with &quot;s:&quot;). KEY_PASSPHRASE is used
 for WEP passphrases."/>
+<property name="wps-method" variable="WPS_METHOD" format="" values="" default="" example="WPS_METHOD=disabled, WPS_METHOD=&quot;pin pbc&quot;" description="Used to control the WPS methods to be used
+Valid values are &quot;default&quot;, &quot;auto&quot;, &quot;disabled&quot;, &quot;pin&quot; and &quot;pbc&quot;.
+If omitted, whatver the AP announces is used."/>
 </setting>
 <setting name="802-11-wireless">
 <property name="ssid" variable="ESSID" format="" values="" default="" example="ESSID=&quot;Quick Net&quot;" description="SSID of Wi-Fi network."/>

@@ -151,7 +151,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-BINUTILS_NM = @BINUTILS_NM@
 BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
 BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
@@ -173,6 +172,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCPCANON_PATH = @DHCPCANON_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
@@ -361,6 +361,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_NM = @ac_ct_NM@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -422,6 +423,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 with_dhclient = @with_dhclient@
+with_dhcpcanon = @with_dhcpcanon@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
@@ -495,7 +497,8 @@ content_files = $(GENERATED_FILES) \
 	$(top_builddir)/man/NetworkManager.conf.xml \
 	$(top_builddir)/man/nmcli-examples.xml \
 	$(top_builddir)/man/nm-settings.xml \
-	$(top_builddir)/man/nm-settings-keyfile.xml version.xml \
+	$(top_builddir)/man/nm-settings-keyfile.xml \
+	$(top_builddir)/man/nm-openvswitch.xml version.xml \
 	../../COPYING $(NULL) $(am__append_2)
 @GTK_DOC_USE_LIBTOOL_FALSE@GTKDOC_CC = $(CC) $(INCLUDES) $(GTKDOC_DEPS_CFLAGS) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 @GTK_DOC_USE_LIBTOOL_TRUE@GTKDOC_CC = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(INCLUDES) $(GTKDOC_DEPS_CFLAGS) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)

@@ -46,6 +46,7 @@ NM_ACTIVE_CONNECTION_TYPE
 NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT_PATH
 NM_ACTIVE_CONNECTION_DEVICES
 NM_ACTIVE_CONNECTION_STATE
+NM_ACTIVE_CONNECTION_STATE_FLAGS
 NM_ACTIVE_CONNECTION_DEFAULT
 NM_ACTIVE_CONNECTION_IP4_CONFIG
 NM_ACTIVE_CONNECTION_DHCP4_CONFIG
@@ -62,6 +63,7 @@ nm_active_connection_get_connection_type
 nm_active_connection_get_specific_object_path
 nm_active_connection_get_devices
 nm_active_connection_get_state
+nm_active_connection_get_state_flags
 nm_active_connection_get_state_reason
 nm_active_connection_get_master
 nm_active_connection_get_default
@@ -98,6 +100,8 @@ NM_CLIENT_WIMAX_ENABLED
 NM_CLIENT_WIMAX_HARDWARE_ENABLED
 NM_CLIENT_ACTIVE_CONNECTIONS
 NM_CLIENT_CONNECTIVITY
+NM_CLIENT_CONNECTIVITY_CHECK_AVAILABLE
+NM_CLIENT_CONNECTIVITY_CHECK_ENABLED
 NM_CLIENT_PRIMARY_CONNECTION
 NM_CLIENT_ACTIVATING_CONNECTION
 NM_CLIENT_DEVICES
@@ -148,6 +152,9 @@ nm_client_wwan_hardware_get_enabled
 nm_client_wimax_get_enabled
 nm_client_wimax_set_enabled
 nm_client_wimax_hardware_get_enabled
+nm_client_connectivity_check_get_available
+nm_client_connectivity_check_get_enabled
+nm_client_connectivity_check_set_enabled
 nm_client_get_logging
 nm_client_set_logging
 nm_client_get_permission_result
@@ -232,6 +239,7 @@ nm_connection_get_path
 nm_connection_get_interface_name
 nm_connection_is_type
 nm_connection_for_each_setting_value
+nm_connection_get_settings
 nm_connection_dump
 nm_connection_get_uuid
 nm_connection_get_id
@@ -258,6 +266,10 @@ nm_connection_get_setting_ip6_config
 nm_connection_get_setting_macsec
 nm_connection_get_setting_macvlan
 nm_connection_get_setting_olpc_mesh
+nm_connection_get_setting_ovs_bridge
+nm_connection_get_setting_ovs_interface
+nm_connection_get_setting_ovs_patch
+nm_connection_get_setting_ovs_port
 nm_connection_get_setting_ppp
 nm_connection_get_setting_pppoe
 nm_connection_get_setting_proxy
@@ -286,6 +298,7 @@ nm_connection_get_type
 NM_TYPE_802_11_AP_FLAGS
 NM_TYPE_802_11_AP_SECURITY_FLAGS
 NM_TYPE_802_11_MODE
+NM_TYPE_ACTIVATION_STATE_FLAGS
 NM_TYPE_ACTIVE_CONNECTION_STATE
 NM_TYPE_ACTIVE_CONNECTION_STATE_REASON
 NM_TYPE_AGENT_MANAGER_ERROR
@@ -329,6 +342,8 @@ NM_TYPE_SETTING_SERIAL_PARITY
 NM_TYPE_SETTING_TUN_MODE
 NM_TYPE_SETTING_WIRED_WAKE_ON_LAN
 NM_TYPE_SETTING_WIRELESS_POWERSAVE
+NM_TYPE_SETTING_WIRELESS_SECURITY_PMF
+NM_TYPE_SETTING_WIRELESS_SECURITY_WPS_METHOD
 NM_TYPE_STATE
 NM_TYPE_UTILS_SECURITY_TYPE
 NM_TYPE_VLAN_FLAGS
@@ -344,6 +359,7 @@ NM_TYPE_WIMAX_NSP_NETWORK_TYPE
 nm_802_11_ap_flags_get_type
 nm_802_11_ap_security_flags_get_type
 nm_802_11_mode_get_type
+nm_activation_state_flags_get_type
 nm_active_connection_state_get_type
 nm_active_connection_state_reason_get_type
 nm_agent_manager_error_get_type
@@ -386,6 +402,8 @@ nm_setting_serial_parity_get_type
 nm_setting_tun_mode_get_type
 nm_setting_wired_wake_on_lan_get_type
 nm_setting_wireless_powersave_get_type
+nm_setting_wireless_security_pmf_get_type
+nm_setting_wireless_security_wps_method_get_type
 nm_settings_error_get_type
 nm_state_get_type
 nm_utils_security_type_get_type
@@ -425,6 +443,10 @@ NMSettingInfiniband
 NMSettingMacsec
 NMSettingMacvlan
 NMSettingOlpcMesh
+NMSettingOvsBridge
+NMSettingOvsInterface
+NMSettingOvsPatch
+NMSettingOvsPort
 NMSettingPpp
 NMSettingPppoe
 NMSettingProxy
@@ -456,6 +478,9 @@ NM_DBUS_INTERFACE_DEVICE_ADSL
 NM_DBUS_INTERFACE_DEVICE_WIRELESS
 NM_DBUS_INTERFACE_DEVICE_BLUETOOTH
 NM_DBUS_INTERFACE_DEVICE_OLPC_MESH
+NM_DBUS_INTERFACE_DEVICE_OVS_INTERFACE
+NM_DBUS_INTERFACE_DEVICE_OVS_PORT
+NM_DBUS_INTERFACE_DEVICE_OVS_BRIDGE
 NM_DBUS_PATH_ACCESS_POINT
 NM_DBUS_INTERFACE_ACCESS_POINT
 NM_DBUS_INTERFACE_DEVICE_MODEM
@@ -478,6 +503,7 @@ NM_DBUS_INTERFACE_DEVICE_VETH
 NM_DBUS_INTERFACE_DEVICE_TUN
 NM_DBUS_INTERFACE_DEVICE_MACSEC
 NM_DBUS_INTERFACE_DEVICE_MACVLAN
+NM_DBUS_INTERFACE_DEVICE_PPP
 NM_DBUS_INTERFACE_DEVICE_VXLAN
 NM_DBUS_INTERFACE_DEVICE_GRE
 NM_DBUS_INTERFACE_DEVICE_IP_TUNNEL
@@ -532,6 +558,7 @@ NM_LLDP_DEST_NEAREST_CUSTOMER_BRIDGE
 NMIPTunnelMode
 NMCheckpointCreateFlags
 NMRollbackResult
+NMActivationStateFlags
 </SECTION>
 
 <SECTION>
@@ -718,7 +745,9 @@ nm_device_bt_get_type
 <SECTION>
 <FILE>nm-device-dummy</FILE>
 <TITLE>NMDeviceDummy</TITLE>
+NM_DEVICE_DUMMY_HW_ADDRESS
 NMDeviceDummy
+nm_device_dummy_get_hw_address
 <SUBSECTION Standard>
 NMDeviceDummyClass
 NM_DEVICE_DUMMY
@@ -935,6 +964,58 @@ NM_IS_DEVICE_OLPC_MESH
 NM_IS_DEVICE_OLPC_MESH_CLASS
 NM_TYPE_DEVICE_OLPC_MESH
 nm_device_olpc_mesh_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-device-ovs-bridge</FILE>
+<SUBSECTION Standard>
+NMDeviceOvsBridgeClass
+NM_DEVICE_OVS_BRIDGE
+NM_DEVICE_OVS_BRIDGE_CLASS
+NM_DEVICE_OVS_BRIDGE_GET_CLASS
+NM_IS_DEVICE_OVS_BRIDGE
+NM_IS_DEVICE_OVS_BRIDGE_CLASS
+NM_TYPE_DEVICE_OVS_BRIDGE
+nm_device_ovs_bridge_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-device-ovs-interface</FILE>
+<SUBSECTION Standard>
+NMDeviceOvsInterfaceClass
+NM_DEVICE_OVS_INTERFACE
+NM_DEVICE_OVS_INTERFACE_CLASS
+NM_DEVICE_OVS_INTERFACE_GET_CLASS
+NM_IS_DEVICE_OVS_INTERFACE
+NM_IS_DEVICE_OVS_INTERFACE_CLASS
+NM_TYPE_DEVICE_OVS_INTERFACE
+nm_device_ovs_interface_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-device-ovs-port</FILE>
+<SUBSECTION Standard>
+NMDeviceOvsPortClass
+NM_DEVICE_OVS_PORT
+NM_DEVICE_OVS_PORT_CLASS
+NM_DEVICE_OVS_PORT_GET_CLASS
+NM_IS_DEVICE_OVS_PORT
+NM_IS_DEVICE_OVS_PORT_CLASS
+NM_TYPE_DEVICE_OVS_PORT
+nm_device_ovs_port_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-device-ppp</FILE>
+<SUBSECTION Standard>
+NMDevicePppClass
+NM_DEVICE_PPP
+NM_DEVICE_PPP_CLASS
+NM_DEVICE_PPP_GET_CLASS
+NM_IS_DEVICE_PPP
+NM_IS_DEVICE_PPP_CLASS
+NM_TYPE_DEVICE_PPP
+nm_device_ppp_get_type
 </SECTION>
 
 <SECTION>
@@ -1542,6 +1623,7 @@ NM_SETTING_BLUETOOTH_BDADDR
 NM_SETTING_BLUETOOTH_TYPE
 NM_SETTING_BLUETOOTH_TYPE_DUN
 NM_SETTING_BLUETOOTH_TYPE_PANU
+NM_SETTING_BLUETOOTH_TYPE_NAP
 NMSettingBluetooth
 nm_setting_bluetooth_new
 nm_setting_bluetooth_get_bdaddr
@@ -1621,6 +1703,7 @@ NM_SETTING_BRIDGE_FORWARD_DELAY
 NM_SETTING_BRIDGE_HELLO_TIME
 NM_SETTING_BRIDGE_MAX_AGE
 NM_SETTING_BRIDGE_AGEING_TIME
+NM_SETTING_BRIDGE_GROUP_FORWARD_MASK
 NM_SETTING_BRIDGE_MULTICAST_SNOOPING
 NMSettingBridge
 nm_setting_bridge_new
@@ -1631,6 +1714,7 @@ nm_setting_bridge_get_forward_delay
 nm_setting_bridge_get_hello_time
 nm_setting_bridge_get_max_age
 nm_setting_bridge_get_ageing_time
+nm_setting_bridge_get_group_forward_mask
 nm_setting_bridge_get_multicast_snooping
 <SUBSECTION Standard>
 NMSettingBridgeClass
@@ -1719,6 +1803,7 @@ NM_SETTING_CONNECTION_SECONDARIES
 NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT
 NM_SETTING_CONNECTION_METERED
 NM_SETTING_CONNECTION_LLDP
+NM_SETTING_CONNECTION_AUTH_RETRIES
 NMSettingConnectionAutoconnectSlaves
 NMSettingConnectionLldp
 NMSettingConnection
@@ -1752,6 +1837,7 @@ nm_setting_connection_remove_secondary_by_value
 nm_setting_connection_get_gateway_ping_timeout
 nm_setting_connection_get_metered
 nm_setting_connection_get_lldp
+nm_setting_connection_get_auth_retries
 <SUBSECTION Standard>
 NMSettingConnectionClass
 NM_IS_SETTING_CONNECTION
@@ -1948,6 +2034,7 @@ nm_ip_route_new_binary
 nm_ip_route_ref
 nm_ip_route_unref
 nm_ip_route_equal
+nm_ip_route_equal_full
 nm_ip_route_dup
 nm_ip_route_get_family
 nm_ip_route_get_dest
@@ -1967,6 +2054,7 @@ nm_ip_route_get_attribute
 nm_ip_route_set_attribute
 nm_ip_route_get_variant_attribute_spec
 nm_ip_route_attribute_validate
+NM_IP_ROUTE_ATTRIBUTE_TABLE
 NM_IP_ROUTE_ATTRIBUTE_SRC
 NM_IP_ROUTE_ATTRIBUTE_FROM
 NM_IP_ROUTE_ATTRIBUTE_TOS
@@ -1990,6 +2078,7 @@ NM_SETTING_IP_CONFIG_ADDRESSES
 NM_SETTING_IP_CONFIG_GATEWAY
 NM_SETTING_IP_CONFIG_ROUTES
 NM_SETTING_IP_CONFIG_ROUTE_METRIC
+NM_SETTING_IP_CONFIG_ROUTE_TABLE
 NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES
 NM_SETTING_IP_CONFIG_IGNORE_AUTO_DNS
 NM_SETTING_IP_CONFIG_DHCP_HOSTNAME
@@ -2050,6 +2139,7 @@ nm_setting_ip_config_remove_route
 nm_setting_ip_config_remove_route_by_value
 nm_setting_ip_config_clear_routes
 nm_setting_ip_config_get_route_metric
+nm_setting_ip_config_get_route_table
 nm_setting_ip_config_get_ignore_auto_routes
 nm_setting_ip_config_get_ignore_auto_dns
 nm_setting_ip_config_get_dhcp_hostname
@@ -2258,6 +2348,90 @@ nm_setting_olpc_mesh_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-setting-ovs-bridge</FILE>
+NM_SETTING_OVS_BRIDGE_SETTING_NAME
+NM_SETTING_OVS_BRIDGE_FAIL_MODE
+NM_SETTING_OVS_BRIDGE_MCAST_SNOOPING_ENABLE
+NM_SETTING_OVS_BRIDGE_RSTP_ENABLE
+NM_SETTING_OVS_BRIDGE_STP_ENABLE
+nm_setting_ovs_bridge_new
+nm_setting_ovs_bridge_get_fail_mode
+nm_setting_ovs_bridge_get_mcast_snooping_enable
+nm_setting_ovs_bridge_get_rstp_enable
+nm_setting_ovs_bridge_get_stp_enable
+<SUBSECTION Standard>
+NMSettingOvsBridgeClass
+NM_IS_SETTING_OVS_BRIDGE
+NM_IS_SETTING_OVS_BRIDGE_CLASS
+NM_SETTING_OVS_BRIDGE
+NM_SETTING_OVS_BRIDGE_CLASS
+NM_SETTING_OVS_BRIDGE_GET_CLASS
+NM_TYPE_SETTING_OVS_BRIDGE
+nm_setting_ovs_bridge_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-setting-ovs-interface</FILE>
+NM_SETTING_OVS_INTERFACE_SETTING_NAME
+NM_SETTING_OVS_INTERFACE_TYPE
+nm_setting_ovs_interface_new
+nm_setting_ovs_interface_get_interface_type
+<SUBSECTION Standard>
+NMSettingOvsInterfaceClass
+NM_IS_SETTING_OVS_INTERFACE
+NM_IS_SETTING_OVS_INTERFACE_CLASS
+NM_SETTING_OVS_INTERFACE
+NM_SETTING_OVS_INTERFACE_CLASS
+NM_SETTING_OVS_INTERFACE_GET_CLASS
+NM_TYPE_SETTING_OVS_INTERFACE
+nm_setting_ovs_interface_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-setting-ovs-patch</FILE>
+NM_SETTING_OVS_PATCH_SETTING_NAME
+NM_SETTING_OVS_PATCH_PEER
+nm_setting_ovs_patch_new
+nm_setting_ovs_patch_get_peer
+<SUBSECTION Standard>
+NMSettingOvsPatchClass
+NM_IS_SETTING_OVS_PATCH
+NM_IS_SETTING_OVS_PATCH_CLASS
+NM_SETTING_OVS_PATCH
+NM_SETTING_OVS_PATCH_CLASS
+NM_SETTING_OVS_PATCH_GET_CLASS
+NM_TYPE_SETTING_OVS_PATCH
+nm_setting_ovs_patch_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-setting-ovs-port</FILE>
+NM_SETTING_OVS_PORT_SETTING_NAME
+NM_SETTING_OVS_PORT_VLAN_MODE
+NM_SETTING_OVS_PORT_TAG
+NM_SETTING_OVS_PORT_LACP
+NM_SETTING_OVS_PORT_BOND_MODE
+NM_SETTING_OVS_PORT_BOND_UPDELAY
+NM_SETTING_OVS_PORT_BOND_DOWNDELAY
+nm_setting_ovs_port_new
+nm_setting_ovs_port_get_vlan_mode
+nm_setting_ovs_port_get_tag
+nm_setting_ovs_port_get_lacp
+nm_setting_ovs_port_get_bond_mode
+nm_setting_ovs_port_get_bond_updelay
+nm_setting_ovs_port_get_bond_downdelay
+<SUBSECTION Standard>
+NMSettingOvsPortClass
+NM_IS_SETTING_OVS_PORT
+NM_IS_SETTING_OVS_PORT_CLASS
+NM_SETTING_OVS_PORT
+NM_SETTING_OVS_PORT_CLASS
+NM_SETTING_OVS_PORT_GET_CLASS
+NM_TYPE_SETTING_OVS_PORT
+nm_setting_ovs_port_get_type
+</SECTION>
+
+<SECTION>
 <FILE>nm-setting-ppp</FILE>
 <TITLE>NMSettingPpp</TITLE>
 NM_SETTING_PPP_SETTING_NAME
@@ -2314,12 +2488,14 @@ nm_setting_ppp_get_type
 <FILE>nm-setting-pppoe</FILE>
 <TITLE>NMSettingPppoe</TITLE>
 NM_SETTING_PPPOE_SETTING_NAME
+NM_SETTING_PPPOE_PARENT
 NM_SETTING_PPPOE_SERVICE
 NM_SETTING_PPPOE_USERNAME
 NM_SETTING_PPPOE_PASSWORD
 NM_SETTING_PPPOE_PASSWORD_FLAGS
 NMSettingPppoe
 nm_setting_pppoe_new
+nm_setting_pppoe_get_parent
 nm_setting_pppoe_get_service
 nm_setting_pppoe_get_username
 nm_setting_pppoe_get_password
@@ -2746,12 +2922,15 @@ nm_setting_wireless_get_type
 <TITLE>NMSettingWirelessSecurity</TITLE>
 NM_SETTING_WIRELESS_SECURITY_SETTING_NAME
 NMWepKeyType
+NMSettingWirelessSecurityPmf
+NMSettingWirelessSecurityWpsMethod
 NM_SETTING_WIRELESS_SECURITY_KEY_MGMT
 NM_SETTING_WIRELESS_SECURITY_WEP_TX_KEYIDX
 NM_SETTING_WIRELESS_SECURITY_AUTH_ALG
 NM_SETTING_WIRELESS_SECURITY_PROTO
 NM_SETTING_WIRELESS_SECURITY_PAIRWISE
 NM_SETTING_WIRELESS_SECURITY_GROUP
+NM_SETTING_WIRELESS_SECURITY_PMF
 NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME
 NM_SETTING_WIRELESS_SECURITY_WEP_KEY0
 NM_SETTING_WIRELESS_SECURITY_WEP_KEY1
@@ -2763,6 +2942,7 @@ NM_SETTING_WIRELESS_SECURITY_PSK
 NM_SETTING_WIRELESS_SECURITY_PSK_FLAGS
 NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD
 NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD_FLAGS
+NM_SETTING_WIRELESS_SECURITY_WPS_METHOD
 NMSettingWirelessSecurity
 nm_setting_wireless_security_new
 nm_setting_wireless_security_get_key_mgmt
@@ -2784,6 +2964,7 @@ nm_setting_wireless_security_add_group
 nm_setting_wireless_security_remove_group
 nm_setting_wireless_security_remove_group_by_value
 nm_setting_wireless_security_clear_groups
+nm_setting_wireless_security_get_pmf
 nm_setting_wireless_security_get_psk
 nm_setting_wireless_security_get_psk_flags
 nm_setting_wireless_security_get_leap_username
@@ -2795,6 +2976,7 @@ nm_setting_wireless_security_get_wep_tx_keyidx
 nm_setting_wireless_security_get_auth_alg
 nm_setting_wireless_security_get_wep_key_flags
 nm_setting_wireless_security_get_wep_key_type
+nm_setting_wireless_security_get_wps_method
 <SUBSECTION Standard>
 NMSettingWirelessSecurityClass
 NM_IS_SETTING_WIRELESS_SECURITY
@@ -2843,6 +3025,10 @@ NMDeviceMacsec
 NMDeviceMacvlan
 NMDeviceModem
 NMDeviceOlpcMesh
+NMDeviceOvsBridge
+NMDeviceOvsInterface
+NMDeviceOvsPort
+NMDevicePpp
 NMDeviceTeam
 NMDeviceTun
 NMDeviceVlan
@@ -2954,6 +3140,9 @@ NM_AVAILABLE_IN_1_6
 NM_DEPRECATED_IN_1_8
 NM_DEPRECATED_IN_1_8_FOR
 NM_AVAILABLE_IN_1_8
+NM_DEPRECATED_IN_1_10
+NM_DEPRECATED_IN_1_10_FOR
+NM_AVAILABLE_IN_1_10
 </SECTION>
 
 <SECTION>

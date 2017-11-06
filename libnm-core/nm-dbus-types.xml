@@ -272,6 +272,26 @@
               <entry role="enum_member_value"><para>= <literal>22</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>a dummy interface</para><para></para></entry>
             </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_DEVICE_TYPE_PPP</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>23</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>a PPP interface</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_DEVICE_TYPE_OVS_INTERFACE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>24</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>a OpenVSwitch interface</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_DEVICE_TYPE_OVS_PORT</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>25</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>a OpenVSwitch port</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_DEVICE_TYPE_OVS_BRIDGE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>26</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>a OpenVSwitch bridge</para><para></para></entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
@@ -426,6 +446,21 @@
               <entry role="enum_member_name"><para>NM_802_11_AP_FLAGS_PRIVACY</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>0x00000001</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>access point requires authentication and encryption (usually means WEP)</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_802_11_AP_FLAGS_WPS</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x00000002</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>access point supports some WPS method</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_802_11_AP_FLAGS_WPS_PBC</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x00000004</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>access point supports push-button WPS</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_802_11_AP_FLAGS_WPS_PIN</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x00000008</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>access point supports PIN-based WPS</para><para></para></entry>
             </row>
           </tbody>
         </tgroup>
@@ -1082,6 +1117,11 @@
               <entry role="enum_member_value"><para>= <literal>62</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>the device parent's management changed</para><para></para></entry>
             </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_DEVICE_STATE_REASON_OVSDB_FAILED</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>63</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>problem communicating with OpenVSwitch database</para><para></para></entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
@@ -1308,6 +1348,11 @@
               <entry role="enum_member_description"><para>set if the request was initiated by user-requested action via the D-Bus interface, as opposed to automatically initiated by NetworkManager in response to (for example) scan results or carrier changes.</para><para></para></entry>
             </row>
             <row role="constant">
+              <entry role="enum_member_name"><para>NM_SECRET_AGENT_GET_SECRETS_FLAG_WPS_PBC_ACTIVE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x8</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>indicates that WPS enrollment is active with PBC method. The agent may suggest that the user pushes a button on the router instead of supplying a PSK.</para><para></para></entry>
+            </row>
+            <row role="constant">
               <entry role="enum_member_name"><para>NM_SECRET_AGENT_GET_SECRETS_FLAG_ONLY_SYSTEM</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>0x80000000</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>Internal flag, not part of the D-Bus API.</para><para></para></entry>
@@ -1496,6 +1541,61 @@
               <entry role="enum_member_name"><para>NM_ROLLBACK_RESULT_ERR_FAILED</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>3</literal></para><para></para></entry>
               <entry role="enum_member_description"><para>other errors during rollback.</para><para></para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </refsect3>
+  </refsect2>
+
+  <refsect2 id="NMActivationStateFlags" role="enum">
+    <title>enum NMActivationStateFlags</title>
+    <indexterm zone="NMActivationStateFlags">
+      <primary>NMActivationStateFlags</primary>
+    </indexterm>
+    <para><para>Flags describing the current activation state.</para><para>Since: 1.10</para><para></para></para>
+    <refsect3 role="enum_members">
+      <title>Values</title>
+      <informaltable role="enum_members_table" pgwide="1" frame="none">
+        <tgroup cols="4">
+          <colspec colname="enum_members_name" colwidth="300px" />
+          <colspec colname="enum_members_value" colwidth="100px"/>
+          <colspec colname="enum_members_description" />
+          <tbody>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_NONE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>an alias for numeric zero, no flags set.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_IS_MASTER</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>(1LL</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>the device is a master.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_IS_SLAVE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>(1LL</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>the device is a slave.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_LAYER2_READY</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>(1LL</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>layer2 is activated and ready.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_IP4_READY</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>(1LL</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>IPv4 setting is completed.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_IP6_READY</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>(1LL</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>IPv6 setting is completed.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ACTIVATION_STATE_FLAG_MASTER_HAS_SLAVES</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>(1LL</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>The master has any slave devices attached. This only makes sense if the device is a master.</para><para></para></entry>
             </row>
           </tbody>
         </tgroup>

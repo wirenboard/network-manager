@@ -11,6 +11,12 @@
 <link linkend="gdbus-signal-org-freedesktop-NetworkManager-Device-Dummy.PropertiesChanged">PropertiesChanged</link> (a{sv} properties);
 </synopsis>
   </refsect1>
+  <refsect1 role="properties">
+    <title role="properties.title">Properties</title>
+    <synopsis>
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-Device-Dummy.HwAddress">HwAddress</link>  readable   s
+</synopsis>
+  </refsect1>
 <refsect1 role="desc" id="gdbus-interface-org-freedesktop-NetworkManager-Device-Dummy">
   <title role="desc.title">Description</title>
   <para></para>
@@ -31,6 +37,18 @@ PropertiesChanged (a{sv} properties);
   <listitem><para>A dictionary mapping property names to variant boxed values</para></listitem>
 </varlistentry>
 </variablelist>
+</refsect2>
+</refsect1>
+<refsect1 role="details" id="gdbus-properties-org.freedesktop.NetworkManager.Device.Dummy">
+  <title role="details.title">Property Details</title>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Dummy.HwAddress">
+  <title>The "HwAddress" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager-Device-Dummy.HwAddress"><primary sortas=".Device.Dummy:HwAddress">org.freedesktop.NetworkManager.Device.Dummy:HwAddress</primary></indexterm>
+<programlisting>
+HwAddress  readable   s
+</programlisting>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

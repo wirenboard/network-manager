@@ -77,13 +77,13 @@
 <tbody>
 <tr>
 <td class="property_type">
-<span class="type">gchar</span> *</td>
+<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-client-id" title="The “dhcp-client-id” property">dhcp-client-id</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
 <td class="property_type">
-<span class="type">gchar</span> *</td>
+<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
 <td class="property_name"><a class="link" href="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-fqdn" title="The “dhcp-fqdn” property">dhcp-fqdn</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -139,7 +139,7 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingIP4Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    GObject
+<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
             <span class="lineart">╰──</span> NMSettingIP4Config
@@ -309,7 +309,7 @@ through that interface to the default network.</p>
 <a name="NMSettingIP4Config.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingIP4Config--dhcp-client-id"></a><h3>The <code class="literal">“dhcp-client-id”</code> property</h3>
-<pre class="programlisting">  “dhcp-client-id”           <span class="type">gchar</span> *</pre>
+<pre class="programlisting">  “dhcp-client-id”           <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
 <p>A string sent to the DHCP server to identify the local machine which the
 DHCP server may use to customize the DHCP lease and options.
 When the property is a hex string ('aa:bb:cc') it is interpreted as a
@@ -325,8 +325,8 @@ non-hardware-address client ID and the 'type' field is set to 0.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP4Config--dhcp-fqdn"></a><h3>The <code class="literal">“dhcp-fqdn”</code> property</h3>
-<pre class="programlisting">  “dhcp-fqdn”                <span class="type">gchar</span> *</pre>
-<p>If the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname" title="The “dhcp-send-hostname” property"><span class="type">“dhcp-send-hostname”</span></a> property is <code class="literal">TRUE</code>, then the
+<pre class="programlisting">  “dhcp-fqdn”                <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<p>If the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname" title="The “dhcp-send-hostname” property"><span class="type">“dhcp-send-hostname”</span></a> property is <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, then the
 specified FQDN will be sent to the DHCP server when acquiring a lease. This
 property and <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-hostname" title="The “dhcp-hostname” property"><span class="type">“dhcp-hostname”</span></a> are mutually exclusive and
 cannot be set at the same time.</p>

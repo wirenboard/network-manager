@@ -81,9 +81,9 @@
 <span class="cbracket">{</span>
 <span class="normal">    </span><span class="usertype">NMClient</span><span class="normal"> </span><span class="symbol">*</span><span class="normal">client</span><span class="symbol">;</span>
 
-<span class="normal">    client </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="NMClient.html#nm-client-new">nm_client_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">NULL</span><span class="symbol">,</span><span class="normal"> NULL</span><span class="symbol">);</span>
+<span class="normal">    client </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="NMClient.html#nm-client-new">nm_client_new</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">,</span><span class="normal"> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
 <span class="normal">    </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">client</span><span class="symbol">)</span>
-<span class="normal">        </span><span class="function">g_print</span><span class="normal"> </span><span class="symbol">(</span><span class="string">"NetworkManager version: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="NMClient.html#nm-client-get-version">nm_client_get_version</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">client</span><span class="symbol">));</span>
+<span class="normal">        </span><span class="function"><a href="https://developer.gnome.org/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"NetworkManager version: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="NMClient.html#nm-client-get-version">nm_client_get_version</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">client</span><span class="symbol">));</span>
 <span class="cbracket">}</span></pre></td>
       </tr>
     </tbody>
@@ -96,7 +96,7 @@
         </p>
 <pre class="screen"><code class="prompt">$ </code><strong class="userinput"><code>cc $(pkg-config --libs --cflags libnm) -o hello-nm hello-nm.c</code></strong>
   <code class="prompt">$ </code><strong class="userinput"><code>./hello-nm</code></strong>
-  NetworkManager version: 1.8.4
+  NetworkManager version: 1.9.90
 
   <code class="prompt">$ </code></pre>
 <p>

@@ -652,6 +652,66 @@
 </td>
 <td class="auto-generated"> </td>
 </tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_DEVICE_TYPE_PPP</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">23</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>a PPP interface</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_DEVICE_TYPE_OVS_INTERFACE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">24</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>a OpenVSwitch interface</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_DEVICE_TYPE_OVS_PORT</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">25</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>a OpenVSwitch port</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_DEVICE_TYPE_OVS_BRIDGE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">26</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>a OpenVSwitch bridge</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -990,6 +1050,51 @@
 </td>
 <td class="enum_member_description">
 <p>access point requires authentication and encryption (usually means WEP)</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_802_11_AP_FLAGS_WPS</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x00000002</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>access point supports some WPS method</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_802_11_AP_FLAGS_WPS_PBC</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x00000004</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>access point supports push-button WPS</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_802_11_AP_FLAGS_WPS_PIN</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x00000008</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>access point supports PIN-based WPS</p>
 <p></p>
 </td>
 <td class="auto-generated"> </td>
@@ -2671,6 +2776,21 @@
 </td>
 <td class="auto-generated"> </td>
 </tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_DEVICE_STATE_REASON_OVSDB_FAILED</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">63</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>problem communicating with OpenVSwitch database</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -3185,6 +3305,21 @@
 </tr>
 <tr>
 <td class="enum_member_name">
+<p>NM_SECRET_AGENT_GET_SECRETS_FLAG_WPS_PBC_ACTIVE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x8</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>indicates that WPS enrollment is active with PBC method. The agent may suggest that the user pushes a button on the router instead of supplying a PSK.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
 <p>NM_SECRET_AGENT_GET_SECRETS_FLAG_ONLY_SYSTEM</p>
 <p></p>
 </td>
@@ -3588,6 +3723,131 @@
 </td>
 <td class="enum_member_description">
 <p>other errors during rollback.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMActivationStateFlags"></a><h3>enum NMActivationStateFlags</h3>
+<p>Flags describing the current activation state.</p>
+<p>Since: 1.10</p>
+<p></p>
+<div class="refsect3">
+<a name="id-1.4.15.2.25.4"></a><h4>Values</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col width="100px" class="enum_members_value">
+<col class="enum_members_description">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_NONE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>an alias for numeric zero, no flags set.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_IS_MASTER</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">(1LL</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>the device is a master.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_IS_SLAVE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">(1LL</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>the device is a slave.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_LAYER2_READY</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">(1LL</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>layer2 is activated and ready.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_IP4_READY</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">(1LL</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>IPv4 setting is completed.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_IP6_READY</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">(1LL</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>IPv6 setting is completed.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_ACTIVATION_STATE_FLAG_MASTER_HAS_SLAVES</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">(1LL</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>The master has any slave devices attached. This only makes sense if the device is a master.</p>
 <p></p>
 </td>
 <td class="auto-generated"> </td>
