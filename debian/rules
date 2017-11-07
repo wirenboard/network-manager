@@ -34,8 +34,9 @@ override_dh_auto_configure:
 		--with-modem-manager-1 \
 		--with-nmtui \
 		--with-nmcli \
-		--disable-more-warnings \
-		--disable-modify-system \
+		--with-selinux \
+		--with-libaudit \
+		--without-dhcpcanon \
 		--enable-polkit \
 		--enable-polkit-agent \
 		--enable-ppp \
@@ -48,8 +49,9 @@ override_dh_auto_configure:
 		--enable-json-validation \
 		--enable-bluez5-dun \
 		--enable-vala \
-		--with-selinux=yes \
-		--with-libaudit=yes
+		--disable-more-warnings \
+		--disable-modify-system \
+		--disable-ovs
 
 override_dh_install:
 	find debian/tmp -name '*.la' -print -delete
