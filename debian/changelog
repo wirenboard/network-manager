@@ -1,8 +1,21 @@
-network-manager (1.9.90-1) UNRELEASED; urgency=medium
+network-manager (1.9.90-1) unstable; urgency=medium
 
   * New upstream version 1.9.90
+  * Rebase patches
+  * Update symbols file for libnm0
+  * Disable dhcpcanon and openvswitch support.
+    DHCP client support with dhcpcanon is still marked as experimental and
+    support for Open vSwitch will require more package related changes. If
+    Open vSwitch support is enabled, this will most likely be provided via a
+    separate binary package.
+  * Register empty NMClient and NetworkManager when loading libnm via GIR.
+    This prevents the real modules from being loaded because they would in
+    turn load libnm-glib and abort() and crash as loading libnm and
+    libnm-glib in the same process is not allowed.
+    Patch cherry-picked from upstream Git.
+  * Bump Standards-Version to 4.1.1
 
- -- Michael Biebl <biebl@debian.org>  Tue, 07 Nov 2017 00:15:43 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 07 Nov 2017 20:02:17 +0100
 
 network-manager (1.8.4-4) unstable; urgency=medium
 
