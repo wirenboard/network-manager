@@ -2589,28 +2589,6 @@ nm_manager_get_devices (NMManager *manager)
 	return NM_MANAGER_GET_PRIVATE (manager)->devices;
 }
 
-const char **
-nm_manager_get_device_paths (NMManager *self)
-{
-	const GSList *devices, *iter;
-	GPtrArray *paths;
-	const char *path;
-
-	g_return_val_if_fail (NM_IS_MANAGER (self), NULL);
-	devices = NM_MANAGER_GET_PRIVATE (self)->devices;
-	paths = g_ptr_array_new ();
-
-	for (iter = devices; iter; iter = g_slist_next (iter)) {
-		path = nm_exported_object_get_path (NM_EXPORTED_OBJECT (iter->data));
-		if (path)
-			g_ptr_array_add (paths, (gpointer) path);
-	}
-
-	g_ptr_array_add (paths, NULL);
-
-	return (const char **) g_ptr_array_free (paths, FALSE);
-}
-
 static NMDevice *
 nm_manager_get_best_device_for_connection (NMManager *self,
                                            NMConnection *connection,
@@ -4622,8 +4600,6 @@ do_sleep_wake (NMManager *self, gboolean sleeping_changed)
 				if (nm_device_get_rfkill_type (device) == rstate->rtype)
 					nm_device_set_enabled (device, enabled);
 			}
-
-			nm_device_set_autoconnect_intern (device, TRUE);
 
 			nm_device_set_unmanaged_by_flags (device, NM_UNMANAGED_SLEEPING, FALSE, NM_DEVICE_STATE_REASON_NOW_MANAGED);
 		}

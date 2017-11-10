@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 11/03/2017
+.\"      Date: 11/10/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.9.90
+.\"    Source: NetworkManager 1.10.0
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.9\&.90" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.10\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -385,7 +385,7 @@ TRACE\&. The ERR level logs only critical errors\&. WARN logs warnings that may 
 .PP
 \fIdomains\fR
 .RS 4
-The following log domains are available: PLATFORM, RFKILL, ETHER, WIFI, BT, MB, DHCP4, DHCP6, PPP, WIFI_SCAN, IP4, IP6, AUTOIP4, DNS, VPN, SHARING, SUPPLICANT, AGENTS, SETTINGS, SUSPEND, CORE, DEVICE, OLPC, WIMAX, INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS, TEAM, CONCHECK, DCB, DISPATCH, AUDIT, SYSTEMD, VPN_PLUGIN\&.
+The following log domains are available: PLATFORM, RFKILL, ETHER, WIFI, BT, MB, DHCP4, DHCP6, PPP, WIFI_SCAN, IP4, IP6, AUTOIP4, DNS, VPN, SHARING, SUPPLICANT, AGENTS, SETTINGS, SUSPEND, CORE, DEVICE, OLPC, WIMAX, INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS, TEAM, CONCHECK, DCB, DISPATCH, AUDIT, SYSTEMD, VPN_PLUGIN, PROXY\&.
 .sp
 In addition, these special domains can be used: NONE, ALL, DEFAULT, DHCP, IP\&.
 .sp
@@ -441,7 +441,7 @@ DNS         : Domain Name System related operations
 VPN         : Virtual Private Network connections and operations
 .RE
 .RS 4
-SHARING     : Connection sharing
+SHARING     : Connection sharing\&. With TRACE level log queries for dnsmasq instance
 .RE
 .RS 4
 SUPPLICANT  : WPA supplicant related operations
@@ -508,6 +508,9 @@ SYSTEMD     : Messages from internal libsystemd
 .RE
 .RS 4
 VPN_PLUGIN  : logging messages from VPN plugins
+.RE
+.RS 4
+PROXY       : logging messages for proxy handling
 .RE
 .RS 4
  
