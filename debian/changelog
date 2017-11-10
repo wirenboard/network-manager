@@ -1,8 +1,9 @@
-network-manager (1.10.0-1) UNRELEASED; urgency=medium
+network-manager (1.10.0-1) unstable; urgency=medium
 
   * New upstream version 1.10.0
+  * Rebase patches
 
- -- Michael Biebl <biebl@debian.org>  Fri, 10 Nov 2017 19:02:54 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 10 Nov 2017 21:49:38 +0100
 
 network-manager (1.9.90-1) unstable; urgency=medium
 
