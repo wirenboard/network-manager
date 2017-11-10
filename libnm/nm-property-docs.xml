@@ -270,7 +270,7 @@
   <setting name="ovs-port" description="OvsPort Link Settings" name_upper="OVS_PORT" >
     <property name="bond-downdelay" name_upper="BOND_DOWNDELAY" type="uint32" default="0" description="The time port must be inactive in order to be considered down." />
     <property name="bond-mode" name_upper="BOND_MODE" type="string" description="Bonding mode. One of &quot;active-backup&quot;, &quot;balance-slb&quot;, or &quot;balance-tcp&quot;." />
-    <property name="bond-updelay" name_upper="BOND_UPDELAY" type="uint32" default="0" description="The time port must be active befor it starts forwarding traffic." />
+    <property name="bond-updelay" name_upper="BOND_UPDELAY" type="uint32" default="0" description="The time port must be active before it starts forwarding traffic." />
     <property name="lacp" name_upper="LACP" type="string" description="LACP mode. One of &quot;active&quot;, &quot;off&quot;, or &quot;passive&quot;." />
     <property name="name" name_upper="NAME" type="string" default="ovs-port" description="The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example &quot;ppp&quot; or &quot;wireless&quot; or &quot;wired&quot;." />
     <property name="tag" name_upper="TAG" type="uint32" default="0" description="The VLAN tag in the range 0-4095." />
