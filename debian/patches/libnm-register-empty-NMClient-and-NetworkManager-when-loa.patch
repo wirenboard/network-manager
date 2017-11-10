@@ -54,7 +54,7 @@ After:
  create mode 100644 libnm/fake-typelib/typelibs.gresource.xml
 
 diff --git a/Makefile.am b/Makefile.am
-index 8b1d8bb..6d34487 100644
+index b1b63d4..4fb8f5a 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -858,6 +858,7 @@ nodist_libnminclude_HEADERS += \
@@ -90,7 +90,7 @@ index 8b1d8bb..6d34487 100644
  
  if HAVE_INTROSPECTION
 diff --git a/configure.ac b/configure.ac
-index 3e41314..4f618fd 100644
+index f8dcd13..f2e0cd2 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -322,9 +322,12 @@ GLIB_CFLAGS="$GLIB_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_32 -DGLIB_V
