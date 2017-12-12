@@ -1,8 +1,11 @@
-network-manager (1.10.2-1) UNRELEASED; urgency=medium
+network-manager (1.10.2-1) unstable; urgency=medium
 
   * New upstream version 1.10.2
+  * Rebase patches
+  * Update symbols file for libnm0
+  * Bump Standards-Version 4.1.2
 
- -- Michael Biebl <biebl@debian.org>  Tue, 12 Dec 2017 15:54:00 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 12 Dec 2017 16:26:27 +0100
 
 network-manager (1.10.0-1) unstable; urgency=medium
 
