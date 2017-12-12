@@ -3,6 +3,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_0_4@libnm_1_0_4 1.0.4
  libnm_1_0_6@libnm_1_0_6 1.0.6
  libnm_1_10_0@libnm_1_10_0 1.9.90
+ libnm_1_10_2@libnm_1_10_2 1.10.2
  libnm_1_2_0@libnm_1_2_0 1.1.90
  libnm_1_2_4@libnm_1_2_4 1.2.4
  libnm_1_4_0@libnm_1_4_0 1.4.0
@@ -465,6 +466,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_remote_connection_save@libnm_1_0_0 1.0.0
  nm_remote_connection_save_async@libnm_1_0_0 1.0.0
  nm_remote_connection_save_finish@libnm_1_0_0 1.0.0
+ nm_remote_connection_update2@libnm_1_10_2 1.10.2
+ nm_remote_connection_update2_finish@libnm_1_10_2 1.10.2
  nm_secret_agent_capabilities_get_type@libnm_1_0_0 1.0.0
  nm_secret_agent_error_get_type@libnm_1_0_0 1.0.0
  nm_secret_agent_error_quark@libnm_1_0_0 1.0.0
@@ -874,12 +877,61 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_serial_new@libnm_1_0_0 1.0.0
  nm_setting_serial_parity_get_type@libnm_1_0_0 1.0.0
  nm_setting_set_secret_flags@libnm_1_0_0 1.0.0
+ nm_setting_tc_config_add_qdisc@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_add_tfilter@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_clear_qdiscs@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_clear_tfilters@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_get_num_qdiscs@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_get_num_tfilters@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_get_qdisc@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_get_tfilter@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_get_type@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_new@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_remove_qdisc@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_remove_qdisc_by_value@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_remove_tfilter@libnm_1_10_2 1.10.2
+ nm_setting_tc_config_remove_tfilter_by_value@libnm_1_10_2 1.10.2
+ nm_setting_team_add_link_watcher@libnm_1_10_2 1.10.2
+ nm_setting_team_add_runner_tx_hash@libnm_1_10_2 1.10.2
+ nm_setting_team_clear_link_watchers@libnm_1_10_2 1.10.2
  nm_setting_team_get_config@libnm_1_0_0 1.0.0
+ nm_setting_team_get_link_watcher@libnm_1_10_2 1.10.2
+ nm_setting_team_get_mcast_rejoin_count@libnm_1_10_2 1.10.2
+ nm_setting_team_get_mcast_rejoin_interval@libnm_1_10_2 1.10.2
+ nm_setting_team_get_notify_peers_count@libnm_1_10_2 1.10.2
+ nm_setting_team_get_notify_peers_interval@libnm_1_10_2 1.10.2
+ nm_setting_team_get_num_link_watchers@libnm_1_10_2 1.10.2
+ nm_setting_team_get_num_runner_tx_hash@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_active@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_agg_select_policy@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_fast_rate@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_hwaddr_policy@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_min_ports@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_sys_prio@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_tx_balancer@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_tx_balancer_interval@libnm_1_10_2 1.10.2
+ nm_setting_team_get_runner_tx_hash@libnm_1_10_2 1.10.2
  nm_setting_team_get_type@libnm_1_0_0 1.0.0
  nm_setting_team_new@libnm_1_0_0 1.0.0
+ nm_setting_team_port_add_link_watcher@libnm_1_10_2 1.10.2
+ nm_setting_team_port_clear_link_watchers@libnm_1_10_2 1.10.2
  nm_setting_team_port_get_config@libnm_1_0_0 1.0.0
+ nm_setting_team_port_get_lacp_key@libnm_1_10_2 1.10.2
+ nm_setting_team_port_get_lacp_prio@libnm_1_10_2 1.10.2
+ nm_setting_team_port_get_link_watcher@libnm_1_10_2 1.10.2
+ nm_setting_team_port_get_num_link_watchers@libnm_1_10_2 1.10.2
+ nm_setting_team_port_get_prio@libnm_1_10_2 1.10.2
+ nm_setting_team_port_get_queue_id@libnm_1_10_2 1.10.2
+ nm_setting_team_port_get_sticky@libnm_1_10_2 1.10.2
  nm_setting_team_port_get_type@libnm_1_0_0 1.0.0
  nm_setting_team_port_new@libnm_1_0_0 1.0.0
+ nm_setting_team_port_remove_link_watcher@libnm_1_10_2 1.10.2
+ nm_setting_team_port_remove_link_watcher_by_value@libnm_1_10_2 1.10.2
+ nm_setting_team_remove_link_watcher@libnm_1_10_2 1.10.2
+ nm_setting_team_remove_link_watcher_by_value@libnm_1_10_2 1.10.2
+ nm_setting_team_remove_runner_tx_hash@libnm_1_10_2 1.10.2
+ nm_setting_team_remove_runner_tx_hash_by_value@libnm_1_10_2 1.10.2
  nm_setting_to_string@libnm_1_0_0 1.0.0
  nm_setting_tun_get_group@libnm_1_2_0 1.1.90
  nm_setting_tun_get_mode@libnm_1_2_0 1.1.90
@@ -1046,11 +1098,60 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wireless_security_wps_method_get_type@libnm_1_10_0 1.9.90
  nm_settings_error_get_type@libnm_1_0_0 1.0.0
  nm_settings_error_quark@libnm_1_0_0 1.0.0
+ nm_settings_update2_flags_get_type@libnm_1_10_2 1.10.2
  nm_simple_connection_get_type@libnm_1_0_0 1.0.0
  nm_simple_connection_new@libnm_1_0_0 1.0.0
  nm_simple_connection_new_clone@libnm_1_0_0 1.0.0
  nm_simple_connection_new_from_dbus@libnm_1_0_0 1.0.0
  nm_state_get_type@libnm_1_0_0 1.0.0
+ nm_tc_action_dup@libnm_1_10_2 1.10.2
+ nm_tc_action_equal@libnm_1_10_2 1.10.2
+ nm_tc_action_get_attribute@libnm_1_10_2 1.10.2
+ nm_tc_action_get_attribute_names@libnm_1_10_2 1.10.2
+ nm_tc_action_get_kind@libnm_1_10_2 1.10.2
+ nm_tc_action_get_type@libnm_1_10_2 1.10.2
+ nm_tc_action_new@libnm_1_10_2 1.10.2
+ nm_tc_action_ref@libnm_1_10_2 1.10.2
+ nm_tc_action_set_attribute@libnm_1_10_2 1.10.2
+ nm_tc_action_unref@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_dup@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_equal@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_get_handle@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_get_kind@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_get_parent@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_get_type@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_new@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_ref@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_set_handle@libnm_1_10_2 1.10.2
+ nm_tc_qdisc_unref@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_dup@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_equal@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_get_handle@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_get_kind@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_get_parent@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_get_type@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_new@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_ref@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_set_handle@libnm_1_10_2 1.10.2
+ nm_tc_tfilter_unref@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_arp_ping_flags_get_type@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_dup@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_equal@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_delay_down@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_delay_up@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_flags@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_init_wait@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_interval@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_missed_max@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_name@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_source_host@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_target_host@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_type@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_new_arp_ping@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_new_ethtool@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_new_nsna_ping@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_ref@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_unref@libnm_1_10_2 1.10.2
  nm_utils_ap_mode_security_valid@libnm_1_0_0 1.0.0
  nm_utils_bin2hexstr@libnm_1_0_0 1.0.0
  nm_utils_bond_mode_int_to_string@libnm_1_2_0 1.1.90
@@ -1103,6 +1204,12 @@ libnm.so.0 libnm0 #MINVER#
  nm_utils_security_type_get_type@libnm_1_0_0 1.0.0
  nm_utils_security_valid@libnm_1_0_0 1.0.0
  nm_utils_ssid_to_utf8@libnm_1_0_0 1.0.0
+ nm_utils_tc_action_from_str@libnm_1_10_2 1.10.2
+ nm_utils_tc_action_to_str@libnm_1_10_2 1.10.2
+ nm_utils_tc_qdisc_from_str@libnm_1_10_2 1.10.2
+ nm_utils_tc_qdisc_to_str@libnm_1_10_2 1.10.2
+ nm_utils_tc_tfilter_from_str@libnm_1_10_2 1.10.2
+ nm_utils_tc_tfilter_to_str@libnm_1_10_2 1.10.2
  nm_utils_uuid_generate@libnm_1_0_0 1.0.0
  nm_utils_version@libnm_1_6_0 1.5.90
  nm_utils_wep_key_valid@libnm_1_0_0 1.0.0
