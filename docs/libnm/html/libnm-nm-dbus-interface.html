@@ -8,7 +8,7 @@
 <link rel="up" href="ch02.html" title="Client Object API Reference">
 <link rel="prev" href="libnm-nm-errors.html" title="nm-errors">
 <link rel="next" href="ch03.html" title="Connection and Setting API Reference">
-<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.26 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -408,12 +408,16 @@
 <td class="datatype_keyword">enum</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMActivationStateFlags" title="enum NMActivationStateFlags">NMActivationStateFlags</a></td>
 </tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMSettingsUpdate2Flags" title="enum NMSettingsUpdate2Flags">NMSettingsUpdate2Flags</a></td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <div class="refsect1">
 <a name="libnm-nm-dbus-interface.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NM80211Mode
     <span class="lineart">├──</span> NMActiveConnectionState
     <span class="lineart">├──</span> NMActiveConnectionStateReason
@@ -426,7 +430,7 @@
     <span class="lineart">├──</span> NMMetered
     <span class="lineart">├──</span> NMState
     <span class="lineart">╰──</span> NMWimaxNspNetworkType
-    <a href="https://developer.gnome.org/gobject/unstable/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
     <span class="lineart">├──</span> NM80211ApFlags
     <span class="lineart">├──</span> NM80211ApSecurityFlags
     <span class="lineart">├──</span> NMActivationStateFlags
@@ -435,7 +439,8 @@
     <span class="lineart">├──</span> NMDeviceModemCapabilities
     <span class="lineart">├──</span> NMDeviceWifiCapabilities
     <span class="lineart">├──</span> NMSecretAgentCapabilities
-    <span class="lineart">╰──</span> NMSecretAgentGetSecretsFlags
+    <span class="lineart">├──</span> NMSecretAgentGetSecretsFlags
+    <span class="lineart">╰──</span> NMSettingsUpdate2Flags
 </pre>
 </div>
 <div class="refsect1">
@@ -2961,9 +2966,99 @@ VPN plugin authentication dialogs.</p>
 </div>
 <p class="since">Since: 1.10</p>
 </div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingsUpdate2Flags"></a><h3>enum NMSettingsUpdate2Flags</h3>
+<div class="refsect3">
+<a name="NMSettingsUpdate2Flags.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-NONE:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_NONE</p></td>
+<td class="enum_member_description">
+<p>an alias for numeric zero, no flags set.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-TO-DISK:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_TO_DISK</p></td>
+<td class="enum_member_description">
+<p>to persist the connection to disk.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</p></td>
+<td class="enum_member_description">
+<p>to make the connection in-memory only.
+  If the connection was previously persistent, the corresponding file on disk
+  is not deleted but merely the connection is decoupled from the file
+  on disk. If you later delete an in-memory connection, the connection
+  on disk will be deleted as well.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-DETACHED:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED</p></td>
+<td class="enum_member_description">
+<p>this is like <em class="parameter"><code>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</code></em>
+,
+  but if the connection has a corresponding file on disk, the association between
+  the connection and the file is forgotten but the file is not modified.
+  The difference to <a class="link" href="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY:CAPS"><code class="literal">NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</code></a> is if you later
+  save the connection again to disk, a new file name will be chosen without
+  overwriting the remaining file on disk. Also, if you delete the connection
+  later, the file on disk will not be deleted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-ONLY:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY</p></td>
+<td class="enum_member_description">
+<p>this is like <em class="parameter"><code>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</code></em>
+,
+  but if the connection has a corresponding file on disk, the file on
+  disk will be deleted.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-VOLATILE:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_VOLATILE</p></td>
+<td class="enum_member_description">
+<p>This can be specified with either
+  <a class="link" href="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-DETACHED:CAPS"><code class="literal">NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED</code></a> or <a class="link" href="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-ONLY:CAPS"><code class="literal">NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY</code></a>.
+  After making the connection in-memory only, the connection is marked
+  as volatile. That means, if the connection is currently not active
+  it will be deleted right away. Otherwise, it is marked to for deletion
+  once the connection deactivates. A volatile connection cannot autoactivate
+  again (because it's about to be deleted), but a manual activation will
+  clear the volatile flag.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-BLOCK-AUTOCONNECT:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_BLOCK_AUTOCONNECT</p></td>
+<td class="enum_member_description">
+<p>usually, when the connection
+  has autoconnect enabled and is modified, it becomes elegible to autoconnect
+  right away. Setting this flag, disables autoconnect until the connection
+  is manually activated.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.10.2</p>
+</div>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.25</div>
+<hr>Generated by GTK-Doc V1.26</div>
 </body>
 </html>

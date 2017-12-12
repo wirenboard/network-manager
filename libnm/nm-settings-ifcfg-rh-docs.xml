@@ -58,9 +58,9 @@ lookaside file, or it can be owned by a secret agent."/>
 <property name="hairpin-mode" variable="BRIDGING_OPTS: hairpin_mode=" format="" values="" default="yes" example="" description="Hairpin mode of the bridge port."/>
 </setting>
 <setting name="bridge">
-<property name="mac-address" variable="MACADDR(+)" format="" values="" default="" example="" description="MAC address of the bridge. Note that this requires a recent
+<property name="mac-address" variable="BRIDGE_MACADDR(+)" format="" values="" default="" example="" description="MAC address of the bridge. Note that this requires a recent
 kernel support, originally introduced in 3.15 upstream kernel)
-MACADDR for bridges is an NM extension."/>
+BRIDGE_MACADDR for bridges is an NM extension."/>
 <property name="stp" variable="STP" format="" values="" default="no" example="" description="Span tree protocol participation."/>
 <property name="priority" variable="BRIDGING_OPTS: priority=" format="" values="0 - 32768" default="32768" example="" description="STP priority."/>
 <property name="forward-delay" variable="DELAY" format="" values="2 - 30" default="15" example="" description="STP forwarding delay."/>
@@ -174,6 +174,7 @@ meaning as &apos;never-default&apos; property."/>
 <property name="route-metric" variable="IPV4_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection.
 If set to -1, a default metric based on the device type is used."/>
 <property name="route-table" variable="IPV4_ROUTE_TABLE(+)" format="" values="" default="0" example="" description="IPV4_ROUTE_TABLE enables policy-routing and sets the default routing table."/>
+<property name="dns-options" variable="RES_OPTIONS(+)" format="" values="" default="" example="RES_OPTIONS=ndots:2 timeout:3" description="List of DNS options to be added to /etc/resolv.conf"/>
 <property name="dns-priority" variable="IPV4_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV4_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
 If zero, the default value will be used (50 for VPNs, 100 for other connections).
 A negative value prevents DNS from other connections with greater values to be used."/>
@@ -190,7 +191,7 @@ DHCP_FQDN are specified only the latter is used."/>
 ignore ~ IPV6INIT=no; auto ~ IPV6_AUTOCONF=yes; dhcp ~ IPV6_AUTOCONF=no and DHCPV6C=yes"/>
 <property name="dns" variable="DNS1, DNS2, ..." format="string" values="" default="" example="" description="List of DNS servers. NetworkManager uses the variables both
 for IPv4 and IPv6."/>
-<property name="dns-search" variable="DOMAIN" format="string (space-separated domains)" values="" default="" example="" description="List of DNS search domains."/>
+<property name="dns-search" variable="IPV6_DOMAIN" format="string (space-separated domains)" values="" default="" example="" description="List of DNS search domains."/>
 <property name="addresses" variable="IPV6ADDR, IPV6ADDR_SECONDARIES" format="" values="" default="" example="IPV6ADDR=ab12:9876::1
 IPV6ADDR_SECONDARIES=&quot;ab12:9876::2 ab12:9876::3&quot;" description="List of static IP addresses."/>
 <property name="gateway" variable="IPV6_DEFAULTGW" format="" values="" default="" example="IPV6_DEFAULTGW=abbe::1" description="Gateway IP address."/>
@@ -209,6 +210,7 @@ If set to -1, a default metric based on the device type is used."/>
 <property name="dns-priority" variable="IPV6_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV6_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
 If zero, the default value will be used (50 for VPNs, 100 for other connections).
 A negative value prevents DNS from other connections with greater values to be used."/>
+<property name="dns-options" variable="IPV6_RES_OPTIONS(+)" format="" values="" default="" example="IPV6_RES_OPTIONS=ndots:2 timeout:3" description="List of DNS options to be added to /etc/resolv.conf"/>
 <property name="ip6-privacy" variable="IPV6_PRIVACY, IPV6_PRIVACY_PREFER_PUBLIC_IP(+)" format="" values="IPV6_PRIVACY: no, yes (rfc3041 or rfc4941);
 IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no" default="no" example="IPV6_PRIVACY=rfc3041 IPV6_PRIVACY_PREFER_PUBLIC_IP=yes" description="Configure IPv6 Privacy Extensions for SLAAC (RFC4941)."/>
 <property name="addr-gen-mode" variable="IPV6_ADDR_GEN_MODE" format="" values="IPV6_ADDR_GEN_MODE: eui64, stable-privacy" default="eui64" example="IPV6_ADDR_GEN_MODE=stable-privacy" description="Configure IPv6 Stable Privacy addressing for SLAAC (RFC7217)."/>
@@ -240,6 +242,10 @@ proxy configuration, or set the PAC file via PAC_URL or PAC_SCRIPT."/>
 <property name="pac-script" variable="PAC_SCRIPT(+)" format="" values="" default="" example="PAC_SCRIPT=/home/joe/proxy.pac" description="Path of the PAC script."/>
 </setting>
 <setting name="serial">
+</setting>
+<setting name="tc">
+<property name="qdiscs" variable="QDISC1, QDISC2, ..." format="" values="" default="" example="QDISC1=ingress, QDISC2=&quot;root handle 1234: fq_codel&quot;" description="Queueing disciplines"/>
+<property name="qdiscs" variable="FILTER1, FILTER2, ..." format="" values="" default="" example="FILTER1=&quot;parent ffff: matchall action simple sdata Input&quot;, ..." description="Traffic filters"/>
 </setting>
 <setting name="team-port">
 <property name="config" variable="TEAM_PORT_CONFIG" format="" values="" default="" example="" description="Team port configuration in JSON. See man teamd.conf for details."/>
@@ -320,9 +326,10 @@ separated list."/>
 <property name="leap-password" variable="IEEE_8021X_PASSWORD(+)" format="" values="" default="" example="" description="Password for LEAP. It can also go to &quot;key-&quot;
 lookaside file, or it can be owned by a secret agent."/>
 <property name="leap-password-flags" variable="IEEE_8021X_PASSWORD_FLAGS(+)" format="NMSettingSecretFlags" values="" default="" example="" description="Password flags for IEEE_8021X_PASSWORD_FLAGS."/>
-<property name="wep-key-type" variable="KEY&lt;i&gt; or KEY_PASSPHRASE&lt;i&gt;(+)" format="" values="" default="" example="KEY1=s:ahoj, KEY1=0a1c45bc02, KEY_PASSPHRASE1=mysupersecretkey" description="KEY is used for &quot;key&quot; type (10 or 26 hexadecimal characters,
+<property name="wep-key-type" variable="KEY&lt;i&gt; or KEY_PASSPHRASE&lt;i&gt;(+); KEY_TYPE(+)" format="" values="" default="" example="KEY1=s:ahoj, KEY1=0a1c45bc02, KEY_PASSPHRASE1=mysupersecretkey" description="KEY is used for &quot;key&quot; type (10 or 26 hexadecimal characters,
 or 5 or 13 character string prefixed with &quot;s:&quot;). KEY_PASSPHRASE is used
-for WEP passphrases."/>
+for WEP passphrases. KEY_TYPE specifies the key type and can be either
+&apos;key&apos; or &apos;passphrase&apos;. KEY_TYPE is redundant and can be omitted."/>
 <property name="wps-method" variable="WPS_METHOD" format="" values="" default="" example="WPS_METHOD=disabled, WPS_METHOD=&quot;pin pbc&quot;" description="Used to control the WPS methods to be used
 Valid values are &quot;default&quot;, &quot;auto&quot;, &quot;disabled&quot;, &quot;pin&quot; and &quot;pbc&quot;.
 If omitted, whatver the AP announces is used."/>

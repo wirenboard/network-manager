@@ -8,7 +8,7 @@
 <link rel="up" href="manpages.html" title="Part I. Manual Pages">
 <link rel="prev" href="nmtui.html" title="nmtui">
 <link rel="next" href="nm-settings-keyfile.html" title="nm-settings-keyfile">
-<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.26 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -2540,7 +2540,49 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.30"></a><h3>team setting</h3>
+<a name="id-1.2.7.4.30"></a><h3>tc setting</h3>
+<p>Linux Traffic Contril Settings..</p>
+<div class="informaltable"><table class="informaltable" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">
+<a name="nm-settings.property.tc.name"></a>name</td>
+<td align="left">string</td>
+<td align="left">tc</td>
+<td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.tc.qdiscs"></a>qdiscs</td>
+<td align="left">array of vardict</td>
+<td align="left">[]</td>
+<td>Array of TC queuening disciplines.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.tc.tfilters"></a>tfilters</td>
+<td align="left">array of vardict</td>
+<td align="left">[]</td>
+<td>Array of TC traffic filters.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.7.4.31"></a><h3>team setting</h3>
 <p>Teaming Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2572,17 +2614,122 @@
 </tr>
 <tr>
 <td align="left">
+<a name="nm-settings.property.team.link-watchers"></a>link-watchers</td>
+<td align="left">array of vardict</td>
+<td align="left">[]</td>
+<td>Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher. Available link watchers are 'ethtool', 'nsna_ping' and 'arp_ping' and it is specified in the dictionary with the key 'name'. Available keys are:   ethtool: 'delay-up', 'delay-down', 'init-wait'; nsna_ping: 'init-wait', 'interval', 'missed-max', 'target-host'; arp_ping: all the ones in nsna_ping and 'source-host', 'validate-active', 'validate-incative', 'send-always'. See teamd.conf man for more details.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.mcast-rejoin-count"></a>mcast-rejoin-count</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Corresponds to the teamd mcast_rejoin.count.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.mcast-rejoin-interval"></a>mcast-rejoin-interval</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Corresponds to the teamd mcast_rejoin.interval.</td>
+</tr>
+<tr>
+<td align="left">
 <a name="nm-settings.property.team.name"></a>name</td>
 <td align="left">string</td>
 <td align="left">team</td>
 <td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.notify-peers-count"></a>notify-peers-count</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Corresponds to the teamd notify_peers.count.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.notify-peers-interval"></a>notify-peers-interval</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Corresponds to the teamd notify_peers.interval.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner"></a>runner</td>
+<td align="left">string</td>
+<td align="left">"roundrobin"</td>
+<td>Corresponds to the teamd runner.name. Permitted values are: "roundrobin", "broadcast", "activebackup", "loadbalance", "lacp".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-active"></a>runner-active</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Corresponds to the teamd runner.active.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-agg-select-policy"></a>runner-agg-select-policy</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Corresponds to the teamd runner.agg_select_policy.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-fast-rate"></a>runner-fast-rate</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Corresponds to the teamd runner.fast_rate.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-hwaddr-policy"></a>runner-hwaddr-policy</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Corresponds to the teamd runner.hwaddr_policy.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-min-ports"></a>runner-min-ports</td>
+<td align="left">int32</td>
+<td align="left">-1</td>
+<td>Corresponds to the teamd runner.min_ports.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-sys-prio"></a>runner-sys-prio</td>
+<td align="left">int32</td>
+<td align="left">-1</td>
+<td>Corresponds to the teamd runner.sys_prio.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-tx-balancer"></a>runner-tx-balancer</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>Corresponds to the teamd runner.tx_balancer.name.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-tx-balancer-interval"></a>runner-tx-balancer-interval</td>
+<td align="left">int32</td>
+<td align="left">-1</td>
+<td>Corresponds to the teamd runner.tx_balancer.interval.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team.runner-tx-hash"></a>runner-tx-hash</td>
+<td align="left">array of string</td>
+<td align="left">[]</td>
+<td>Corresponds to the teamd runner.tx_hash.</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.31"></a><h3>team-port setting</h3>
+<a name="id-1.2.7.4.32"></a><h3>team-port setting</h3>
 <p>Team Port Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2607,17 +2754,59 @@
 </tr>
 <tr>
 <td align="left">
+<a name="nm-settings.property.team-port.lacp-key"></a>lacp-key</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Corresponds to the teamd ports.PORTIFNAME.lacp_key.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team-port.lacp-prio"></a>lacp-prio</td>
+<td align="left">int32</td>
+<td align="left">255</td>
+<td>Corresponds to the teamd ports.PORTIFNAME.lacp_prio.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team-port.link-watchers"></a>link-watchers</td>
+<td align="left">array of vardict</td>
+<td align="left">[]</td>
+<td>Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher. Available link watchers are 'ethtool', 'nsna_ping' and 'arp_ping' and it is specified in the dictionary with the key 'name'. Available keys are:   ethtool: 'delay-up', 'delay-down', 'init-wait'; nsna_ping: 'init-wait', 'interval', 'missed-max', 'target-host'; arp_ping: all the ones in nsna_ping and 'source-host', 'validate-active', 'validate-incative', 'send-always'. See teamd.conf man for more details.</td>
+</tr>
+<tr>
+<td align="left">
 <a name="nm-settings.property.team-port.name"></a>name</td>
 <td align="left">string</td>
 <td align="left">team-port</td>
 <td>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team-port.prio"></a>prio</td>
+<td align="left">int32</td>
+<td align="left">0</td>
+<td>Corresponds to the teamd ports.PORTIFNAME.prio.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team-port.queue-id"></a>queue-id</td>
+<td align="left">int32</td>
+<td align="left">-1</td>
+<td>Corresponds to the teamd ports.PORTIFNAME.queue_id. When set to -1 means the parameter is skipped from the json config.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.team-port.sticky"></a>sticky</td>
+<td align="left">boolean</td>
+<td align="left">FALSE</td>
+<td>Corresponds to the teamd ports.PORTIFNAME.sticky.</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.32"></a><h3>tun setting</h3>
+<a name="id-1.2.7.4.33"></a><h3>tun setting</h3>
 <p>Tunnel Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2687,7 +2876,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.33"></a><h3>user setting</h3>
+<a name="id-1.2.7.4.34"></a><h3>user setting</h3>
 <p>General User Profile Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2722,7 +2911,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.34"></a><h3>vlan setting</h3>
+<a name="id-1.2.7.4.35"></a><h3>vlan setting</h3>
 <p>VLAN Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2792,7 +2981,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.35"></a><h3>vpn setting</h3>
+<a name="id-1.2.7.4.36"></a><h3>vpn setting</h3>
 <p>VPN Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -2862,7 +3051,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.36"></a><h3>vxlan setting</h3>
+<a name="id-1.2.7.4.37"></a><h3>vxlan setting</h3>
 <p>VXLAN Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3002,7 +3191,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.37"></a><h3>wimax setting</h3>
+<a name="id-1.2.7.4.38"></a><h3>wimax setting</h3>
 <p>WiMax Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3044,7 +3233,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.38"></a><h3>802-3-ethernet setting</h3>
+<a name="id-1.2.7.4.39"></a><h3>802-3-ethernet setting</h3>
 <p>Wired Ethernet Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3177,7 +3366,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.39"></a><h3>802-11-wireless setting</h3>
+<a name="id-1.2.7.4.40"></a><h3>802-11-wireless setting</h3>
 <p>Wi-Fi Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3331,7 +3520,7 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.7.4.40"></a><h3>802-11-wireless-security setting</h3>
+<a name="id-1.2.7.4.41"></a><h3>802-11-wireless-security setting</h3>
 <p>Wi-Fi Security Settings.</p>
 <div class="informaltable"><table class="informaltable" border="1">
 <colgroup>
@@ -3528,6 +3717,6 @@
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.25</div>
+<hr>Generated by GTK-Doc V1.26</div>
 </body>
 </html>

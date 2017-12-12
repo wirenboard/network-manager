@@ -1,4 +1,9 @@
 <SECTION>
+<FILE>NetworkManager</FILE>
+
+</SECTION>
+
+<SECTION>
 <FILE>nm-access-point</FILE>
 <TITLE>NMAccessPoint</TITLE>
 NM_ACCESS_POINT_FLAGS
@@ -31,7 +36,6 @@ NM_ACCESS_POINT
 NM_ACCESS_POINT_CLASS
 NM_ACCESS_POINT_GET_CLASS
 NM_IS_ACCESS_POINT
-NM_IS_ACCESS_POINT_CLASS
 NM_TYPE_ACCESS_POINT
 nm_access_point_get_type
 </SECTION>
@@ -79,7 +83,6 @@ NM_ACTIVE_CONNECTION
 NM_ACTIVE_CONNECTION_CLASS
 NM_ACTIVE_CONNECTION_GET_CLASS
 NM_IS_ACTIVE_CONNECTION
-NM_IS_ACTIVE_CONNECTION_CLASS
 NM_TYPE_ACTIVE_CONNECTION
 nm_active_connection_get_type
 </SECTION>
@@ -201,7 +204,6 @@ NM_CLIENT
 NM_CLIENT_CLASS
 NM_CLIENT_GET_CLASS
 NM_IS_CLIENT
-NM_IS_CLIENT_CLASS
 NM_TYPE_CLIENT
 nm_client_get_type
 nm_dns_entry_get_type
@@ -274,6 +276,7 @@ nm_connection_get_setting_ppp
 nm_connection_get_setting_pppoe
 nm_connection_get_setting_proxy
 nm_connection_get_setting_serial
+nm_connection_get_setting_tc_config
 nm_connection_get_setting_tun
 nm_connection_get_setting_vpn
 nm_connection_get_setting_wimax
@@ -288,8 +291,12 @@ NM_CONNECTION
 NM_CONNECTION_GET_INTERFACE
 NM_IS_CONNECTION
 NM_TYPE_CONNECTION
-NM_VARIANT_TYPE_CONNECTION
 nm_connection_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-connection-private</FILE>
+
 </SECTION>
 
 <SECTION>
@@ -299,7 +306,6 @@ NM_TYPE_802_11_AP_FLAGS
 NM_TYPE_802_11_AP_SECURITY_FLAGS
 NM_TYPE_802_11_MODE
 NM_TYPE_ACTIVATION_STATE_FLAGS
-NM_TYPE_ACTIVE_CONNECTION_STATE
 NM_TYPE_ACTIVE_CONNECTION_STATE_REASON
 NM_TYPE_AGENT_MANAGER_ERROR
 NM_TYPE_BLUETOOTH_CAPABILITIES
@@ -311,7 +317,6 @@ NM_TYPE_CRYPTO_ERROR
 NM_TYPE_DEVICE_CAPABILITIES
 NM_TYPE_DEVICE_ERROR
 NM_TYPE_DEVICE_MODEM_CAPABILITIES
-NM_TYPE_DEVICE_STATE
 NM_TYPE_DEVICE_STATE_REASON
 NM_TYPE_DEVICE_TYPE
 NM_TYPE_DEVICE_WIFI_CAPABILITIES
@@ -322,6 +327,7 @@ NM_TYPE_SECRET_AGENT_CAPABILITIES
 NM_TYPE_SECRET_AGENT_ERROR
 NM_TYPE_SECRET_AGENT_GET_SECRETS_FLAGS
 NM_TYPE_SETTINGS_ERROR
+NM_TYPE_SETTINGS_UPDATE2_FLAGS
 NM_TYPE_SETTING_802_1X_AUTH_FLAGS
 NM_TYPE_SETTING_802_1X_CK_FORMAT
 NM_TYPE_SETTING_802_1X_CK_SCHEME
@@ -345,34 +351,30 @@ NM_TYPE_SETTING_WIRELESS_POWERSAVE
 NM_TYPE_SETTING_WIRELESS_SECURITY_PMF
 NM_TYPE_SETTING_WIRELESS_SECURITY_WPS_METHOD
 NM_TYPE_STATE
+NM_TYPE_TEAM_LINK_WATCHER_ARP_PING_FLAGS
 NM_TYPE_UTILS_SECURITY_TYPE
 NM_TYPE_VLAN_FLAGS
 NM_TYPE_VLAN_PRIORITY_MAP
-NM_TYPE_VPN_CONNECTION_STATE
 NM_TYPE_VPN_CONNECTION_STATE_REASON
 NM_TYPE_VPN_EDITOR_PLUGIN_CAPABILITY
 NM_TYPE_VPN_PLUGIN_ERROR
 NM_TYPE_VPN_PLUGIN_FAILURE
-NM_TYPE_VPN_SERVICE_STATE
 NM_TYPE_WEP_KEY_TYPE
 NM_TYPE_WIMAX_NSP_NETWORK_TYPE
 nm_802_11_ap_flags_get_type
 nm_802_11_ap_security_flags_get_type
 nm_802_11_mode_get_type
 nm_activation_state_flags_get_type
-nm_active_connection_state_get_type
 nm_active_connection_state_reason_get_type
 nm_agent_manager_error_get_type
 nm_bluetooth_capabilities_get_type
 nm_capability_get_type
 nm_connection_error_get_type
 nm_connection_serialization_flags_get_type
-nm_connectivity_state_get_type
 nm_crypto_error_get_type
 nm_device_capabilities_get_type
 nm_device_error_get_type
 nm_device_modem_capabilities_get_type
-nm_device_state_get_type
 nm_device_state_reason_get_type
 nm_device_type_get_type
 nm_device_wifi_capabilities_get_type
@@ -405,16 +407,15 @@ nm_setting_wireless_powersave_get_type
 nm_setting_wireless_security_pmf_get_type
 nm_setting_wireless_security_wps_method_get_type
 nm_settings_error_get_type
+nm_settings_update2_flags_get_type
 nm_state_get_type
+nm_team_link_watcher_arp_ping_flags_get_type
 nm_utils_security_type_get_type
 nm_vlan_flags_get_type
 nm_vlan_priority_map_get_type
-nm_vpn_connection_state_get_type
 nm_vpn_connection_state_reason_get_type
-nm_vpn_editor_plugin_capability_get_type
 nm_vpn_plugin_error_get_type
 nm_vpn_plugin_failure_get_type
-nm_vpn_service_state_get_type
 nm_wep_key_type_get_type
 nm_wimax_nsp_network_type_get_type
 </SECTION>
@@ -451,6 +452,7 @@ NMSettingPpp
 NMSettingPppoe
 NMSettingProxy
 NMSettingSerial
+NMSettingTCConfig
 NMSettingTeam
 NMSettingTeamPort
 NMSettingTun
@@ -559,6 +561,7 @@ NMIPTunnelMode
 NMCheckpointCreateFlags
 NMRollbackResult
 NMActivationStateFlags
+NMSettingsUpdate2Flags
 </SECTION>
 
 <SECTION>
@@ -656,7 +659,6 @@ NM_DEVICE
 NM_DEVICE_CLASS
 NM_DEVICE_GET_CLASS
 NM_IS_DEVICE
-NM_IS_DEVICE_CLASS
 NM_TYPE_DEVICE
 nm_device_get_type
 nm_lldp_neighbor_get_type
@@ -674,7 +676,6 @@ NM_DEVICE_ADSL
 NM_DEVICE_ADSL_CLASS
 NM_DEVICE_ADSL_GET_CLASS
 NM_IS_DEVICE_ADSL
-NM_IS_DEVICE_ADSL_CLASS
 NM_TYPE_DEVICE_ADSL
 nm_device_adsl_get_type
 </SECTION>
@@ -695,7 +696,6 @@ NM_DEVICE_BOND
 NM_DEVICE_BOND_CLASS
 NM_DEVICE_BOND_GET_CLASS
 NM_IS_DEVICE_BOND
-NM_IS_DEVICE_BOND_CLASS
 NM_TYPE_DEVICE_BOND
 nm_device_bond_get_type
 </SECTION>
@@ -716,7 +716,6 @@ NM_DEVICE_BRIDGE
 NM_DEVICE_BRIDGE_CLASS
 NM_DEVICE_BRIDGE_GET_CLASS
 NM_IS_DEVICE_BRIDGE
-NM_IS_DEVICE_BRIDGE_CLASS
 NM_TYPE_DEVICE_BRIDGE
 nm_device_bridge_get_type
 </SECTION>
@@ -737,7 +736,6 @@ NM_DEVICE_BT
 NM_DEVICE_BT_CLASS
 NM_DEVICE_BT_GET_CLASS
 NM_IS_DEVICE_BT
-NM_IS_DEVICE_BT_CLASS
 NM_TYPE_DEVICE_BT
 nm_device_bt_get_type
 </SECTION>
@@ -754,7 +752,6 @@ NM_DEVICE_DUMMY
 NM_DEVICE_DUMMY_CLASS
 NM_DEVICE_DUMMY_GET_CLASS
 NM_IS_DEVICE_DUMMY
-NM_IS_DEVICE_DUMMY_CLASS
 NM_TYPE_DEVICE_DUMMY
 nm_device_dummy_get_type
 </SECTION>
@@ -779,7 +776,6 @@ NM_DEVICE_ETHERNET
 NM_DEVICE_ETHERNET_CLASS
 NM_DEVICE_ETHERNET_GET_CLASS
 NM_IS_DEVICE_ETHERNET
-NM_IS_DEVICE_ETHERNET_CLASS
 NM_TYPE_DEVICE_ETHERNET
 nm_device_ethernet_get_type
 </SECTION>
@@ -797,7 +793,6 @@ NM_DEVICE_GENERIC
 NM_DEVICE_GENERIC_CLASS
 NM_DEVICE_GENERIC_GET_CLASS
 NM_IS_DEVICE_GENERIC
-NM_IS_DEVICE_GENERIC_CLASS
 NM_TYPE_DEVICE_GENERIC
 nm_device_generic_get_type
 </SECTION>
@@ -816,7 +811,6 @@ NM_DEVICE_INFINIBAND
 NM_DEVICE_INFINIBAND_CLASS
 NM_DEVICE_INFINIBAND_GET_CLASS
 NM_IS_DEVICE_INFINIBAND
-NM_IS_DEVICE_INFINIBAND_CLASS
 NM_TYPE_DEVICE_INFINIBAND
 nm_device_infiniband_get_type
 </SECTION>
@@ -853,7 +847,6 @@ NM_DEVICE_IP_TUNNEL
 NM_DEVICE_IP_TUNNEL_CLASS
 NM_DEVICE_IP_TUNNEL_GET_CLASS
 NM_IS_DEVICE_IP_TUNNEL
-NM_IS_DEVICE_IP_TUNNEL_CLASS
 NM_TYPE_DEVICE_IP_TUNNEL
 nm_device_ip_tunnel_get_type
 </SECTION>
@@ -896,7 +889,6 @@ NM_DEVICE_MACSEC
 NM_DEVICE_MACSEC_CLASS
 NM_DEVICE_MACSEC_GET_CLASS
 NM_IS_DEVICE_MACSEC
-NM_IS_DEVICE_MACSEC_CLASS
 NM_TYPE_DEVICE_MACSEC
 nm_device_macsec_get_type
 </SECTION>
@@ -921,7 +913,6 @@ NM_DEVICE_MACVLAN
 NM_DEVICE_MACVLAN_CLASS
 NM_DEVICE_MACVLAN_GET_CLASS
 NM_IS_DEVICE_MACVLAN
-NM_IS_DEVICE_MACVLAN_CLASS
 NM_TYPE_DEVICE_MACVLAN
 nm_device_macvlan_get_type
 </SECTION>
@@ -940,7 +931,6 @@ NM_DEVICE_MODEM
 NM_DEVICE_MODEM_CLASS
 NM_DEVICE_MODEM_GET_CLASS
 NM_IS_DEVICE_MODEM
-NM_IS_DEVICE_MODEM_CLASS
 NM_TYPE_DEVICE_MODEM
 nm_device_modem_get_type
 </SECTION>
@@ -961,7 +951,6 @@ NM_DEVICE_OLPC_MESH
 NM_DEVICE_OLPC_MESH_CLASS
 NM_DEVICE_OLPC_MESH_GET_CLASS
 NM_IS_DEVICE_OLPC_MESH
-NM_IS_DEVICE_OLPC_MESH_CLASS
 NM_TYPE_DEVICE_OLPC_MESH
 nm_device_olpc_mesh_get_type
 </SECTION>
@@ -974,7 +963,6 @@ NM_DEVICE_OVS_BRIDGE
 NM_DEVICE_OVS_BRIDGE_CLASS
 NM_DEVICE_OVS_BRIDGE_GET_CLASS
 NM_IS_DEVICE_OVS_BRIDGE
-NM_IS_DEVICE_OVS_BRIDGE_CLASS
 NM_TYPE_DEVICE_OVS_BRIDGE
 nm_device_ovs_bridge_get_type
 </SECTION>
@@ -987,7 +975,6 @@ NM_DEVICE_OVS_INTERFACE
 NM_DEVICE_OVS_INTERFACE_CLASS
 NM_DEVICE_OVS_INTERFACE_GET_CLASS
 NM_IS_DEVICE_OVS_INTERFACE
-NM_IS_DEVICE_OVS_INTERFACE_CLASS
 NM_TYPE_DEVICE_OVS_INTERFACE
 nm_device_ovs_interface_get_type
 </SECTION>
@@ -1000,7 +987,6 @@ NM_DEVICE_OVS_PORT
 NM_DEVICE_OVS_PORT_CLASS
 NM_DEVICE_OVS_PORT_GET_CLASS
 NM_IS_DEVICE_OVS_PORT
-NM_IS_DEVICE_OVS_PORT_CLASS
 NM_TYPE_DEVICE_OVS_PORT
 nm_device_ovs_port_get_type
 </SECTION>
@@ -1013,7 +999,6 @@ NM_DEVICE_PPP
 NM_DEVICE_PPP_CLASS
 NM_DEVICE_PPP_GET_CLASS
 NM_IS_DEVICE_PPP
-NM_IS_DEVICE_PPP_CLASS
 NM_TYPE_DEVICE_PPP
 nm_device_ppp_get_type
 </SECTION>
@@ -1036,7 +1021,6 @@ NM_DEVICE_TEAM
 NM_DEVICE_TEAM_CLASS
 NM_DEVICE_TEAM_GET_CLASS
 NM_IS_DEVICE_TEAM
-NM_IS_DEVICE_TEAM_CLASS
 NM_TYPE_DEVICE_TEAM
 nm_device_team_get_type
 </SECTION>
@@ -1065,7 +1049,6 @@ NM_DEVICE_TUN
 NM_DEVICE_TUN_CLASS
 NM_DEVICE_TUN_GET_CLASS
 NM_IS_DEVICE_TUN
-NM_IS_DEVICE_TUN_CLASS
 NM_TYPE_DEVICE_TUN
 nm_device_tun_get_type
 </SECTION>
@@ -1088,7 +1071,6 @@ NM_DEVICE_VLAN
 NM_DEVICE_VLAN_CLASS
 NM_DEVICE_VLAN_GET_CLASS
 NM_IS_DEVICE_VLAN
-NM_IS_DEVICE_VLAN_CLASS
 NM_TYPE_DEVICE_VLAN
 nm_device_vlan_get_type
 </SECTION>
@@ -1139,7 +1121,6 @@ NM_DEVICE_VXLAN
 NM_DEVICE_VXLAN_CLASS
 NM_DEVICE_VXLAN_GET_CLASS
 NM_IS_DEVICE_VXLAN
-NM_IS_DEVICE_VXLAN_CLASS
 NM_TYPE_DEVICE_VXLAN
 nm_device_vxlan_get_type
 </SECTION>
@@ -1174,7 +1155,6 @@ NM_DEVICE_WIFI
 NM_DEVICE_WIFI_CLASS
 NM_DEVICE_WIFI_GET_CLASS
 NM_IS_DEVICE_WIFI
-NM_IS_DEVICE_WIFI_CLASS
 NM_TYPE_DEVICE_WIFI
 nm_device_wifi_get_type
 </SECTION>
@@ -1206,7 +1186,6 @@ NM_DEVICE_WIMAX
 NM_DEVICE_WIMAX_CLASS
 NM_DEVICE_WIMAX_GET_CLASS
 NM_IS_DEVICE_WIMAX
-NM_IS_DEVICE_WIMAX_CLASS
 NM_TYPE_DEVICE_WIMAX
 nm_device_wimax_get_type
 </SECTION>
@@ -1225,7 +1204,6 @@ NMDhcpConfigClass
 NM_DHCP_CONFIG
 NM_DHCP_CONFIG_CLASS
 NM_IS_DHCP_CONFIG
-NM_IS_DHCP_CONFIG_CLASS
 NM_TYPE_DHCP_CONFIG
 nm_dhcp_config_get_type
 </SECTION>
@@ -1295,7 +1273,6 @@ NM_IP_CONFIG
 NM_IP_CONFIG_CLASS
 NM_IP_CONFIG_GET_CLASS
 NM_IS_IP_CONFIG
-NM_IS_IP_CONFIG_CLASS
 NM_TYPE_IP_CONFIG
 nm_ip_config_get_type
 </SECTION>
@@ -1316,10 +1293,8 @@ nm_object_get_path
 <SUBSECTION Standard>
 NMObjectClass
 NM_IS_OBJECT
-NM_IS_OBJECT_CLASS
 NM_OBJECT
 NM_OBJECT_CLASS
-NM_OBJECT_DBUS_OBJECT
 NM_OBJECT_GET_CLASS
 NM_TYPE_OBJECT
 nm_object_get_type
@@ -1333,6 +1308,8 @@ NM_REMOTE_CONNECTION_PATH
 NM_REMOTE_CONNECTION_UNSAVED
 NM_REMOTE_CONNECTION_VISIBLE
 NMRemoteConnection
+nm_remote_connection_update2
+nm_remote_connection_update2_finish
 nm_remote_connection_commit_changes
 nm_remote_connection_commit_changes_async
 nm_remote_connection_commit_changes_finish
@@ -1350,7 +1327,6 @@ nm_remote_connection_get_visible
 <SUBSECTION Standard>
 NMRemoteConnectionClass
 NM_IS_REMOTE_CONNECTION
-NM_IS_REMOTE_CONNECTION_CLASS
 NM_REMOTE_CONNECTION
 NM_REMOTE_CONNECTION_CLASS
 NM_REMOTE_CONNECTION_GET_CLASS
@@ -1382,7 +1358,6 @@ nm_secret_agent_old_delete_secrets
 <SUBSECTION Standard>
 NMSecretAgentOldClass
 NM_IS_SECRET_AGENT_OLD
-NM_IS_SECRET_AGENT_OLD_CLASS
 NM_SECRET_AGENT_OLD
 NM_SECRET_AGENT_OLD_CLASS
 NM_SECRET_AGENT_OLD_GET_CLASS
@@ -1419,7 +1394,6 @@ nm_setting_get_dbus_property_type
 <SUBSECTION Standard>
 NMSettingClass
 NM_IS_SETTING
-NM_IS_SETTING_CLASS
 NM_SETTING
 NM_SETTING_CLASS
 NM_SETTING_GET_CLASS
@@ -1571,7 +1545,6 @@ nm_setting_802_1x_get_auth_timeout
 <SUBSECTION Standard>
 NMSetting8021xClass
 NM_IS_SETTING_802_1X
-NM_IS_SETTING_802_1X_CLASS
 NM_SETTING_802_1X
 NM_SETTING_802_1X_CLASS
 NM_SETTING_802_1X_GET_CLASS
@@ -1607,7 +1580,6 @@ nm_setting_adsl_get_password_flags
 <SUBSECTION Standard>
 NMSettingAdslClass
 NM_IS_SETTING_ADSL
-NM_IS_SETTING_ADSL_CLASS
 NM_SETTING_ADSL
 NM_SETTING_ADSL_CLASS
 NM_SETTING_ADSL_GET_CLASS
@@ -1631,7 +1603,6 @@ nm_setting_bluetooth_get_connection_type
 <SUBSECTION Standard>
 NMSettingBluetoothClass
 NM_IS_SETTING_BLUETOOTH
-NM_IS_SETTING_BLUETOOTH_CLASS
 NM_SETTING_BLUETOOTH
 NM_SETTING_BLUETOOTH_CLASS
 NM_SETTING_BLUETOOTH_GET_CLASS
@@ -1684,7 +1655,6 @@ nm_setting_bond_get_option_default
 <SUBSECTION Standard>
 NMSettingBondClass
 NM_IS_SETTING_BOND
-NM_IS_SETTING_BOND_CLASS
 NM_SETTING_BOND
 NM_SETTING_BOND_CLASS
 NM_SETTING_BOND_GET_CLASS
@@ -1719,7 +1689,6 @@ nm_setting_bridge_get_multicast_snooping
 <SUBSECTION Standard>
 NMSettingBridgeClass
 NM_IS_SETTING_BRIDGE
-NM_IS_SETTING_BRIDGE_CLASS
 NM_SETTING_BRIDGE
 NM_SETTING_BRIDGE_CLASS
 NM_SETTING_BRIDGE_GET_CLASS
@@ -1742,7 +1711,6 @@ nm_setting_bridge_port_get_hairpin_mode
 <SUBSECTION Standard>
 NMSettingBridgePortClass
 NM_IS_SETTING_BRIDGE_PORT
-NM_IS_SETTING_BRIDGE_PORT_CLASS
 NM_SETTING_BRIDGE_PORT
 NM_SETTING_BRIDGE_PORT_CLASS
 NM_SETTING_BRIDGE_PORT_GET_CLASS
@@ -1769,7 +1737,6 @@ nm_setting_cdma_get_mtu
 <SUBSECTION Standard>
 NMSettingCdmaClass
 NM_IS_SETTING_CDMA
-NM_IS_SETTING_CDMA_CLASS
 NM_SETTING_CDMA
 NM_SETTING_CDMA_CLASS
 NM_SETTING_CDMA_GET_CLASS
@@ -1841,7 +1808,6 @@ nm_setting_connection_get_auth_retries
 <SUBSECTION Standard>
 NMSettingConnectionClass
 NM_IS_SETTING_CONNECTION
-NM_IS_SETTING_CONNECTION_CLASS
 NM_SETTING_CONNECTION
 NM_SETTING_CONNECTION_CLASS
 NM_SETTING_CONNECTION_GET_CLASS
@@ -1897,7 +1863,6 @@ nm_setting_dcb_set_priority_traffic_class
 <SUBSECTION Standard>
 NMSettingDcbClass
 NM_IS_SETTING_DCB
-NM_IS_SETTING_DCB_CLASS
 NM_SETTING_DCB
 NM_SETTING_DCB_CLASS
 NM_SETTING_DCB_GET_CLASS
@@ -1914,7 +1879,6 @@ nm_setting_dummy_new
 <SUBSECTION Standard>
 NMSettingDummyClass
 NM_IS_SETTING_DUMMY
-NM_IS_SETTING_DUMMY_CLASS
 NM_SETTING_DUMMY
 NM_SETTING_DUMMY_CLASS
 NM_SETTING_DUMMY_GET_CLASS
@@ -1931,7 +1895,6 @@ nm_setting_generic_new
 <SUBSECTION Standard>
 NMSettingGenericClass
 NM_IS_SETTING_GENERIC
-NM_IS_SETTING_GENERIC_CLASS
 NM_SETTING_GENERIC
 NM_SETTING_GENERIC_CLASS
 NM_SETTING_GENERIC_GET_CLASS
@@ -1974,7 +1937,6 @@ nm_setting_gsm_get_password_flags
 <SUBSECTION Standard>
 NMSettingGsmClass
 NM_IS_SETTING_GSM
-NM_IS_SETTING_GSM_CLASS
 NM_SETTING_GSM
 NM_SETTING_GSM_CLASS
 NM_SETTING_GSM_GET_CLASS
@@ -2002,7 +1964,6 @@ nm_setting_infiniband_get_virtual_interface_name
 <SUBSECTION Standard>
 NMSettingInfinibandClass
 NM_IS_SETTING_INFINIBAND
-NM_IS_SETTING_INFINIBAND_CLASS
 NM_SETTING_INFINIBAND
 NM_SETTING_INFINIBAND_CLASS
 NM_SETTING_INFINIBAND_GET_CLASS
@@ -2058,6 +2019,7 @@ NM_IP_ROUTE_ATTRIBUTE_TABLE
 NM_IP_ROUTE_ATTRIBUTE_SRC
 NM_IP_ROUTE_ATTRIBUTE_FROM
 NM_IP_ROUTE_ATTRIBUTE_TOS
+NM_IP_ROUTE_ATTRIBUTE_ONLINK
 NM_IP_ROUTE_ATTRIBUTE_WINDOW
 NM_IP_ROUTE_ATTRIBUTE_CWND
 NM_IP_ROUTE_ATTRIBUTE_INITCWND
@@ -2153,7 +2115,6 @@ NMIPAddress
 NMIPRoute
 NMSettingIPConfigClass
 NM_IS_SETTING_IP_CONFIG
-NM_IS_SETTING_IP_CONFIG_CLASS
 NM_SETTING_IP_CONFIG
 NM_SETTING_IP_CONFIG_CLASS
 NM_SETTING_IP_CONFIG_GET_CLASS
@@ -2196,7 +2157,6 @@ nm_setting_ip_tunnel_get_mtu
 <SUBSECTION Standard>
 NMSettingIPTunnelClass
 NM_IS_SETTING_IP_TUNNEL
-NM_IS_SETTING_IP_TUNNEL_CLASS
 NM_SETTING_IP_TUNNEL
 NM_SETTING_IP_TUNNEL_CLASS
 NM_SETTING_IP_TUNNEL_GET_CLASS
@@ -2222,7 +2182,6 @@ nm_setting_ip4_config_get_dhcp_fqdn
 <SUBSECTION Standard>
 NMSettingIP4ConfigClass
 NM_IS_SETTING_IP4_CONFIG
-NM_IS_SETTING_IP4_CONFIG_CLASS
 NM_SETTING_IP4_CONFIG
 NM_SETTING_IP4_CONFIG_CLASS
 NM_SETTING_IP4_CONFIG_GET_CLASS
@@ -2253,7 +2212,6 @@ nm_setting_ip6_config_get_token
 <SUBSECTION Standard>
 NMSettingIP6ConfigClass
 NM_IS_SETTING_IP6_CONFIG
-NM_IS_SETTING_IP6_CONFIG_CLASS
 NM_SETTING_IP6_CONFIG
 NM_SETTING_IP6_CONFIG_CLASS
 NM_SETTING_IP6_CONFIG_GET_CLASS
@@ -2290,7 +2248,6 @@ nm_setting_macsec_get_validation
 <SUBSECTION Standard>
 NMSettingMacsecClass
 NM_IS_SETTING_MACSEC
-NM_IS_SETTING_MACSEC_CLASS
 NM_SETTING_MACSEC
 NM_SETTING_MACSEC_CLASS
 NM_SETTING_MACSEC_GET_CLASS
@@ -2316,7 +2273,6 @@ nm_setting_macvlan_get_tap
 <SUBSECTION Standard>
 NMSettingMacvlanClass
 NM_IS_SETTING_MACVLAN
-NM_IS_SETTING_MACVLAN_CLASS
 NM_SETTING_MACVLAN
 NM_SETTING_MACVLAN_CLASS
 NM_SETTING_MACVLAN_GET_CLASS
@@ -2339,7 +2295,6 @@ nm_setting_olpc_mesh_get_dhcp_anycast_address
 <SUBSECTION Standard>
 NMSettingOlpcMeshClass
 NM_IS_SETTING_OLPC_MESH
-NM_IS_SETTING_OLPC_MESH_CLASS
 NM_SETTING_OLPC_MESH
 NM_SETTING_OLPC_MESH_CLASS
 NM_SETTING_OLPC_MESH_GET_CLASS
@@ -2362,7 +2317,6 @@ nm_setting_ovs_bridge_get_stp_enable
 <SUBSECTION Standard>
 NMSettingOvsBridgeClass
 NM_IS_SETTING_OVS_BRIDGE
-NM_IS_SETTING_OVS_BRIDGE_CLASS
 NM_SETTING_OVS_BRIDGE
 NM_SETTING_OVS_BRIDGE_CLASS
 NM_SETTING_OVS_BRIDGE_GET_CLASS
@@ -2379,7 +2333,6 @@ nm_setting_ovs_interface_get_interface_type
 <SUBSECTION Standard>
 NMSettingOvsInterfaceClass
 NM_IS_SETTING_OVS_INTERFACE
-NM_IS_SETTING_OVS_INTERFACE_CLASS
 NM_SETTING_OVS_INTERFACE
 NM_SETTING_OVS_INTERFACE_CLASS
 NM_SETTING_OVS_INTERFACE_GET_CLASS
@@ -2396,7 +2349,6 @@ nm_setting_ovs_patch_get_peer
 <SUBSECTION Standard>
 NMSettingOvsPatchClass
 NM_IS_SETTING_OVS_PATCH
-NM_IS_SETTING_OVS_PATCH_CLASS
 NM_SETTING_OVS_PATCH
 NM_SETTING_OVS_PATCH_CLASS
 NM_SETTING_OVS_PATCH_GET_CLASS
@@ -2423,7 +2375,6 @@ nm_setting_ovs_port_get_bond_downdelay
 <SUBSECTION Standard>
 NMSettingOvsPortClass
 NM_IS_SETTING_OVS_PORT
-NM_IS_SETTING_OVS_PORT_CLASS
 NM_SETTING_OVS_PORT
 NM_SETTING_OVS_PORT_CLASS
 NM_SETTING_OVS_PORT_GET_CLASS
@@ -2476,7 +2427,6 @@ nm_setting_ppp_get_lcp_echo_interval
 <SUBSECTION Standard>
 NMSettingPppClass
 NM_IS_SETTING_PPP
-NM_IS_SETTING_PPP_CLASS
 NM_SETTING_PPP
 NM_SETTING_PPP_CLASS
 NM_SETTING_PPP_GET_CLASS
@@ -2503,7 +2453,6 @@ nm_setting_pppoe_get_password_flags
 <SUBSECTION Standard>
 NMSettingPppoeClass
 NM_IS_SETTING_PPPOE
-NM_IS_SETTING_PPPOE_CLASS
 NM_SETTING_PPPOE
 NM_SETTING_PPPOE_CLASS
 NM_SETTING_PPPOE_GET_CLASS
@@ -2529,7 +2478,6 @@ nm_setting_proxy_get_pac_script
 <SUBSECTION Standard>
 NMSettingProxyClass
 NM_IS_SETTING_PROXY
-NM_IS_SETTING_PROXY_CLASS
 NM_SETTING_PROXY
 NM_SETTING_PROXY_CLASS
 NM_SETTING_PROXY_GET_CLASS
@@ -2557,7 +2505,6 @@ nm_setting_serial_get_send_delay
 <SUBSECTION Standard>
 NMSettingSerialClass
 NM_IS_SETTING_SERIAL
-NM_IS_SETTING_SERIAL_CLASS
 NM_SETTING_SERIAL
 NM_SETTING_SERIAL_CLASS
 NM_SETTING_SERIAL_GET_CLASS
@@ -2566,22 +2513,165 @@ nm_setting_serial_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-setting-tc-config</FILE>
+nm_tc_qdisc_new
+nm_tc_qdisc_ref
+nm_tc_qdisc_unref
+nm_tc_qdisc_equal
+nm_tc_qdisc_dup
+nm_tc_qdisc_get_kind
+nm_tc_qdisc_get_handle
+nm_tc_qdisc_set_handle
+nm_tc_qdisc_get_parent
+nm_tc_action_new
+nm_tc_action_ref
+nm_tc_action_unref
+nm_tc_action_equal
+nm_tc_action_dup
+nm_tc_action_get_kind
+nm_tc_action_get_attribute_names
+nm_tc_action_get_attribute
+nm_tc_action_set_attribute
+nm_tc_tfilter_new
+nm_tc_tfilter_ref
+nm_tc_tfilter_unref
+nm_tc_tfilter_equal
+nm_tc_tfilter_dup
+nm_tc_tfilter_get_kind
+nm_tc_tfilter_get_handle
+nm_tc_tfilter_set_handle
+nm_tc_tfilter_get_parent
+nm_tc_tfilter_get_action
+nm_tc_tfilter_set_action
+NM_SETTING_TC_CONFIG_SETTING_NAME
+NM_SETTING_TC_CONFIG_QDISCS
+NM_SETTING_TC_CONFIG_TFILTERS
+nm_setting_tc_config_new
+nm_setting_tc_config_get_num_qdiscs
+nm_setting_tc_config_get_qdisc
+nm_setting_tc_config_add_qdisc
+nm_setting_tc_config_remove_qdisc
+nm_setting_tc_config_remove_qdisc_by_value
+nm_setting_tc_config_clear_qdiscs
+nm_setting_tc_config_get_num_tfilters
+nm_setting_tc_config_get_tfilter
+nm_setting_tc_config_add_tfilter
+nm_setting_tc_config_remove_tfilter
+nm_setting_tc_config_remove_tfilter_by_value
+nm_setting_tc_config_clear_tfilters
+<SUBSECTION Standard>
+NMSettingTCConfigClass
+NMTCAction
+NMTCQdisc
+NMTCTfilter
+NM_IS_SETTING_TC_CONFIG
+NM_SETTING_TC_CONFIG
+NM_SETTING_TC_CONFIG_CLASS
+NM_SETTING_TC_CONFIG_GET_CLASS
+NM_TYPE_SETTING_TC_CONFIG
+nm_setting_tc_config_get_type
+nm_tc_action_get_type
+nm_tc_qdisc_get_type
+nm_tc_tfilter_get_type
+</SECTION>
+
+<SECTION>
 <FILE>nm-setting-team</FILE>
 <TITLE>NMSettingTeam</TITLE>
+NMTeamLinkWatcherArpPingFlags
+NM_TEAM_LINK_WATCHER_ETHTOOL
+NM_TEAM_LINK_WATCHER_ARP_PING
+NM_TEAM_LINK_WATCHER_NSNA_PING
+nm_team_link_watcher_new_ethtool
+nm_team_link_watcher_new_nsna_ping
+nm_team_link_watcher_new_arp_ping
+nm_team_link_watcher_ref
+nm_team_link_watcher_unref
+nm_team_link_watcher_equal
+nm_team_link_watcher_dup
+nm_team_link_watcher_get_name
+nm_team_link_watcher_get_delay_up
+nm_team_link_watcher_get_delay_down
+nm_team_link_watcher_get_init_wait
+nm_team_link_watcher_get_interval
+nm_team_link_watcher_get_missed_max
+nm_team_link_watcher_get_target_host
+nm_team_link_watcher_get_source_host
+nm_team_link_watcher_get_flags
 NM_SETTING_TEAM_SETTING_NAME
 NM_SETTING_TEAM_CONFIG
+NM_SETTING_TEAM_NOTIFY_PEERS_COUNT
+NM_SETTING_TEAM_NOTIFY_PEERS_INTERVAL
+NM_SETTING_TEAM_MCAST_REJOIN_COUNT
+NM_SETTING_TEAM_MCAST_REJOIN_INTERVAL
+NM_SETTING_TEAM_RUNNER
+NM_SETTING_TEAM_RUNNER_HWADDR_POLICY
+NM_SETTING_TEAM_RUNNER_TX_HASH
+NM_SETTING_TEAM_RUNNER_TX_BALANCER
+NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL
+NM_SETTING_TEAM_RUNNER_ACTIVE
+NM_SETTING_TEAM_RUNNER_FAST_RATE
+NM_SETTING_TEAM_RUNNER_SYS_PRIO
+NM_SETTING_TEAM_RUNNER_MIN_PORTS
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY
+NM_SETTING_TEAM_LINK_WATCHERS
+NM_SETTING_TEAM_RUNNER_BROADCAST
+NM_SETTING_TEAM_RUNNER_ROUNDROBIN
+NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP
+NM_SETTING_TEAM_RUNNER_LOADBALANCE
+NM_SETTING_TEAM_RUNNER_LACP
+NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_SAME_ALL
+NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_BY_ACTIVE
+NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_ONLY_ACTIVE
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO_STABLE
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_BANDWIDTH
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_COUNT
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_PORT_CONFIG
+NM_SETTING_TEAM_NOTIFY_PEERS_COUNT_ACTIVEBACKUP_DEFAULT
+NM_SETTING_TEAM_NOTIFY_MCAST_COUNT_ACTIVEBACKUP_DEFAULT
+NM_SETTING_TEAM_RUNNER_DEFAULT
+NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_DEFAULT
+NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL_DEFAULT
+NM_SETTING_TEAM_RUNNER_SYS_PRIO_DEFAULT
+NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_DEFAULT
 NMSettingTeam
 nm_setting_team_new
 nm_setting_team_get_config
+nm_setting_team_get_notify_peers_count
+nm_setting_team_get_notify_peers_interval
+nm_setting_team_get_mcast_rejoin_count
+nm_setting_team_get_mcast_rejoin_interval
+nm_setting_team_get_runner
+nm_setting_team_get_runner_hwaddr_policy
+nm_setting_team_get_runner_tx_balancer
+nm_setting_team_get_runner_tx_balancer_interval
+nm_setting_team_get_runner_active
+nm_setting_team_get_runner_fast_rate
+nm_setting_team_get_runner_sys_prio
+nm_setting_team_get_runner_min_ports
+nm_setting_team_get_runner_agg_select_policy
+nm_setting_team_remove_runner_tx_hash_by_value
+nm_setting_team_get_num_runner_tx_hash
+nm_setting_team_get_runner_tx_hash
+nm_setting_team_remove_runner_tx_hash
+nm_setting_team_add_runner_tx_hash
+nm_setting_team_get_num_link_watchers
+nm_setting_team_get_link_watcher
+nm_setting_team_add_link_watcher
+nm_setting_team_remove_link_watcher
+nm_setting_team_remove_link_watcher_by_value
+nm_setting_team_clear_link_watchers
 <SUBSECTION Standard>
 NMSettingTeamClass
+NMTeamLinkWatcher
 NM_IS_SETTING_TEAM
-NM_IS_SETTING_TEAM_CLASS
 NM_SETTING_TEAM
 NM_SETTING_TEAM_CLASS
 NM_SETTING_TEAM_GET_CLASS
 NM_TYPE_SETTING_TEAM
 nm_setting_team_get_type
+nm_team_link_watcher_get_type
 </SECTION>
 
 <SECTION>
@@ -2589,13 +2679,31 @@ nm_setting_team_get_type
 <TITLE>NMSettingTeamPort</TITLE>
 NM_SETTING_TEAM_PORT_SETTING_NAME
 NM_SETTING_TEAM_PORT_CONFIG
+NM_SETTING_TEAM_PORT_QUEUE_ID
+NM_SETTING_TEAM_PORT_PRIO
+NM_SETTING_TEAM_PORT_STICKY
+NM_SETTING_TEAM_PORT_LACP_PRIO
+NM_SETTING_TEAM_PORT_LACP_KEY
+NM_SETTING_TEAM_PORT_LINK_WATCHERS
+NM_SETTING_TEAM_PORT_QUEUE_ID_DEFAULT
+NM_SETTING_TEAM_PORT_LACP_PRIO_DEFAULT
 NMSettingTeamPort
 nm_setting_team_port_new
 nm_setting_team_port_get_config
+nm_setting_team_port_get_queue_id
+nm_setting_team_port_get_prio
+nm_setting_team_port_get_sticky
+nm_setting_team_port_get_lacp_prio
+nm_setting_team_port_get_lacp_key
+nm_setting_team_port_get_num_link_watchers
+nm_setting_team_port_get_link_watcher
+nm_setting_team_port_add_link_watcher
+nm_setting_team_port_remove_link_watcher
+nm_setting_team_port_remove_link_watcher_by_value
+nm_setting_team_port_clear_link_watchers
 <SUBSECTION Standard>
 NMSettingTeamPortClass
 NM_IS_SETTING_TEAM_PORT
-NM_IS_SETTING_TEAM_PORT_CLASS
 NM_SETTING_TEAM_PORT
 NM_SETTING_TEAM_PORT_CLASS
 NM_SETTING_TEAM_PORT_GET_CLASS
@@ -2625,7 +2733,6 @@ nm_setting_tun_get_multi_queue
 <SUBSECTION Standard>
 NMSettingTunClass
 NM_IS_SETTING_TUN
-NM_IS_SETTING_TUN_CLASS
 NM_SETTING_TUN
 NM_SETTING_TUN_CLASS
 NM_SETTING_TUN_GET_CLASS
@@ -2646,7 +2753,6 @@ nm_setting_user_check_val
 <SUBSECTION Standard>
 NMSettingUserClass
 NM_IS_SETTING_USER
-NM_IS_SETTING_USER_CLASS
 NM_SETTING_USER
 NM_SETTING_USER_CLASS
 NM_SETTING_USER_GET_CLASS
@@ -2682,7 +2788,6 @@ nm_setting_vlan_add_priority_str
 <SUBSECTION Standard>
 NMSettingVlanClass
 NM_IS_SETTING_VLAN
-NM_IS_SETTING_VLAN_CLASS
 NM_SETTING_VLAN
 NM_SETTING_VLAN_CLASS
 NM_SETTING_VLAN_GET_CLASS
@@ -2720,7 +2825,6 @@ nm_setting_vpn_get_timeout
 <SUBSECTION Standard>
 NMSettingVpnClass
 NM_IS_SETTING_VPN
-NM_IS_SETTING_VPN_CLASS
 NM_SETTING_VPN
 NM_SETTING_VPN_CLASS
 NM_SETTING_VPN_GET_CLASS
@@ -2769,7 +2873,6 @@ nm_setting_vxlan_get_l3_miss
 <SUBSECTION Standard>
 NMSettingVxlanClass
 NM_IS_SETTING_VXLAN
-NM_IS_SETTING_VXLAN_CLASS
 NM_SETTING_VXLAN
 NM_SETTING_VXLAN_CLASS
 NM_SETTING_VXLAN_GET_CLASS
@@ -2790,7 +2893,6 @@ nm_setting_wimax_get_mac_address
 <SUBSECTION Standard>
 NMSettingWimaxClass
 NM_IS_SETTING_WIMAX
-NM_IS_SETTING_WIMAX_CLASS
 NM_SETTING_WIMAX
 NM_SETTING_WIMAX_CLASS
 NM_SETTING_WIMAX_GET_CLASS
@@ -2847,7 +2949,6 @@ nm_setting_wired_get_wake_on_lan_password
 <SUBSECTION Standard>
 NMSettingWiredClass
 NM_IS_SETTING_WIRED
-NM_IS_SETTING_WIRED_CLASS
 NM_SETTING_WIRED
 NM_SETTING_WIRED_CLASS
 NM_SETTING_WIRED_GET_CLASS
@@ -2909,7 +3010,6 @@ nm_setting_wireless_ap_security_compatible
 <SUBSECTION Standard>
 NMSettingWirelessClass
 NM_IS_SETTING_WIRELESS
-NM_IS_SETTING_WIRELESS_CLASS
 NM_SETTING_WIRELESS
 NM_SETTING_WIRELESS_CLASS
 NM_SETTING_WIRELESS_GET_CLASS
@@ -2980,7 +3080,6 @@ nm_setting_wireless_security_get_wps_method
 <SUBSECTION Standard>
 NMSettingWirelessSecurityClass
 NM_IS_SETTING_WIRELESS_SECURITY
-NM_IS_SETTING_WIRELESS_SECURITY_CLASS
 NM_SETTING_WIRELESS_SECURITY
 NM_SETTING_WIRELESS_SECURITY_CLASS
 NM_SETTING_WIRELESS_SECURITY_GET_CLASS
@@ -2998,7 +3097,6 @@ nm_simple_connection_new_clone
 <SUBSECTION Standard>
 NMSimpleConnectionClass
 NM_IS_SIMPLE_CONNECTION
-NM_IS_SIMPLE_CONNECTION_CLASS
 NM_SIMPLE_CONNECTION
 NM_SIMPLE_CONNECTION_CLASS
 NM_SIMPLE_CONNECTION_GET_CLASS
@@ -3114,6 +3212,12 @@ nm_utils_enum_get_values
 nm_utils_version
 nm_utils_parse_variant_attributes
 nm_utils_format_variant_attributes
+nm_utils_tc_qdisc_from_str
+nm_utils_tc_qdisc_to_str
+nm_utils_tc_action_from_str
+nm_utils_tc_action_to_str
+nm_utils_tc_tfilter_from_str
+nm_utils_tc_tfilter_to_str
 NMVariantAttributeSpec
 stat
 </SECTION>
@@ -3143,6 +3247,7 @@ NM_AVAILABLE_IN_1_8
 NM_DEPRECATED_IN_1_10
 NM_DEPRECATED_IN_1_10_FOR
 NM_AVAILABLE_IN_1_10
+NM_AVAILABLE_IN_1_10_2
 </SECTION>
 
 <SECTION>
@@ -3156,7 +3261,6 @@ nm_vpn_connection_get_banner
 <SUBSECTION Standard>
 NMVpnConnectionClass
 NM_IS_VPN_CONNECTION
-NM_IS_VPN_CONNECTION_CLASS
 NM_TYPE_VPN_CONNECTION
 NM_VPN_CONNECTION
 NM_VPN_CONNECTION_CLASS
@@ -3290,7 +3394,6 @@ NM_VPN_PLUGIN_INFO_KF_GROUP_GNOME
 NMVpnPluginInfo
 <SUBSECTION Standard>
 NM_IS_VPN_PLUGIN_INFO
-NM_IS_VPN_PLUGIN_INFO_CLASS
 NM_TYPE_VPN_PLUGIN_INFO
 NM_VPN_PLUGIN_INFO
 NM_VPN_PLUGIN_INFO_CLASS
@@ -3303,7 +3406,6 @@ NM_VPN_PLUGIN_OLD_DBUS_SERVICE_NAME
 NM_VPN_PLUGIN_OLD_STATE
 <SUBSECTION Standard>
 NM_IS_VPN_PLUGIN_OLD
-NM_IS_VPN_PLUGIN_OLD_CLASS
 NM_TYPE_VPN_PLUGIN_OLD
 NM_VPN_PLUGIN_OLD
 NM_VPN_PLUGIN_OLD_CLASS
@@ -3317,7 +3419,6 @@ NM_VPN_SERVICE_PLUGIN_DBUS_WATCH_PEER
 NM_VPN_SERVICE_PLUGIN_STATE
 <SUBSECTION Standard>
 NM_IS_VPN_SERVICE_PLUGIN
-NM_IS_VPN_SERVICE_PLUGIN_CLASS
 NM_TYPE_VPN_SERVICE_PLUGIN
 NM_VPN_SERVICE_PLUGIN
 NM_VPN_SERVICE_PLUGIN_CLASS
@@ -3339,7 +3440,6 @@ nm_wimax_nsp_connection_valid
 <SUBSECTION Standard>
 NMWimaxNspClass
 NM_IS_WIMAX_NSP
-NM_IS_WIMAX_NSP_CLASS
 NM_TYPE_WIMAX_NSP
 NM_WIMAX_NSP
 NM_WIMAX_NSP_CLASS

@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 11/10/2017
+.\"      Date: 12/12/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.10.0
+.\"    Source: NetworkManager 1.10.2
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.10\&.0" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.10\&.2" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -789,6 +789,11 @@ The following properties can be configured per\-device\&.
 \fImanaged\fR
 .RS 4
 Whether the device is managed or not\&. A device can be marked as managed via udev rules (ENV{NM_UNMANAGED}), or via setting plugins (keyfile\&.unmanaged\-devices)\&. This is yet another way\&. Note that this configuration can be overruled at runtime via D\-Bus\&. Also, it has higher priority then udev rules\&.
+.RE
+.PP
+\fIcarrier\-wait\-timeout\fR
+.RS 4
+Specify the timeout for waiting for carrier in milliseconds\&. When the device loses carrier, NetworkManager does not react immediately\&. Instead, it waits for this timeout before considering the link lost\&. Also, on startup, NetworkManager considers the device as busy for this time, as long as the device has no carrier\&. This delays startup\-complete signal and NetworkManager\-wait\-online\&. Configuring this too high means to block NetworkManager\-wait\-online longer then necessary\&. Configuring it too low, means that NetworkManager will declare startup\-complete, although carrier is about to come and auto\-activation to kick in\&. The default is 5000 milliseconds\&.
 .RE
 .PP
 \fIignore\-carrier\fR

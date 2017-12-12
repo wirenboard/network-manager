@@ -8,7 +8,7 @@
 <link rel="up" href="index.html" title="libnm Reference Manual">
 <link rel="prev" href="object-tree.html" title="Object Hierarchy">
 <link rel="next" href="annotation-glossary.html" title="Annotation Glossary">
-<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.26 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -34,6 +34,8 @@
                   <a class="shortcut" href="#idxR">R</a>
                      <span class="dim">|</span> 
                   <a class="shortcut" href="#idxS">S</a>
+                     <span class="dim">|</span> 
+                  <a class="shortcut" href="#idxT">T</a>
                      <span class="dim">|</span> 
                   <a class="shortcut" href="#idxU">U</a>
                      <span class="dim">|</span> 
@@ -440,6 +442,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-10:CAPS" title="NM_AVAILABLE_IN_1_10">NM_AVAILABLE_IN_1_10</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-10-2:CAPS" title="NM_AVAILABLE_IN_1_10_2">NM_AVAILABLE_IN_1_10_2</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1017,19 +1023,19 @@
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct">NMConnection</a>, struct in nm-core-types
+<a href="../libnm-util/NMConnection.html#NMConnection-struct">NMConnection</a>, struct in nm-core-types
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-changed">NMConnection::changed</a>, object signal in nm-core-types
+<a href="../libnm-util/NMConnection.html#NMConnection-changed">NMConnection::changed</a>, object signal in nm-core-types
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-secrets-cleared">NMConnection::secrets-cleared</a>, object signal in nm-core-types
+<a href="../libnm-util/NMConnection.html#NMConnection-secrets-cleared">NMConnection::secrets-cleared</a>, object signal in nm-core-types
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-secrets-updated">NMConnection::secrets-updated</a>, object signal in nm-core-types
+<a href="../libnm-util/NMConnection.html#NMConnection-secrets-updated">NMConnection::secrets-updated</a>, object signal in nm-core-types
 </dt>
 <dd></dd>
 <dt>
@@ -1222,6 +1228,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="NMConnection.html#nm-connection-get-setting-serial" title="nm_connection_get_setting_serial ()">nm_connection_get_setting_serial</a>, function in <a class="link" href="NMConnection.html" title="NMConnection">NMConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMConnection.html#nm-connection-get-setting-tc-config" title="nm_connection_get_setting_tc_config ()">nm_connection_get_setting_tc_config</a>, function in <a class="link" href="NMConnection.html" title="NMConnection">NMConnection</a>
 </dt>
 <dd></dd>
 <dt>
@@ -3791,6 +3801,10 @@ NMDevicePpp, struct in nm-types
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-ONLINK:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_ONLINK">NM_IP_ROUTE_ATTRIBUTE_ONLINK</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-SRC:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_SRC">NM_IP_ROUTE_ATTRIBUTE_SRC</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
@@ -4136,6 +4150,14 @@ NMDevicePpp, struct in nm-types
 <dd></dd>
 <dt>
 <a class="link" href="NMRemoteConnection.html#NM-REMOTE-CONNECTION-UNSAVED:CAPS" title="NM_REMOTE_CONNECTION_UNSAVED">NM_REMOTE_CONNECTION_UNSAVED</a>, macro in <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection">NMRemoteConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMRemoteConnection.html#nm-remote-connection-update2" title="nm_remote_connection_update2 ()">nm_remote_connection_update2</a>, function in <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection">NMRemoteConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMRemoteConnection.html#nm-remote-connection-update2-finish" title="nm_remote_connection_update2_finish ()">nm_remote_connection_update2_finish</a>, function in <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection">NMRemoteConnection</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5324,11 +5346,27 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-dbus-interface.html#NMSettingsUpdate2Flags" title="enum NMSettingsUpdate2Flags">NMSettingsUpdate2Flags</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-errors.html#NM-SETTINGS-ERROR:CAPS" title="NM_SETTINGS_ERROR">NM_SETTINGS_ERROR</a>, macro in <a class="link" href="libnm-nm-errors.html" title="nm-errors">nm-errors</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="libnm-nm-errors.html#nm-settings-error-quark" title="nm_settings_error_quark ()">nm_settings_error_quark</a>, function in <a class="link" href="libnm-nm-errors.html" title="nm-errors">nm-errors</a>
+</dt>
+<dd></dd>
+<dt>
+NMSettingTCConfig, struct in nm-core-types
+</dt>
+<dd></dd>
+<dt>
+NMSettingTCConfig:qdiscs, object property in nm-core-types
+</dt>
+<dd></dd>
+<dt>
+NMSettingTCConfig:tfilters, object property in nm-core-types
 </dt>
 <dd></dd>
 <dt>
@@ -5340,11 +5378,95 @@ NMSettingProxyMethod, enum in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--link-watchers" title="The “link-watchers” property">NMSettingTeam:link-watchers</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--mcast-rejoin-count" title="The “mcast-rejoin-count” property">NMSettingTeam:mcast-rejoin-count</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--mcast-rejoin-interval" title="The “mcast-rejoin-interval” property">NMSettingTeam:mcast-rejoin-interval</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--notify-peers-count" title="The “notify-peers-count” property">NMSettingTeam:notify-peers-count</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--notify-peers-interval" title="The “notify-peers-interval” property">NMSettingTeam:notify-peers-interval</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner" title="The “runner” property">NMSettingTeam:runner</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-active" title="The “runner-active” property">NMSettingTeam:runner-active</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-agg-select-policy" title="The “runner-agg-select-policy” property">NMSettingTeam:runner-agg-select-policy</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-fast-rate" title="The “runner-fast-rate” property">NMSettingTeam:runner-fast-rate</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-hwaddr-policy" title="The “runner-hwaddr-policy” property">NMSettingTeam:runner-hwaddr-policy</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-min-ports" title="The “runner-min-ports” property">NMSettingTeam:runner-min-ports</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-sys-prio" title="The “runner-sys-prio” property">NMSettingTeam:runner-sys-prio</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-tx-balancer" title="The “runner-tx-balancer” property">NMSettingTeam:runner-tx-balancer</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-tx-balancer-interval" title="The “runner-tx-balancer-interval” property">NMSettingTeam:runner-tx-balancer-interval</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMSettingTeam--runner-tx-hash" title="The “runner-tx-hash” property">NMSettingTeam:runner-tx-hash</a>, object property in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort-struct" title="NMSettingTeamPort">NMSettingTeamPort</a>, struct in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--config" title="The “config” property">NMSettingTeamPort:config</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--lacp-key" title="The “lacp-key” property">NMSettingTeamPort:lacp-key</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--lacp-prio" title="The “lacp-prio” property">NMSettingTeamPort:lacp-prio</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--link-watchers" title="The “link-watchers” property">NMSettingTeamPort:link-watchers</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--prio" title="The “prio” property">NMSettingTeamPort:prio</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--queue-id" title="The “queue-id” property">NMSettingTeamPort:queue-id</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NMSettingTeamPort--sticky" title="The “sticky” property">NMSettingTeamPort:sticky</a>, object property in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
 </dt>
 <dd></dd>
 <dt>
@@ -8416,6 +8538,82 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+nm_setting_tc_config_add_qdisc, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_add_tfilter, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_clear_qdiscs, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_clear_tfilters, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_get_num_qdiscs, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_get_num_tfilters, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_get_qdisc, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_get_tfilter, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_new, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+NM_SETTING_TC_CONFIG_QDISCS, macro in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_remove_qdisc, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_remove_qdisc_by_value, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_remove_tfilter, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_setting_tc_config_remove_tfilter_by_value, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+NM_SETTING_TC_CONFIG_SETTING_NAME, macro in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+NM_SETTING_TC_CONFIG_TFILTERS, macro in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-add-link-watcher" title="nm_setting_team_add_link_watcher ()">nm_setting_team_add_link_watcher</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-add-runner-tx-hash" title="nm_setting_team_add_runner_tx_hash ()">nm_setting_team_add_runner_tx_hash</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-clear-link-watchers" title="nm_setting_team_clear_link_watchers ()">nm_setting_team_clear_link_watchers</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-CONFIG:CAPS" title="NM_SETTING_TEAM_CONFIG">NM_SETTING_TEAM_CONFIG</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
 </dt>
 <dd></dd>
@@ -8424,7 +8622,111 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-link-watcher" title="nm_setting_team_get_link_watcher ()">nm_setting_team_get_link_watcher</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-mcast-rejoin-count" title="nm_setting_team_get_mcast_rejoin_count ()">nm_setting_team_get_mcast_rejoin_count</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-mcast-rejoin-interval" title="nm_setting_team_get_mcast_rejoin_interval ()">nm_setting_team_get_mcast_rejoin_interval</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-notify-peers-count" title="nm_setting_team_get_notify_peers_count ()">nm_setting_team_get_notify_peers_count</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-notify-peers-interval" title="nm_setting_team_get_notify_peers_interval ()">nm_setting_team_get_notify_peers_interval</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-num-link-watchers" title="nm_setting_team_get_num_link_watchers ()">nm_setting_team_get_num_link_watchers</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-num-runner-tx-hash" title="nm_setting_team_get_num_runner_tx_hash ()">nm_setting_team_get_num_runner_tx_hash</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner" title="nm_setting_team_get_runner ()">nm_setting_team_get_runner</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-active" title="nm_setting_team_get_runner_active ()">nm_setting_team_get_runner_active</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-agg-select-policy" title="nm_setting_team_get_runner_agg_select_policy ()">nm_setting_team_get_runner_agg_select_policy</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-fast-rate" title="nm_setting_team_get_runner_fast_rate ()">nm_setting_team_get_runner_fast_rate</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-hwaddr-policy" title="nm_setting_team_get_runner_hwaddr_policy ()">nm_setting_team_get_runner_hwaddr_policy</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-min-ports" title="nm_setting_team_get_runner_min_ports ()">nm_setting_team_get_runner_min_ports</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-sys-prio" title="nm_setting_team_get_runner_sys_prio ()">nm_setting_team_get_runner_sys_prio</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-tx-balancer" title="nm_setting_team_get_runner_tx_balancer ()">nm_setting_team_get_runner_tx_balancer</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-tx-balancer-interval" title="nm_setting_team_get_runner_tx_balancer_interval ()">nm_setting_team_get_runner_tx_balancer_interval</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-get-runner-tx-hash" title="nm_setting_team_get_runner_tx_hash ()">nm_setting_team_get_runner_tx_hash</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-LINK-WATCHERS:CAPS" title="NM_SETTING_TEAM_LINK_WATCHERS">NM_SETTING_TEAM_LINK_WATCHERS</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-MCAST-REJOIN-COUNT:CAPS" title="NM_SETTING_TEAM_MCAST_REJOIN_COUNT">NM_SETTING_TEAM_MCAST_REJOIN_COUNT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-MCAST-REJOIN-INTERVAL:CAPS" title="NM_SETTING_TEAM_MCAST_REJOIN_INTERVAL">NM_SETTING_TEAM_MCAST_REJOIN_INTERVAL</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingTeam.html#nm-setting-team-new" title="nm_setting_team_new ()">nm_setting_team_new</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-MCAST-COUNT-ACTIVEBACKUP-DEFAULT:CAPS" title="NM_SETTING_TEAM_NOTIFY_MCAST_COUNT_ACTIVEBACKUP_DEFAULT">NM_SETTING_TEAM_NOTIFY_MCAST_COUNT_ACTIVEBACKUP_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-PEERS-COUNT:CAPS" title="NM_SETTING_TEAM_NOTIFY_PEERS_COUNT">NM_SETTING_TEAM_NOTIFY_PEERS_COUNT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-PEERS-COUNT-ACTIVEBACKUP-DEFAULT:CAPS" title="NM_SETTING_TEAM_NOTIFY_PEERS_COUNT_ACTIVEBACKUP_DEFAULT">NM_SETTING_TEAM_NOTIFY_PEERS_COUNT_ACTIVEBACKUP_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-PEERS-INTERVAL:CAPS" title="NM_SETTING_TEAM_NOTIFY_PEERS_INTERVAL">NM_SETTING_TEAM_NOTIFY_PEERS_INTERVAL</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-add-link-watcher" title="nm_setting_team_port_add_link_watcher ()">nm_setting_team_port_add_link_watcher</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-clear-link-watchers" title="nm_setting_team_port_clear_link_watchers ()">nm_setting_team_port_clear_link_watchers</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
 </dt>
 <dd></dd>
 <dt>
@@ -8436,11 +8738,207 @@ NM_SETTING_PROXY_SETTING_NAME, macro in NMSettingProxy
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-lacp-key" title="nm_setting_team_port_get_lacp_key ()">nm_setting_team_port_get_lacp_key</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-lacp-prio" title="nm_setting_team_port_get_lacp_prio ()">nm_setting_team_port_get_lacp_prio</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-link-watcher" title="nm_setting_team_port_get_link_watcher ()">nm_setting_team_port_get_link_watcher</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-num-link-watchers" title="nm_setting_team_port_get_num_link_watchers ()">nm_setting_team_port_get_num_link_watchers</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-prio" title="nm_setting_team_port_get_prio ()">nm_setting_team_port_get_prio</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-queue-id" title="nm_setting_team_port_get_queue_id ()">nm_setting_team_port_get_queue_id</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-get-sticky" title="nm_setting_team_port_get_sticky ()">nm_setting_team_port_get_sticky</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LACP-KEY:CAPS" title="NM_SETTING_TEAM_PORT_LACP_KEY">NM_SETTING_TEAM_PORT_LACP_KEY</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LACP-PRIO:CAPS" title="NM_SETTING_TEAM_PORT_LACP_PRIO">NM_SETTING_TEAM_PORT_LACP_PRIO</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LACP-PRIO-DEFAULT:CAPS" title="NM_SETTING_TEAM_PORT_LACP_PRIO_DEFAULT">NM_SETTING_TEAM_PORT_LACP_PRIO_DEFAULT</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LINK-WATCHERS:CAPS" title="NM_SETTING_TEAM_PORT_LINK_WATCHERS">NM_SETTING_TEAM_PORT_LINK_WATCHERS</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-new" title="nm_setting_team_port_new ()">nm_setting_team_port_new</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-PRIO:CAPS" title="NM_SETTING_TEAM_PORT_PRIO">NM_SETTING_TEAM_PORT_PRIO</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-QUEUE-ID:CAPS" title="NM_SETTING_TEAM_PORT_QUEUE_ID">NM_SETTING_TEAM_PORT_QUEUE_ID</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-QUEUE-ID-DEFAULT:CAPS" title="NM_SETTING_TEAM_PORT_QUEUE_ID_DEFAULT">NM_SETTING_TEAM_PORT_QUEUE_ID_DEFAULT</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-remove-link-watcher" title="nm_setting_team_port_remove_link_watcher ()">nm_setting_team_port_remove_link_watcher</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#nm-setting-team-port-remove-link-watcher-by-value" title="nm_setting_team_port_remove_link_watcher_by_value ()">nm_setting_team_port_remove_link_watcher_by_value</a>, function in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-SETTING-NAME:CAPS" title="NM_SETTING_TEAM_PORT_SETTING_NAME">NM_SETTING_TEAM_PORT_SETTING_NAME</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-STICKY:CAPS" title="NM_SETTING_TEAM_PORT_STICKY">NM_SETTING_TEAM_PORT_STICKY</a>, macro in <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-remove-link-watcher" title="nm_setting_team_remove_link_watcher ()">nm_setting_team_remove_link_watcher</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-remove-link-watcher-by-value" title="nm_setting_team_remove_link_watcher_by_value ()">nm_setting_team_remove_link_watcher_by_value</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-remove-runner-tx-hash" title="nm_setting_team_remove_runner_tx_hash ()">nm_setting_team_remove_runner_tx_hash</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-setting-team-remove-runner-tx-hash-by-value" title="nm_setting_team_remove_runner_tx_hash_by_value ()">nm_setting_team_remove_runner_tx_hash_by_value</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER:CAPS" title="NM_SETTING_TEAM_RUNNER">NM_SETTING_TEAM_RUNNER</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ACTIVE:CAPS" title="NM_SETTING_TEAM_RUNNER_ACTIVE">NM_SETTING_TEAM_RUNNER_ACTIVE</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ACTIVEBACKUP:CAPS" title="NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP">NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-BANDWIDTH:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_BANDWIDTH">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_BANDWIDTH</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-COUNT:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_COUNT">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_COUNT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-DEFAULT:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_DEFAULT">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-LACP-PRIO:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-LACP-PRIO-STABLE:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO_STABLE">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO_STABLE</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-PORT-CONFIG:CAPS" title="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_PORT_CONFIG">NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_PORT_CONFIG</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-BROADCAST:CAPS" title="NM_SETTING_TEAM_RUNNER_BROADCAST">NM_SETTING_TEAM_RUNNER_BROADCAST</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-DEFAULT:CAPS" title="NM_SETTING_TEAM_RUNNER_DEFAULT">NM_SETTING_TEAM_RUNNER_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-FAST-RATE:CAPS" title="NM_SETTING_TEAM_RUNNER_FAST_RATE">NM_SETTING_TEAM_RUNNER_FAST_RATE</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY:CAPS" title="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY">NM_SETTING_TEAM_RUNNER_HWADDR_POLICY</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-BY-ACTIVE:CAPS" title="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_BY_ACTIVE">NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_BY_ACTIVE</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-DEFAULT:CAPS" title="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_DEFAULT">NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-ONLY-ACTIVE:CAPS" title="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_ONLY_ACTIVE">NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_ONLY_ACTIVE</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-SAME-ALL:CAPS" title="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_SAME_ALL">NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_SAME_ALL</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-LACP:CAPS" title="NM_SETTING_TEAM_RUNNER_LACP">NM_SETTING_TEAM_RUNNER_LACP</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-LOADBALANCE:CAPS" title="NM_SETTING_TEAM_RUNNER_LOADBALANCE">NM_SETTING_TEAM_RUNNER_LOADBALANCE</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-MIN-PORTS:CAPS" title="NM_SETTING_TEAM_RUNNER_MIN_PORTS">NM_SETTING_TEAM_RUNNER_MIN_PORTS</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ROUNDROBIN:CAPS" title="NM_SETTING_TEAM_RUNNER_ROUNDROBIN">NM_SETTING_TEAM_RUNNER_ROUNDROBIN</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-SYS-PRIO:CAPS" title="NM_SETTING_TEAM_RUNNER_SYS_PRIO">NM_SETTING_TEAM_RUNNER_SYS_PRIO</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-SYS-PRIO-DEFAULT:CAPS" title="NM_SETTING_TEAM_RUNNER_SYS_PRIO_DEFAULT">NM_SETTING_TEAM_RUNNER_SYS_PRIO_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-BALANCER:CAPS" title="NM_SETTING_TEAM_RUNNER_TX_BALANCER">NM_SETTING_TEAM_RUNNER_TX_BALANCER</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-BALANCER-INTERVAL:CAPS" title="NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL">NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-BALANCER-INTERVAL-DEFAULT:CAPS" title="NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL_DEFAULT">NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL_DEFAULT</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-HASH:CAPS" title="NM_SETTING_TEAM_RUNNER_TX_HASH">NM_SETTING_TEAM_RUNNER_TX_HASH</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9451,6 +9949,203 @@ nm_setting_user_set_data, function in nm-setting-user
 <a class="link" href="libnm-nm-dbus-interface.html#NMState" title="enum NMState">NMState</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
 </dt>
 <dd></dd>
+<a name="idxT"></a><h3 class="title">T</h3>
+<dt>
+nm_tc_action_dup, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_equal, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_get_attribute, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_get_attribute_names, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_get_kind, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_new, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_ref, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_set_attribute, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_action_unref, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_dup, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_equal, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_get_handle, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_get_kind, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_get_parent, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_new, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_ref, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_set_handle, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_qdisc_unref, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_dup, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_equal, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_get_action, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_get_handle, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_get_kind, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_get_parent, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_new, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_ref, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_set_action, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_set_handle, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+nm_tc_tfilter_unref, function in nm-setting-tc-config
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NMTeamLinkWatcherArpPingFlags" title="enum NMTeamLinkWatcherArpPingFlags">NMTeamLinkWatcherArpPingFlags</a>, enum in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ARP-PING:CAPS" title="NM_TEAM_LINK_WATCHER_ARP_PING">NM_TEAM_LINK_WATCHER_ARP_PING</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-dup" title="nm_team_link_watcher_dup ()">nm_team_link_watcher_dup</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-equal" title="nm_team_link_watcher_equal ()">nm_team_link_watcher_equal</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ETHTOOL:CAPS" title="NM_TEAM_LINK_WATCHER_ETHTOOL">NM_TEAM_LINK_WATCHER_ETHTOOL</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-delay-down" title="nm_team_link_watcher_get_delay_down ()">nm_team_link_watcher_get_delay_down</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-delay-up" title="nm_team_link_watcher_get_delay_up ()">nm_team_link_watcher_get_delay_up</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-flags" title="nm_team_link_watcher_get_flags ()">nm_team_link_watcher_get_flags</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-init-wait" title="nm_team_link_watcher_get_init_wait ()">nm_team_link_watcher_get_init_wait</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-interval" title="nm_team_link_watcher_get_interval ()">nm_team_link_watcher_get_interval</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-missed-max" title="nm_team_link_watcher_get_missed_max ()">nm_team_link_watcher_get_missed_max</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-name" title="nm_team_link_watcher_get_name ()">nm_team_link_watcher_get_name</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-source-host" title="nm_team_link_watcher_get_source_host ()">nm_team_link_watcher_get_source_host</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-get-target-host" title="nm_team_link_watcher_get_target_host ()">nm_team_link_watcher_get_target_host</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-new-arp-ping" title="nm_team_link_watcher_new_arp_ping ()">nm_team_link_watcher_new_arp_ping</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-new-ethtool" title="nm_team_link_watcher_new_ethtool ()">nm_team_link_watcher_new_ethtool</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-new-nsna-ping" title="nm_team_link_watcher_new_nsna_ping ()">nm_team_link_watcher_new_nsna_ping</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-NSNA-PING:CAPS" title="NM_TEAM_LINK_WATCHER_NSNA_PING">NM_TEAM_LINK_WATCHER_NSNA_PING</a>, macro in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-ref" title="nm_team_link_watcher_ref ()">nm_team_link_watcher_ref</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingTeam.html#nm-team-link-watcher-unref" title="nm_team_link_watcher_unref ()">nm_team_link_watcher_unref</a>, function in <a class="link" href="NMSettingTeam.html" title="NMSettingTeam">NMSettingTeam</a>
+</dt>
+<dd></dd>
 <a name="idxU"></a><h3 class="title">U</h3>
 <dt>
 <a class="link" href="libnm-nm-utils.html#NMUtilsCheckFilePredicate" title="NMUtilsCheckFilePredicate ()">NMUtilsCheckFilePredicate</a>, user_function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
@@ -9689,6 +10384,30 @@ nm_utils_fixup_desc_string, function in nm-libnm-utils
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-tc-action-from-str" title="nm_utils_tc_action_from_str ()">nm_utils_tc_action_from_str</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-tc-action-to-str" title="nm_utils_tc_action_to_str ()">nm_utils_tc_action_to_str</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-tc-qdisc-from-str" title="nm_utils_tc_qdisc_from_str ()">nm_utils_tc_qdisc_from_str</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-tc-qdisc-to-str" title="nm_utils_tc_qdisc_to_str ()">nm_utils_tc_qdisc_to_str</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-tc-tfilter-from-str" title="nm_utils_tc_tfilter_from_str ()">nm_utils_tc_tfilter_from_str</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-utils.html#nm-utils-tc-tfilter-to-str" title="nm_utils_tc_tfilter_to_str ()">nm_utils_tc_tfilter_to_str</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-utils.html#nm-utils-uuid-generate" title="nm_utils_uuid_generate ()">nm_utils_uuid_generate</a>, function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
 </dt>
 <dd></dd>
@@ -9794,7 +10513,7 @@ nm_utils_fixup_desc_string, function in nm-libnm-utils
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorInterface">NMVpnEditorInterface</a>, struct in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+<a href="../libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorInterface">NMVpnEditorInterface</a>, struct in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9870,7 +10589,7 @@ NMVpnPluginInfo, struct in nm-vpn-plugin-info
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-get-widget">nm_vpn_editor_get_widget</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+<a href="../libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-get-widget">nm_vpn_editor_get_widget</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9930,7 +10649,7 @@ NMVpnPluginInfo, struct in nm-vpn-plugin-info
 </dt>
 <dd></dd>
 <dt>
-<a href="/usr/share/gtk-doc/html/libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-update-connection">nm_vpn_editor_update_connection</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+<a href="../libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-update-connection">nm_vpn_editor_update_connection</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -10188,6 +10907,6 @@ NM_VPN_SERVICE_PLUGIN_STATE, macro in nm-vpn-service-plugin
 <dd></dd>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.25</div>
+<hr>Generated by GTK-Doc V1.26</div>
 </body>
 </html>

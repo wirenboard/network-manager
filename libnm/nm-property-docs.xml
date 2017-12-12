@@ -320,13 +320,39 @@
     <property name="send-delay" name_upper="SEND_DELAY" type="uint64" default="0" description="Time to delay between each byte sent to the modem, in microseconds." />
     <property name="stopbits" name_upper="STOPBITS" type="uint32" default="1" description="Number of stop bits for communication on the serial port.  Either 1 or 2. The 1 in &quot;8n1&quot; for example." />
   </setting>
+  <setting name="tc" description="Linux Traffic Contril Settings." name_upper="TC_CONFIG" >
+    <property name="name" name_upper="NAME" type="string" default="tc" description="The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example &quot;ppp&quot; or &quot;wireless&quot; or &quot;wired&quot;." />
+    <property name="qdiscs" name_upper="QDISCS" type="array of vardict" default="[]" description="Array of TC queuening disciplines." />
+    <property name="tfilters" name_upper="TFILTERS" type="array of vardict" default="[]" description="Array of TC traffic filters." />
+  </setting>
   <setting name="team" description="Teaming Settings" name_upper="TEAM" >
     <property name="config" name_upper="CONFIG" type="string" description="The JSON configuration for the team network interface.  The property should contain raw JSON configuration data suitable for teamd, because the value is passed directly to teamd. If not specified, the default configuration is used.  See man teamd.conf for the format details." />
+    <property name="link-watchers" name_upper="LINK_WATCHERS" type="array of vardict" default="[]" description="Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher. Available link watchers are 'ethtool', 'nsna_ping' and 'arp_ping' and it is specified in the dictionary with the key 'name'. Available keys are:   ethtool: 'delay-up', 'delay-down', 'init-wait'; nsna_ping: 'init-wait', 'interval', 'missed-max', 'target-host'; arp_ping: all the ones in nsna_ping and 'source-host', 'validate-active', 'validate-incative', 'send-always'. See teamd.conf man for more details." />
+    <property name="mcast-rejoin-count" name_upper="MCAST_REJOIN_COUNT" type="int32" default="0" description="Corresponds to the teamd mcast_rejoin.count." />
+    <property name="mcast-rejoin-interval" name_upper="MCAST_REJOIN_INTERVAL" type="int32" default="0" description="Corresponds to the teamd mcast_rejoin.interval." />
     <property name="name" name_upper="NAME" type="string" default="team" description="The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example &quot;ppp&quot; or &quot;wireless&quot; or &quot;wired&quot;." />
+    <property name="notify-peers-count" name_upper="NOTIFY_PEERS_COUNT" type="int32" default="0" description="Corresponds to the teamd notify_peers.count." />
+    <property name="notify-peers-interval" name_upper="NOTIFY_PEERS_INTERVAL" type="int32" default="0" description="Corresponds to the teamd notify_peers.interval." />
+    <property name="runner" name_upper="RUNNER" type="string" default="&quot;roundrobin&quot;" description="Corresponds to the teamd runner.name. Permitted values are: &quot;roundrobin&quot;, &quot;broadcast&quot;, &quot;activebackup&quot;, &quot;loadbalance&quot;, &quot;lacp&quot;." />
+    <property name="runner-active" name_upper="RUNNER_ACTIVE" type="boolean" default="FALSE" description="Corresponds to the teamd runner.active." />
+    <property name="runner-agg-select-policy" name_upper="RUNNER_AGG_SELECT_POLICY" type="string" description="Corresponds to the teamd runner.agg_select_policy." />
+    <property name="runner-fast-rate" name_upper="RUNNER_FAST_RATE" type="boolean" default="FALSE" description="Corresponds to the teamd runner.fast_rate." />
+    <property name="runner-hwaddr-policy" name_upper="RUNNER_HWADDR_POLICY" type="string" description="Corresponds to the teamd runner.hwaddr_policy." />
+    <property name="runner-min-ports" name_upper="RUNNER_MIN_PORTS" type="int32" default="-1" description="Corresponds to the teamd runner.min_ports." />
+    <property name="runner-sys-prio" name_upper="RUNNER_SYS_PRIO" type="int32" default="-1" description="Corresponds to the teamd runner.sys_prio." />
+    <property name="runner-tx-balancer" name_upper="RUNNER_TX_BALANCER" type="string" description="Corresponds to the teamd runner.tx_balancer.name." />
+    <property name="runner-tx-balancer-interval" name_upper="RUNNER_TX_BALANCER_INTERVAL" type="int32" default="-1" description="Corresponds to the teamd runner.tx_balancer.interval." />
+    <property name="runner-tx-hash" name_upper="RUNNER_TX_HASH" type="array of string" default="[]" description="Corresponds to the teamd runner.tx_hash." />
   </setting>
   <setting name="team-port" description="Team Port Settings" name_upper="TEAM_PORT" >
     <property name="config" name_upper="CONFIG" type="string" description="The JSON configuration for the team port. The property should contain raw JSON configuration data suitable for teamd, because the value is passed directly to teamd. If not specified, the default configuration is used. See man teamd.conf for the format details." />
+    <property name="lacp-key" name_upper="LACP_KEY" type="int32" default="0" description="Corresponds to the teamd ports.PORTIFNAME.lacp_key." />
+    <property name="lacp-prio" name_upper="LACP_PRIO" type="int32" default="255" description="Corresponds to the teamd ports.PORTIFNAME.lacp_prio." />
+    <property name="link-watchers" name_upper="LINK_WATCHERS" type="array of vardict" default="[]" description="Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher. Available link watchers are 'ethtool', 'nsna_ping' and 'arp_ping' and it is specified in the dictionary with the key 'name'. Available keys are:   ethtool: 'delay-up', 'delay-down', 'init-wait'; nsna_ping: 'init-wait', 'interval', 'missed-max', 'target-host'; arp_ping: all the ones in nsna_ping and 'source-host', 'validate-active', 'validate-incative', 'send-always'. See teamd.conf man for more details." />
     <property name="name" name_upper="NAME" type="string" default="team-port" description="The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example &quot;ppp&quot; or &quot;wireless&quot; or &quot;wired&quot;." />
+    <property name="prio" name_upper="PRIO" type="int32" default="0" description="Corresponds to the teamd ports.PORTIFNAME.prio." />
+    <property name="queue-id" name_upper="QUEUE_ID" type="int32" default="-1" description="Corresponds to the teamd ports.PORTIFNAME.queue_id. When set to -1 means the parameter is skipped from the json config." />
+    <property name="sticky" name_upper="STICKY" type="boolean" default="FALSE" description="Corresponds to the teamd ports.PORTIFNAME.sticky." />
   </setting>
   <setting name="tun" description="Tunnel Settings" name_upper="TUN" >
     <property name="group" name_upper="GROUP" type="string" description="The group ID which will own the device. If set to NULL everyone will be able to use the device." />

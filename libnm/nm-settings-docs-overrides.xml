@@ -132,6 +132,8 @@ also exist on some routes."/>
 <property name="parity" variable="parity" format="byte" values="" default="" example="" description="The connection parity: 69 (ASCII &apos;E&apos;) for even parity,
 111 (ASCII &apos;o&apos;) for odd, 110 (ASCII &apos;n&apos;) for none."/>
 </setting>
+<setting name="tc">
+</setting>
 <setting name="team-port">
 </setting>
 <setting name="team">

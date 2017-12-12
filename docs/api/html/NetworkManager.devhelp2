@@ -42,6 +42,7 @@
         <sub name="" link="settings-pppoe.html"/>
         <sub name="" link="settings-proxy.html"/>
         <sub name="" link="settings-serial.html"/>
+        <sub name="" link="settings-tc.html"/>
         <sub name="" link="settings-team.html"/>
         <sub name="" link="settings-team-port.html"/>
         <sub name="" link="settings-tun.html"/>
@@ -207,6 +208,7 @@
     <keyword type="method" name="The GetSecrets() method" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.GetSecrets"/>
     <keyword type="method" name="The ClearSecrets() method" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.ClearSecrets"/>
     <keyword type="method" name="The Save() method" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Save"/>
+    <keyword type="method" name="The Update2() method" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Update2"/>
     <keyword type="signal" name="The &quot;Updated&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-signal-org-freedesktop-NetworkManager-Settings-Connection.Updated"/>
     <keyword type="signal" name="The &quot;Removed&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-signal-org-freedesktop-NetworkManager-Settings-Connection.Removed"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-signal-org-freedesktop-NetworkManager-Settings-Connection.PropertiesChanged"/>
@@ -462,6 +464,7 @@
     <keyword type="enum" name="enum NMCheckpointCreateFlags" link="nm-dbus-types.html#NMCheckpointCreateFlags"/>
     <keyword type="enum" name="enum NMRollbackResult" link="nm-dbus-types.html#NMRollbackResult"/>
     <keyword type="enum" name="enum NMActivationStateFlags" link="nm-dbus-types.html#NMActivationStateFlags"/>
+    <keyword type="enum" name="enum NMSettingsUpdate2Flags" link="nm-dbus-types.html#NMSettingsUpdate2Flags"/>
     <keyword type="method" name="The GetSecrets() method" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html#gdbus-method-org-freedesktop-NetworkManager-SecretAgent.GetSecrets"/>
     <keyword type="method" name="The CancelGetSecrets() method" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html#gdbus-method-org-freedesktop-NetworkManager-SecretAgent.CancelGetSecrets"/>
     <keyword type="method" name="The SaveSecrets() method" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html#gdbus-method-org-freedesktop-NetworkManager-SecretAgent.SaveSecrets"/>
@@ -713,6 +716,13 @@
     <keyword type="constant" name="NM_ACTIVATION_STATE_FLAG_IP4_READY" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.25.4.2.1.4.5.1.1id-1.4.15.2.25.4.2.1.4.5.1.2"/>
     <keyword type="constant" name="NM_ACTIVATION_STATE_FLAG_IP6_READY" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.25.4.2.1.4.6.1.1id-1.4.15.2.25.4.2.1.4.6.1.2"/>
     <keyword type="constant" name="NM_ACTIVATION_STATE_FLAG_MASTER_HAS_SLAVES" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.25.4.2.1.4.7.1.1id-1.4.15.2.25.4.2.1.4.7.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_NONE" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.1.1.1id-1.4.15.2.26.4.2.1.4.1.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_TO_DISK" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.2.1.1id-1.4.15.2.26.4.2.1.4.2.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.3.1.1id-1.4.15.2.26.4.2.1.4.3.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.4.1.1id-1.4.15.2.26.4.2.1.4.4.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.5.1.1id-1.4.15.2.26.4.2.1.4.5.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_VOLATILE" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.6.1.1id-1.4.15.2.26.4.2.1.4.6.1.2"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_BLOCK_AUTOCONNECT" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.15.2.26.4.2.1.4.7.1.1id-1.4.15.2.26.4.2.1.4.7.1.2"/>
     <keyword type="constant" name="NM_VPN_SERVICE_STATE_UNKNOWN" link="nm-vpn-dbus-types.htmlnm-vpn-dbus-types.html#id-1.6.3.2.3.4.2.1.4.1.1.1id-1.6.3.2.3.4.2.1.4.1.1.2"/>
     <keyword type="constant" name="NM_VPN_SERVICE_STATE_INIT" link="nm-vpn-dbus-types.htmlnm-vpn-dbus-types.html#id-1.6.3.2.3.4.2.1.4.2.1.1id-1.6.3.2.3.4.2.1.4.2.1.2"/>
     <keyword type="constant" name="NM_VPN_SERVICE_STATE_SHUTDOWN" link="nm-vpn-dbus-types.htmlnm-vpn-dbus-types.html#id-1.6.3.2.3.4.2.1.4.3.1.1id-1.6.3.2.3.4.2.1.4.3.1.2"/>

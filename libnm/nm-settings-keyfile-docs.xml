@@ -74,6 +74,8 @@ route2=7.7.0.0/16" description="List of IP routes."/>
 versions of NetworkManager stored this as an integer: 69 (&apos;E&apos;) for even,
 111 (&apos;o&apos;) for odd, or 110 (&apos;n&apos;) for none."/>
 </setting>
+<setting name="tc">
+</setting>
 <setting name="team-port">
 </setting>
 <setting name="team">
