@@ -75,7 +75,6 @@
 #include "nm-audit-manager.h"
 #include "NetworkManagerUtils.h"
 #include "nm-dispatcher.h"
-#include "nm-inotify-helper.h"
 #include "nm-hostname-manager.h"
 
 #include "introspection/org.freedesktop.NetworkManager.Settings.h"
@@ -84,13 +83,8 @@
 
 #define EXPORT(sym) void * __export_##sym = &sym;
 
-EXPORT(nm_inotify_helper_get_type)
-EXPORT(nm_inotify_helper_get)
-EXPORT(nm_inotify_helper_add_watch)
-EXPORT(nm_inotify_helper_remove_watch)
-
 EXPORT(nm_settings_connection_get_type)
-EXPORT(nm_settings_connection_replace_settings)
+EXPORT(nm_settings_connection_update)
 
 /*****************************************************************************/
 
@@ -127,8 +121,7 @@ enum {
 	CONNECTION_ADDED,
 	CONNECTION_UPDATED,
 	CONNECTION_REMOVED,
-	CONNECTION_VISIBILITY_CHANGED,
-	AGENT_REGISTERED,
+	CONNECTION_FLAGS_CHANGED,
 	NEW_CONNECTION, /* exported, not used internally */
 	LAST_SIGNAL
 };
@@ -431,6 +424,9 @@ nm_settings_get_connections (NMSettings *self, guint *out_len)
  * @out_len: (allow-none): optional output argument
  * @func: caller-supplied function for filtering connections
  * @func_data: caller-supplied data passed to @func
+ * @sort_compare_func: (allow-none): optional function pointer for
+ *   sorting the returned list.
+ * @sort_data: user data for @sort_compare_func.
  *
  * Returns: (transfer container) (element-type NMSettingsConnection):
  *   an NULL terminated array of #NMSettingsConnection objects that were
@@ -443,7 +439,9 @@ NMSettingsConnection **
 nm_settings_get_connections_clone (NMSettings *self,
                                    guint *out_len,
                                    NMSettingsConnectionFilterFunc func,
-                                   gpointer func_data)
+                                   gpointer func_data,
+                                   GCompareDataFunc sort_compare_func,
+                                   gpointer sort_data)
 {
 	NMSettingsConnection *const*list_cached;
 	NMSettingsConnection **list;
@@ -471,29 +469,13 @@ nm_settings_get_connections_clone (NMSettings *self,
 	} else
 		memcpy (list, list_cached, sizeof (list[0]) * ((gsize) len + 1));
 
+	if (   len > 1
+	    && sort_compare_func) {
+		g_qsort_with_data (list, len, sizeof (NMSettingsConnection *),
+		                   sort_compare_func, sort_data);
+	}
 	NM_SET_OUT (out_len, len);
 	return list;
-}
-
-/* Returns a list of NMSettingsConnections.
- * The list is sorted in the order suitable for auto-connecting, i.e.
- * first go connections with autoconnect=yes and most recent timestamp.
- * Caller must free the list with g_free(), but not the list items.
- */
-NMSettingsConnection **
-nm_settings_get_connections_sorted (NMSettings *self, guint *out_len)
-{
-	NMSettingsConnection **connections;
-	guint len;
-
-	g_return_val_if_fail (NM_IS_SETTINGS (self), NULL);
-
-	connections = nm_settings_get_connections_clone (self, &len, NULL, NULL);
-	if (len > 1)
-		g_qsort_with_data (connections, len, sizeof (NMSettingsConnection *), nm_settings_connection_cmp_autoconnect_priority_p_with_data, NULL);
-
-	NM_SET_OUT (out_len, len);
-	return connections;
 }
 
 NMSettingsConnection *
@@ -838,13 +820,12 @@ connection_updated (NMSettingsConnection *connection, gboolean by_user, gpointer
 }
 
 static void
-connection_visibility_changed (NMSettingsConnection *connection,
-                               GParamSpec *pspec,
-                               gpointer user_data)
+connection_flags_changed (NMSettingsConnection *connection,
+                          GParamSpec *pspec,
+                          gpointer user_data)
 {
-	/* Re-emit for listeners like NMPolicy */
 	g_signal_emit (NM_SETTINGS (user_data),
-	               signals[CONNECTION_VISIBILITY_CHANGED],
+	               signals[CONNECTION_FLAGS_CHANGED],
 	               0,
 	               connection);
 }
@@ -867,7 +848,7 @@ connection_removed (NMSettingsConnection *connection, gpointer user_data)
 
 	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_removed), self);
 	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_updated), self);
-	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_visibility_changed), self);
+	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_flags_changed), self);
 	if (!priv->startup_complete)
 		g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_ready_changed), self);
 	g_object_unref (self);
@@ -887,18 +868,6 @@ connection_removed (NMSettingsConnection *connection, gpointer user_data)
 	check_startup_complete (self);
 
 	g_object_unref (connection);
-}
-
-static void
-secret_agent_registered (NMAgentManager *agent_mgr,
-                         NMSecretAgent *agent,
-                         gpointer user_data)
-{
-	/* Re-emit for listeners like NMPolicy */
-	g_signal_emit (NM_SETTINGS (user_data),
-	               signals[AGENT_REGISTERED],
-	               0,
-	               agent);
 }
 
 #define NM_DBUS_SERVICE_OPENCONNECT    "org.freedesktop.NetworkManager.openconnect"
@@ -1003,8 +972,8 @@ claim_connection (NMSettings *self, NMSettingsConnection *connection)
 	                        G_CALLBACK (connection_removed), self);
 	g_signal_connect (connection, NM_SETTINGS_CONNECTION_UPDATED_INTERNAL,
 	                  G_CALLBACK (connection_updated), self);
-	g_signal_connect (connection, "notify::" NM_SETTINGS_CONNECTION_VISIBLE,
-	                  G_CALLBACK (connection_visibility_changed),
+	g_signal_connect (connection, "notify::" NM_SETTINGS_CONNECTION_FLAGS,
+	                  G_CALLBACK (connection_flags_changed),
 	                  self);
 	if (!priv->startup_complete) {
 		g_signal_connect (connection, "notify::" NM_SETTINGS_CONNECTION_READY,
@@ -1035,6 +1004,25 @@ claim_connection (NMSettings *self, NMSettingsConnection *connection)
 		/* Exported D-Bus signal */
 		g_signal_emit (self, signals[NEW_CONNECTION], 0, connection);
 	}
+}
+
+static gboolean
+secrets_filter_cb (NMSetting *setting,
+                   const char *secret,
+                   NMSettingSecretFlags flags,
+                   gpointer user_data)
+{
+	NMSettingSecretFlags filter_flags = GPOINTER_TO_UINT (user_data);
+
+	/* Returns TRUE to remove the secret */
+
+	/* Can't use bitops with SECRET_FLAG_NONE so handle that specifically */
+	if (   (flags == NM_SETTING_SECRET_FLAG_NONE)
+	    && (filter_flags == NM_SETTING_SECRET_FLAG_NONE))
+		return FALSE;
+
+	/* Otherwise if the secret has at least one of the desired flags keep it */
+	return (flags & filter_flags) ? FALSE : TRUE;
 }
 
 /**
@@ -1087,9 +1075,22 @@ nm_settings_add_connection (NMSettings *self,
 	for (iter = priv->plugins; iter; iter = g_slist_next (iter)) {
 		NMSettingsPlugin *plugin = NM_SETTINGS_PLUGIN (iter->data);
 		GError *add_error = NULL;
+		gs_unref_object NMConnection *simple = NULL;
+		gs_unref_variant GVariant *secrets = NULL;
+
+		/* Make a copy of agent-owned secrets because they won't be present in
+		 * the connection returned by plugins, as plugins return only what was
+		 * reread from the file. */
+		simple = nm_simple_connection_new_clone (connection);
+		nm_connection_clear_secrets_with_flags (simple,
+		                                        secrets_filter_cb,
+		                                        GUINT_TO_POINTER (NM_SETTING_SECRET_FLAG_AGENT_OWNED));
+		secrets = nm_connection_to_dbus (simple, NM_CONNECTION_SERIALIZE_ONLY_SECRETS);
 
 		added = nm_settings_plugin_add_connection (plugin, connection, save_to_disk, &add_error);
 		if (added) {
+			if (secrets)
+				nm_connection_update_secrets (NM_CONNECTION (added), NULL, secrets, NULL);
 			claim_connection (self, added);
 			return added;
 		}
@@ -1103,25 +1104,6 @@ nm_settings_add_connection (NMSettings *self,
 	g_set_error_literal (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
 	                     "No plugin supported adding this connection");
 	return NULL;
-}
-
-static gboolean
-secrets_filter_cb (NMSetting *setting,
-                   const char *secret,
-                   NMSettingSecretFlags flags,
-                   gpointer user_data)
-{
-	NMSettingSecretFlags filter_flags = GPOINTER_TO_UINT (user_data);
-
-	/* Returns TRUE to remove the secret */
-
-	/* Can't use bitops with SECRET_FLAG_NONE so handle that specifically */
-	if (   (flags == NM_SETTING_SECRET_FLAG_NONE)
-	    && (filter_flags == NM_SETTING_SECRET_FLAG_NONE))
-		return FALSE;
-
-	/* Otherwise if the secret has at least one of the desired flags keep it */
-	return (flags & filter_flags) ? FALSE : TRUE;
 }
 
 static void
@@ -1886,16 +1868,8 @@ nm_settings_init (NMSettings *self)
 
 	priv->connections = g_hash_table_new_full (nm_str_hash, g_str_equal, NULL, g_object_unref);
 
-	/* Hold a reference to the agent manager so it stays alive; the only
-	 * other holders are NMSettingsConnection objects which are often
-	 * transient, and we don't want the agent manager to get destroyed and
-	 * recreated often.
-	 */
 	priv->agent_mgr = g_object_ref (nm_agent_manager_get ());
-
 	priv->config = g_object_ref (nm_config_get ());
-
-	g_signal_connect (priv->agent_mgr, "agent-registered", G_CALLBACK (secret_agent_registered), self);
 }
 
 NMSettings *
@@ -2012,22 +1986,13 @@ nm_settings_class_init (NMSettingsClass *class)
 	                  g_cclosure_marshal_VOID__OBJECT,
 	                  G_TYPE_NONE, 1, NM_TYPE_SETTINGS_CONNECTION);
 
-	signals[CONNECTION_VISIBILITY_CHANGED] =
-	    g_signal_new (NM_SETTINGS_SIGNAL_CONNECTION_VISIBILITY_CHANGED,
+	signals[CONNECTION_FLAGS_CHANGED] =
+	    g_signal_new (NM_SETTINGS_SIGNAL_CONNECTION_FLAGS_CHANGED,
 	                  G_OBJECT_CLASS_TYPE (object_class),
 	                  G_SIGNAL_RUN_FIRST,
 	                  0, NULL, NULL,
 	                  g_cclosure_marshal_VOID__OBJECT,
 	                  G_TYPE_NONE, 1, NM_TYPE_SETTINGS_CONNECTION);
-
-	signals[AGENT_REGISTERED] =
-	    g_signal_new (NM_SETTINGS_SIGNAL_AGENT_REGISTERED,
-	                  G_OBJECT_CLASS_TYPE (object_class),
-	                  G_SIGNAL_RUN_FIRST,
-	                  0, NULL, NULL,
-	                  g_cclosure_marshal_VOID__OBJECT,
-	                  G_TYPE_NONE, 1, NM_TYPE_SECRET_AGENT);
-
 
 	signals[NEW_CONNECTION] =
 	    g_signal_new ("new-connection",

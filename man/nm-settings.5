@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 11/10/2017
+.\"      Date: 12/12/2017
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.10.0
+.\"    Source: NetworkManager 1.10.2
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.10\&.0" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.10\&.2" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -3234,6 +3234,54 @@ Number of stop bits for communication on the serial port\&.  Either 1 or 2\&. Th
 T}
 .TE
 .sp 1
+.SS "tc setting"
+.PP
+Linux Traffic Contril Settings\&.\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l.
+T{
+name
+T}:T{
+string
+T}:T{
+tc
+T}:T{
+The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+qdiscs
+T}:T{
+array of vardict
+T}:T{
+[]
+T}:T{
+Array of TC queuening disciplines\&.
+T}
+T{
+tfilters
+T}:T{
+array of vardict
+T}:T{
+[]
+T}:T{
+Array of TC traffic filters\&.
+T}
+.TE
+.sp 1
 .SS "team setting"
 .PP
 Teaming Settings\&.
@@ -3250,6 +3298,21 @@ T}:T{
 Value Description
 T}
 .T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
 l l l l
 l l l l
 l l l l.
@@ -3272,6 +3335,33 @@ T}:T{
 Deprecated in favor of connection\&.interface\-name, but can be used for backward\-compatibility with older daemons, to set the team\*(Aqs interface name\&.
 T}
 T{
+link\-watchers
+T}:T{
+array of vardict
+T}:T{
+[]
+T}:T{
+Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher\&. Available link watchers are \*(Aqethtool\*(Aq, \*(Aqnsna_ping\*(Aq and \*(Aqarp_ping\*(Aq and it is specified in the dictionary with the key \*(Aqname\*(Aq\&. Available keys are:   ethtool: \*(Aqdelay\-up\*(Aq, \*(Aqdelay\-down\*(Aq, \*(Aqinit\-wait\*(Aq; nsna_ping: \*(Aqinit\-wait\*(Aq, \*(Aqinterval\*(Aq, \*(Aqmissed\-max\*(Aq, \*(Aqtarget\-host\*(Aq; arp_ping: all the ones in nsna_ping and \*(Aqsource\-host\*(Aq, \*(Aqvalidate\-active\*(Aq, \*(Aqvalidate\-incative\*(Aq, \*(Aqsend\-always\*(Aq\&. See teamd\&.conf man for more details\&.
+T}
+T{
+mcast\-rejoin\-count
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Corresponds to the teamd mcast_rejoin\&.count\&.
+T}
+T{
+mcast\-rejoin\-interval
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Corresponds to the teamd mcast_rejoin\&.interval\&.
+T}
+T{
 name
 T}:T{
 string
@@ -3279,6 +3369,114 @@ T}:T{
 team
 T}:T{
 The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+notify\-peers\-count
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Corresponds to the teamd notify_peers\&.count\&.
+T}
+T{
+notify\-peers\-interval
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Corresponds to the teamd notify_peers\&.interval\&.
+T}
+T{
+runner
+T}:T{
+string
+T}:T{
+"roundrobin"
+T}:T{
+Corresponds to the teamd runner\&.name\&. Permitted values are: "roundrobin", "broadcast", "activebackup", "loadbalance", "lacp"\&.
+T}
+T{
+runner\-active
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Corresponds to the teamd runner\&.active\&.
+T}
+T{
+runner\-agg\-select\-policy
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Corresponds to the teamd runner\&.agg_select_policy\&.
+T}
+T{
+runner\-fast\-rate
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Corresponds to the teamd runner\&.fast_rate\&.
+T}
+T{
+runner\-hwaddr\-policy
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Corresponds to the teamd runner\&.hwaddr_policy\&.
+T}
+T{
+runner\-min\-ports
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+Corresponds to the teamd runner\&.min_ports\&.
+T}
+T{
+runner\-sys\-prio
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+Corresponds to the teamd runner\&.sys_prio\&.
+T}
+T{
+runner\-tx\-balancer
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Corresponds to the teamd runner\&.tx_balancer\&.name\&.
+T}
+T{
+runner\-tx\-balancer\-interval
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+Corresponds to the teamd runner\&.tx_balancer\&.interval\&.
+T}
+T{
+runner\-tx\-hash
+T}:T{
+array of string
+T}:T{
+[]
+T}:T{
+Corresponds to the teamd runner\&.tx_hash\&.
 T}
 .TE
 .sp 1
@@ -3299,6 +3497,12 @@ Value Description
 T}
 .T&
 l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
 l l l l.
 T{
 config
@@ -3310,6 +3514,33 @@ T}:T{
 The JSON configuration for the team port\&. The property should contain raw JSON configuration data suitable for teamd, because the value is passed directly to teamd\&. If not specified, the default configuration is used\&. See man teamd\&.conf for the format details\&.
 T}
 T{
+lacp\-key
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Corresponds to the teamd ports\&.PORTIFNAME\&.lacp_key\&.
+T}
+T{
+lacp\-prio
+T}:T{
+int32
+T}:T{
+255
+T}:T{
+Corresponds to the teamd ports\&.PORTIFNAME\&.lacp_prio\&.
+T}
+T{
+link\-watchers
+T}:T{
+array of vardict
+T}:T{
+[]
+T}:T{
+Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher\&. Available link watchers are \*(Aqethtool\*(Aq, \*(Aqnsna_ping\*(Aq and \*(Aqarp_ping\*(Aq and it is specified in the dictionary with the key \*(Aqname\*(Aq\&. Available keys are:   ethtool: \*(Aqdelay\-up\*(Aq, \*(Aqdelay\-down\*(Aq, \*(Aqinit\-wait\*(Aq; nsna_ping: \*(Aqinit\-wait\*(Aq, \*(Aqinterval\*(Aq, \*(Aqmissed\-max\*(Aq, \*(Aqtarget\-host\*(Aq; arp_ping: all the ones in nsna_ping and \*(Aqsource\-host\*(Aq, \*(Aqvalidate\-active\*(Aq, \*(Aqvalidate\-incative\*(Aq, \*(Aqsend\-always\*(Aq\&. See teamd\&.conf man for more details\&.
+T}
+T{
 name
 T}:T{
 string
@@ -3317,6 +3548,33 @@ T}:T{
 team\-port
 T}:T{
 The setting\*(Aqs name, which uniquely identifies the setting within the connection\&.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired"\&.
+T}
+T{
+prio
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+Corresponds to the teamd ports\&.PORTIFNAME\&.prio\&.
+T}
+T{
+queue\-id
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+Corresponds to the teamd ports\&.PORTIFNAME\&.queue_id\&. When set to \-1 means the parameter is skipped from the json config\&.
+T}
+T{
+sticky
+T}:T{
+boolean
+T}:T{
+FALSE
+T}:T{
+Corresponds to the teamd ports\&.PORTIFNAME\&.sticky\&.
 T}
 .TE
 .sp 1

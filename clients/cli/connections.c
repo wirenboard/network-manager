@@ -14,7 +14,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright 2010 - 2015 Red Hat, Inc.
+ * Copyright 2010 - 2017 Red Hat, Inc.
  */
 
 #include "nm-default.h"
@@ -146,7 +146,8 @@ const NmcMetaGenericInfo *const nmc_fields_con_active_details_general[] = {
                                          NM_SETTING_MACSEC_SETTING_NAME"," \
                                          NM_SETTING_MACVLAN_SETTING_NAME"," \
                                          NM_SETTING_VXLAN_SETTING_NAME"," \
-                                         NM_SETTING_PROXY_SETTING_NAME
+                                         NM_SETTING_PROXY_SETTING_NAME"," \
+                                         NM_SETTING_TC_CONFIG_SETTING_NAME
                                          // NM_SETTING_DUMMY_SETTING_NAME
                                          // NM_SETTING_WIMAX_SETTING_NAME
 
@@ -2656,7 +2657,7 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 		const GPtrArray *connections;
 		const char *selector = NULL;
 
-		if (arg_num == 1)
+		if (arg_num == 1 && nmc->complete)
 			nmc_complete_strings (*arg_ptr, "id", "uuid", "path", "apath", NULL);
 
 		if (   strcmp (*arg_ptr, "id") == 0
@@ -7569,6 +7570,8 @@ editor_menu_main (NmCli *nmc, NMConnection *connection, const char *connection_t
 	g_free (menu_ctx.valid_props_str);
 	g_weak_ref_clear (&weak);
 
+	quit ();
+
 	/* Save history file */
 	save_history_cmds (nm_connection_get_uuid (connection));
 
@@ -8605,7 +8608,7 @@ do_connection_export (NmCli *nmc, int argc, char **argv)
 			nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
 			goto finish;
 		}
-		close (fd);
+		nm_close (fd);
 		path = tmpfile;
 	}
 

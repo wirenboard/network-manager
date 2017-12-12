@@ -269,11 +269,12 @@ reload_connections (NMSettingsPlugin *config)
 				}
 			} else {
 				/* Update existing connection with new settings */
-				if (!nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (old),
-				                                              NM_CONNECTION (new),
-				                                              FALSE,  /* don't set Unsaved */
-				                                              "ifnet-update",
-				                                              &error)) {
+				if (!nm_settings_connection_update (NM_SETTINGS_CONNECTION (old),
+				                                    NM_CONNECTION (new),
+				                                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP,
+				                                    NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE,
+				                                    "ifnet-update",
+				                                    &error)) {
 					/* Shouldn't ever get here as 'new' was verified by the reader already
 					 * and the UUID did not change. */
 					g_assert_not_reached ();
@@ -519,5 +520,5 @@ settings_plugin_interface_init (NMSettingsPluginInterface *plugin_iface)
 G_MODULE_EXPORT GObject *
 nm_settings_plugin_factory (void)
 {
-	return g_object_ref (settings_plugin_ifnet_get ());
+	return G_OBJECT (g_object_ref (settings_plugin_ifnet_get ()));
 }

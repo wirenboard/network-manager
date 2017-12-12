@@ -381,6 +381,7 @@
     <keyword type="enum" name="enum NMCheckpointCreateFlags" link="libnm-nm-dbus-interface.html#NMCheckpointCreateFlags" since="1.4"/>
     <keyword type="enum" name="enum NMRollbackResult" link="libnm-nm-dbus-interface.html#NMRollbackResult" since="1.4"/>
     <keyword type="enum" name="enum NMActivationStateFlags" link="libnm-nm-dbus-interface.html#NMActivationStateFlags" since="1.10"/>
+    <keyword type="enum" name="enum NMSettingsUpdate2Flags" link="libnm-nm-dbus-interface.html#NMSettingsUpdate2Flags" since="1.10.2"/>
     <keyword type="function" name="nm_connection_add_setting ()" link="NMConnection.html#nm-connection-add-setting"/>
     <keyword type="function" name="nm_connection_remove_setting ()" link="NMConnection.html#nm-connection-remove-setting"/>
     <keyword type="function" name="nm_connection_get_setting ()" link="NMConnection.html#nm-connection-get-setting"/>
@@ -438,6 +439,7 @@
     <keyword type="function" name="nm_connection_get_setting_pppoe ()" link="NMConnection.html#nm-connection-get-setting-pppoe"/>
     <keyword type="function" name="nm_connection_get_setting_proxy ()" link="NMConnection.html#nm-connection-get-setting-proxy" since="1.6"/>
     <keyword type="function" name="nm_connection_get_setting_serial ()" link="NMConnection.html#nm-connection-get-setting-serial"/>
+    <keyword type="function" name="nm_connection_get_setting_tc_config ()" link="NMConnection.html#nm-connection-get-setting-tc-config" since="1.10.2"/>
     <keyword type="function" name="nm_connection_get_setting_tun ()" link="NMConnection.html#nm-connection-get-setting-tun" since="1.2"/>
     <keyword type="function" name="nm_connection_get_setting_vpn ()" link="NMConnection.html#nm-connection-get-setting-vpn"/>
     <keyword type="function" name="nm_connection_get_setting_wimax ()" link="NMConnection.html#nm-connection-get-setting-wimax"/>
@@ -1131,6 +1133,7 @@
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_SRC" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-SRC:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_FROM" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-FROM:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_TOS" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-TOS:CAPS"/>
+    <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_ONLINK" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-ONLINK:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_WINDOW" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-WINDOW:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_CWND" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-CWND:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_INITCWND" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-INITCWND:CAPS"/>
@@ -1386,18 +1389,137 @@
     <keyword type="property" name="The “parity” property" link="NMSettingSerial.html#NMSettingSerial--parity"/>
     <keyword type="property" name="The “send-delay” property" link="NMSettingSerial.html#NMSettingSerial--send-delay"/>
     <keyword type="property" name="The “stopbits” property" link="NMSettingSerial.html#NMSettingSerial--stopbits"/>
+    <keyword type="function" name="nm_team_link_watcher_new_ethtool ()" link="NMSettingTeam.html#nm-team-link-watcher-new-ethtool" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_new_nsna_ping ()" link="NMSettingTeam.html#nm-team-link-watcher-new-nsna-ping" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_new_arp_ping ()" link="NMSettingTeam.html#nm-team-link-watcher-new-arp-ping" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_ref ()" link="NMSettingTeam.html#nm-team-link-watcher-ref" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_unref ()" link="NMSettingTeam.html#nm-team-link-watcher-unref" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_equal ()" link="NMSettingTeam.html#nm-team-link-watcher-equal" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_dup ()" link="NMSettingTeam.html#nm-team-link-watcher-dup" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_name ()" link="NMSettingTeam.html#nm-team-link-watcher-get-name" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_delay_up ()" link="NMSettingTeam.html#nm-team-link-watcher-get-delay-up" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_delay_down ()" link="NMSettingTeam.html#nm-team-link-watcher-get-delay-down" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_init_wait ()" link="NMSettingTeam.html#nm-team-link-watcher-get-init-wait" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_interval ()" link="NMSettingTeam.html#nm-team-link-watcher-get-interval" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_missed_max ()" link="NMSettingTeam.html#nm-team-link-watcher-get-missed-max" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_target_host ()" link="NMSettingTeam.html#nm-team-link-watcher-get-target-host" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_source_host ()" link="NMSettingTeam.html#nm-team-link-watcher-get-source-host" since="1.10.2"/>
+    <keyword type="function" name="nm_team_link_watcher_get_flags ()" link="NMSettingTeam.html#nm-team-link-watcher-get-flags" since="1.10.2"/>
     <keyword type="function" name="nm_setting_team_new ()" link="NMSettingTeam.html#nm-setting-team-new"/>
     <keyword type="function" name="nm_setting_team_get_config ()" link="NMSettingTeam.html#nm-setting-team-get-config"/>
+    <keyword type="function" name="nm_setting_team_get_notify_peers_count ()" link="NMSettingTeam.html#nm-setting-team-get-notify-peers-count" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_notify_peers_interval ()" link="NMSettingTeam.html#nm-setting-team-get-notify-peers-interval" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_mcast_rejoin_count ()" link="NMSettingTeam.html#nm-setting-team-get-mcast-rejoin-count" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_mcast_rejoin_interval ()" link="NMSettingTeam.html#nm-setting-team-get-mcast-rejoin-interval" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner ()" link="NMSettingTeam.html#nm-setting-team-get-runner" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_hwaddr_policy ()" link="NMSettingTeam.html#nm-setting-team-get-runner-hwaddr-policy" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_tx_balancer ()" link="NMSettingTeam.html#nm-setting-team-get-runner-tx-balancer" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_tx_balancer_interval ()" link="NMSettingTeam.html#nm-setting-team-get-runner-tx-balancer-interval" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_active ()" link="NMSettingTeam.html#nm-setting-team-get-runner-active" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_fast_rate ()" link="NMSettingTeam.html#nm-setting-team-get-runner-fast-rate" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_sys_prio ()" link="NMSettingTeam.html#nm-setting-team-get-runner-sys-prio" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_min_ports ()" link="NMSettingTeam.html#nm-setting-team-get-runner-min-ports" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_agg_select_policy ()" link="NMSettingTeam.html#nm-setting-team-get-runner-agg-select-policy" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_remove_runner_tx_hash_by_value ()" link="NMSettingTeam.html#nm-setting-team-remove-runner-tx-hash-by-value" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_num_runner_tx_hash ()" link="NMSettingTeam.html#nm-setting-team-get-num-runner-tx-hash" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_runner_tx_hash ()" link="NMSettingTeam.html#nm-setting-team-get-runner-tx-hash" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_remove_runner_tx_hash ()" link="NMSettingTeam.html#nm-setting-team-remove-runner-tx-hash" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_add_runner_tx_hash ()" link="NMSettingTeam.html#nm-setting-team-add-runner-tx-hash" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_num_link_watchers ()" link="NMSettingTeam.html#nm-setting-team-get-num-link-watchers" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_get_link_watcher ()" link="NMSettingTeam.html#nm-setting-team-get-link-watcher" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_add_link_watcher ()" link="NMSettingTeam.html#nm-setting-team-add-link-watcher" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_remove_link_watcher ()" link="NMSettingTeam.html#nm-setting-team-remove-link-watcher" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_remove_link_watcher_by_value ()" link="NMSettingTeam.html#nm-setting-team-remove-link-watcher-by-value" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_clear_link_watchers ()" link="NMSettingTeam.html#nm-setting-team-clear-link-watchers" since="1.10.2"/>
+    <keyword type="enum" name="enum NMTeamLinkWatcherArpPingFlags" link="NMSettingTeam.html#NMTeamLinkWatcherArpPingFlags"/>
+    <keyword type="macro" name="NM_TEAM_LINK_WATCHER_ETHTOOL" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ETHTOOL:CAPS"/>
+    <keyword type="macro" name="NM_TEAM_LINK_WATCHER_ARP_PING" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ARP-PING:CAPS"/>
+    <keyword type="macro" name="NM_TEAM_LINK_WATCHER_NSNA_PING" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-NSNA-PING:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_SETTING_NAME" link="NMSettingTeam.html#NM-SETTING-TEAM-SETTING-NAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_CONFIG" link="NMSettingTeam.html#NM-SETTING-TEAM-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_NOTIFY_PEERS_COUNT" link="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-PEERS-COUNT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_NOTIFY_PEERS_INTERVAL" link="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-PEERS-INTERVAL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_MCAST_REJOIN_COUNT" link="NMSettingTeam.html#NM-SETTING-TEAM-MCAST-REJOIN-COUNT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_MCAST_REJOIN_INTERVAL" link="NMSettingTeam.html#NM-SETTING-TEAM-MCAST-REJOIN-INTERVAL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_TX_HASH" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-HASH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_TX_BALANCER" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-BALANCER:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-BALANCER-INTERVAL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_ACTIVE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ACTIVE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_FAST_RATE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-FAST-RATE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_SYS_PRIO" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-SYS-PRIO:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_MIN_PORTS" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-MIN-PORTS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_LINK_WATCHERS" link="NMSettingTeam.html#NM-SETTING-TEAM-LINK-WATCHERS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_BROADCAST" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-BROADCAST:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_ROUNDROBIN" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ROUNDROBIN:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ACTIVEBACKUP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_LOADBALANCE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-LOADBALANCE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_LACP" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-LACP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_SAME_ALL" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-SAME-ALL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_BY_ACTIVE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-BY-ACTIVE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_ONLY_ACTIVE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-ONLY-ACTIVE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-LACP-PRIO:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_LACP_PRIO_STABLE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-LACP-PRIO-STABLE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_BANDWIDTH" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-BANDWIDTH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_COUNT" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-COUNT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_PORT_CONFIG" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-PORT-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_NOTIFY_PEERS_COUNT_ACTIVEBACKUP_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-PEERS-COUNT-ACTIVEBACKUP-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_NOTIFY_MCAST_COUNT_ACTIVEBACKUP_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-NOTIFY-MCAST-COUNT-ACTIVEBACKUP-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-HWADDR-POLICY-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-TX-BALANCER-INTERVAL-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_SYS_PRIO_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-SYS-PRIO-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_DEFAULT" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-AGG-SELECT-POLICY-DEFAULT:CAPS"/>
     <keyword type="struct" name="NMSettingTeam" link="NMSettingTeam.html#NMSettingTeam-struct"/>
     <keyword type="property" name="The “config” property" link="NMSettingTeam.html#NMSettingTeam--config"/>
+    <keyword type="property" name="The “link-watchers” property" link="NMSettingTeam.html#NMSettingTeam--link-watchers"/>
+    <keyword type="property" name="The “mcast-rejoin-count” property" link="NMSettingTeam.html#NMSettingTeam--mcast-rejoin-count"/>
+    <keyword type="property" name="The “mcast-rejoin-interval” property" link="NMSettingTeam.html#NMSettingTeam--mcast-rejoin-interval"/>
+    <keyword type="property" name="The “notify-peers-count” property" link="NMSettingTeam.html#NMSettingTeam--notify-peers-count"/>
+    <keyword type="property" name="The “notify-peers-interval” property" link="NMSettingTeam.html#NMSettingTeam--notify-peers-interval"/>
+    <keyword type="property" name="The “runner” property" link="NMSettingTeam.html#NMSettingTeam--runner"/>
+    <keyword type="property" name="The “runner-active” property" link="NMSettingTeam.html#NMSettingTeam--runner-active"/>
+    <keyword type="property" name="The “runner-agg-select-policy” property" link="NMSettingTeam.html#NMSettingTeam--runner-agg-select-policy"/>
+    <keyword type="property" name="The “runner-fast-rate” property" link="NMSettingTeam.html#NMSettingTeam--runner-fast-rate"/>
+    <keyword type="property" name="The “runner-hwaddr-policy” property" link="NMSettingTeam.html#NMSettingTeam--runner-hwaddr-policy"/>
+    <keyword type="property" name="The “runner-min-ports” property" link="NMSettingTeam.html#NMSettingTeam--runner-min-ports"/>
+    <keyword type="property" name="The “runner-sys-prio” property" link="NMSettingTeam.html#NMSettingTeam--runner-sys-prio"/>
+    <keyword type="property" name="The “runner-tx-balancer” property" link="NMSettingTeam.html#NMSettingTeam--runner-tx-balancer"/>
+    <keyword type="property" name="The “runner-tx-balancer-interval” property" link="NMSettingTeam.html#NMSettingTeam--runner-tx-balancer-interval"/>
+    <keyword type="property" name="The “runner-tx-hash” property" link="NMSettingTeam.html#NMSettingTeam--runner-tx-hash"/>
     <keyword type="function" name="nm_setting_team_port_new ()" link="NMSettingTeamPort.html#nm-setting-team-port-new"/>
     <keyword type="function" name="nm_setting_team_port_get_config ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-config"/>
+    <keyword type="function" name="nm_setting_team_port_get_queue_id ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-queue-id" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_get_prio ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-prio" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_get_sticky ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-sticky" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_get_lacp_prio ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-lacp-prio" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_get_lacp_key ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-lacp-key" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_get_num_link_watchers ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-num-link-watchers" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_get_link_watcher ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-link-watcher" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_add_link_watcher ()" link="NMSettingTeamPort.html#nm-setting-team-port-add-link-watcher" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_remove_link_watcher ()" link="NMSettingTeamPort.html#nm-setting-team-port-remove-link-watcher" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_remove_link_watcher_by_value ()" link="NMSettingTeamPort.html#nm-setting-team-port-remove-link-watcher-by-value" since="1.10.2"/>
+    <keyword type="function" name="nm_setting_team_port_clear_link_watchers ()" link="NMSettingTeamPort.html#nm-setting-team-port-clear-link-watchers" since="1.10.2"/>
     <keyword type="macro" name="NM_SETTING_TEAM_PORT_SETTING_NAME" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-SETTING-NAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_PORT_CONFIG" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_QUEUE_ID" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-QUEUE-ID:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_PRIO" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-PRIO:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_STICKY" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-STICKY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_LACP_PRIO" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LACP-PRIO:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_LACP_KEY" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LACP-KEY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_LINK_WATCHERS" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LINK-WATCHERS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_QUEUE_ID_DEFAULT" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-QUEUE-ID-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_PORT_LACP_PRIO_DEFAULT" link="NMSettingTeamPort.html#NM-SETTING-TEAM-PORT-LACP-PRIO-DEFAULT:CAPS"/>
     <keyword type="struct" name="NMSettingTeamPort" link="NMSettingTeamPort.html#NMSettingTeamPort-struct"/>
     <keyword type="property" name="The “config” property" link="NMSettingTeamPort.html#NMSettingTeamPort--config"/>
+    <keyword type="property" name="The “lacp-key” property" link="NMSettingTeamPort.html#NMSettingTeamPort--lacp-key"/>
+    <keyword type="property" name="The “lacp-prio” property" link="NMSettingTeamPort.html#NMSettingTeamPort--lacp-prio"/>
+    <keyword type="property" name="The “link-watchers” property" link="NMSettingTeamPort.html#NMSettingTeamPort--link-watchers"/>
+    <keyword type="property" name="The “prio” property" link="NMSettingTeamPort.html#NMSettingTeamPort--prio"/>
+    <keyword type="property" name="The “queue-id” property" link="NMSettingTeamPort.html#NMSettingTeamPort--queue-id"/>
+    <keyword type="property" name="The “sticky” property" link="NMSettingTeamPort.html#NMSettingTeamPort--sticky"/>
     <keyword type="function" name="nm_setting_tun_new ()" link="NMSettingTun.html#nm-setting-tun-new" since="1.2"/>
     <keyword type="function" name="nm_setting_tun_get_mode ()" link="NMSettingTun.html#nm-setting-tun-get-mode" since="1.2"/>
     <keyword type="function" name="nm_setting_tun_get_owner ()" link="NMSettingTun.html#nm-setting-tun-get-owner" since="1.2"/>
@@ -2244,6 +2366,8 @@
     <keyword type="property" name="The “banner” property" link="NMVpnConnection.html#NMVpnConnection--banner"/>
     <keyword type="property" name="The “vpn-state” property" link="NMVpnConnection.html#NMVpnConnection--vpn-state"/>
     <keyword type="signal" name="The “vpn-state-changed” signal" link="NMVpnConnection.html#NMVpnConnection-vpn-state-changed"/>
+    <keyword type="function" name="nm_remote_connection_update2 ()" link="NMRemoteConnection.html#nm-remote-connection-update2" since="1.10.2"/>
+    <keyword type="function" name="nm_remote_connection_update2_finish ()" link="NMRemoteConnection.html#nm-remote-connection-update2-finish"/>
     <keyword type="function" name="nm_remote_connection_commit_changes ()" link="NMRemoteConnection.html#nm-remote-connection-commit-changes"/>
     <keyword type="function" name="nm_remote_connection_commit_changes_async ()" link="NMRemoteConnection.html#nm-remote-connection-commit-changes-async"/>
     <keyword type="function" name="nm_remote_connection_commit_changes_finish ()" link="NMRemoteConnection.html#nm-remote-connection-commit-changes-finish"/>
@@ -2411,6 +2535,12 @@
     <keyword type="function" name="nm_utils_version ()" link="libnm-nm-utils.html#nm-utils-version" since="1.6.0"/>
     <keyword type="function" name="nm_utils_parse_variant_attributes ()" link="libnm-nm-utils.html#nm-utils-parse-variant-attributes" since="1.8"/>
     <keyword type="function" name="nm_utils_format_variant_attributes ()" link="libnm-nm-utils.html#nm-utils-format-variant-attributes"/>
+    <keyword type="function" name="nm_utils_tc_qdisc_from_str ()" link="libnm-nm-utils.html#nm-utils-tc-qdisc-from-str" since="1.10.2"/>
+    <keyword type="function" name="nm_utils_tc_qdisc_to_str ()" link="libnm-nm-utils.html#nm-utils-tc-qdisc-to-str" since="1.10.2"/>
+    <keyword type="function" name="nm_utils_tc_action_from_str ()" link="libnm-nm-utils.html#nm-utils-tc-action-from-str" since="1.10.2"/>
+    <keyword type="function" name="nm_utils_tc_action_to_str ()" link="libnm-nm-utils.html#nm-utils-tc-action-to-str" since="1.10.2"/>
+    <keyword type="function" name="nm_utils_tc_tfilter_from_str ()" link="libnm-nm-utils.html#nm-utils-tc-tfilter-from-str" since="1.10.2"/>
+    <keyword type="function" name="nm_utils_tc_tfilter_to_str ()" link="libnm-nm-utils.html#nm-utils-tc-tfilter-to-str" since="1.10.2"/>
     <keyword type="enum" name="enum NMUtilsSecurityType" link="libnm-nm-utils.html#NMUtilsSecurityType"/>
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
     <keyword type="macro" name="NM_UTILS_INET_ADDRSTRLEN" link="libnm-nm-utils.html#NM-UTILS-INET-ADDRSTRLEN:CAPS"/>
@@ -2439,6 +2569,7 @@
     <keyword type="macro" name="NM_AVAILABLE_IN_1_8" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-8:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-10:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-10:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_10_2" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-10-2:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_8_FOR()" link="libnm-nm-vpn-dbus-interface.html#NM-DEPRECATED-IN-1-8-FOR:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
@@ -2610,6 +2741,7 @@
     <keyword type="constant" name="NM_SETTINGS_ERROR_READ_ONLY_CONNECTION" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-READ-ONLY-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_SETTINGS_ERROR_UUID_EXISTS" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-UUID-EXISTS:CAPS"/>
     <keyword type="constant" name="NM_SETTINGS_ERROR_INVALID_HOSTNAME" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-INVALID-HOSTNAME:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_INVALID_ARGUMENTS" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-INVALID-ARGUMENTS:CAPS"/>
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_FAILED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-FAILED:CAPS"/>
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_STARTING_IN_PROGRESS" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-STARTING-IN-PROGRESS:CAPS"/>
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_ALREADY_STARTED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-ALREADY-STARTED:CAPS"/>
@@ -2847,6 +2979,13 @@
     <keyword type="constant" name="NM_ACTIVATION_STATE_FLAG_IP4_READY" link="libnm-nm-dbus-interface.html#NM-ACTIVATION-STATE-FLAG-IP4-READY:CAPS"/>
     <keyword type="constant" name="NM_ACTIVATION_STATE_FLAG_IP6_READY" link="libnm-nm-dbus-interface.html#NM-ACTIVATION-STATE-FLAG-IP6-READY:CAPS"/>
     <keyword type="constant" name="NM_ACTIVATION_STATE_FLAG_MASTER_HAS_SLAVES" link="libnm-nm-dbus-interface.html#NM-ACTIVATION-STATE-FLAG-MASTER-HAS-SLAVES:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_NONE" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_TO_DISK" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-TO-DISK:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-DETACHED:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-ONLY:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_VOLATILE" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-VOLATILE:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_UPDATE2_FLAG_BLOCK_AUTOCONNECT" link="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-BLOCK-AUTOCONNECT:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_SERIALIZE_ALL" link="NMConnection.html#NM-CONNECTION-SERIALIZE-ALL:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_SERIALIZE_NO_SECRETS" link="NMConnection.html#NM-CONNECTION-SERIALIZE-NO-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_SERIALIZE_ONLY_SECRETS" link="NMConnection.html#NM-CONNECTION-SERIALIZE-ONLY-SECRETS:CAPS"/>
@@ -2917,6 +3056,10 @@
     <keyword type="constant" name="NM_SETTING_SERIAL_PARITY_NONE" link="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY-NONE:CAPS"/>
     <keyword type="constant" name="NM_SETTING_SERIAL_PARITY_EVEN" link="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY-EVEN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_SERIAL_PARITY_ODD" link="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY-ODD:CAPS"/>
+    <keyword type="constant" name="NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_NONE" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ARP-PING-FLAG-NONE:CAPS"/>
+    <keyword type="constant" name="NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_VALIDATE_ACTIVE" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ARP-PING-FLAG-VALIDATE-ACTIVE:CAPS"/>
+    <keyword type="constant" name="NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_VALIDATE_INACTIVE" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ARP-PING-FLAG-VALIDATE-INACTIVE:CAPS"/>
+    <keyword type="constant" name="NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_SEND_ALWAYS" link="NMSettingTeam.html#NM-TEAM-LINK-WATCHER-ARP-PING-FLAG-SEND-ALWAYS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_TUN_MODE_UNKNOWN" link="NMSettingTun.html#NM-SETTING-TUN-MODE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_TUN_MODE_TUN" link="NMSettingTun.html#NM-SETTING-TUN-MODE-TUN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_TUN_MODE_TAP" link="NMSettingTun.html#NM-SETTING-TUN-MODE-TAP:CAPS"/>

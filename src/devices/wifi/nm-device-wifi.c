@@ -107,7 +107,7 @@ typedef struct {
 
 	NM80211Mode       mode;
 
-	NMActRequestGetSecretsCallId wifi_secrets_id;
+	NMActRequestGetSecretsCallId *wifi_secrets_id;
 
 	guint             periodic_source_id;
 	guint             link_timeout_id;
@@ -1428,8 +1428,8 @@ build_hidden_probe_list (NMDeviceWifi *self)
 
 	connections = nm_settings_get_connections_clone (nm_device_get_settings ((NMDevice *) self),
 	                                                 &len,
-	                                                 hidden_filter_func,
-	                                                 NULL);
+	                                                 hidden_filter_func, NULL,
+	                                                 NULL, NULL);
 	if (!connections[0])
 		return NULL;
 
@@ -1786,7 +1786,7 @@ cleanup_supplicant_failures (NMDeviceWifi *self)
 
 static void
 wifi_secrets_cb (NMActRequest *req,
-                 NMActRequestGetSecretsCallId call_id,
+                 NMActRequestGetSecretsCallId *call_id,
                  NMSettingsConnection *connection,
                  GError *error,
                  gpointer user_data)

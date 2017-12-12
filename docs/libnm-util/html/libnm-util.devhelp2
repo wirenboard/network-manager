@@ -1162,7 +1162,6 @@
     <keyword type="macro" name="NM_SETTING_VPN_PERSISTENT" link="NMSettingVPN.html#NM-SETTING-VPN-PERSISTENT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_VPN_DATA" link="NMSettingVPN.html#NM-SETTING-VPN-DATA:CAPS"/>
     <keyword type="macro" name="NM_SETTING_VPN_SECRETS" link="NMSettingVPN.html#NM-SETTING-VPN-SECRETS:CAPS"/>
-    <keyword type="macro" name="NMSettingVpn" link="NMSettingVPN.html#NMSettingVpn"/>
     <keyword type="property" name="The “data” property" link="NMSettingVPN.html#NMSettingVPN--data"/>
     <keyword type="property" name="The “persistent” property" link="NMSettingVPN.html#NMSettingVPN--persistent"/>
     <keyword type="property" name="The “secrets” property" link="NMSettingVPN.html#NMSettingVPN--secrets"/>

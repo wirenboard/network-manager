@@ -690,7 +690,6 @@
     <keyword type="macro" name="NM_VPN_EDITOR_PLUGIN_NAME" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-EDITOR-PLUGIN-NAME:CAPS"/>
     <keyword type="macro" name="NM_VPN_EDITOR_PLUGIN_DESCRIPTION" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-EDITOR-PLUGIN-DESCRIPTION:CAPS"/>
     <keyword type="macro" name="NM_VPN_EDITOR_PLUGIN_SERVICE" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-EDITOR-PLUGIN-SERVICE:CAPS"/>
-    <keyword type="macro" name="NMVpnEditorPluginInterface" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorPluginInterface"/>
     <keyword type="macro" name="get_editor" link="libnm-glib-NMVpnPluginUiWidget.html#get-editor"/>
     <keyword type="macro" name="get_suggested_filename" link="libnm-glib-NMVpnPluginUiWidget.html#get-suggested-filename"/>
     <keyword type="macro" name="nm_vpn_editor_plugin_get_editor" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-plugin-get-editor"/>
@@ -698,7 +697,6 @@
     <keyword type="macro" name="nm_vpn_editor_plugin_import" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-plugin-import"/>
     <keyword type="macro" name="nm_vpn_editor_plugin_export" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-plugin-export"/>
     <keyword type="macro" name="nm_vpn_editor_plugin_get_suggested_filename" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-plugin-get-suggested-filename"/>
-    <keyword type="macro" name="NMVpnEditorInterface" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorInterface"/>
     <keyword type="macro" name="nm_vpn_editor_get_widget" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-get-widget"/>
     <keyword type="macro" name="nm_vpn_editor_update_connection" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-update-connection"/>
     <keyword type="function" name="nm_vpn_plugin_utils_read_vpn_details ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-read-vpn-details"/>
