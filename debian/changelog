@@ -1,3 +1,14 @@
+network-manager (1.10.2-3) unstable; urgency=medium
+
+  * secret-agent: construct the dbus proxy for async agent with the correct
+    bus name
+  * Revert "Bump debhelper compat level to 11"
+    There are currently too many issues with dh_installsystemd, so switch
+    back to compat 10 using dh_systemd_enable and dh_systemd_start for the
+    time being.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 21 Jan 2018 19:50:39 +0100
+
 network-manager (1.10.2-2) unstable; urgency=medium
 
   * libnm-core/tc-config: remove deprecation guards from typedefs
