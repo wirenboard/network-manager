@@ -1,3 +1,11 @@
+network-manager (1.10.2-2) unstable; urgency=medium
+
+  * libnm-core/tc-config: remove deprecation guards from typedefs
+    (Closes: #887815)
+  * Bump debhelper compat level to 11
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 21 Jan 2018 14:32:55 +0100
+
 network-manager (1.10.2-1) unstable; urgency=medium
 
   * New upstream version 1.10.2
