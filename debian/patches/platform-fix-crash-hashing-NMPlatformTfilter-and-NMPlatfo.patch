@@ -1,0 +1,62 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Tue, 12 Dec 2017 10:37:59 +0100
+Subject: platform: fix crash hashing NMPlatformTfilter and NMPlatformQdisc
+
+@kind might be NULL. There are 3 forms of the hash-update functions for
+string: str(), str0(), and strarr().
+
+- str0() is when the string might be NULL.
+- str() does not allow the string to be NULL
+- strarr() is like str(), except it adds a G_STATIC_ASSERT()
+  that the argument is a C array.
+
+The reason why a difference between str() and str0() exists, is
+because str0() hashes NULL different from a "" or any other string.
+This has an overhead, because it effectively must hash another bit
+of information that tells whether a string was passed or not.
+
+The reason is, that hashing a tupple of two strings should always
+yield a different hash value, even for "aa",""; "a","a"; "","aa",
+where naive concatentation would yield identical hash values in all
+three cases.
+
+Fixes: e75fc8279becce29e688551930d85e59e1280c89
+(cherry picked from commit 27e8fffdb833748dfeb6648b8768c4ef48822841)
+---
+ src/platform/nm-platform.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/platform/nm-platform.c b/src/platform/nm-platform.c
+index 2ca379e..7067557 100644
+--- a/src/platform/nm-platform.c
++++ b/src/platform/nm-platform.c
+@@ -5320,7 +5320,7 @@ nm_platform_qdisc_to_string (const NMPlatformQdisc *qdisc, char *buf, gsize len)
+ void
+ nm_platform_qdisc_hash_update (const NMPlatformQdisc *obj, NMHashState *h)
+ {
+-	nm_hash_update_str (h, obj->kind);
++	nm_hash_update_str0 (h, obj->kind);
+ 	nm_hash_update_vals (h,
+ 	                     obj->ifindex,
+ 	                     obj->addr_family,
+@@ -5387,17 +5387,17 @@ nm_platform_tfilter_to_string (const NMPlatformTfilter *tfilter, char *buf, gsiz
+ void
+ nm_platform_tfilter_hash_update (const NMPlatformTfilter *obj, NMHashState *h)
+ {
+-	nm_hash_update_str (h, obj->kind);
++	nm_hash_update_str0 (h, obj->kind);
+ 	nm_hash_update_vals (h,
+ 	                     obj->ifindex,
+ 	                     obj->addr_family,
+ 	                     obj->handle,
+ 	                     obj->parent,
+ 	                     obj->info);
+-	nm_hash_update_str (h, obj->action.kind);
+ 	if (obj->action.kind) {
++		nm_hash_update_str (h, obj->action.kind);
+ 		if (nm_streq (obj->action.kind, NM_PLATFORM_ACTION_KIND_SIMPLE))
+-			nm_hash_update_str (h, obj->action.simple.sdata);
++			nm_hash_update_strarr (h, obj->action.simple.sdata);
+ 	}
+ }
+ 

@@ -6,3 +6,4 @@ Fix-iscsiadm-path.patch
 libnm-register-empty-NMClient-and-NetworkManager-when-loa.patch
 libnm-core-tc-config-remove-deprecation-guards-from-typed.patch
 secret-agent-construct-the-dbus-proxy-for-async-agent-wit.patch
+platform-fix-crash-hashing-NMPlatformTfilter-and-NMPlatfo.patch
