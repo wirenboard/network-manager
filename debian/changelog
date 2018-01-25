@@ -1,3 +1,10 @@
+network-manager (1.10.2-5) UNRELEASED; urgency=medium
+
+  * Do not fail installation of network-manager-config-connectivity-* if
+    network-manager fails to reload (see LP: #1742403)
+
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 25 Jan 2018 10:32:31 +0100
+
 network-manager (1.10.2-4) unstable; urgency=medium
 
   * Set Rules-Requires-Root to no
