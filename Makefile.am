@@ -142,7 +142,9 @@ DISTCLEANFILES += intltool-extract intltool-merge intltool-update
 
 ###############################################################################
 
+if WITH_LEGACY_LIBRARIES
 pkgconfig_DATA += NetworkManager.pc
+endif
 
 ###############################################################################
 
@@ -516,6 +518,14 @@ libnm_core_lib_c_real = \
 	libnm-core/nm-utils.c \
 	libnm-core/nm-vpn-editor-plugin.c \
 	libnm-core/nm-vpn-plugin-info.c
+
+if WITH_JANSSON
+libnm_core_lib_h_priv += \
+	libnm-core/nm-json.h
+libnm_core_lib_c_real += \
+	libnm-core/nm-json.c
+endif
+
 libnm_core_lib_c_mkenums = \
 	libnm-core/nm-core-enum-types.c
 
@@ -595,10 +605,6 @@ libnm_core_libnm_core_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(UUID_LIBS) \
 	$(LIBUDEV_LIBS)
-
-if WITH_JANSSON
-libnm_core_libnm_core_la_LIBADD += $(JANSSON_LIBS)
-endif
 
 libnm_core_libnm_core_la_LDFLAGS = \
 	$(CODE_COVERAGE_LDFLAGS)

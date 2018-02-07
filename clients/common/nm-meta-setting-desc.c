@@ -4038,6 +4038,7 @@ _set_fcn_team_link_watchers (ARGS_SET_FCN)
 	const char *const*iter;
 	NMTeamLinkWatcher *watcher;
 
+	nm_setting_team_clear_link_watchers (NM_SETTING_TEAM (setting));
 	strv = nmc_strsplit_set (value, ",", 0);
 	for (iter = (const char *const*) strv; *iter; iter++) {
 		watcher = _parse_team_link_watcher (*iter, error);
@@ -4110,6 +4111,7 @@ _set_fcn_team_port_link_watchers (ARGS_SET_FCN)
 	const char *const*iter;
 	NMTeamLinkWatcher *watcher;
 
+	nm_setting_team_port_clear_link_watchers (NM_SETTING_TEAM_PORT (setting));
 	strv = nmc_strsplit_set (value, ",", 0);
 	for (iter = (const char *const*) strv; *iter; iter++) {
 		watcher = _parse_team_link_watcher (*iter, error);
@@ -4957,10 +4959,10 @@ static const NMMetaPropertyType _pt_gobject_devices = {
 	   "Properties available for the 'nsna_ping' link watcher:\n" \
 	   "  'init-wait', 'interval', 'missed-max', 'target-host'*\n\n" \
 	   "Properties available for the 'arp_ping' include all the ones for 'nsna_ping' and:\n" \
-	   "  'source-host', 'validate-active', 'validate-inactive', 'send-always'.\n\n" \
+	   "  'source-host'*, 'validate-active', 'validate-inactive', 'send-always'.\n\n" \
 	   "Properties flagged with a '*' are mandatory.\n\n" \
 	   "Example:\n" \
-	   "   name=arp_ping,source-host=172.16.1.1,target-host=172.16.1.254; name=ethtool,delay-up=3\n")
+	   "   name=arp_ping source-host=172.16.1.1 target-host=172.16.1.254, name=ethtool delay-up=3\n")
 
 
 #define DEFINE_DCB_PROPRITY_PROPERTY_TYPE \
@@ -6623,7 +6625,7 @@ static const NMMetaPropertyInfo *const property_infos_TEAM[] = {
 		.property_typ_data = DEFINE_PROPERTY_TYP_DATA_SUBTYPE (gobject_int,
 		        .value_infos =          INT_VALUE_INFOS (
 				{
-					.value = 50,
+					.value = NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL_DEFAULT,
 					.nick = "default",
 				}
 			),
@@ -6640,7 +6642,7 @@ static const NMMetaPropertyInfo *const property_infos_TEAM[] = {
 		.property_typ_data = DEFINE_PROPERTY_TYP_DATA_SUBTYPE (gobject_int,
 		        .value_infos =          INT_VALUE_INFOS (
 				{
-					.value = 255,
+					.value = NM_SETTING_TEAM_RUNNER_SYS_PRIO_DEFAULT,
 					.nick = "default",
 				}
 			),
@@ -6696,7 +6698,7 @@ static const NMMetaPropertyInfo *const property_infos_TEAM_PORT[] = {
 		.property_typ_data = DEFINE_PROPERTY_TYP_DATA_SUBTYPE (gobject_int,
 			.value_infos =          INT_VALUE_INFOS (
 				{
-					.value = -1,
+					.value = NM_SETTING_TEAM_PORT_QUEUE_ID_DEFAULT,
 					.nick = "default",
 				}
 			),
@@ -6721,7 +6723,7 @@ static const NMMetaPropertyInfo *const property_infos_TEAM_PORT[] = {
 		.property_typ_data = DEFINE_PROPERTY_TYP_DATA_SUBTYPE (gobject_int,
 			.value_infos =          INT_VALUE_INFOS (
 				{
-					.value = 255,
+					.value = NM_SETTING_TEAM_PORT_LACP_PRIO_DEFAULT,
 					.nick = "default",
 				}
 			),

@@ -107,7 +107,7 @@ remove_connection (NMSKeyfilePlugin *self, NMSKeyfileConnection *connection)
 	g_signal_handlers_disconnect_by_func (connection, connection_removed_cb, self);
 	removed = g_hash_table_remove (NMS_KEYFILE_PLUGIN_GET_PRIVATE (self)->connections,
 	                               nm_connection_get_uuid (NM_CONNECTION (connection)));
-	nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection), FALSE);
+	nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection));
 	g_object_unref (connection);
 
 	g_return_if_fail (removed);
@@ -260,7 +260,7 @@ update_connection (NMSKeyfilePlugin *self,
 
 			if (!nm_settings_connection_update (NM_SETTINGS_CONNECTION (connection_by_uuid),
 			                                    NM_CONNECTION (connection_new),
-			                                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP,
+			                                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP_SAVED,
 			                                    NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE,
 			                                    "keyfile-update",
 			                                    &local)) {

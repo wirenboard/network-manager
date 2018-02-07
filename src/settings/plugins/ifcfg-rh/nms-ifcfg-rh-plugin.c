@@ -161,7 +161,7 @@ remove_connection (SettingsPluginIfcfg *self, NMIfcfgConnection *connection)
 	g_object_ref (connection);
 	g_hash_table_remove (priv->connections, nm_connection_get_uuid (NM_CONNECTION (connection)));
 	if (!unmanaged && !unrecognized)
-		nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection), FALSE);
+		nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection));
 	g_object_unref (connection);
 
 	/* Emit changes _after_ removing the connection */
@@ -315,7 +315,7 @@ update_connection (SettingsPluginIfcfg *self,
 
 			if (!nm_settings_connection_update (NM_SETTINGS_CONNECTION (connection_by_uuid),
 			                                    NM_CONNECTION (connection_new),
-			                                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP,
+			                                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP_SAVED,
 			                                    NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE,
 			                                    "ifcfg-update",
 			                                    &local)) {
@@ -331,7 +331,7 @@ update_connection (SettingsPluginIfcfg *self,
 					/* Unexport the connection by telling the settings service it's
 					 * been removed.
 					 */
-					nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection_by_uuid), TRUE);
+					nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection_by_uuid));
 					/* Remove the path so that claim_connection() doesn't complain later when
 					 * interface gets managed and connection is re-added. */
 					nm_connection_set_path (NM_CONNECTION (connection_by_uuid), NULL);

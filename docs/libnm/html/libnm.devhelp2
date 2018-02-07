@@ -2919,6 +2919,8 @@
     <keyword type="constant" name="NM_DEVICE_STATE_REASON_PARENT_CHANGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-CHANGED:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-MANAGED-CHANGED:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_REASON_OVSDB_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-OVSDB-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_IP_ADDRESS_DUPLICATE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-IP-ADDRESS-DUPLICATE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_IP_METHOD_UNSUPPORTED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-IP-METHOD-UNSUPPORTED:CAPS"/>
     <keyword type="constant" name="NM_METERED_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-METERED-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_METERED_YES" link="libnm-nm-dbus-interface.html#NM-METERED-YES:CAPS"/>
     <keyword type="constant" name="NM_METERED_NO" link="libnm-nm-dbus-interface.html#NM-METERED-NO:CAPS"/>
