@@ -36,6 +36,7 @@
 #include <linux/pkt_sched.h>
 
 #if WITH_JANSSON
+#include "nm-json.h"
 #include <jansson.h>
 #endif
 
@@ -650,36 +651,82 @@ _nm_utils_ptrarray_find_first (gconstpointer *list, gssize len, gconstpointer ne
 }
 
 gssize
-_nm_utils_ptrarray_find_binary_search (gconstpointer *list, gsize len, gconstpointer needle, GCompareDataFunc cmpfcn, gpointer user_data)
+_nm_utils_ptrarray_find_binary_search (gconstpointer *list,
+                                       gsize len,
+                                       gconstpointer needle,
+                                       GCompareDataFunc cmpfcn,
+                                       gpointer user_data,
+                                       gssize *out_idx_first,
+                                       gssize *out_idx_last)
 {
-	gssize imin, imax, imid;
+	gssize imin, imax, imid, i2min, i2max, i2mid;
 	int cmp;
 
 	g_return_val_if_fail (list || !len, ~((gssize) 0));
 	g_return_val_if_fail (cmpfcn, ~((gssize) 0));
 
 	imin = 0;
-	if (len == 0)
-		return ~imin;
+	if (len > 0) {
+		imax = len - 1;
 
-	imax = len - 1;
+		while (imin <= imax) {
+			imid = imin + (imax - imin) / 2;
 
-	while (imin <= imax) {
-		imid = imin + (imax - imin) / 2;
+			cmp = cmpfcn (list[imid], needle, user_data);
+			if (cmp == 0) {
+				/* we found a matching entry at index imid.
+				 *
+				 * Does the caller request the first/last index as well (in case that
+				 * there are multiple entries which compare equal). */
 
-		cmp = cmpfcn (list[imid], needle, user_data);
-		if (cmp == 0)
-			return imid;
+				if (out_idx_first) {
+					i2min = imin;
+					i2max = imid + 1;
+					while (i2min <= i2max) {
+						i2mid = i2min + (i2max - i2min) / 2;
 
-		if (cmp < 0)
-			imin = imid + 1;
-		else
-			imax = imid - 1;
+						cmp = cmpfcn (list[i2mid], needle, user_data);
+						if (cmp == 0)
+							i2max = i2mid -1;
+						else {
+							nm_assert (cmp < 0);
+							i2min = i2mid + 1;
+						}
+					}
+					*out_idx_first = i2min;
+				}
+				if (out_idx_last) {
+					i2min = imid + 1;
+					i2max = imax;
+					while (i2min <= i2max) {
+						i2mid = i2min + (i2max - i2min) / 2;
+
+						cmp = cmpfcn (list[i2mid], needle, user_data);
+						if (cmp == 0)
+							i2min = i2mid + 1;
+						else {
+							nm_assert (cmp > 0);
+							i2max = i2mid - 1;
+						}
+					}
+					*out_idx_last = i2min - 1;
+				}
+				return imid;
+			}
+
+			if (cmp < 0)
+				imin = imid + 1;
+			else
+				imax = imid - 1;
+		}
 	}
 
 	/* return the inverse of @imin. This is a negative number, but
 	 * also is ~imin the position where the value should be inserted. */
-	return ~imin;
+	imin = ~imin;
+	NM_SET_OUT (out_idx_first, imin);
+	NM_SET_OUT (out_idx_last, imin);
+	return imin;
 }
 
 gssize
@@ -4845,6 +4892,41 @@ const char **nm_utils_enum_get_values (GType type, gint from, gint to)
 
 /*****************************************************************************/
 
+static gboolean
+_nm_utils_is_json_object_no_validation (const char *str, GError **error)
+{
+	if (str) {
+		/* libjansson also requires only utf-8 encoding. */
+		if (!g_utf8_validate (str, -1, NULL)) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("not valid utf-8"));
+			return FALSE;
+		}
+		while (g_ascii_isspace (str[0]))
+			str++;
+	}
+
+	/* do some very basic validation to see if this might be a JSON object. */
+	if (str[0] == '{') {
+		gsize l;
+
+		l = strlen (str) - 1;
+		while (l > 0 && g_ascii_isspace (str[l]))
+			l--;
+
+		if (str[l] == '}')
+			return TRUE;
+	}
+
+	g_set_error_literal (error,
+	                     NM_CONNECTION_ERROR,
+	                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+	                     _("is not a JSON object"));
+	return FALSE;
+}
+
 #if WITH_JANSSON
 
 /* Added in Jansson v2.3 (released Jan 27 2012) */
@@ -5151,9 +5233,9 @@ _json_team_normalize_defaults (json_t *json, gboolean reset)
 		_json_delete_object_on_string_match (json, "runner", "hwaddr_policy", NULL,
 		                                     NM_SETTING_TEAM_RUNNER_HWADDR_POLICY_DEFAULT);
 	} else if (nm_streq (runner, NM_SETTING_TEAM_RUNNER_LACP)) {
-		runner_tx_balancer_interval = 50;
+		runner_tx_balancer_interval = NM_SETTING_TEAM_RUNNER_TX_BALANCER_INTERVAL_DEFAULT;
 		runner_active = TRUE;
-		runner_sys_prio = 255;
+		runner_sys_prio = NM_SETTING_TEAM_RUNNER_SYS_PRIO_DEFAULT;
 		runner_min_ports = 0;
 		_json_delete_object_on_string_match (json, "runner", "agg_select_policy", NULL,
 		                                     NM_SETTING_TEAM_RUNNER_AGG_SELECT_POLICY_DEFAULT);
@@ -5185,13 +5267,16 @@ _nm_utils_team_link_watcher_from_json (json_t *json_element)
 	g_return_val_if_fail (json_element, NULL);
 
 	json_object_foreach (json_element, j_key, j_val) {
-		if (nm_streq (j_key, "name"))
+		if (nm_streq (j_key, "name")) {
+			g_free (name);
 			name = strdup (json_string_value (j_val));
-		else if (nm_streq (j_key, "target_host"))
+		} else if (nm_streq (j_key, "target_host")) {
+			g_free (target_host);
 			target_host = strdup (json_string_value (j_val));
-		else if (nm_streq (j_key, "source_host"))
+		} else if (nm_streq (j_key, "source_host")) {
+			g_free (source_host);
 			source_host = strdup (json_string_value (j_val));
-		else if (NM_IN_STRSET (j_key, "delay_up", "init_wait"))
+		} else if (NM_IN_STRSET (j_key, "delay_up", "init_wait"))
 			val1 = json_integer_value (j_val);
 		else if (NM_IN_STRSET (j_key, "delay_down", "interval"))
 			val2 = json_integer_value (j_val);
@@ -5314,6 +5399,9 @@ nm_utils_is_json_object (const char *str, GError **error)
 		return FALSE;
 	}
 
+	if (!nm_jansson_load ())
+		return _nm_utils_is_json_object_no_validation (str, error);
+
 	json = json_loads (str, JSON_REJECT_DUPLICATES, &jerror);
 	if (!json) {
 		g_set_error (error,
@@ -5364,6 +5452,8 @@ _nm_utils_team_config_equal (const char *conf1,
 
 	if (nm_streq0 (conf1, conf2))
 		return TRUE;
+	else if (!nm_jansson_load ())
+		return FALSE;
 
 	/* A NULL configuration is equivalent to default value '{}' */
 	json1 = json_loads (conf1 ?: "{}", JSON_REJECT_DUPLICATES, &jerror);
@@ -5419,6 +5509,9 @@ _nm_utils_team_config_get (const char *conf,
 	json_error_t jerror;
 
 	if (!key)
+		return NULL;
+
+	if (!nm_jansson_load ())
 		return NULL;
 
 	json = json_loads (conf ?: "{}", JSON_REJECT_DUPLICATES, &jerror);
@@ -5527,6 +5620,9 @@ _nm_utils_team_config_set (char **conf,
 	NMTeamLinkWatcher *watcher;
 
 	g_return_val_if_fail (key, FALSE);
+
+	if (!nm_jansson_load ())
+		return FALSE;
 
 	json = json_loads (*conf?: "{}", JSON_REJECT_DUPLICATES, &jerror);
 	if (!json)
@@ -5645,19 +5741,6 @@ nm_utils_is_json_object (const char *str, GError **error)
 {
 	g_return_val_if_fail (!error || !*error, FALSE);
 
-	if (str) {
-		/* libjansson also requires only utf-8 encoding. */
-		if (!g_utf8_validate (str, -1, NULL)) {
-			g_set_error_literal (error,
-			                     NM_CONNECTION_ERROR,
-			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
-			                     _("not valid utf-8"));
-			return FALSE;
-		}
-		while (g_ascii_isspace (str[0]))
-			str++;
-	}
-
 	if (!str || !str[0]) {
 		g_set_error_literal (error,
 		                     NM_CONNECTION_ERROR,
@@ -5666,23 +5749,7 @@ nm_utils_is_json_object (const char *str, GError **error)
 		return FALSE;
 	}
 
-	/* do some very basic validation to see if this might be a JSON object. */
-	if (str[0] == '{') {
-		gsize l;
-
-		l = strlen (str) - 1;
-		while (l > 0 && g_ascii_isspace (str[l]))
-			l--;
-
-		if (str[l] == '}')
-			return TRUE;
-	}
-
-	g_set_error_literal (error,
-	                     NM_CONNECTION_ERROR,
-	                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
-	                     _("is not a JSON object"));
-	return FALSE;
+	return _nm_utils_is_json_object_no_validation (str, error);
 }
 
 gboolean

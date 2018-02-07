@@ -249,7 +249,7 @@ nm_team_link_watcher_new_arp_ping (gint init_wait,
 		return NULL;
 	}
 
-	if (strpbrk (target_host, " \\/\t=\"\'")) {
+	if (strpbrk (source_host, " \\/\t=\"\'")) {
 		g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_FAILED,
 		             _("source-host '%s' contains invalid characters"), source_host);
 		return NULL;
@@ -1485,8 +1485,10 @@ set_property (GObject *object, guint prop_id,
 		break;
 	}
 
-	if (align_config)
+	if (align_config) {
 		_nm_utils_json_append_gvalue (&priv->config, _prop_to_keys[prop_id], align_value);
+		_align_team_properties (setting);
+	}
 }
 
 static void
@@ -1654,6 +1656,10 @@ nm_setting_team_class_init (NMSettingTeamClass *setting_class)
 	 * Corresponds to the teamd runner.name.
 	 * Permitted values are: "roundrobin", "broadcast", "activebackup",
 	 * "loadbalance", "lacp".
+	 * When setting the runner, all the properties specific to the runner
+	 * will be reset to the default value; all the properties specific to
+	 * other runners will be set to an empty value (or if not possible to
+	 * a default value).
 	 *
 	 * Since: 1.10.2
 	 **/
