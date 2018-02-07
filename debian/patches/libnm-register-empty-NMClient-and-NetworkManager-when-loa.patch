@@ -54,10 +54,10 @@ After:
  create mode 100644 libnm/fake-typelib/typelibs.gresource.xml
 
 diff --git a/Makefile.am b/Makefile.am
-index b7c0a5f..f4c8e86 100644
+index 2ddc7bc..a741c6e 100644
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -852,6 +852,7 @@ nodist_libnminclude_HEADERS += \
+@@ -858,6 +858,7 @@ nodist_libnminclude_HEADERS += \
  noinst_LTLIBRARIES += libnm/libnm-utils.la
  
  libnm_libnm_utils_la_CPPFLAGS = \
@@ -65,7 +65,7 @@ index b7c0a5f..f4c8e86 100644
  	$(libnm_lib_cppflags)
  
  libnm_libnm_utils_la_SOURCES = \
-@@ -950,6 +951,23 @@ libnm/libnm.typelib: libnm/libnm.gir
+@@ -956,6 +957,23 @@ libnm/libnm.typelib: libnm/libnm.gir
  	$(INTROSPECTION_COMPILER) --includedir=$(srcdir)/libnm-core --includedir=$(builddir)/libnm-core --includedir=$(srcdir)/libnm --includedir=$(builddir)/libnm $< -o $@
  
  INTROSPECTION_GIRS += libnm/NM-1.0.gir
@@ -90,7 +90,7 @@ index b7c0a5f..f4c8e86 100644
  
  if HAVE_INTROSPECTION
 diff --git a/configure.ac b/configure.ac
-index a4d7c24..01976bb 100644
+index c1ce21e..11948ac 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -322,9 +322,12 @@ GLIB_CFLAGS="$GLIB_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_32 -DGLIB_V
