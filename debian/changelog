@@ -1,4 +1,4 @@
-network-manager (1.10.4-1) UNRELEASED; urgency=medium
+network-manager (1.10.4-1) unstable; urgency=medium
 
   [ Laurent Bigonville ]
   * Do not fail installation of network-manager-config-connectivity-* if
@@ -6,8 +6,9 @@ network-manager (1.10.4-1) UNRELEASED; urgency=medium
 
   [ Michael Biebl ]
   * New upstream version 1.10.4
+  * Rebase patches
 
- -- Michael Biebl <biebl@debian.org>  Wed, 07 Feb 2018 02:40:08 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 07 Feb 2018 02:51:36 +0100
 
 network-manager (1.10.2-4) unstable; urgency=medium
 
