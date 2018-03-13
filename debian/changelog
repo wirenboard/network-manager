@@ -1,3 +1,9 @@
+network-manager (1.10.6-2) unstable; urgency=medium
+
+  * Update Vcs-* to point to https://salsa.debian.org
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 13 Mar 2018 01:57:32 +0100
+
 network-manager (1.10.6-1) unstable; urgency=medium
 
   * New upstream version 1.10.6
