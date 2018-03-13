@@ -3940,21 +3940,24 @@ get_ip_config_may_fail (NMDevice *self, int addr_family)
 /*
  * check_ip_state
  *
- * Transition the device from IP_CONFIG to the next state according to the
- * outcome of IPv4 and IPv6 configuration. @may_fail indicates that we are
- * called just after the initial configuration and thus IPv4/IPv6 are allowed to
- * fail if the ipvx.may-fail properties say so, because the IP methods couldn't
- * even be started.
+ * When @full_state_update is TRUE, transition the device from IP_CONFIG to the
+ * next state according to the outcome of IPv4 and IPv6 configuration. @may_fail
+ * indicates that we are called just after the initial configuration and thus
+ * IPv4/IPv6 are allowed to fail if the ipvx.may-fail properties say so, because
+ * the IP methods couldn't even be started.
+ * If @full_state_update is FALSE, just check if the connection should be failed
+ * due to the state of both ip families and the ipvx.may-fail settings.
  */
 static void
-check_ip_state (NMDevice *self, gboolean may_fail)
+check_ip_state (NMDevice *self, gboolean may_fail, gboolean full_state_update)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	gboolean ip4_disabled = FALSE, ip6_ignore = FALSE;
 	NMSettingIPConfig *s_ip4, *s_ip6;
 	NMDeviceState state;
 
-	if (nm_device_get_state (self) != NM_DEVICE_STATE_IP_CONFIG)
+	if (   full_state_update
+	    && nm_device_get_state (self) != NM_DEVICE_STATE_IP_CONFIG)
 		return;
 
 	/* Don't progress into IP_CHECK or SECONDARIES if we're waiting for the
@@ -4001,9 +4004,12 @@ check_ip_state (NMDevice *self, gboolean may_fail)
 			state = NM_DEVICE_STATE_FAILED;
 		}
 
-		nm_device_state_changed (self,
-		                         state,
-		                         NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
+		if (   full_state_update
+		    || state == NM_DEVICE_STATE_FAILED) {
+			nm_device_state_changed (self,
+			                         state,
+			                         NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
+		}
 		return;
 	}
 
@@ -4016,7 +4022,8 @@ check_ip_state (NMDevice *self, gboolean may_fail)
 	/* If at least a method has completed, proceed with activation */
 	if (   (priv->ip4_state == IP_DONE && !ip4_disabled)
 	    || (priv->ip6_state == IP_DONE && !ip6_ignore)) {
-		nm_device_state_changed (self, NM_DEVICE_STATE_IP_CHECK, NM_DEVICE_STATE_REASON_NONE);
+		if (full_state_update)
+			nm_device_state_changed (self, NM_DEVICE_STATE_IP_CHECK, NM_DEVICE_STATE_REASON_NONE);
 		return;
 	}
 }
@@ -4058,7 +4065,7 @@ nm_device_slave_notify_enslave (NMDevice *self, gboolean success)
 
 	if (activating) {
 		if (success)
-			check_ip_state (self, FALSE);
+			check_ip_state (self, FALSE, TRUE);
 		else
 			nm_device_queue_state (self, NM_DEVICE_STATE_FAILED, NM_DEVICE_STATE_REASON_UNKNOWN);
 	} else
@@ -5434,7 +5441,7 @@ nm_device_ip_method_failed (NMDevice *self,
 	_set_ip_state (self, addr_family, IP_FAIL);
 
 	if (get_ip_config_may_fail (self, addr_family))
-		check_ip_state (self, FALSE);
+		check_ip_state (self, FALSE, (nm_device_get_state (self) == NM_DEVICE_STATE_IP_CONFIG));
 	else
 		nm_device_state_changed (self, NM_DEVICE_STATE_FAILED, reason);
 }
@@ -6059,15 +6066,23 @@ dhcp4_fail (NMDevice *self, gboolean timeout)
 	    && (timeout || (priv->ip4_state == IP_CONF))
 	    && !priv->dhcp4.was_active)
 		nm_device_activate_schedule_ip4_config_timeout (self);
-	else if (priv->ip4_state == IP_DONE || priv->dhcp4.was_active) {
+	else if (   priv->dhcp4.num_tries_left < DHCP_NUM_TRIES_MAX
+	         || priv->ip4_state == IP_DONE
+	         || priv->dhcp4.was_active) {
 		/* Don't fail immediately when the lease expires but try to
 		 * restart DHCP for a predefined number of times.
 		 */
 		if (priv->dhcp4.num_tries_left) {
 			priv->dhcp4.num_tries_left--;
 			dhcp_schedule_restart (self, AF_INET, "lease expired");
-		} else
+		} else {
 			nm_device_ip_method_failed (self, AF_INET, NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED);
+			/* We failed the ipv4 method but schedule again the retries if the ipv6 method is
+			 * configured, keeping the connection up.
+			 */
+			if (nm_device_get_state (self) != NM_DEVICE_STATE_FAILED)
+				dhcp_schedule_restart (self, AF_INET, "renewal failed");
+		}
 	} else
 		g_warn_if_reached ();
 }
@@ -6108,6 +6123,12 @@ dhcp4_state_changed (NMDhcpClient *client,
 			dhcp4_fail (self, FALSE);
 			break;
 		}
+
+		/* After some failures, we have been able to renew the lease:
+		 * update the ip state
+		 */
+		if (priv->ip4_state == IP_FAIL)
+			_set_ip_state (self, AF_INET, IP_CONF);
 
 		g_free (priv->dhcp4.pac_url);
 		priv->dhcp4.pac_url = g_strdup (g_hash_table_lookup (options, "wpad"));
@@ -6778,13 +6799,15 @@ static void
 dhcp6_fail (NMDevice *self, gboolean timeout)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
+	gboolean is_dhcp_managed;
 
 	_LOGD (LOGD_DHCP6, "DHCPv6 failed: timeout %d, num tries left %u",
            timeout, priv->dhcp6.num_tries_left);
 
+	is_dhcp_managed = (priv->dhcp6.mode == NM_NDISC_DHCP_LEVEL_MANAGED);
 	dhcp6_cleanup (self, CLEANUP_TYPE_DECONFIGURE, FALSE);
 
-	if (priv->dhcp6.mode == NM_NDISC_DHCP_LEVEL_MANAGED) {
+	if (is_dhcp_managed || priv->dhcp6.num_tries_left < DHCP_NUM_TRIES_MAX) {
 		/* Don't fail if there are static addresses configured on
 		 * the device, instead retry after some time.
 		 */
@@ -6799,15 +6822,23 @@ dhcp6_fail (NMDevice *self, gboolean timeout)
 		    && (timeout || (priv->ip6_state == IP_CONF))
 		    && !priv->dhcp6.was_active)
 			nm_device_activate_schedule_ip6_config_timeout (self);
-		else if (priv->ip6_state == IP_DONE || priv->dhcp6.was_active) {
+		else if (   priv->dhcp6.num_tries_left < DHCP_NUM_TRIES_MAX
+		         || priv->ip6_state == IP_DONE
+		         || priv->dhcp6.was_active) {
 			/* Don't fail immediately when the lease expires but try to
 			 * restart DHCP for a predefined number of times.
 			 */
 			if (priv->dhcp6.num_tries_left) {
 				priv->dhcp6.num_tries_left--;
 				dhcp_schedule_restart (self, AF_INET6, "lease expired");
-			} else
+			} else {
 				nm_device_ip_method_failed (self, AF_INET6, NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED);
+				/* We failed the ipv6 method but schedule again the retries if the ipv4 method is
+				 * configured, keeping the connection up.
+				 */
+				if (nm_device_get_state (self) != NM_DEVICE_STATE_FAILED)
+					dhcp_schedule_restart (self, AF_INET6, "renewal failed");
+			}
 		} else
 			g_warn_if_reached ();
 	} else {
@@ -6873,6 +6904,12 @@ dhcp6_state_changed (NMDhcpClient *client,
 				_notify (self, PROP_DHCP6_CONFIG);
 			}
 		}
+
+		/* After long time we have been able to renew the lease:
+		 * update the ip state
+		 */
+		if (priv->ip6_state == IP_FAIL)
+			_set_ip_state (self, AF_INET6, IP_CONF);
 
 		priv->dhcp6.num_tries_left = DHCP_NUM_TRIES_MAX;
 
@@ -7506,7 +7543,7 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
 		gboolean anticipated_failure = FALSE;
 
 		if (!priv->mtu_initial && !priv->ip6_mtu_initial) {
-			/* before touching any of the MTU paramters, record the
+			/* before touching any of the MTU parameters, record the
 			 * original setting to restore on deactivation. */
 			priv->mtu_initial = mtu_plat;
 			priv->ip6_mtu_initial = _IP6_MTU_SYS ();
@@ -8163,7 +8200,7 @@ nm_device_activate_stage3_ip4_start (NMDevice *self)
 
 	if (nm_device_sys_iface_state_is_external (self)) {
 		_set_ip_state (self, AF_INET, IP_DONE);
-		check_ip_state (self, FALSE);
+		check_ip_state (self, FALSE, TRUE);
 		return TRUE;
 	}
 
@@ -8176,7 +8213,7 @@ nm_device_activate_stage3_ip4_start (NMDevice *self)
 		g_object_unref (ip4_config);
 	} else if (ret == NM_ACT_STAGE_RETURN_IP_DONE) {
 		_set_ip_state (self, AF_INET, IP_DONE);
-		check_ip_state (self, FALSE);
+		check_ip_state (self, FALSE, TRUE);
 	} else if (ret == NM_ACT_STAGE_RETURN_FAILURE) {
 		nm_device_state_changed (self, NM_DEVICE_STATE_FAILED, failure_reason);
 		return FALSE;
@@ -8210,7 +8247,7 @@ nm_device_activate_stage3_ip6_start (NMDevice *self)
 
 	if (nm_device_sys_iface_state_is_external (self)) {
 		_set_ip_state (self, AF_INET6, IP_DONE);
-		check_ip_state (self, FALSE);
+		check_ip_state (self, FALSE, TRUE);
 		return TRUE;
 	}
 
@@ -8227,7 +8264,7 @@ nm_device_activate_stage3_ip6_start (NMDevice *self)
 		nm_device_activate_schedule_ip6_config_result (self);
 	} else if (ret == NM_ACT_STAGE_RETURN_IP_DONE) {
 		_set_ip_state (self, AF_INET6, IP_DONE);
-		check_ip_state (self, FALSE);
+		check_ip_state (self, FALSE, TRUE);
 	} else if (ret == NM_ACT_STAGE_RETURN_FAILURE) {
 		nm_device_state_changed (self, NM_DEVICE_STATE_FAILED, failure_reason);
 		return FALSE;
@@ -8277,7 +8314,7 @@ activate_stage3_ip_config_start (NMDevice *self)
 	/* Proxy */
 	nm_device_set_proxy_config (self, NULL);
 
-	check_ip_state (self, TRUE);
+	check_ip_state (self, TRUE, TRUE);
 }
 
 static void
@@ -8416,7 +8453,7 @@ activate_stage4_ip4_config_timeout (NMDevice *self)
 
 	_set_ip_state (self, AF_INET, IP_FAIL);
 
-	check_ip_state (self, FALSE);
+	check_ip_state (self, FALSE, TRUE);
 }
 
 /*
@@ -8472,7 +8509,7 @@ activate_stage4_ip6_config_timeout (NMDevice *self)
 
 	_set_ip_state (self, AF_INET6, IP_FAIL);
 
-	check_ip_state (self, FALSE);
+	check_ip_state (self, FALSE, TRUE);
 }
 
 /*
@@ -8720,7 +8757,7 @@ activate_stage5_ip4_config_result (NMDevice *self)
 
 	/* Enter the IP_CHECK state if this is the first method to complete */
 	_set_ip_state (self, AF_INET, IP_DONE);
-	check_ip_state (self, FALSE);
+	check_ip_state (self, FALSE, TRUE);
 }
 
 void
@@ -8875,7 +8912,7 @@ activate_stage5_ip6_config_commit (NMDevice *self)
 				_LOGD (LOGD_DEVICE | LOGD_IP6, "IPv6 DAD: awaiting termination");
 			} else {
 				_set_ip_state (self, AF_INET6, IP_DONE);
-				check_ip_state (self, FALSE);
+				check_ip_state (self, FALSE, TRUE);
 			}
 		}
 	} else {
@@ -9879,10 +9916,12 @@ static void
 _clear_queued_act_request (NMDevicePrivate *priv)
 {
 	if (priv->queued_act_request) {
-		nm_active_connection_set_state ((NMActiveConnection *) priv->queued_act_request,
-		                                NM_ACTIVE_CONNECTION_STATE_DEACTIVATED,
-		                                NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED);
-		g_clear_object (&priv->queued_act_request);
+		gs_unref_object NMActRequest *ac = NULL;
+
+		ac = g_steal_pointer (&priv->queued_act_request);
+		nm_active_connection_set_state_fail ((NMActiveConnection *) ac,
+		                                     NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED,
+		                                     NULL);
 	}
 }
 
@@ -9959,26 +9998,34 @@ impl_device_delete (NMDevice *self, GDBusMethodInvocation *context)
 	               NULL);
 }
 
-static gboolean
+static void
 _device_activate (NMDevice *self, NMActRequest *req)
 {
-	NMDevicePrivate *priv;
 	NMConnection *connection;
 
-	g_return_val_if_fail (NM_IS_DEVICE (self), FALSE);
-	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), FALSE);
-	g_return_val_if_fail (nm_device_get_managed (self, FALSE), FALSE);
+	g_return_if_fail (NM_IS_DEVICE (self));
+	g_return_if_fail (NM_IS_ACT_REQUEST (req));
+	nm_assert (nm_device_is_real (self));
 
 	/* Ensure the activation request is still valid; the master may have
 	 * already failed in which case activation of this device should not proceed.
 	 */
 	if (nm_active_connection_get_state (NM_ACTIVE_CONNECTION (req)) >= NM_ACTIVE_CONNECTION_STATE_DEACTIVATING)
-		return FALSE;
+		return;
 
-	priv = NM_DEVICE_GET_PRIVATE (self);
+	if (!nm_device_get_managed (self, FALSE)) {
+		/* It's unclear why the device would be unmanaged at this point.
+		 * Just to be sure, handle it and error out. */
+		_LOGE (LOGD_DEVICE, "Activation: failed activating connection '%s' because device is still unmanaged",
+		       nm_active_connection_get_settings_connection_id ((NMActiveConnection *) req));
+		nm_active_connection_set_state_fail ((NMActiveConnection *) req,
+		                                     NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN,
+		                                     NULL);
+		return;
+	}
 
 	connection = nm_act_request_get_applied_connection (req);
-	g_assert (connection);
+	nm_assert (connection);
 
 	_LOGI (LOGD_DEVICE, "Activation: starting connection '%s' (%s)",
 	       nm_connection_get_id (connection),
@@ -9989,14 +10036,12 @@ _device_activate (NMDevice *self, NMActRequest *req)
 	act_request_set (self, req);
 
 	nm_device_activate_schedule_stage1_device_prepare (self);
-	return TRUE;
 }
 
 static void
 _carrier_wait_check_queued_act_request (NMDevice *self)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
-	NMActRequest *queued_req;
 
 	if (   !priv->queued_act_request
 	    || !priv->queued_act_request_is_waiting_for_carrier)
@@ -10007,11 +10052,11 @@ _carrier_wait_check_queued_act_request (NMDevice *self)
 		_LOGD (LOGD_DEVICE, "Cancel queued activation request as we have no carrier after timeout");
 		_clear_queued_act_request (priv);
 	} else {
+		gs_unref_object NMActRequest *queued_req = NULL;
+
 		_LOGD (LOGD_DEVICE, "Activate queued activation request as we now have carrier");
-		queued_req = priv->queued_act_request;
-		priv->queued_act_request = NULL;
+		queued_req = g_steal_pointer (&priv->queued_act_request);
 		_device_activate (self, queued_req);
-		g_object_unref (queued_req);
 	}
 }
 
@@ -10071,10 +10116,11 @@ nm_device_steal_connection (NMDevice *self, NMSettingsConnection *connection)
 
 	if (   priv->act_request
 	    && connection == nm_active_connection_get_settings_connection (NM_ACTIVE_CONNECTION (priv->act_request))
-	    && priv->state < NM_DEVICE_STATE_DEACTIVATING)
+	    && priv->state < NM_DEVICE_STATE_DEACTIVATING) {
 		nm_device_state_changed (self,
 		                         NM_DEVICE_STATE_DEACTIVATING,
 		                         NM_DEVICE_STATE_REASON_NEW_ACTIVATION);
+	}
 }
 
 void
@@ -10085,10 +10131,10 @@ nm_device_queue_activation (NMDevice *self, NMActRequest *req)
 
 	must_queue = _carrier_wait_check_act_request_must_queue (self, req);
 
-	if (!priv->act_request && !must_queue && nm_device_is_real (self)) {
-		/* Just activate immediately */
-		if (!_device_activate (self, req))
-			g_assert_not_reached ();
+	if (   !priv->act_request
+	    && !must_queue
+	    && nm_device_is_real (self)) {
+		_device_activate (self, req);
 		return;
 	}
 
@@ -11369,7 +11415,7 @@ queued_ip6_config_change (gpointer user_data)
 			_LOGD (LOGD_DEVICE | LOGD_IP6, "IPv6 DAD terminated");
 			g_clear_object (&priv->dad6_ip6_config);
 			_set_ip_state (self, AF_INET6, IP_DONE);
-			check_ip_state (self, FALSE);
+			check_ip_state (self, FALSE, TRUE);
 			if (priv->rt6_temporary_not_available)
 				nm_device_activate_schedule_ip6_config_result (self);
 		}
@@ -13199,12 +13245,10 @@ _set_state_full (NMDevice *self,
 	case NM_DEVICE_STATE_DISCONNECTED:
 		if (   priv->queued_act_request
 		    && !priv->queued_act_request_is_waiting_for_carrier) {
-			NMActRequest *queued_req;
+			gs_unref_object NMActRequest *queued_req = NULL;
 
-			queued_req = priv->queued_act_request;
-			priv->queued_act_request = NULL;
+			queued_req = g_steal_pointer (&priv->queued_act_request);
 			_device_activate (self, queued_req);
-			g_object_unref (queued_req);
 		}
 		break;
 	case NM_DEVICE_STATE_ACTIVATED:
