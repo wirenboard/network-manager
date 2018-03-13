@@ -1454,6 +1454,7 @@
     <keyword type="macro" name="NM_SETTING_TEAM_LINK_WATCHERS" link="NMSettingTeam.html#NM-SETTING-TEAM-LINK-WATCHERS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_BROADCAST" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-BROADCAST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_ROUNDROBIN" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ROUNDROBIN:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_RANDOM" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-RANDOM:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-ACTIVEBACKUP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_LOADBALANCE" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-LOADBALANCE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_TEAM_RUNNER_LACP" link="NMSettingTeam.html#NM-SETTING-TEAM-RUNNER-LACP:CAPS"/>

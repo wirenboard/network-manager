@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [10])
-m4_define([nm_micro_version], [4])
+m4_define([nm_micro_version], [6])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -1224,16 +1224,16 @@ fi
 AC_SUBST(SANITIZERS, [$sanitizers])
 
 AC_MSG_CHECKING([CC support C11 _Generic()])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[int foo(void); int foo() { int a = 0; int b = _Generic (a, int: 4); return b + a; }]],
-                                   [[foo();]])],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[int foo(void); int foo() { int a = 0; int b = _Generic (a, int: 4); return b + a; }]],
+                                  [[foo();]])],
                   [cc_support_generic=1],
                   [cc_support_generic=0])
 AC_MSG_RESULT($cc_support_generic)
 AC_DEFINE_UNQUOTED(_NM_CC_SUPPORT_GENERIC, $cc_support_generic, [Define whether the compiler supports C11 _Generic()])
 
 AC_MSG_CHECKING([CC support gcc __auto_type])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[int foo(void); int foo() { int a = 0; __auto_type b = a; return b + a; }]],
-                                   [[foo();]])],
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[int foo(void); int foo() { int a = 0; __auto_type b = a; return b + a; }]],
+                                  [[foo();]])],
                   [cc_support_auto_type=1],
                   [cc_support_auto_type=0])
 AC_MSG_RESULT($cc_support_auto_type)

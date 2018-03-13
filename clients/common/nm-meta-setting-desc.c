@@ -3950,12 +3950,19 @@ _validate_fcn_team_config (const char *value, char **out_to_free, GError **error
 }
 
 static gboolean
-_is_valid_team_runner_tx_hash_element (const char *tx_hash_element)
+_is_valid_team_runner_tx_hash_element (const char *tx_hash_element,
+                                       GError **error)
 {
-	const char *valid_tx_hashes[] = { "eth", "vlan", "ipv4", "ipv6", "ip",
-	                                  "l3", "tcp", "udp", "sctp", "l4", NULL };
-	if (nmc_string_is_valid (tx_hash_element, valid_tx_hashes, NULL))
+	nm_assert (!error || !*error);
+
+	if (NM_IN_STRSET (tx_hash_element,
+	                  "eth", "vlan", "ipv4", "ipv6", "ip",
+	                  "l3", "tcp", "udp", "sctp", "l4")) {
 		return TRUE;
+	}
+
+	g_set_error (error, 1, 0, "'%s' is not valid. %s", tx_hash_element,
+	             "Valid tx-hashes: [eth, vlan, ipv4, ipv6, ip, l3, tcp, udp, sctp, l4]");
 	return FALSE;
 }
 
@@ -3963,21 +3970,24 @@ static gboolean
 _set_fcn_team_runner_tx_hash (ARGS_SET_FCN)
 {
 	char **strv = NULL;
-	guint i = 0;
+	char *const*iter;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	strv = _nm_utils_strv_cleanup (g_strsplit_set (value, " \t,", 0),
 	                               TRUE, TRUE, TRUE);
-	if (!verify_string_list (strv, property_info->property_name,
-	                         _is_valid_team_runner_tx_hash_element,
-	                         error)) {
-		g_strfreev (strv);
-		return FALSE;
+	for (iter = strv; strv && *iter; iter++) {
+		if (!_is_valid_team_runner_tx_hash_element (*iter, error)) {
+			g_strfreev (strv);
+			return FALSE;
+		}
 	}
 
-	while (strv && strv[i])
-		nm_setting_team_add_runner_tx_hash (NM_SETTING_TEAM (setting), strv[i++]);
+	while (nm_setting_team_get_num_runner_tx_hash (NM_SETTING_TEAM (setting)))
+		nm_setting_team_remove_runner_tx_hash (NM_SETTING_TEAM (setting), 0);
+
+	for (iter = strv; strv && *iter; iter++)
+		nm_setting_team_add_runner_tx_hash (NM_SETTING_TEAM (setting), *iter);
 	g_strfreev (strv);
 
 	return TRUE;
@@ -6594,6 +6604,7 @@ static const NMMetaPropertyInfo *const property_infos_TEAM[] = {
 		.property_typ_data = DEFINE_PROPERTY_TYP_DATA (
 			.values_static =            VALUES_STATIC (NM_SETTING_TEAM_RUNNER_BROADCAST,
 			                                           NM_SETTING_TEAM_RUNNER_ROUNDROBIN,
+			                                           NM_SETTING_TEAM_RUNNER_RANDOM,
 			                                           NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP,
 			                                           NM_SETTING_TEAM_RUNNER_LOADBALANCE,
 			                                           NM_SETTING_TEAM_RUNNER_LACP),
