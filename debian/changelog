@@ -1,3 +1,11 @@
+network-manager (1.10.6-3) unstable; urgency=medium
+
+  * Stop building libnm-glib/libnm-util.
+    Those libraries have been deprecated for several years. The successor is
+    libnm, a GObject-based client library using GDBus instead of dbus-glib.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 18 Apr 2018 19:40:01 +0200
+
 network-manager (1.10.6-2) unstable; urgency=medium
 
   * Update Vcs-* to point to https://salsa.debian.org
