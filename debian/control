@@ -68,7 +68,6 @@ Recommends: ppp,
             modemmanager,
             crda,
             isc-dhcp-client (>= 4.1.1-P1-4),
-            iputils-arping
 Suggests: libteam-utils
 Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
