@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
  This file is part of systemd.
 
@@ -23,6 +24,7 @@
 #include <linux/if.h>
 #include <netinet/ether.h>
 
+#include "sd-id128.h"
 #include "sd-ndisc.h"
 
 #include "alloc-util.h"
@@ -118,7 +120,8 @@ bool net_match_config(const struct ether_addr *match_mac,
                       char * const *match_names,
                       Condition *match_host,
                       Condition *match_virt,
-                      Condition *match_kernel,
+                      Condition *match_kernel_cmdline,
+                      Condition *match_kernel_version,
                       Condition *match_arch,
                       const struct ether_addr *dev_mac,
                       const char *dev_path,
@@ -133,7 +136,10 @@ bool net_match_config(const struct ether_addr *match_mac,
         if (match_virt && condition_test(match_virt) <= 0)
                 return false;
 
-        if (match_kernel && condition_test(match_kernel) <= 0)
+        if (match_kernel_cmdline && condition_test(match_kernel_cmdline) <= 0)
+                return false;
+
+        if (match_kernel_version && condition_test(match_kernel_version) <= 0)
                 return false;
 
         if (match_arch && condition_test(match_arch) <= 0)
@@ -273,10 +279,9 @@ int config_parse_ifalias(const char *unit,
         }
 
         free(*s);
-        if (*n) {
-                *s = n;
-                n = NULL;
-        } else
+        if (*n)
+                *s = TAKE_PTR(n);
+        else
                 *s = NULL;
 
         return 0;
@@ -422,7 +427,7 @@ int deserialize_in_addrs(struct in_addr **ret, const char *string) {
                 if (r == 0)
                         break;
 
-                new_addresses = realloc(addresses, (size + 1) * sizeof(struct in_addr));
+                new_addresses = reallocarray(addresses, size + 1, sizeof(struct in_addr));
                 if (!new_addresses)
                         return -ENOMEM;
                 else
@@ -435,8 +440,7 @@ int deserialize_in_addrs(struct in_addr **ret, const char *string) {
                 size++;
         }
 
-        *ret = addresses;
-        addresses = NULL;
+        *ret = TAKE_PTR(addresses);
 
         return size;
 }
@@ -476,7 +480,7 @@ int deserialize_in6_addrs(struct in6_addr **ret, const char *string) {
                 if (r == 0)
                         break;
 
-                new_addresses = realloc(addresses, (size + 1) * sizeof(struct in6_addr));
+                new_addresses = reallocarray(addresses, size + 1, sizeof(struct in6_addr));
                 if (!new_addresses)
                         return -ENOMEM;
                 else
@@ -489,8 +493,7 @@ int deserialize_in6_addrs(struct in6_addr **ret, const char *string) {
                 size++;
         }
 
-        *ret = addresses;
-        addresses = NULL;
+        *ret = TAKE_PTR(addresses);
 
         return size;
 }
@@ -583,8 +586,7 @@ int deserialize_dhcp_routes(struct sd_dhcp_route **ret, size_t *ret_size, size_t
 
         *ret_size = size;
         *ret_allocated = allocated;
-        *ret = routes;
-        routes = NULL;
+        *ret = TAKE_PTR(routes);
 
         return 0;
 }

@@ -1123,7 +1123,7 @@ cannot be normalized, the connection will not be modified.</p>
 <td class="parameter_description"><p>a <a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> with
 normalization parameters to allow customization of the normalization by providing
 specific arguments. Unknown arguments will be ignored and the default will be
-used. The keys must be strings, hashed by <a href="../glib/glib-Hash-Tables.html#g-str-hash"><code class="function">g_str_hash()</code></a> and <a href="../glib/glib-Hash-Tables.html#g-str-equal"><code class="function">g_str_equal()</code></a> functions.
+used. The keys must be strings compared with <a href="../glib/glib-Hash-Tables.html#g-str-equal"><code class="function">g_str_equal()</code></a> function.
 The values are opaque and depend on the parameter name. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 gpointer]</span></td>
 </tr>
@@ -2482,7 +2482,7 @@ nm_connection_get_setting_tc_config (<em class="parameter"><code><a class="link"
 <p>an <span class="type">NMSettingTCConfig</span> if the connection contains one, otherwise <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">

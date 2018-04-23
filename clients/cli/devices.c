@@ -451,11 +451,8 @@ usage_device_lldp (void)
 static void
 quit (void)
 {
-	if (progress_id) {
-		g_source_remove (progress_id);
+	if (nm_clear_g_source (&progress_id))
 		nmc_terminal_erase_line ();
-	}
-
 	g_main_loop_quit (loop);
 }
 
@@ -834,7 +831,7 @@ fill_output_access_point (gpointer data, gpointer user_data)
 	strength_str = g_strdup_printf ("%u", strength);
 	wpa_flags_str = ap_wpa_rsn_flags_to_string (wpa_flags);
 	rsn_flags_str = ap_wpa_rsn_flags_to_string (rsn_flags);
-	sig_bars = nm_utils_wifi_strength_bars (strength);
+	sig_bars = nmc_wifi_strength_bars (strength);
 
 	security_str = g_string_new (NULL);
 

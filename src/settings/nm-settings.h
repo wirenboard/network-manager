@@ -28,8 +28,6 @@
 
 #include "nm-connection.h"
 
-#include "nm-exported-object.h"
-
 #define NM_TYPE_SETTINGS            (nm_settings_get_type ())
 #define NM_SETTINGS(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_SETTINGS, NMSettings))
 #define NM_SETTINGS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  NM_TYPE_SETTINGS, NMSettingsClass))
@@ -71,14 +69,6 @@ NMSettings *nm_settings_get (void);
 
 NMSettings *nm_settings_new (void);
 gboolean nm_settings_start (NMSettings *self, GError **error);
-
-typedef void (*NMSettingsForEachFunc) (NMSettings *settings,
-                                       NMSettingsConnection *connection,
-                                       gpointer user_data);
-
-void nm_settings_for_each_connection (NMSettings *settings,
-                                      NMSettingsForEachFunc for_each_func,
-                                      gpointer user_data);
 
 typedef void (*NMSettingsAddCallback) (NMSettings *settings,
                                        NMSettingsConnection *connection,

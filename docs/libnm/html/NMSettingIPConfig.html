@@ -840,6 +840,10 @@
 <tbody>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ADDRESS-ATTRIBUTE-LABEL:CAPS" title="NM_IP_ADDRESS_ATTRIBUTE_LABEL">NM_IP_ADDRESS_ATTRIBUTE_LABEL</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-TABLE:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_TABLE">NM_IP_ROUTE_ATTRIBUTE_TABLE</a></td>
 </tr>
 <tr>
@@ -3832,6 +3836,12 @@ the particular kind of device.</p>
 <div class="refsect1">
 <a name="NMSettingIPConfig.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
+<a name="NM-IP-ADDRESS-ATTRIBUTE-LABEL:CAPS"></a><h3>NM_IP_ADDRESS_ATTRIBUTE_LABEL</h3>
+<pre class="programlisting">#define NM_IP_ADDRESS_ATTRIBUTE_LABEL        "label"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-IP-ROUTE-ATTRIBUTE-TABLE:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_TABLE</h3>
 <pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_TABLE          "table"
 </pre>
@@ -4136,7 +4146,7 @@ the particular kind of device.</p>
 <a name="NMSettingIPConfig--addresses"></a><h3>The <code class="literal">“addresses”</code> property</h3>
 <pre class="programlisting">  “addresses”                <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
 <p>Array of IP addresses.</p>
-<p>Element-Type: NMIPAddress</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMIPAddress)]</span></p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
@@ -4147,8 +4157,9 @@ the particular kind of device.</p>
 addresses on the network.  If an address conflict is detected, the
 activation will fail.  A zero value means that no duplicate address
 detection is performed, -1 means the default value (either configuration
-ipvx.dad-timeout override or 3 seconds).  A value greater than zero is a
+ipvx.dad-timeout override or zero).  A value greater than zero is a
 timeout in milliseconds.</p>
+<p>The property is currently implemented only for IPv4.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: [-1,30000]</p>
 <p>Default value: -1</p>
@@ -4232,7 +4243,10 @@ value will be used.</p>
 <div class="refsect2">
 <a name="NMSettingIPConfig--dns-search"></a><h3>The <code class="literal">“dns-search”</code> property</h3>
 <pre class="programlisting">  “dns-search”               <a href="../glib/glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></pre>
-<p>Array of DNS search domains.</p>
+<p>Array of DNS search domains. Domains starting with a tilde ('~')
+are considered 'routing' domains and are used only to decide the
+interface over which a query must be forwarded; they are not used
+to complete unqualified host names.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
@@ -4353,7 +4367,7 @@ of NetworkManager.</p>
 <a name="NMSettingIPConfig--routes"></a><h3>The <code class="literal">“routes”</code> property</h3>
 <pre class="programlisting">  “routes”                   <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
 <p>Array of IP routes.</p>
-<p>Element-Type: NMIPRoute</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMIPRoute)]</span></p>
 <p>Flags: Read / Write</p>
 </div>
 </div>

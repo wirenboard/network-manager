@@ -44,13 +44,10 @@
 
 NM_GOBJECT_PROPERTIES_DEFINE (NMModem,
 	PROP_CONTROL_PORT,
-	PROP_DATA_PORT,
+	PROP_IP_IFINDEX,
 	PROP_PATH,
 	PROP_UID,
 	PROP_DRIVER,
-	PROP_IP4_METHOD,
-	PROP_IP6_METHOD,
-	PROP_IP_TIMEOUT,
 	PROP_STATE,
 	PROP_DEVICE_ID,
 	PROP_SIM_ID,
@@ -79,7 +76,12 @@ typedef struct _NMModemPrivate {
 	char *driver;
 	char *control_port;
 	char *data_port;
-	char *ppp_iface;
+
+	/* TODO: ip_iface is solely used for nm_modem_owns_port().
+	 * We should rework the code that it's not necessary */
+	char *ip_iface;
+
+	int ip_ifindex;
 	NMModemIPMethod ip4_method;
 	NMModemIPMethod ip6_method;
 	NMUtilsIPv6IfaceId iid;
@@ -96,7 +98,7 @@ typedef struct _NMModemPrivate {
 	guint32 secrets_tries;
 	NMActRequestGetSecretsCallId *secrets_id;
 
-	guint32 mm_ip_timeout;
+	guint mm_ip_timeout;
 
 	guint32 ip4_route_table;
 	guint32 ip4_route_metric;
@@ -151,6 +153,10 @@ _nmlog_prefix (char *prefix, NMModem *self)
                 _nmlog_prefix (_prefix, (self)) \
                 _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
     } G_STMT_END
+
+/*****************************************************************************/
+
+static void _set_ip_ifindex (NMModem *self, int ifindex, const char *ifname);
 
 /*****************************************************************************/
 /* State/enabled/connected */
@@ -450,20 +456,28 @@ ppp_state_changed (NMPPPManager *ppp_manager, NMPPPStatus status, gpointer user_
 }
 
 static void
-set_data_port (NMModem *self, const char *new_data_port)
+ppp_ifindex_set (NMPPPManager *ppp_manager,
+                 int ifindex,
+                 const char *iface,
+                 gpointer user_data)
 {
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
+	NMModem *self = NM_MODEM (user_data);
 
-	if (g_strcmp0 (priv->data_port, new_data_port) != 0) {
-		g_free (priv->data_port);
-		priv->data_port = g_strdup (new_data_port);
-		_notify (self, PROP_DATA_PORT);
+	nm_assert (ifindex >= 0);
+	nm_assert (NM_MODEM_GET_PRIVATE (self)->ppp_manager == ppp_manager);
+
+	if (ifindex <= 0 && iface) {
+		/* this might happen, if the ifname was already deleted
+		 * and we failed to resolve ifindex.
+		 *
+		 * Forget about the name. */
+		iface = NULL;
 	}
+	_set_ip_ifindex (self, ifindex, iface);
 }
 
 static void
 ppp_ip4_config (NMPPPManager *ppp_manager,
-                const char *iface,
                 NMIP4Config *config,
                 gpointer user_data)
 {
@@ -474,9 +488,6 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 	guint32 bad_dns2 = htonl (0x0A0B0C0E);
 	guint32 good_dns2 = htonl (0x04020202);  /* GTE nameserver */
 	gboolean dns_workaround = FALSE;
-
-	/* Notify about the new data port to use */
-	set_data_port (self, iface);
 
 	/* Work around a PPP bug (#1732) which causes many mobile broadband
 	 * providers to return 10.11.12.13 and 10.11.12.14 for the DNS servers.
@@ -519,15 +530,11 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 
 static void
 ppp_ip6_config (NMPPPManager *ppp_manager,
-                const char *iface,
                 const NMUtilsIPv6IfaceId *iid,
                 NMIP6Config *config,
                 gpointer user_data)
 {
 	NMModem *self = NM_MODEM (user_data);
-
-	/* Notify about the new data port to use */
-	set_data_port (self, iface);
 
 	NM_MODEM_GET_PRIVATE (self)->iid = *iid;
 
@@ -557,6 +564,18 @@ port_speed_is_zero (const char *port)
 {
 	struct termios options;
 	nm_auto_close int fd = -1;
+	gs_free char *path = NULL;
+
+	nm_assert (port);
+
+	if (port[0] != '/') {
+		if (   !port[0]
+		    || strchr (port, '/')
+		    || NM_IN_STRSET (port, ".", ".."))
+			return FALSE;
+		path = g_build_path ("/sys/class/tty", port, NULL);
+		port = path;
+	}
 
 	fd = open (port, O_RDWR | O_NONBLOCK | O_NOCTTY | O_CLOEXEC);
 	if (fd < 0)
@@ -598,6 +617,12 @@ ppp_stage3_ip_config_start (NMModem *self,
 			return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
+	if (!priv->data_port) {
+		_LOGE ("error starting PPP (no data port)");
+		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_PPP_START_FAILED);
+		return NM_ACT_STAGE_RETURN_FAILURE;
+	}
+
 	/* Check if ModemManager requested a specific IP timeout to be used. If 0 reported,
 	 * use the default one (30s) */
 	if (priv->mm_ip_timeout > 0) {
@@ -629,15 +654,16 @@ ppp_stage3_ip_config_start (NMModem *self,
 	                              ip_timeout, baud_override, &error)) {
 		_LOGE ("error starting PPP: %s", error->message);
 		g_error_free (error);
-
 		g_clear_object (&priv->ppp_manager);
-
 		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_PPP_START_FAILED);
 		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
 	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_STATE_CHANGED,
 	                  G_CALLBACK (ppp_state_changed),
+	                  self);
+	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_IFINDEX_SET,
+	                  G_CALLBACK (ppp_ifindex_set),
 	                  self);
 	g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_SIGNAL_IP4_CONFIG,
 	                  G_CALLBACK (ppp_ip4_config),
@@ -1065,12 +1091,20 @@ nm_modem_check_connection_compatible (NMModem *self, NMConnection *connection)
 gboolean
 nm_modem_complete_connection (NMModem *self,
                               NMConnection *connection,
-                              const GSList *existing_connections,
+                              NMConnection *const*existing_connections,
                               GError **error)
 {
-	if (NM_MODEM_GET_CLASS (self)->complete_connection)
-		return NM_MODEM_GET_CLASS (self)->complete_connection (self, connection, existing_connections, error);
-	return FALSE;
+	NMModemClass *klass;
+
+	klass = NM_MODEM_GET_CLASS (self);
+	if (!klass->complete_connection) {
+		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_INVALID_CONNECTION,
+		             "Modem class %s had no complete_connection method",
+		             G_OBJECT_TYPE_NAME (self));
+		return FALSE;
+	}
+
+	return klass->complete_connection (self, connection, existing_connections, error);
 }
 
 /*****************************************************************************/
@@ -1095,7 +1129,10 @@ deactivate_cleanup (NMModem *self, NMDevice *device)
 
 	priv->in_bytes = priv->out_bytes = 0;
 
-	g_clear_object (&priv->ppp_manager);
+	if (priv->ppp_manager) {
+		g_signal_handlers_disconnect_by_data (priv->ppp_manager, self);
+		g_clear_object (&priv->ppp_manager);
+	}
 
 	if (device) {
 		g_return_if_fail (NM_IS_DEVICE (device));
@@ -1114,11 +1151,12 @@ deactivate_cleanup (NMModem *self, NMDevice *device)
 			}
 		}
 	}
+
+	nm_clear_g_free (&priv->data_port);
+	priv->mm_ip_timeout = 0;
 	priv->ip4_method = NM_MODEM_IP_METHOD_UNKNOWN;
 	priv->ip6_method = NM_MODEM_IP_METHOD_UNKNOWN;
-
-	g_free (priv->ppp_iface);
-	priv->ppp_iface = NULL;
+	_set_ip_ifindex (self, -1, NULL);
 }
 
 /*****************************************************************************/
@@ -1369,17 +1407,117 @@ nm_modem_get_control_port (NMModem *self)
 	return NM_MODEM_GET_PRIVATE (self)->control_port;
 }
 
-const char *
-nm_modem_get_data_port (NMModem *self)
+int
+nm_modem_get_ip_ifindex (NMModem *self)
 {
-	g_return_val_if_fail (NM_IS_MODEM (self), NULL);
+	NMModemPrivate *priv;
 
-	/* The ppp_iface takes precedence over the data interface when PPP is used,
-	 * since data_iface is the TTY over which PPP is run, and that TTY can't
-	 * do IP.  The caller really wants the thing that's doing IP.
-	 */
-	return NM_MODEM_GET_PRIVATE (self)->ppp_iface ?
-		NM_MODEM_GET_PRIVATE (self)->ppp_iface : NM_MODEM_GET_PRIVATE (self)->data_port;
+	g_return_val_if_fail (NM_IS_MODEM (self), 0);
+
+	priv = NM_MODEM_GET_PRIVATE (self);
+
+	/* internally we track an unset ip_ifindex as -1.
+	 * For the caller of nm_modem_get_ip_ifindex(), this
+	 * shall be zero too. */
+	return priv->ip_ifindex != -1 ? priv->ip_ifindex : 0;
+}
+
+static void
+_set_ip_ifindex (NMModem *self, int ifindex, const char *ifname)
+{
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
+
+	nm_assert (ifindex >= -1);
+	nm_assert ((ifindex > 0) == !!ifname);
+
+	if (!nm_streq0 (priv->ip_iface, ifname)) {
+		g_free (priv->ip_iface);
+		priv->ip_iface = g_strdup (ifname);
+	}
+
+	if (priv->ip_ifindex != ifindex) {
+		priv->ip_ifindex = ifindex;
+		_notify (self, PROP_IP_IFINDEX);
+	}
+}
+
+gboolean
+nm_modem_set_data_port (NMModem *self,
+                        NMPlatform *platform,
+                        const char *data_port,
+                        NMModemIPMethod ip4_method,
+                        NMModemIPMethod ip6_method,
+                        guint timeout,
+                        GError **error)
+{
+	NMModemPrivate *priv;
+	gboolean is_ppp;
+	int ifindex = -1;
+
+	g_return_val_if_fail (NM_IS_MODEM (self), FALSE);
+	g_return_val_if_fail (NM_IS_PLATFORM (platform), FALSE);
+	g_return_val_if_fail (!error || !*error, FALSE);
+
+	priv = NM_MODEM_GET_PRIVATE (self);
+
+	if (   priv->ppp_manager
+	    || priv->data_port
+	    || priv->ip_ifindex != -1) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "cannot set data port in activated state");
+		/* this really shouldn't happen. Assert. */
+		g_return_val_if_reached (FALSE);
+	}
+
+	if (!data_port) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "missing data port");
+		return FALSE;
+	}
+
+	is_ppp =    (ip4_method == NM_MODEM_IP_METHOD_PPP)
+	         || (ip6_method == NM_MODEM_IP_METHOD_PPP);
+	if (is_ppp) {
+		if (   !NM_IN_SET (ip4_method, NM_MODEM_IP_METHOD_UNKNOWN, NM_MODEM_IP_METHOD_PPP)
+		    || !NM_IN_SET (ip6_method, NM_MODEM_IP_METHOD_UNKNOWN, NM_MODEM_IP_METHOD_PPP)) {
+			g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			                     "conflicting ip methods");
+			return FALSE;
+		}
+	} else if (   !NM_IN_SET (ip4_method, NM_MODEM_IP_METHOD_UNKNOWN, NM_MODEM_IP_METHOD_STATIC, NM_MODEM_IP_METHOD_AUTO)
+	           || !NM_IN_SET (ip6_method, NM_MODEM_IP_METHOD_UNKNOWN, NM_MODEM_IP_METHOD_STATIC, NM_MODEM_IP_METHOD_AUTO)
+	           || (   ip4_method == NM_MODEM_IP_METHOD_UNKNOWN
+	               && ip6_method == NM_MODEM_IP_METHOD_UNKNOWN)) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "invalid ip methods");
+		return FALSE;
+	}
+
+	if (!is_ppp) {
+		ifindex = nm_platform_if_nametoindex (platform, data_port);
+		if (ifindex <= 0) {
+			g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			             "cannot find network interface %s", data_port);
+			return FALSE;
+		}
+		if (!nm_platform_process_events_ensure_link (platform, ifindex, data_port)) {
+			g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			             "cannot find network interface %s in platform cache", data_port);
+			return FALSE;
+		}
+	}
+
+	priv->mm_ip_timeout = timeout;
+	priv->ip4_method = ip4_method;
+	priv->ip6_method = ip6_method;
+	if (is_ppp) {
+		priv->data_port = g_strdup (data_port);
+		_set_ip_ifindex (self, -1, NULL);
+	} else {
+		priv->data_port = NULL;
+		_set_ip_ifindex (self, ifindex, data_port);
+	}
+	return TRUE;
 }
 
 gboolean
@@ -1392,15 +1530,10 @@ nm_modem_owns_port (NMModem *self, const char *iface)
 	if (NM_MODEM_GET_CLASS (self)->owns_port)
 		return NM_MODEM_GET_CLASS (self)->owns_port (self, iface);
 
-	/* Fall back to data/control ports */
-	if (priv->ppp_iface && (strcmp (priv->ppp_iface, iface) == 0))
-		return TRUE;
-	if (priv->data_port && (strcmp (priv->data_port, iface) == 0))
-		return TRUE;
-	if (priv->control_port && (strcmp (priv->control_port, iface) == 0))
-		return TRUE;
-
-	return FALSE;
+	return NM_IN_STRSET (iface,
+	                     priv->ip_iface,
+	                     priv->data_port,
+	                     priv->control_port);
 }
 
 gboolean
@@ -1500,7 +1633,8 @@ static void
 get_property (GObject *object, guint prop_id,
               GValue *value, GParamSpec *pspec)
 {
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE ((NMModem *) object);
+	NMModem *self = NM_MODEM (object);
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 
 	switch (prop_id) {
 	case PROP_PATH:
@@ -1512,20 +1646,11 @@ get_property (GObject *object, guint prop_id,
 	case PROP_CONTROL_PORT:
 		g_value_set_string (value, priv->control_port);
 		break;
-	case PROP_DATA_PORT:
-		g_value_set_string (value, nm_modem_get_data_port (NM_MODEM (object)));
+	case PROP_IP_IFINDEX:
+		g_value_set_int (value, nm_modem_get_ip_ifindex (self));
 		break;
 	case PROP_UID:
 		g_value_set_string (value, priv->uid);
-		break;
-	case PROP_IP4_METHOD:
-		g_value_set_uint (value, priv->ip4_method);
-		break;
-	case PROP_IP6_METHOD:
-		g_value_set_uint (value, priv->ip6_method);
-		break;
-	case PROP_IP_TIMEOUT:
-		g_value_set_uint (value, priv->mm_ip_timeout);
 		break;
 	case PROP_STATE:
 		g_value_set_int (value, priv->state);
@@ -1569,22 +1694,9 @@ set_property (GObject *object, guint prop_id,
 		/* construct-only */
 		priv->control_port = g_value_dup_string (value);
 		break;
-	case PROP_DATA_PORT:
-		g_free (priv->data_port);
-		priv->data_port = g_value_dup_string (value);
-		break;
 	case PROP_UID:
 		/* construct-only */
 		priv->uid = g_value_dup_string (value);
-		break;
-	case PROP_IP4_METHOD:
-		priv->ip4_method = g_value_get_uint (value);
-		break;
-	case PROP_IP6_METHOD:
-		priv->ip6_method = g_value_get_uint (value);
-		break;
-	case PROP_IP_TIMEOUT:
-		priv->mm_ip_timeout = g_value_get_uint (value);
 		break;
 	case PROP_STATE:
 		/* construct-only */
@@ -1623,6 +1735,7 @@ nm_modem_init (NMModem *self)
 	self->_priv = G_TYPE_INSTANCE_GET_PRIVATE (self, NM_TYPE_MODEM, NMModemPrivate);
 	priv = self->_priv;
 
+	priv->ip_ifindex = -1;
 	priv->ip4_route_table = RT_TABLE_MAIN;
 	priv->ip4_route_metric = 700;
 	priv->ip6_route_table = RT_TABLE_MAIN;
@@ -1638,7 +1751,7 @@ constructed (GObject *object)
 
 	priv = NM_MODEM_GET_PRIVATE (NM_MODEM (object));
 
-	g_return_if_fail (priv->data_port || priv->control_port);
+	g_return_if_fail (priv->control_port);
 }
 
 /*****************************************************************************/
@@ -1663,6 +1776,7 @@ finalize (GObject *object)
 	g_free (priv->driver);
 	g_free (priv->control_port);
 	g_free (priv->data_port);
+	g_free (priv->ip_iface);
 	g_free (priv->device_id);
 	g_free (priv->sim_id);
 	g_free (priv->sim_operator_id);
@@ -1711,33 +1825,11 @@ nm_modem_class_init (NMModemClass *klass)
 	                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
 	                          G_PARAM_STATIC_STRINGS);
 
-	obj_properties[PROP_DATA_PORT] =
-	     g_param_spec_string (NM_MODEM_DATA_PORT, "", "",
-	                          NULL,
-	                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
-	                          G_PARAM_STATIC_STRINGS);
-
-	obj_properties[PROP_IP4_METHOD] =
-	     g_param_spec_uint (NM_MODEM_IP4_METHOD, "", "",
-	                        NM_MODEM_IP_METHOD_UNKNOWN,
-	                        NM_MODEM_IP_METHOD_AUTO,
-	                        NM_MODEM_IP_METHOD_UNKNOWN,
-	                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
-	                        G_PARAM_STATIC_STRINGS);
-
-	obj_properties[PROP_IP6_METHOD] =
-	     g_param_spec_uint (NM_MODEM_IP6_METHOD, "", "",
-	                        NM_MODEM_IP_METHOD_UNKNOWN,
-	                        NM_MODEM_IP_METHOD_AUTO,
-	                        NM_MODEM_IP_METHOD_UNKNOWN,
-	                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
-	                        G_PARAM_STATIC_STRINGS);
-
-	obj_properties[PROP_IP_TIMEOUT] =
-	     g_param_spec_uint (NM_MODEM_IP_TIMEOUT, "", "",
-	                        0, 360, 20,
-	                        G_PARAM_READWRITE |
-	                        G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_IP_IFINDEX] =
+	     g_param_spec_int (NM_MODEM_IP_IFINDEX, "", "",
+	                       0, G_MAXINT, 0,
+	                       G_PARAM_READABLE |
+	                       G_PARAM_STATIC_STRINGS);
 
 	obj_properties[PROP_STATE] =
 	     g_param_spec_int (NM_MODEM_STATE, "", "",

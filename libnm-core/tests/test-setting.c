@@ -663,23 +663,23 @@ test_dcb_flags_invalid (void)
 	s_dcb = (NMSettingDcb *) nm_setting_dcb_new ();
 	g_assert (s_dcb);
 
-	g_test_expect_message ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
+	NMTST_EXPECT ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
 	TEST_FLAG (NM_SETTING_DCB_APP_FCOE_FLAGS, nm_setting_dcb_get_app_fcoe_flags, 0x332523);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
+	NMTST_EXPECT ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
 	TEST_FLAG (NM_SETTING_DCB_APP_ISCSI_FLAGS, nm_setting_dcb_get_app_iscsi_flags, 0xFF);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
+	NMTST_EXPECT ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
 	TEST_FLAG (NM_SETTING_DCB_APP_FIP_FLAGS, nm_setting_dcb_get_app_fip_flags, 0x1111);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
+	NMTST_EXPECT ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
 	TEST_FLAG (NM_SETTING_DCB_PRIORITY_FLOW_CONTROL_FLAGS, nm_setting_dcb_get_priority_flow_control_flags, G_MAXUINT32);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
+	NMTST_EXPECT ("GLib-GObject", G_LOG_LEVEL_WARNING, "*invalid or out of range*");
 	TEST_FLAG (NM_SETTING_DCB_PRIORITY_GROUP_FLAGS, nm_setting_dcb_get_priority_group_flags,
 	           (NM_SETTING_DCB_FLAG_ENABLE | NM_SETTING_DCB_FLAG_ADVERTISE | NM_SETTING_DCB_FLAG_WILLING) + 1);
 	g_test_assert_expected_messages ();
@@ -869,6 +869,7 @@ test_dcb_bandwidth_sums (void)
 
 /*****************************************************************************/
 
+#if WITH_JSON_VALIDATION
 static void
 _test_team_config_sync (const char *team_config,
                         int notify_peer_count,
@@ -1258,6 +1259,7 @@ test_team_port_full_config (void)
 	                             "\"send_always\": true}]}",
 	                             10, 20, true, 30, 40, NULL);
 }
+#endif
 
 /*****************************************************************************/
 
@@ -1610,7 +1612,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/libnm/settings/tc_config/setting", test_tc_config_setting);
 	g_test_add_func ("/libnm/settings/tc_config/dbus", test_tc_config_dbus);
 
-#if WITH_JANSSON
+#if WITH_JSON_VALIDATION
 	g_test_add_func ("/libnm/settings/team/sync_runner_from_config_roundrobin",
 	                 test_runner_roundrobin_sync_from_config);
 	g_test_add_func ("/libnm/settings/team/sync_runner_from_config_broadcast",
@@ -1639,7 +1641,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/libnm/settings/team-port/sync_from_config_lacp_prio", test_team_port_lacp_prio);
 	g_test_add_func ("/libnm/settings/team-port/sync_from_config_lacp_key", test_team_port_lacp_key);
 	g_test_add_func ("/libnm/settings/team-port/sycn_from_config_full", test_team_port_full_config);
-
 #endif
 
 	return g_test_run ();

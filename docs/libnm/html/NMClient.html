@@ -568,6 +568,77 @@
 <a class="link" href="NMClient.html#nm-client-get-dns-configuration" title="nm_client_get_dns_configuration ()">nm_client_get_dns_configuration</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
+<tr>
+<td class="function_type">const <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-get-checkpoints" title="nm_client_get_checkpoints ()">nm_client_get_checkpoints</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-create" title="nm_client_checkpoint_create ()">nm_client_checkpoint_create</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">NMCheckpoint</span> *
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-create-finish" title="nm_client_checkpoint_create_finish ()">nm_client_checkpoint_create_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-destroy" title="nm_client_checkpoint_destroy ()">nm_client_checkpoint_destroy</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-destroy-finish" title="nm_client_checkpoint_destroy_finish ()">nm_client_checkpoint_destroy_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-rollback" title="nm_client_checkpoint_rollback ()">nm_client_checkpoint_rollback</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-rollback-finish" title="nm_client_checkpoint_rollback_finish ()">nm_client_checkpoint_rollback_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-adjust-rollback-timeout" title="nm_client_checkpoint_adjust_rollback_timeout ()">nm_client_checkpoint_adjust_rollback_timeout</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="../glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMClient.html#nm-client-checkpoint-adjust-rollback-timeout-finish" title="nm_client_checkpoint_adjust_rollback_timeout_finish ()">nm_client_checkpoint_adjust_rollback_timeout_finish</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -601,6 +672,12 @@
 <tr>
 <td class="property_type"><a href="../glib/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
 <td class="property_name"><a class="link" href="NMClient.html#NMClient--can-modify" title="The “can-modify” property">can-modify</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</td>
+<td class="property_name"><a class="link" href="NMClient.html#NMClient--checkpoints" title="The “checkpoints” property">checkpoints</a></td>
 <td class="property_flags">Read</td>
 </tr>
 <tr>
@@ -3470,6 +3547,438 @@ and should not be modified. </p>
 </div>
 <p class="since">Since: 1.6</p>
 </div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-get-checkpoints"></a><h3>nm_client_get_checkpoints ()</h3>
+<pre class="programlisting">const <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *
+nm_client_get_checkpoints (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>);</pre>
+<p>Gets all the active checkpoints.</p>
+<div class="refsect3">
+<a name="nm-client-get-checkpoints.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>a <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-client-get-checkpoints.returns"></a><h4>Returns</h4>
+<p>a <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a>
+containing all the <span class="type">NMCheckpoint</span>.  The returned array is owned by the
+<a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> object and should not be modified. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMCheckpoint]</span></p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-create"></a><h3>nm_client_checkpoint_create ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+nm_client_checkpoint_create (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                             <em class="parameter"><code>const <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *devices</code></em>,
+                             <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> rollback_timeout</code></em>,
+                             <em class="parameter"><code><a class="link" href="libnm-nm-dbus-interface.html#NMCheckpointCreateFlags" title="enum NMCheckpointCreateFlags"><span class="type">NMCheckpointCreateFlags</span></a> flags</code></em>,
+                             <em class="parameter"><code><a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                             <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                             <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Creates a checkpoint of the current networking configuration
+for given interfaces. An empty <em class="parameter"><code>devices</code></em>
+ argument means all
+devices. If <em class="parameter"><code>rollback_timeout</code></em>
+ is not zero, a rollback is
+automatically performed after the given timeout.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-create.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMClient.html" title="NMClient"><code class="literal">NMClient</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>devices</p></td>
+<td class="parameter_description"><p>a list of devices for which a
+checkpoint should be created. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMDevice]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>rollback_timeout</p></td>
+<td class="parameter_description"><p>the rollback timeout in seconds</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>flags</p></td>
+<td class="parameter_description"><p>creation flags</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to be called when the add operation completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>caller-specific data passed to <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-create-finish"></a><h3>nm_client_checkpoint_create_finish ()</h3>
+<pre class="programlisting"><span class="returnvalue">NMCheckpoint</span> *
+nm_client_checkpoint_create_finish (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                    <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncResult-struct"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                    <em class="parameter"><code><a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Gets the result of a call to <a class="link" href="NMClient.html#nm-client-checkpoint-create" title="nm_client_checkpoint_create ()"><code class="function">nm_client_checkpoint_create()</code></a>.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-create-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to the <a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location for a <a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-client-checkpoint-create-finish.returns"></a><h4>Returns</h4>
+<p>the new <span class="type">NMCheckpoint</span> on success, <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on
+failure, in which case <em class="parameter"><code>error</code></em>
+will be set. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-destroy"></a><h3>nm_client_checkpoint_destroy ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+nm_client_checkpoint_destroy (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                              <em class="parameter"><code>const <span class="type">char</span> *checkpoint_path</code></em>,
+                              <em class="parameter"><code><a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                              <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                              <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Destroys an existing checkpoint without performing a rollback.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-destroy.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMClient.html" title="NMClient"><code class="literal">NMClient</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>checkpoint_path</p></td>
+<td class="parameter_description"><p>the D-Bus path for the checkpoint</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to be called when the add operation completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>caller-specific data passed to <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-destroy-finish"></a><h3>nm_client_checkpoint_destroy_finish ()</h3>
+<pre class="programlisting"><a href="../glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+nm_client_checkpoint_destroy_finish (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                     <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncResult-struct"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                     <em class="parameter"><code><a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Gets the result of a call to <a class="link" href="NMClient.html#nm-client-checkpoint-destroy" title="nm_client_checkpoint_destroy ()"><code class="function">nm_client_checkpoint_destroy()</code></a>.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-destroy-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>an <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to the <a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location for a <a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-client-checkpoint-destroy-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success or <a href="../glib/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on failure, in which case
+<em class="parameter"><code>error</code></em>
+will be set.</p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-rollback"></a><h3>nm_client_checkpoint_rollback ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+nm_client_checkpoint_rollback (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                               <em class="parameter"><code>const <span class="type">char</span> *checkpoint_path</code></em>,
+                               <em class="parameter"><code><a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                               <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                               <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Performs the rollback of a checkpoint before the timeout is reached.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-rollback.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMClient.html" title="NMClient"><code class="literal">NMClient</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>checkpoint_path</p></td>
+<td class="parameter_description"><p>the D-Bus path to the checkpoint</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to be called when the add operation completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>caller-specific data passed to <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-rollback-finish"></a><h3>nm_client_checkpoint_rollback_finish ()</h3>
+<pre class="programlisting"><a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *
+nm_client_checkpoint_rollback_finish (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                      <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncResult-struct"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                      <em class="parameter"><code><a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Gets the result of a call to <a class="link" href="NMClient.html#nm-client-checkpoint-rollback" title="nm_client_checkpoint_rollback ()"><code class="function">nm_client_checkpoint_rollback()</code></a>.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-rollback-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>an <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to the <a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location for a <a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-client-checkpoint-rollback-finish.returns"></a><h4>Returns</h4>
+<p>an hash table of
+devices and results. Devices are represented by their original
+D-Bus path; each result is a <a class="link" href="libnm-nm-dbus-interface.html#NMRollbackResult" title="enum NMRollbackResult"><span class="type">NMRollbackResult</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 guint32]</span></p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-adjust-rollback-timeout"></a><h3>nm_client_checkpoint_adjust_rollback_timeout ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+nm_client_checkpoint_adjust_rollback_timeout
+                               (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                <em class="parameter"><code>const <span class="type">char</span> *checkpoint_path</code></em>,
+                                <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> add_timeout</code></em>,
+                                <em class="parameter"><code><a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a> *cancellable</code></em>,
+                                <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a> callback</code></em>,
+                                <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>Resets the timeout for the checkpoint with path <em class="parameter"><code>checkpoint_path</code></em>
+
+to <em class="parameter"><code>timeout_add</code></em>
+.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-adjust-rollback-timeout.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMClient.html" title="NMClient"><code class="literal">NMClient</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>checkpoint_path</p></td>
+<td class="parameter_description"><p>a D-Bus path to a checkpoint</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>add_timeout</p></td>
+<td class="parameter_description"><p>the timeout in seconds counting from now.
+Set to zero, to disable the timeout.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>cancellable</p></td>
+<td class="parameter_description"><p>a <a href="../gio/GCancellable.html#GCancellable-struct"><span class="type">GCancellable</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>callback</p></td>
+<td class="parameter_description"><p>callback to be called when the add operation completes. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>caller-specific data passed to <em class="parameter"><code>callback</code></em>
+. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-checkpoint-adjust-rollback-timeout-finish"></a><h3>nm_client_checkpoint_adjust_rollback_timeout_finish ()</h3>
+<pre class="programlisting"><a href="../glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+nm_client_checkpoint_adjust_rollback_timeout_finish
+                               (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                <em class="parameter"><code><a href="../gio/GAsyncResult.html#GAsyncResult-struct"><span class="type">GAsyncResult</span></a> *result</code></em>,
+                                <em class="parameter"><code><a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Gets the result of a call to <a class="link" href="NMClient.html#nm-client-checkpoint-adjust-rollback-timeout" title="nm_client_checkpoint_adjust_rollback_timeout ()"><code class="function">nm_client_checkpoint_adjust_rollback_timeout()</code></a>.</p>
+<div class="refsect3">
+<a name="nm-client-checkpoint-adjust-rollback-timeout-finish.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>client</p></td>
+<td class="parameter_description"><p>an <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>result</p></td>
+<td class="parameter_description"><p>the result passed to the <a href="../gio/GAsyncResult.html#GAsyncReadyCallback"><span class="type">GAsyncReadyCallback</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location for a <a href="../glib/glib-Error-Reporting.html#GError"><span class="type">GError</span></a>, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-client-checkpoint-adjust-rollback-timeout-finish.returns"></a><h4>Returns</h4>
+<p> <a href="../glib/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> on success or <a href="../glib/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> on failure.</p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
 </div>
 <div class="refsect1">
 <a name="NMClient.other_details"></a><h2>Types and Values</h2>
@@ -3958,7 +4467,7 @@ likely to become the new <a class="link" href="NMClient.html#NMClient--primary-c
 <a name="NMClient--active-connections"></a><h3>The <code class="literal">“active-connections”</code> property</h3>
 <pre class="programlisting">  “active-connections”       <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
 <p>The active connections.</p>
-<p>Element-type: NMActiveConnection</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMActiveConnection)]</span></p>
 <p>Flags: Read</p>
 </div>
 <hr>
@@ -3966,7 +4475,7 @@ likely to become the new <a class="link" href="NMClient.html#NMClient--primary-c
 <a name="NMClient--all-devices"></a><h3>The <code class="literal">“all-devices”</code> property</h3>
 <pre class="programlisting">  “all-devices”              <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
 <p>List of both real devices and device placeholders.</p>
-<p>Element-type: NMDevice</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMDevice)]</span></p>
 <p>Flags: Read</p>
 <p class="since">Since: 1.2</p>
 </div>
@@ -3980,13 +4489,22 @@ likely to become the new <a class="link" href="NMClient.html#NMClient--primary-c
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMClient--checkpoints"></a><h3>The <code class="literal">“checkpoints”</code> property</h3>
+<pre class="programlisting">  “checkpoints”              <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
+<p>The list of active checkpoints.</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMCheckpoint)]</span></p>
+<p>Flags: Read</p>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NMClient--connections"></a><h3>The <code class="literal">“connections”</code> property</h3>
 <pre class="programlisting">  “connections”              <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
 <p>The list of configured connections that are available to the user. (Note
 that this differs from the underlying D-Bus property, which may also
 contain the object paths of connections that the user does not have
 permission to read the details of.)</p>
-<p>Element-type: NMRemoteConnection</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMRemoteConnection)]</span></p>
 <p>Flags: Read</p>
 </div>
 <hr>
@@ -4016,7 +4534,7 @@ permission to read the details of.)</p>
 <a name="NMClient--devices"></a><h3>The <code class="literal">“devices”</code> property</h3>
 <pre class="programlisting">  “devices”                  <a href="../glib/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
 <p>List of real network devices.  Does not include placeholder devices.</p>
-<p>Element-type: NMDevice</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMDevice)]</span></p>
 <p>Flags: Read</p>
 </div>
 <hr>
@@ -4030,6 +4548,7 @@ dictionaries.  Each dictionary has the "nameservers",
 relative priority, "interface" the interface on which these
 servers are contacted, "vpn" a boolean telling whether the
 configuration was obtained from a VPN connection.</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(GVariant)]</span></p>
 <p>Flags: Read</p>
 <p class="since">Since: 1.6</p>
 </div>

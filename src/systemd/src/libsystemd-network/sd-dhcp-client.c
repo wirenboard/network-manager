@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -357,9 +358,10 @@ int sd_dhcp_client_set_client_id(
  * without further modification. Otherwise, if duid_type is supported, DUID
  * is set based on that type. Otherwise, an error is returned.
  */
-int sd_dhcp_client_set_iaid_duid(
+static int dhcp_client_set_iaid_duid(
                 sd_dhcp_client *client,
                 uint32_t iaid,
+                bool append_iaid,
                 uint16_t duid_type,
                 const void *duid,
                 size_t duid_len) {
@@ -380,15 +382,17 @@ int sd_dhcp_client_set_iaid_duid(
         zero(client->client_id);
         client->client_id.type = 255;
 
-        /* If IAID is not configured, generate it. */
-        if (iaid == 0) {
-                r = dhcp_identifier_set_iaid(client->ifindex, client->mac_addr,
-                                             client->mac_addr_len,
-                                             &client->client_id.ns.iaid);
-                if (r < 0)
-                        return r;
-        } else
-                client->client_id.ns.iaid = htobe32(iaid);
+        if (append_iaid) {
+                /* If IAID is not configured, generate it. */
+                if (iaid == 0) {
+                        r = dhcp_identifier_set_iaid(client->ifindex, client->mac_addr,
+                                                     client->mac_addr_len,
+                                                     &client->client_id.ns.iaid);
+                        if (r < 0)
+                                return r;
+                } else
+                        client->client_id.ns.iaid = htobe32(iaid);
+        }
 
         if (duid != NULL) {
                 client->client_id.ns.duid.type = htobe16(duid_type);
@@ -402,7 +406,7 @@ int sd_dhcp_client_set_iaid_duid(
                 return -EOPNOTSUPP;
 
         client->client_id_len = sizeof(client->client_id.type) + len +
-                                sizeof(client->client_id.ns.iaid);
+                                (append_iaid ? sizeof(client->client_id.ns.iaid) : 0);
 
         if (!IN_SET(client->state, DHCP_STATE_INIT, DHCP_STATE_STOPPED)) {
                 log_dhcp_client(client, "Configured IAID+DUID, restarting.");
@@ -412,6 +416,23 @@ int sd_dhcp_client_set_iaid_duid(
 
         return 0;
 }
+
+int sd_dhcp_client_set_iaid_duid(
+                sd_dhcp_client *client,
+                uint32_t iaid,
+                uint16_t duid_type,
+                const void *duid,
+                size_t duid_len) {
+        return dhcp_client_set_iaid_duid(client, iaid, true, duid_type, duid, duid_len);
+}
+
+int sd_dhcp_client_set_duid(
+                sd_dhcp_client *client,
+                uint16_t duid_type,
+                const void *duid,
+                size_t duid_len) {
+        return dhcp_client_set_iaid_duid(client, 0, false, duid_type, duid, duid_len);
+}
 #endif /* NM_IGNORED */
 
 int sd_dhcp_client_set_hostname(
@@ -420,9 +441,9 @@ int sd_dhcp_client_set_hostname(
 
         assert_return(client, -EINVAL);
 
-        /* Refuse hostnames that neither qualify as DNS nor as Linux hosntames */
+        /* Make sure hostnames qualify as DNS and as Linux hostnames */
         if (hostname &&
-            !(hostname_is_valid(hostname, false) || dns_name_is_valid(hostname) > 0))
+            !(hostname_is_valid(hostname, false) && dns_name_is_valid(hostname) > 0))
                 return -EINVAL;
 
         return free_and_strdup(&client->hostname, hostname);
@@ -833,7 +854,6 @@ static int client_send_request(sd_dhcp_client *client) {
                    client’s IP address.
                 */
 
-                /* fall through */
         case DHCP_STATE_REBINDING:
                 /* ’server identifier’ MUST NOT be filled in, ’requested IP address’
                    option MUST NOT be filled in, ’ciaddr’ MUST be filled in with
@@ -1265,9 +1285,9 @@ static int client_handle_offer(sd_dhcp_client *client, DHCPMessage *offer, size_
         if (!lease->have_subnet_mask) {
                 r = dhcp_lease_set_default_subnet_mask(lease);
                 if (r < 0) {
-                        log_dhcp_client(client, "received lease lacks subnet "
-                                        "mask, and a fallback one can not be "
-                                        "generated, ignoring");
+                        log_dhcp_client(client,
+                                        "received lease lacks subnet mask, "
+                                        "and a fallback one cannot be generated, ignoring");
                         return -ENOMSG;
                 }
         }
@@ -1336,9 +1356,9 @@ static int client_handle_ack(sd_dhcp_client *client, DHCPMessage *ack, size_t le
         if (lease->subnet_mask == INADDR_ANY) {
                 r = dhcp_lease_set_default_subnet_mask(lease);
                 if (r < 0) {
-                        log_dhcp_client(client, "received lease lacks subnet "
-                                        "mask, and a fallback one can not be "
-                                        "generated, ignoring");
+                        log_dhcp_client(client,
+                                        "received lease lacks subnet mask, "
+                                        "and a fallback one cannot be generated, ignoring");
                         return -ENOMSG;
                 }
         }

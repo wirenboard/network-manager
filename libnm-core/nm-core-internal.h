@@ -31,6 +31,9 @@
  * statically against libnm-core. This basically means libnm-core, libnm, NetworkManager
  * and some test programs.
  **/
+#if !((NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_CORE_INTERNAL)
+#error Cannot use this header.
+#endif
 
 
 #include "nm-connection.h"
@@ -215,6 +218,8 @@ GSList *    _nm_utils_hash_values_to_slist (GHashTable *hash);
 GHashTable *_nm_utils_copy_strdict (GHashTable *strdict);
 
 typedef gpointer (*NMUtilsCopyFunc) (gpointer);
+
+const char **_nm_ip_address_get_attribute_names (const NMIPAddress *addr, gboolean sorted, guint *out_length);
 
 gboolean _nm_ip_route_attribute_validate_all (const NMIPRoute *route);
 const char **_nm_ip_route_get_attribute_names (const NMIPRoute *route, gboolean sorted, guint *out_length);
@@ -488,6 +493,19 @@ void _nm_utils_string_append_tc_qdisc_rest       (GString *string,
 gboolean _nm_utils_string_append_tc_tfilter_rest (GString *string,
                                                   NMTCTfilter *tfilter,
                                                   GError **error);
+
+/*****************************************************************************/
+
+static inline gboolean
+_nm_connection_type_is_master (const char *type)
+{
+	return (NM_IN_STRSET (type,
+	                      NM_SETTING_BOND_SETTING_NAME,
+	                      NM_SETTING_BRIDGE_SETTING_NAME,
+	                      NM_SETTING_TEAM_SETTING_NAME,
+	                      NM_SETTING_OVS_BRIDGE_SETTING_NAME,
+	                      NM_SETTING_OVS_PORT_SETTING_NAME));
+}
 
 /*****************************************************************************/
 

@@ -181,7 +181,7 @@ make_connection_setting (const char *file,
 	const char *v;
 	gs_free char *stable_id = NULL;
 	const char *const *iter;
-	int vint64;
+	int vint64, i_val;
 
 	ifcfg_name = utils_get_ifcfg_name (file, TRUE);
 	if (!ifcfg_name)
@@ -337,6 +337,13 @@ make_connection_setting (const char *file,
 
 	vint64 = svGetValueInt64 (ifcfg, "AUTH_RETRIES", 10, -1, G_MAXINT32, -1);
 	g_object_set (s_con, NM_SETTING_CONNECTION_AUTH_RETRIES, (gint) vint64, NULL);
+
+	i_val = NM_SETTING_CONNECTION_MDNS_DEFAULT;
+	if (!svGetValueEnum (ifcfg, "MDNS",
+	                     nm_setting_connection_mdns_get_type (),
+	                     &i_val, NULL))
+		PARSE_WARNING ("invalid MDNS setting");
+	g_object_set (s_con, NM_SETTING_CONNECTION_MDNS, i_val, NULL);
 
 	return NM_SETTING (s_con);
 }
@@ -927,7 +934,7 @@ next:
 			                                                    : ""));
 			break;
 		case PARSE_LINE_TYPE_FLAG:
-			/* XXX: the flag (for "onlink") only allows to explictly set "TRUE".
+			/* NOTE: the flag (for "onlink") only allows to explictly set "TRUE".
 			 * There is no way to express an explicit "FALSE" setting
 			 * of this attribute, hence, the file format cannot encode
 			 * that configuration. */
@@ -1338,29 +1345,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	} else if (!g_ascii_strcasecmp (v, "autoip")) {
 		method = NM_SETTING_IP4_CONFIG_METHOD_LINK_LOCAL;
 	} else if (!g_ascii_strcasecmp (v, "shared")) {
-		int idx;
-
-		g_object_set (s_ip4,
-		              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_SHARED,
-		              NM_SETTING_IP_CONFIG_NEVER_DEFAULT, never_default,
-		              NULL);
-		/* 1 IP address is allowed for shared connections. Read it. */
-		if (is_any_ip4_address_defined (ifcfg, &idx)) {
-			guint32 gw;
-			NMIPAddress *addr = NULL;
-
-			if (!read_full_ip4_address (ifcfg, idx, NULL, &addr, NULL, error))
-				return NULL;
-			if (!read_ip4_address (ifcfg, "GATEWAY", NULL, &gw, error))
-				return NULL;
-			(void) nm_setting_ip_config_add_address (s_ip4, addr);
-			nm_ip_address_unref (addr);
-			if (never_default)
-				PARSE_WARNING ("GATEWAY will be ignored when DEFROUTE is disabled");
-			gateway = g_strdup (nm_utils_inet4_ntop (gw, inet_buf));
-			g_object_set (s_ip4, NM_SETTING_IP_CONFIG_GATEWAY, gateway, NULL);
-		}
-		return g_steal_pointer (&s_ip4);
+		method = NM_SETTING_IP4_CONFIG_METHOD_SHARED;
 	} else {
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 		             "Unknown BOOTPROTO '%s'", v);
@@ -1387,7 +1372,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	              NM_SETTING_IP_CONFIG_ROUTE_TABLE, (guint) route_table,
 	              NULL);
 
-	if (strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) == 0)
+	if (nm_streq (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED))
 		return g_steal_pointer (&s_ip4);
 
 	/* Handle DHCP settings */
@@ -1464,39 +1449,47 @@ make_ip4_setting (shvarFile *ifcfg,
 	if (gateway && never_default)
 		PARSE_WARNING ("GATEWAY will be ignored when DEFROUTE is disabled");
 
-	/* DNS servers
-	 * Pick up just IPv4 addresses (IPv6 addresses are taken by make_ip6_setting())
-	 */
-	for (i = 1; i <= 10; i++) {
-		char tag[256];
+	/* We used to skip saving a lot of unused properties for the ipv4 shared method.
+	 * We want now to persist them but... unfortunately loading DNS or DOMAIN options
+	 * would cause a fail in the ipv4 verify() function. As we don't want any regression
+	 * in the unlikely event that someone has a working ifcfg file for an IPv4 shared ip
+	 * connection with a crafted "DNS" entry... don't load it. So we will avoid failing
+	 * the connection) */
+	if (!nm_streq (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED)) {
+		/* DNS servers
+		 * Pick up just IPv4 addresses (IPv6 addresses are taken by make_ip6_setting())
+		 */
+		for (i = 1; i <= 10; i++) {
+			char tag[256];
 
-		numbered_tag (tag, "DNS", i);
-		nm_clear_g_free (&value);
-		v = svGetValueStr (ifcfg, tag, &value);
-		if (v) {
-			if (nm_utils_ipaddr_valid (AF_INET, v)) {
-				if (!nm_setting_ip_config_add_dns (s_ip4, v))
-					PARSE_WARNING ("duplicate DNS server %s", tag);
-			} else if (nm_utils_ipaddr_valid (AF_INET6, v)) {
-				/* Ignore IPv6 addresses */
-			} else {
-				PARSE_WARNING ("invalid DNS server address %s", v);
-				return NULL;
+			numbered_tag (tag, "DNS", i);
+			nm_clear_g_free (&value);
+			v = svGetValueStr (ifcfg, tag, &value);
+			if (v) {
+				if (nm_utils_ipaddr_valid (AF_INET, v)) {
+					if (!nm_setting_ip_config_add_dns (s_ip4, v))
+						PARSE_WARNING ("duplicate DNS server %s", tag);
+				} else if (nm_utils_ipaddr_valid (AF_INET6, v)) {
+					/* Ignore IPv6 addresses */
+				} else {
+					PARSE_WARNING ("invalid DNS server address %s", v);
+					return NULL;
+				}
 			}
 		}
-	}
 
-	/* DNS searches */
-	nm_clear_g_free (&value);
-	v = svGetValueStr (ifcfg, "DOMAIN", &value);
-	if (v) {
-		gs_free const char **searches = NULL;
+		/* DNS searches */
+		nm_clear_g_free (&value);
+		v = svGetValueStr (ifcfg, "DOMAIN", &value);
+		if (v) {
+			gs_free const char **searches = NULL;
 
-		searches = nm_utils_strsplit_set (v, " ");
-		if (searches) {
-			for (item = searches; *item; item++) {
-				if (!nm_setting_ip_config_add_dns_search (s_ip4, *item))
-					PARSE_WARNING ("duplicate DNS domain '%s'", *item);
+			searches = nm_utils_strsplit_set (v, " ");
+			if (searches) {
+				for (item = searches; *item; item++) {
+					if (!nm_setting_ip_config_add_dns_search (s_ip4, *item))
+						PARSE_WARNING ("duplicate DNS domain '%s'", *item);
+				}
 			}
 		}
 	}
@@ -1545,7 +1538,8 @@ make_ip4_setting (shvarFile *ifcfg,
 	}
 
 	/* Legacy value NM used for a while but is incorrect (rh #459370) */
-	if (!nm_setting_ip_config_get_num_dns_searches (s_ip4)) {
+	if (   !nm_streq (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED)
+	    && !nm_setting_ip_config_get_num_dns_searches (s_ip4)) {
 		nm_clear_g_free (&value);
 		v = svGetValueStr (ifcfg, "SEARCH", &value);
 		if (v) {
@@ -1561,10 +1555,14 @@ make_ip4_setting (shvarFile *ifcfg,
 		}
 	}
 
-	timeout = svGetValueInt64 (ifcfg, "ARPING_WAIT", 10, -1,
-	                           NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX / 1000, -1);
-	g_object_set (s_ip4, NM_SETTING_IP_CONFIG_DAD_TIMEOUT,
-	              (gint) (timeout <= 0 ? timeout : timeout * 1000), NULL);
+	timeout = svGetValueInt64 (ifcfg, "ACD_TIMEOUT", 10, -1, NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX, -2);
+	if (timeout == -2) {
+		timeout = svGetValueInt64 (ifcfg, "ARPING_WAIT", 10, -1,
+		                           NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX / 1000, -1);
+		if (timeout > 0)
+			timeout *= 1000;
+	}
+	g_object_set (s_ip4, NM_SETTING_IP_CONFIG_DAD_TIMEOUT, (gint) timeout, NULL);
 
 	return g_steal_pointer (&s_ip4);
 }
@@ -1642,7 +1640,7 @@ read_aliases (NMSettingIPConfig *s_ip4, gboolean read_defroute, const char *file
 			                            read_defroute ? &gateway : NULL,
 			                            &err);
 			if (ok) {
-				nm_ip_address_set_attribute (addr, "label", g_variant_new_string (device));
+				nm_ip_address_set_attribute (addr, NM_IP_ADDRESS_ATTRIBUTE_LABEL, g_variant_new_string (device));
 				if (!nm_setting_ip_config_add_address (s_ip4, addr))
 					PARSE_WARNING ("duplicate IP4 address in alias file %s", item);
 				if (nm_streq0 (nm_setting_ip_config_get_method (s_ip4), NM_SETTING_IP4_CONFIG_METHOD_DISABLED))
@@ -2001,11 +1999,15 @@ make_tc_setting (shvarFile *ifcfg)
 			break;
 
 		qdisc = nm_utils_tc_qdisc_from_str (value, &local);
-		if (!qdisc)
-			PARSE_WARNING ("ignoring bad qdisc: '%s': %s", value, local->message);
+		if (!qdisc) {
+			PARSE_WARNING ("ignoring bad tc qdisc: '%s': %s", value, local->message);
+			continue;
+		}
 
 		if (!nm_setting_tc_config_add_qdisc (s_tc, qdisc))
-			PARSE_WARNING ("duplicate qdisc");
+			PARSE_WARNING ("duplicate tc qdisc");
+
+		nm_tc_qdisc_unref (qdisc);
 	}
 
 	for (i = 1;; i++) {
@@ -2019,11 +2021,15 @@ make_tc_setting (shvarFile *ifcfg)
 			break;
 
 		tfilter = nm_utils_tc_tfilter_from_str (value, &local);
-		if (!tfilter)
-			PARSE_WARNING ("ignoring bad tfilter: '%s': %s", value, local->message);
+		if (!tfilter) {
+			PARSE_WARNING ("ignoring bad tc filter: '%s': %s", value, local->message);
+			continue;
+		}
 
 		if (!nm_setting_tc_config_add_tfilter (s_tc, tfilter))
-			PARSE_WARNING ("duplicate filter");
+			PARSE_WARNING ("duplicate tc filter");
+
+		nm_tc_tfilter_unref (tfilter);
 	}
 
 	if (   nm_setting_tc_config_get_num_qdiscs (s_tc) > 0
@@ -3551,6 +3557,13 @@ make_wpa_setting (shvarFile *ifcfg,
 	                     &i_val, error))
 		return NULL;
 	g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_PMF, i_val, NULL);
+
+	i_val = NM_SETTING_WIRELESS_SECURITY_FILS_DEFAULT;
+	if (!svGetValueEnum (ifcfg, "FILS",
+	                     nm_setting_wireless_security_fils_get_type (),
+	                     &i_val, error))
+		return NULL;
+	g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_FILS, i_val, NULL);
 
 	nm_clear_g_free (&value);
 	v = svGetValueStr (ifcfg, "SECURITYMODE", &value);
@@ -5321,6 +5334,8 @@ connection_from_file_full (const char *filename,
 	g_return_val_if_fail (filename != NULL, NULL);
 	g_return_val_if_fail (out_unhandled && !*out_unhandled, NULL);
 
+	NM_SET_OUT (out_ignore_error, FALSE);
+
 	/* Non-NULL only for unit tests; normally use /etc/sysconfig/network */
 	if (!network_file)
 		network_file = SYSCONFDIR "/sysconfig/network";
@@ -5341,6 +5356,7 @@ connection_from_file_full (const char *filename,
 	if (!svGetValueBoolean (parsed, "NM_CONTROLLED", TRUE)) {
 		connection = create_unhandled_connection (filename, parsed, "unmanaged", out_unhandled);
 		if (!connection) {
+			NM_SET_OUT (out_ignore_error, TRUE);
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
 			             "NM_CONTROLLED was false but device was not uniquely identified; device will be managed");
 		}
@@ -5350,8 +5366,7 @@ connection_from_file_full (const char *filename,
 	/* iBFT is handled by the iBFT settings plugin */
 	bootproto = svGetValueStr_cp (parsed, "BOOTPROTO");
 	if (bootproto && !g_ascii_strcasecmp (bootproto, "ibft")) {
-		if (out_ignore_error)
-			*out_ignore_error = TRUE;
+		NM_SET_OUT (out_ignore_error, TRUE);
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 		             "Ignoring iBFT configuration");
 		g_free (bootproto);
@@ -5397,8 +5412,7 @@ connection_from_file_full (const char *filename,
 		char *device;
 
 		if ((tmp = svGetValueStr_cp (parsed, "IPV6TUNNELIPV4"))) {
-			if (out_ignore_error)
-				*out_ignore_error = TRUE;
+			NM_SET_OUT (out_ignore_error, TRUE);
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Ignoring unsupported connection due to IPV6TUNNELIPV4");
 			return NULL;
@@ -5412,8 +5426,7 @@ connection_from_file_full (const char *filename,
 		}
 
 		if (!strcmp (device, "lo")) {
-			if (out_ignore_error)
-				*out_ignore_error = TRUE;
+			NM_SET_OUT (out_ignore_error, TRUE);
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Ignoring loopback device config.");
 			g_free (device);
@@ -5460,8 +5473,7 @@ connection_from_file_full (const char *filename,
 					memcpy (p_path, IFUP_PATH_PREFIX, NM_STRLEN (IFUP_PATH_PREFIX));
 					if (access (p_path, X_OK) == 0) {
 						/* for all other types, this is not something we want to handle. */
-						if (out_ignore_error)
-							*out_ignore_error = TRUE;
+						NM_SET_OUT (out_ignore_error, TRUE);
 						g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 						             "Ignore script for unknown device type which has a matching %s script",
 						             p_path);

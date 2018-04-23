@@ -35,13 +35,11 @@
 #include <net/if.h>
 #include <linux/pkt_sched.h>
 
-#if WITH_JANSSON
+#if WITH_JSON_VALIDATION
 #include "nm-json.h"
-#include <jansson.h>
 #endif
 
 #include "nm-utils/nm-enum-utils.h"
-#include "nm-utils/nm-hash-utils.h"
 #include "nm-common-macros.h"
 #include "nm-utils-private.h"
 #include "nm-setting-private.h"
@@ -150,7 +148,7 @@ init_lang_to_encodings_hash (void)
 	if (G_UNLIKELY (langToEncodings5 == NULL)) {
 		/* Five-letter codes */
 		enc = (struct IsoLangToEncodings *) &isoLangEntries5[0];
-		langToEncodings5 = g_hash_table_new (g_str_hash, g_str_equal);
+		langToEncodings5 = g_hash_table_new (nm_str_hash, g_str_equal);
 		while (enc->lang) {
 			g_hash_table_insert (langToEncodings5, (gpointer) enc->lang,
 			                     (gpointer) enc->encodings);
@@ -161,7 +159,7 @@ init_lang_to_encodings_hash (void)
 	if (G_UNLIKELY (langToEncodings2 == NULL)) {
 		/* Two-letter codes */
 		enc = (struct IsoLangToEncodings *) &isoLangEntries2[0];
-		langToEncodings2 = g_hash_table_new (g_str_hash, g_str_equal);
+		langToEncodings2 = g_hash_table_new (nm_str_hash, g_str_equal);
 		while (enc->lang) {
 			g_hash_table_insert (langToEncodings2, (gpointer) enc->lang,
 			                     (gpointer) enc->encodings);
@@ -254,8 +252,6 @@ _nm_utils_init (void)
 
 	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-
-	nm_g_type_init ();
 
 	_nm_dbus_errors_init ();
 }
@@ -468,7 +464,7 @@ _nm_utils_string_slist_validate (GSList *list, const char **valid_values)
  * @hash: a #GHashTable
  *
  * Utility function to iterate over a hash table and return
- * it's values as a #GSList.
+ * its values as a #GSList.
  *
  * Returns: (element-type gpointer) (transfer container): a newly allocated #GSList
  * containing the values of the hash table. The caller must free the
@@ -546,7 +542,7 @@ _nm_utils_strdict_from_dbus (GVariant *dbus_value,
 	const char *key, *value;
 	GHashTable *hash;
 
-	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	hash = g_hash_table_new_full (nm_str_hash, g_str_equal, g_free, g_free);
 	g_variant_iter_init (&iter, dbus_value);
 	while (g_variant_iter_next (&iter, "{&s&s}", &key, &value))
 		g_hash_table_insert (hash, g_strdup (key), g_strdup (value));
@@ -561,7 +557,7 @@ _nm_utils_copy_strdict (GHashTable *strdict)
 	GHashTableIter iter;
 	gpointer key, value;
 
-	copy = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	copy = g_hash_table_new_full (nm_str_hash, g_str_equal, g_free, g_free);
 	if (strdict) {
 		g_hash_table_iter_init (&iter, strdict);
 		while (g_hash_table_iter_next (&iter, &key, &value))
@@ -1883,7 +1879,7 @@ GVariant *
 nm_utils_ip_addresses_to_variant (GPtrArray *addresses)
 {
 	GVariantBuilder builder;
-	int i;
+	guint i;
 
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
 
@@ -1891,8 +1887,8 @@ nm_utils_ip_addresses_to_variant (GPtrArray *addresses)
 		for (i = 0; i < addresses->len; i++) {
 			NMIPAddress *addr = addresses->pdata[i];
 			GVariantBuilder addr_builder;
-			char **names;
-			int n;
+			gs_free const char **names = NULL;
+			guint j, len;
 
 			g_variant_builder_init (&addr_builder, G_VARIANT_TYPE ("a{sv}"));
 			g_variant_builder_add (&addr_builder, "{sv}",
@@ -1902,13 +1898,12 @@ nm_utils_ip_addresses_to_variant (GPtrArray *addresses)
 			                       "prefix",
 			                       g_variant_new_uint32 (nm_ip_address_get_prefix (addr)));
 
-			names = nm_ip_address_get_attribute_names (addr);
-			for (n = 0; names[n]; n++) {
+			names = _nm_ip_address_get_attribute_names (addr, TRUE, &len);
+			for (j = 0; j < len; j++) {
 				g_variant_builder_add (&addr_builder, "{sv}",
-				                       names[n],
-				                       nm_ip_address_get_attribute (addr, names[n]));
+				                       names[j],
+				                       nm_ip_address_get_attribute (addr, names[j]));
 			}
-			g_strfreev (names);
 
 			g_variant_builder_add (&builder, "a{sv}", &addr_builder);
 		}
@@ -2226,7 +2221,7 @@ _nm_utils_string_append_tc_qdisc_rest (GString *string, NMTCQdisc *qdisc)
  *
  * Returns: formatted string or %NULL
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 char *
 nm_utils_tc_qdisc_to_str (NMTCQdisc *qdisc, GError **error)
@@ -2327,7 +2322,7 @@ _tc_read_common_opts (const char *str,
  *
  * Returns: the %NMTCQdisc or %NULL
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 NMTCQdisc *
 nm_utils_tc_qdisc_from_str (const char *str, GError **error)
@@ -2416,7 +2411,7 @@ _string_append_tc_action (GString *string, NMTCAction *action, GError **error)
  *
  * Returns: formatted string or %NULL
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 char *
 nm_utils_tc_action_to_str (NMTCAction *action, GError **error)
@@ -2442,7 +2437,7 @@ nm_utils_tc_action_to_str (NMTCAction *action, GError **error)
  *
  * Returns: the %NMTCAction or %NULL
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 NMTCAction *
 nm_utils_tc_action_from_str (const char *str, GError **error)
@@ -2458,10 +2453,10 @@ nm_utils_tc_action_from_str (const char *str, GError **error)
 	nm_assert (str);
 	nm_assert (!error || !*error);
 
-        ht = nm_utils_parse_variant_attributes (str,
-                                                ' ', ' ', FALSE,
-                                                tc_action_attribute_spec,
-                                                error);
+	ht = nm_utils_parse_variant_attributes (str,
+	                                        ' ', ' ', FALSE,
+	                                        tc_action_attribute_spec,
+	                                        error);
 	if (!ht)
 		return FALSE;
 
@@ -2497,10 +2492,10 @@ nm_utils_tc_action_from_str (const char *str, GError **error)
 			return NULL;
 		}
 
-	        options = nm_utils_parse_variant_attributes (rest,
-	                                                     ' ', ' ', FALSE,
-	                                                     attrs,
-	                                                     error);
+		options = nm_utils_parse_variant_attributes (rest,
+		                                             ' ', ' ', FALSE,
+		                                             attrs,
+		                                             error);
 		if (!options) {
 			nm_tc_action_unref (action);
 			return NULL;
@@ -2560,7 +2555,7 @@ _nm_utils_string_append_tc_tfilter_rest (GString *string, NMTCTfilter *tfilter, 
  *
  * Returns: formatted string or %NULL
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 char *
 nm_utils_tc_tfilter_to_str (NMTCTfilter *tfilter, GError **error)
@@ -2595,7 +2590,7 @@ static const NMVariantAttributeSpec * const tc_tfilter_attribute_spec[] = {
  *
  * Returns: the %NMTCTfilter or %NULL
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 NMTCTfilter *
 nm_utils_tc_tfilter_from_str (const char *str, GError **error)
@@ -3444,59 +3439,28 @@ nm_utils_wifi_5ghz_freqs (void)
  * @strength: the access point strength, from 0 to 100
  *
  * Converts @strength into a 4-character-wide graphical representation of
- * strength suitable for printing to stdout. If the current locale and terminal
- * support it, this will use unicode graphics characters to represent
- * "bars". Otherwise it will use 0 to 4 asterisks.
+ * strength suitable for printing to stdout.
+ *
+ * Previous versions used to take a guess at the terminal type and possibly
+ * return a wide UTF-8 encoded string. Now it always returns a 7-bit
+ * clean strings of one to 0 to 4 asterisks. Users that actually need
+ * the functionality are encouraged to make their implementations instead.
  *
  * Returns: the graphical representation of the access point strength
  */
 const char *
 nm_utils_wifi_strength_bars (guint8 strength)
 {
-	static const char *strength_full, *strength_high, *strength_med, *strength_low, *strength_none;
-
-	if (G_UNLIKELY (strength_full == NULL)) {
-		gboolean can_show_graphics = TRUE;
-		char *locale_str;
-
-		if (!g_get_charset (NULL)) {
-			/* Non-UTF-8 locale */
-			locale_str = g_locale_from_utf8 ("\342\226\202\342\226\204\342\226\206\342\226\210", -1, NULL, NULL, NULL);
-			if (locale_str)
-				g_free (locale_str);
-			else
-				can_show_graphics = FALSE;
-		}
-
-		/* The linux console font doesn't have these characters */
-		if (g_strcmp0 (g_getenv ("TERM"), "linux") == 0)
-			can_show_graphics = FALSE;
-
-		if (can_show_graphics) {
-			strength_full = /* ▂▄▆█ */ "\342\226\202\342\226\204\342\226\206\342\226\210";
-			strength_high = /* ▂▄▆_ */ "\342\226\202\342\226\204\342\226\206_";
-			strength_med  = /* ▂▄__ */ "\342\226\202\342\226\204__";
-			strength_low  = /* ▂___ */ "\342\226\202___";
-			strength_none = /* ____ */ "____";
-		} else {
-			strength_full = "****";
-			strength_high = "*** ";
-			strength_med  = "**  ";
-			strength_low  = "*   ";
-			strength_none = "    ";
-		}
-	}
-
 	if (strength > 80)
-		return strength_full;
+		return "****";
 	else if (strength > 55)
-		return strength_high;
+		return "*** ";
 	else if (strength > 30)
-		return strength_med;
+		return "**  ";
 	else if (strength > 5)
-		return strength_low;
+		return "*   ";
 	else
-		return strength_none;
+		return "    ";
 }
 
 /**
@@ -3698,7 +3662,7 @@ _nm_utils_hwaddr_aton (const char *asc, gpointer buffer, gsize buffer_length, gs
 /**
  * nm_utils_hwaddr_aton:
  * @asc: the ASCII representation of a hardware address
- * @buffer: buffer to store the result into
+ * @buffer: (type guint8) (array length=length): buffer to store the result into
  * @length: the expected length in bytes of the result and
  * the size of the buffer in bytes.
  *
@@ -3930,9 +3894,9 @@ _nm_utils_hwaddr_canonical_or_invalid (const char *mac, gssize length)
 
 /**
  * nm_utils_hwaddr_matches:
- * @hwaddr1: pointer to a binary or ASCII hardware address, or %NULL
+ * @hwaddr1: (nullable): pointer to a binary or ASCII hardware address, or %NULL
  * @hwaddr1_len: size of @hwaddr1, or -1 if @hwaddr1 is ASCII
- * @hwaddr2: pointer to a binary or ASCII hardware address, or %NULL
+ * @hwaddr2: (nullable): pointer to a binary or ASCII hardware address, or %NULL
  * @hwaddr2_len: size of @hwaddr2, or -1 if @hwaddr2 is ASCII
  *
  * Generalized hardware address comparison function. Tests if @hwaddr1 and
@@ -4371,7 +4335,7 @@ nm_utils_inet_ntop (int addr_family, gconstpointer addr, char *dst)
  *  characters. If set to %NULL, it will return a pointer to an internal, static
  *  buffer (shared with nm_utils_inet6_ntop()).  Beware, that the internal
  *  buffer will be overwritten with ever new call of nm_utils_inet4_ntop() or
- *  nm_utils_inet6_ntop() that does not provied it's own @dst buffer. Also,
+ *  nm_utils_inet6_ntop() that does not provide its own @dst buffer. Also,
  *  using the internal buffer is not thread safe. When in doubt, pass your own
  *  @dst buffer to avoid these issues.
  *
@@ -4395,7 +4359,7 @@ nm_utils_inet4_ntop (in_addr_t inaddr, char *dst)
  *  characters. If set to %NULL, it will return a pointer to an internal, static
  *  buffer (shared with nm_utils_inet4_ntop()).  Beware, that the internal
  *  buffer will be overwritten with ever new call of nm_utils_inet4_ntop() or
- *  nm_utils_inet6_ntop() that does not provied it's own @dst buffer. Also,
+ *  nm_utils_inet6_ntop() that does not provide its own @dst buffer. Also,
  *  using the internal buffer is not thread safe. When in doubt, pass your own
  *  @dst buffer to avoid these issues.
  *
@@ -4622,9 +4586,6 @@ _nm_utils_strstrdictkey_hash (gconstpointer a)
 
 		nm_hash_update_val (&h, k->type);
 		if (k->type & STRSTRDICTKEY_ALL_SET) {
-			gsize n;
-
-			n = 0;
 			p = strchr (k->data, '\0');
 			if (k->type == STRSTRDICTKEY_ALL_SET) {
 				/* the key contains two strings. Continue... */
@@ -4844,7 +4805,7 @@ gssize _nm_utils_dns_option_find_idx (GPtrArray *array, const char *option)
 char *
 nm_utils_enum_to_str (GType type, int value)
 {
-	return _nm_utils_enum_to_str_full (type, value, ", ");
+	return _nm_utils_enum_to_str_full (type, value, ", ", NULL);
 }
 
 /**
@@ -4927,33 +4888,7 @@ _nm_utils_is_json_object_no_validation (const char *str, GError **error)
 	return FALSE;
 }
 
-#if WITH_JANSSON
-
-/* Added in Jansson v2.3 (released Jan 27 2012) */
-#ifndef json_object_foreach
-#define json_object_foreach(object, key, value) \
-    for(key = json_object_iter_key(json_object_iter(object)); \
-        key && (value = json_object_iter_value(json_object_iter_at (object, key) )); \
-        key = json_object_iter_key(json_object_iter_next(object, json_object_iter_at (object, key))))
-#endif
-
-/* Added in Jansson v2.4 (released Sep 23 2012), but travis.ci has v2.2. */
-#ifndef json_boolean
-#define json_boolean(val) ((val) ? json_true() : json_false())
-#endif
-
-/* Added in Jansson v2.5 (released Sep 19 2013), but travis.ci has v2.2. */
-#ifndef json_array_foreach
-#define json_array_foreach(array, index, value) \
-        for (index = 0; \
-             index < json_array_size(array) && (value = json_array_get(array, index)); \
-             index++)
-#endif
-
-/* Added in Jansson v2.7 */
-#ifndef json_boolean_value
-#define json_boolean_value json_is_true
-#endif
+#if WITH_JSON_VALIDATION
 
 static void
 _json_add_object (json_t *json,
@@ -5427,15 +5362,6 @@ nm_utils_is_json_object (const char *str, GError **error)
 	return TRUE;
 }
 
-/* json_object_foreach_safe() is only available since Jansson 2.8,
- * reimplement it */
-#define _json_object_foreach_safe(object, n, key, value) \
-    for (key = json_object_iter_key (json_object_iter (object)), \
-         n = json_object_iter_next (object, json_object_iter_at (object, key)); \
-         key && (value = json_object_iter_value (json_object_iter_at (object, key))); \
-         key = json_object_iter_key (n), \
-         n = json_object_iter_next (object, json_object_iter_at (object, key)))
-
 gboolean
 _nm_utils_team_config_equal (const char *conf1,
                              const char *conf2,
@@ -5475,7 +5401,7 @@ _nm_utils_team_config_equal (const char *conf1,
 	/* Only consider a given subset of nodes, others can change depending on
 	 * current state */
 	for (i = 0, json = json1; i < 2; i++, json = json2) {
-		_json_object_foreach_safe (json, tmp, key, value) {
+		json_object_foreach_safe (json, tmp, key, value) {
 			if (!NM_IN_STRSET (key, "runner", "link_watch"))
 				json_object_del (json, key);
 		}
@@ -5734,7 +5660,7 @@ done:
 	return updated;
 }
 
-#else /* WITH_JANSSON */
+#else /* !WITH_JSON_VALIDATION */
 
 gboolean
 nm_utils_is_json_object (const char *str, GError **error)
@@ -6026,7 +5952,8 @@ attribute_unescape (const char *start, const char *end)
  *
  * Parse attributes from a string.
  *
- * Returns: (transfer full): a #GHashTable mapping attribute names to #GVariant values.
+ * Returns: (transfer full) (element-type utf8 GVariant): a #GHashTable mapping
+ * attribute names to #GVariant values.
  *
  * Since: 1.8
  */
@@ -6048,7 +5975,7 @@ nm_utils_parse_variant_attributes (const char *string,
 	g_return_val_if_fail (key_value_separator, NULL);
 	g_return_val_if_fail (!error || !*error, NULL);
 
-	ht = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_variant_unref);
+	ht = g_hash_table_new_full (nm_str_hash, g_str_equal, g_free, (GDestroyNotify) g_variant_unref);
 
 	while (TRUE) {
 		gs_free char *name = NULL, *value = NULL;
@@ -6185,7 +6112,7 @@ next:
 
 /*
  * nm_utils_format_variant_attributes:
- * @attributes:  a #GHashTable mapping attribute names to #GVariant values
+ * @attributes: (element-type utf8 GVariant): a #GHashTable mapping attribute names to #GVariant values
  * @attr_separator: the attribute separator character
  * @key_value_separator: character separating key and values
  *
@@ -6207,8 +6134,8 @@ nm_utils_format_variant_attributes (GHashTable *attributes,
 	const char *name, *value;
 	char *escaped;
 	char buf[64];
-	gs_free_list GList *keys = NULL;
-	GList *iter;
+	gs_free NMUtilsNamedValue *values = NULL;
+	guint i, len;
 
 	g_return_val_if_fail (attr_separator, NULL);
 	g_return_val_if_fail (key_value_separator, NULL);
@@ -6216,12 +6143,13 @@ nm_utils_format_variant_attributes (GHashTable *attributes,
 	if (!attributes || !g_hash_table_size (attributes))
 		return NULL;
 
-	keys = g_list_sort (g_hash_table_get_keys (attributes), (GCompareFunc) g_strcmp0);
+	values = nm_utils_named_values_from_str_dict (attributes, &len);
+
 	str = g_string_new ("");
 
-	for (iter = keys; iter; iter = g_list_next (iter)) {
-		name = iter->data;
-		variant = g_hash_table_lookup (attributes, name);
+	for (i = 0; i < len; i++) {
+		name = values[i].name;
+		variant = (GVariant *) values[i].value_ptr;
 		value = NULL;
 
 		if (g_variant_is_of_type (variant, G_VARIANT_TYPE_UINT32))
