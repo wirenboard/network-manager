@@ -83,6 +83,16 @@ typedef enum  { /*< skip >*/
 	LOGD_IP         = LOGD_IP4 | LOGD_IP6,
 } NMLogDomain;
 
+static inline NMLogDomain
+LOGD_IP_from_af (int addr_family)
+{
+	switch (addr_family) {
+	case AF_INET:  return LOGD_IP4;
+	case AF_INET6: return LOGD_IP6;
+	}
+	g_return_val_if_reached (LOGD_NONE);
+}
+
 /* Log levels */
 typedef enum  { /*< skip >*/
 	LOGL_TRACE,
@@ -123,7 +133,7 @@ typedef enum  { /*< skip >*/
                       ""__VA_ARGS__); \
     } G_STMT_END
 
-/* nm_log() only evaluates it's argument list after checking
+/* nm_log() only evaluates its argument list after checking
  * whether logging for the given level/domain is enabled.  */
 #define nm_log(level, domain, ifname, con_uuid, ...) \
     G_STMT_START { \

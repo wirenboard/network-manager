@@ -856,6 +856,17 @@ Allowed values: </strong></span>boolean value or 'rx'</td>
 <td align="left">0</td>
 <td align="left">Number of retries for authentication.</td>
 </tr>
+<tr>
+<td align="left">mdns</td>
+<td align="left">CONNECTION_MDNS<span class="emphasis"><em>(+)</em></span>
+</td>
+<td align="left">missing variable means global default</td>
+<td align="left">Whether or not mDNS is enabled for the connection<span class="bold"><strong>
+
+Example: </strong></span>CONNECTION_MDNS=yes<span class="bold"><strong>
+
+Allowed values: </strong></span>yes,no,resolve</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -1187,15 +1198,15 @@ Example: </strong></span>IPV4_DNS_PRIORITY=20</td>
 <td align="left"> </td>
 <td align="left">A string sent to the DHCP server to identify the local machine. A binary value can be specified using hex notation ('aa:bb:cc').<span class="bold"><strong>
 
-Example: </strong></span>DHCP_CLIENT_ID=ax-srv-1; DHCP_CLIENT_ID=01:44:44:44:44:44:44"</td>
+Example: </strong></span>DHCP_CLIENT_ID=ax-srv-1; DHCP_CLIENT_ID=01:44:44:44:44:44:44</td>
 </tr>
 <tr>
 <td align="left">dad-timeout</td>
-<td align="left">ARPING_WAIT</td>
-<td align="left">missing variable means global default (config override or 3)</td>
-<td align="left">Timeout (in seconds) for performing DAD before configuring IPv4 addresses. 0 turns off the DAD completely, -1 means default value.<span class="bold"><strong>
+<td align="left">ACD_TIMEOUT, ARPING_WAIT</td>
+<td align="left">missing variable means global default (config override or zero)</td>
+<td align="left">Timeout (in milliseconds for ACD_TIMEOUT or in seconds for ARPING_WAIT) for address conflict detection before configuring IPv4 addresses. 0 turns off the ACD completely, -1 means default value.<span class="bold"><strong>
 
-Example: </strong></span>ARPING_WAIT=2</td>
+Example: </strong></span>ACD_TIMEOUT=2000 or ARPING_WAIT=2</td>
 </tr>
 <tr>
 <td align="left">dhcp-timeout</td>
@@ -1932,6 +1943,17 @@ Example: </strong></span>KEY1=s:ahoj, KEY1=0a1c45bc02, KEY_PASSPHRASE1=mysuperse
 <td align="left">Used to control the WPS methods to be used Valid values are "default", "auto", "disabled", "pin" and "pbc". If omitted, whatver the AP announces is used.<span class="bold"><strong>
 
 Example: </strong></span>WPS_METHOD=disabled, WPS_METHOD="pin pbc"</td>
+</tr>
+<tr>
+<td align="left">fils</td>
+<td align="left">FILS<span class="emphasis"><em>(+)</em></span>
+</td>
+<td align="left"> </td>
+<td align="left">Enables or disables FILS (802.11ai)<span class="bold"><strong>
+
+Example: </strong></span>FILS=required<span class="bold"><strong>
+
+Allowed values: </strong></span>default, disable, optional, required</td>
 </tr>
 </tbody>
 </table></div>

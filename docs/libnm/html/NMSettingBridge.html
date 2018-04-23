@@ -613,6 +613,10 @@ referred instead to generate the initial MAC address. Note that setting
 "ethernet.cloned-mac-address" anyway overwrites the MAC address of
 the bridge later while activating the bridge. Hence, this property
 is deprecated.</p>
+<div class="warning">
+<p><code class="literal">NMSettingBridge:mac-address</code> has been deprecated since version 1.12 and should not be used in newly-written code.</p>
+<p>Use the ethernet.cloned-mac-address property instead.</p>
+</div>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>

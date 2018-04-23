@@ -63,7 +63,7 @@
 <td><pre class="screen">autoconnect</pre></td>
 <td><pre class="screen">boolean</pre></td>
 <td><pre class="screen">TRUE</pre></td>
-<td>Whether or not the connection should be automatically connected by NetworkManager when the resources for the connection are available. TRUE to automatically activate the connection, FALSE to require manual intervention to activate the connection.</td>
+<td>Whether or not the connection should be automatically connected by NetworkManager when the resources for the connection are available. TRUE to automatically activate the connection, FALSE to require manual intervention to activate the connection. Note that autoconnect is not implemented for VPN profiles. See "secondaries" as an alternative to automatically connect VPN profiles.</td>
 </tr>
 <tr>
 <td><pre class="screen">autoconnect-priority</pre></td>
@@ -81,7 +81,7 @@
 <td><pre class="screen">autoconnect-slaves</pre></td>
 <td><pre class="screen">NMSettingConnectionAutoconnectSlaves (int32)</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Whether or not slaves of this connection should be automatically brought up when NetworkManager activates this connection. This only has a real effect for master connections. The permitted values are: 0: leave slave connections untouched, 1: activate all the slave connections with this connection, -1: default. If -1 (default) is set, global connection.autoconnect-slaves is read to determine the real value. If it is default as well, this fallbacks to 0.</td>
+<td>Whether or not slaves of this connection should be automatically brought up when NetworkManager activates this connection. This only has a real effect for master connections. The properties "autoconnect", "autoconnect-priority" and "autoconnect-retries" are unrelated to this setting. The permitted values are: 0: leave slave connections untouched, 1: activate all the slave connections with this connection, -1: default. If -1 (default) is set, global connection.autoconnect-slaves is read to determine the real value. If it is default as well, this fallbacks to 0.</td>
 </tr>
 <tr>
 <td><pre class="screen">gateway-ping-timeout</pre></td>
@@ -112,6 +112,12 @@
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
 <td>Interface name of the master device or UUID of the master connection.</td>
+</tr>
+<tr>
+<td><pre class="screen">mdns</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">-1</pre></td>
+<td>Whether mDNS is enabled for the connection. The permitted values are: yes: register hostname and resolving for the connection, no: disable mDNS for the interface, resolve: do not register hostname but allow resolving of mDNS host names. When updating this property on a currently activated connection, the change takes effect immediately. This feature requires a plugin which supports mDNS. One such plugin is dns-systemd-resolved.</td>
 </tr>
 <tr>
 <td><pre class="screen">metered</pre></td>
@@ -153,7 +159,7 @@
 <td><pre class="screen">stable-id</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Token to generate stable IDs for the connection. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. Note that also the interface name of the activating connection and a per-host secret key is included into the address generation so that the same stable-id on different hosts/devices yields different addresses. If the value is unset, an ID unique for the connection is used. Specifying a stable-id allows multiple connections to generate the same addresses. Another use is to generate IDs at runtime via dynamic substitutions. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-boot, or every time. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot. Note that two connections only use the same effective id if their stable-id is also identical before performing dynamic substitutions.</td>
+<td>Token to generate stable IDs for the connection. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. It is also used as DHCP client identifier with ipv4.dhcp-client-id=stable. Note that also the interface name of the activating connection and a per-host secret key is included into the address generation so that the same stable-id on different hosts/devices yields different addresses. If the value is unset, an ID unique for the connection is used. Specifying a stable-id allows multiple connections to generate the same addresses. Another use is to generate IDs at runtime via dynamic substitutions. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-boot, or every time. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}/${BOOT}" to create a unique id for this connection that changes with every reboot. Note that two connections only use the same effective id if their stable-id is also identical before performing dynamic substitutions.</td>
 </tr>
 <tr>
 <td><pre class="screen">timestamp</pre></td>

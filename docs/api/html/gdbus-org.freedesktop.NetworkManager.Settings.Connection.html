@@ -62,6 +62,7 @@
 <a name="id-1.4.7.2.5"></a><h2>Properties</h2>
 <pre class="synopsis">
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Unsaved" title='The "Unsaved" property'>Unsaved</a>  readable   b
+<a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags" title='The "Flags" property'>Flags</a>    readable   u
 </pre>
 </div>
 <div class="refsect1">
@@ -233,7 +234,7 @@ Update2 (IN  a{sa{sv}} settings,
 </p>
 <p>        Update2 is a extensible alternative to Update, UpdateUnsaved and Save.
 </p>
-<p>        Since: 1.10.2
+<p>        Since: 1.12
 </p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
@@ -317,6 +318,19 @@ Unsaved  readable   b
         match the on-disk state. This flag will be set when UpdateUnsaved() is
         called or when any connection details change, and cleared when the
         connection is saved to disk via Save() or from internal operations.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags"></a><h3>The "Flags" property</h3>
+<pre class="programlisting">
+Flags  readable   u
+</pre>
+<p>        Additional flags of the connection profile.
+</p>
+<p>        Returns: <a class="link" href="nm-dbus-types.html#NMSettingsConnectionFlags" title="enum NMSettingsConnectionFlags">NMSettingsConnectionFlags</a>
+</p>
+<p>        Since: 1.12
 </p>
 </div>
 </div>

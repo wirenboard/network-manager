@@ -1331,3 +1331,33 @@ global:
 	nm_utils_tc_tfilter_from_str;
 	nm_utils_tc_tfilter_to_str;
 } libnm_1_10_0;
+
+libnm_1_12_0 {
+global:
+	nm_checkpoint_create_flags_get_type;
+	nm_checkpoint_get_created;
+	nm_checkpoint_get_devices;
+	nm_checkpoint_get_rollback_timeout;
+	nm_checkpoint_get_type;
+	nm_client_checkpoint_adjust_rollback_timeout;
+	nm_client_checkpoint_adjust_rollback_timeout_finish;
+	nm_client_checkpoint_create;
+	nm_client_checkpoint_create_finish;
+	nm_client_checkpoint_destroy;
+	nm_client_checkpoint_destroy_finish;
+	nm_client_checkpoint_rollback;
+	nm_client_checkpoint_rollback_finish;
+	nm_client_get_checkpoints;
+	nm_device_ip_tunnel_get_flags;
+	nm_ip_tunnel_flags_get_type;
+	nm_remote_connection_get_flags;
+	nm_setting_connection_get_mdns;
+	nm_setting_connection_mdns_get_type;
+	nm_setting_ip_tunnel_get_flags;
+	nm_setting_vpn_get_data_keys;
+	nm_setting_vpn_get_secret_keys;
+	nm_setting_wireless_security_get_fils;
+	nm_setting_wireless_security_fils_get_type;
+	nm_settings_connection_flags_get_type;
+	nm_vpn_service_plugin_shutdown;
+} libnm_1_10_0;

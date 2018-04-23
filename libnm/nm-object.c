@@ -33,7 +33,7 @@
 #include "nm-dbus-helpers.h"
 #include "nm-client.h"
 #include "nm-core-internal.h"
-#include "nm-utils/c-list.h"
+#include "c-list/src/c-list.h"
 
 static gboolean debug = FALSE;
 #define dbgmsg(f,...) if (G_UNLIKELY (debug)) { g_message (f, ## __VA_ARGS__ ); }
@@ -608,8 +608,9 @@ handle_object_property (NMObject *self, const char *property_name, GVariant *val
 	object = g_dbus_object_manager_get_object (priv->object_manager, path);
 	if (!object) {
 		/* This is a server bug -- a dangling object path for an object
-		 * that does not exist. */
-		/* XXX: We've ignored this before and the server hits the condition
+		 * that does not exist.
+		 *
+		 * NOTE: We've ignored this before and the server hits the condition
 		 * more often that it should. Given we're able to recover from
 		 * ther error, let's lower the severity of the log message to
 		 * avoid unnecessarily bothering the user. This can be removed
@@ -955,7 +956,7 @@ _nm_object_register_properties (NMObject *object,
 	                  G_CALLBACK (properties_changed), object);
 	g_ptr_array_add (priv->proxies, proxy);
 
-	instance = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	instance = g_hash_table_new_full (nm_str_hash, g_str_equal, g_free, g_free);
 	priv->property_tables = g_slist_prepend (priv->property_tables, instance);
 
 	for (tmp = (NMPropertiesInfo *) info; tmp->name; tmp++) {

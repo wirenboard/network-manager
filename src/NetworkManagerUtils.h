@@ -31,7 +31,7 @@ const char *nm_utils_get_shared_wifi_permission (NMConnection *connection);
 void nm_utils_complete_generic (NMPlatform *platform,
                                 NMConnection *connection,
                                 const char *ctype,
-                                const GSList *existing,
+                                NMConnection *const*existing_connections,
                                 const char *preferred_id,
                                 const char *fallback_id_prefix,
                                 const char *ifname_prefix,
@@ -48,21 +48,10 @@ NMConnection *nm_utils_match_connection (NMConnection *const*connections,
                                          NMUtilsMatchFilterFunc match_filter_func,
                                          gpointer match_filter_data);
 
-void nm_utils_g_value_set_object_path (GValue *value, gpointer object);
-
-/**
- * NMUtilsObjectFunc:
- * @object: the object to filter on
- * @user_data: data passed to the function from the caller
- *
- * Returns: %TRUE if the object should be used, %FALSE if not
- */
-typedef gboolean (*NMUtilsObjectFunc) (GObject *object, gpointer user_data);
-
-void nm_utils_g_value_set_object_path_array (GValue *value,
-                                             GSList *objects,
-                                             NMUtilsObjectFunc filter_func,
-                                             gpointer user_data);
+int nm_match_spec_device_by_pllink (const NMPlatformLink *pllink,
+                                    const char *match_device_type,
+                                    const GSList *specs,
+                                    int no_match_value);
 
 /*****************************************************************************/
 

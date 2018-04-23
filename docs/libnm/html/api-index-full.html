@@ -447,7 +447,7 @@
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-10-2:CAPS" title="NM_AVAILABLE_IN_1_10_2">NM_AVAILABLE_IN_1_10_2</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
+<a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-12:CAPS" title="NM_AVAILABLE_IN_1_12">NM_AVAILABLE_IN_1_12</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
 </dt>
 <dd></dd>
 <dt>
@@ -477,7 +477,47 @@
 </dt>
 <dd></dd>
 <dt>
+NMCheckpoint, struct in nm-types
+</dt>
+<dd></dd>
+<dt>
+NMCheckpoint:created, object property in nm-types
+</dt>
+<dd></dd>
+<dt>
+NMCheckpoint:devices, object property in nm-types
+</dt>
+<dd></dd>
+<dt>
+NMCheckpoint:rollback-timeout, object property in nm-types
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-dbus-interface.html#NMCheckpointCreateFlags" title="enum NMCheckpointCreateFlags">NMCheckpointCreateFlags</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
+NM_CHECKPOINT_CREATED, macro in nm-checkpoint
+</dt>
+<dd></dd>
+<dt>
+NM_CHECKPOINT_DEVICES, macro in nm-checkpoint
+</dt>
+<dd></dd>
+<dt>
+nm_checkpoint_get_created, function in nm-checkpoint
+</dt>
+<dd></dd>
+<dt>
+nm_checkpoint_get_devices, function in nm-checkpoint
+</dt>
+<dd></dd>
+<dt>
+nm_checkpoint_get_rollback_timeout, function in nm-checkpoint
+</dt>
+<dd></dd>
+<dt>
+NM_CHECKPOINT_ROLLBACK_TIMEOUT, macro in nm-checkpoint
 </dt>
 <dd></dd>
 <dt>
@@ -534,6 +574,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="NMClient.html#NMClient--can-modify" title="The “can-modify” property">NMClient:can-modify</a>, object property in nm-types
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#NMClient--checkpoints" title="The “checkpoints” property">NMClient:checkpoints</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
@@ -693,6 +737,38 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-adjust-rollback-timeout" title="nm_client_checkpoint_adjust_rollback_timeout ()">nm_client_checkpoint_adjust_rollback_timeout</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-adjust-rollback-timeout-finish" title="nm_client_checkpoint_adjust_rollback_timeout_finish ()">nm_client_checkpoint_adjust_rollback_timeout_finish</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-create" title="nm_client_checkpoint_create ()">nm_client_checkpoint_create</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-create-finish" title="nm_client_checkpoint_create_finish ()">nm_client_checkpoint_create_finish</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-destroy" title="nm_client_checkpoint_destroy ()">nm_client_checkpoint_destroy</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-destroy-finish" title="nm_client_checkpoint_destroy_finish ()">nm_client_checkpoint_destroy_finish</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-rollback" title="nm_client_checkpoint_rollback ()">nm_client_checkpoint_rollback</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-checkpoint-rollback-finish" title="nm_client_checkpoint_rollback_finish ()">nm_client_checkpoint_rollback_finish</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMClient.html#nm-client-check-connectivity" title="nm_client_check_connectivity ()">nm_client_check_connectivity</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
 </dt>
 <dd></dd>
@@ -794,6 +870,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="NMClient.html#nm-client-get-all-devices" title="nm_client_get_all_devices ()">nm_client_get_all_devices</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMClient.html#nm-client-get-checkpoints" title="nm_client_get_checkpoints ()">nm_client_get_checkpoints</a>, function in <a class="link" href="NMClient.html" title="NMClient">NMClient</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1378,6 +1458,10 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-CHECKPOINT:CAPS" title="NM_DBUS_INTERFACE_CHECKPOINT">NM_DBUS_INTERFACE_CHECKPOINT</a>, macro in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE:CAPS" title="NM_DBUS_INTERFACE_DEVICE">NM_DBUS_INTERFACE_DEVICE</a>, macro in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
 </dt>
 <dd></dd>
@@ -1678,6 +1762,14 @@
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-12:CAPS" title="NM_DEPRECATED_IN_1_12">NM_DEPRECATED_IN_1_12</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-12-FOR:CAPS" title="NM_DEPRECATED_IN_1_12_FOR()">NM_DEPRECATED_IN_1_12_FOR</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-2:CAPS" title="NM_DEPRECATED_IN_1_2">NM_DEPRECATED_IN_1_2</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
 </dt>
 <dd></dd>
@@ -1951,6 +2043,10 @@
 <dd></dd>
 <dt>
 <a class="link" href="NMDeviceIPTunnel.html#NMDeviceIPTunnel--encapsulation-limit" title="The “encapsulation-limit” property">NMDeviceIPTunnel:encapsulation-limit</a>, object property in nm-types
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMDeviceIPTunnel.html#NMDeviceIPTunnel--flags" title="The “flags” property">NMDeviceIPTunnel:flags</a>, object property in nm-types
 </dt>
 <dd></dd>
 <dt>
@@ -2774,11 +2870,19 @@ NMDevicePpp, struct in nm-types
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMDeviceIPTunnel.html#NM-DEVICE-IP-TUNNEL-FLAGS:CAPS" title="NM_DEVICE_IP_TUNNEL_FLAGS">NM_DEVICE_IP_TUNNEL_FLAGS</a>, macro in <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMDeviceIPTunnel.html#NM-DEVICE-IP-TUNNEL-FLOW-LABEL:CAPS" title="NM_DEVICE_IP_TUNNEL_FLOW_LABEL">NM_DEVICE_IP_TUNNEL_FLOW_LABEL</a>, macro in <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMDeviceIPTunnel.html#nm-device-ip-tunnel-get-encapsulation-limit" title="nm_device_ip_tunnel_get_encapsulation_limit ()">nm_device_ip_tunnel_get_encapsulation_limit</a>, function in <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMDeviceIPTunnel.html#nm-device-ip-tunnel-get-flags" title="nm_device_ip_tunnel_get_flags ()">nm_device_ip_tunnel_get_flags</a>, function in <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
 </dt>
 <dd></dd>
 <dt>
@@ -3631,7 +3735,15 @@ NMDevicePpp, struct in nm-types
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPTunnel.html#NMIPTunnelFlags" title="enum NMIPTunnelFlags">NMIPTunnelFlags</a>, enum in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="libnm-nm-dbus-interface.html#NMIPTunnelMode" title="enum NMIPTunnelMode">NMIPTunnelMode</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-IP-ADDRESS-ATTRIBUTE-LABEL:CAPS" title="NM_IP_ADDRESS_ATTRIBUTE_LABEL">NM_IP_ADDRESS_ATTRIBUTE_LABEL</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
@@ -3984,10 +4096,6 @@ json_object_iter, macro in nm-json
 </dt>
 <dd></dd>
 <dt>
-json_object_iter_at, macro in nm-json
-</dt>
-<dd></dd>
-<dt>
 json_object_iter_key, macro in nm-json
 </dt>
 <dd></dd>
@@ -4180,6 +4288,10 @@ json_true, macro in nm-json
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMRemoteConnection.html#NMRemoteConnection--flags" title="The “flags” property">NMRemoteConnection:flags</a>, object property in nm-types
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMRemoteConnection.html#NMRemoteConnection--unsaved" title="The “unsaved” property">NMRemoteConnection:unsaved</a>, object property in nm-types
 </dt>
 <dd></dd>
@@ -4213,6 +4325,14 @@ json_true, macro in nm-json
 <dd></dd>
 <dt>
 <a class="link" href="NMRemoteConnection.html#nm-remote-connection-delete-finish" title="nm_remote_connection_delete_finish ()">nm_remote_connection_delete_finish</a>, function in <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection">NMRemoteConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMRemoteConnection.html#NM-REMOTE-CONNECTION-FLAGS:CAPS" title="NM_REMOTE_CONNECTION_FLAGS">NM_REMOTE_CONNECTION_FLAGS</a>, macro in <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection">NMRemoteConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMRemoteConnection.html#nm-remote-connection-get-flags" title="nm_remote_connection_get_flags ()">nm_remote_connection_get_flags</a>, function in <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection">NMRemoteConnection</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4765,6 +4885,10 @@ json_true, macro in nm-json
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingConnection.html#NMSettingConnection--mdns" title="The “mdns” property">NMSettingConnection:mdns</a>, object property in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingConnection.html#NMSettingConnection--metered" title="The “metered” property">NMSettingConnection:metered</a>, object property in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
 </dt>
 <dd></dd>
@@ -4810,6 +4934,10 @@ json_true, macro in nm-json
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingConnection.html#NMSettingConnectionLldp" title="enum NMSettingConnectionLldp">NMSettingConnectionLldp</a>, enum in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingConnection.html#NMSettingConnectionMdns" title="enum NMSettingConnectionMdns">NMSettingConnectionMdns</a>, enum in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5090,6 +5218,10 @@ json_true, macro in nm-json
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIPTunnel.html#NMSettingIPTunnel--encapsulation-limit" title="The “encapsulation-limit” property">NMSettingIPTunnel:encapsulation-limit</a>, object property in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPTunnel.html#NMSettingIPTunnel--flags" title="The “flags” property">NMSettingIPTunnel:flags</a>, object property in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5410,6 +5542,10 @@ NMSettingProxy:pac-url, object property in NMSettingProxy
 <dd></dd>
 <dt>
 NMSettingProxyMethod, enum in NMSettingProxy
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="libnm-nm-dbus-interface.html#NMSettingsConnectionFlags" title="enum NMSettingsConnectionFlags">NMSettingsConnectionFlags</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
 </dt>
 <dd></dd>
 <dt>
@@ -5893,6 +6029,10 @@ NMSettingUser:data, object property in nm-core-types
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--fils" title="The “fils” property">NMSettingWirelessSecurity:fils</a>, object property in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--group" title="The “group” property">NMSettingWirelessSecurity:group</a>, object property in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
 </dt>
 <dd></dd>
@@ -5962,6 +6102,10 @@ NMSettingUser:data, object property in nm-core-types
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wps-method" title="The “wps-method” property">NMSettingWirelessSecurity:wps-method</a>, object property in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityFils" title="enum NMSettingWirelessSecurityFils">NMSettingWirelessSecurityFils</a>, enum in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
 </dt>
 <dd></dd>
 <dt>
@@ -7033,6 +7177,10 @@ NMSettingUser:data, object property in nm-core-types
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingConnection.html#nm-setting-connection-get-mdns" title="nm_setting_connection_get_mdns ()">nm_setting_connection_get_mdns</a>, function in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingConnection.html#nm-setting-connection-get-metered" title="nm_setting_connection_get_metered ()">nm_setting_connection_get_metered</a>, function in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
 </dt>
 <dd></dd>
@@ -7094,6 +7242,10 @@ NMSettingUser:data, object property in nm-core-types
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingConnection.html#NM-SETTING-CONNECTION-MASTER:CAPS" title="NM_SETTING_CONNECTION_MASTER">NM_SETTING_CONNECTION_MASTER</a>, macro in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingConnection.html#NM-SETTING-CONNECTION-MDNS:CAPS" title="NM_SETTING_CONNECTION_MDNS">NM_SETTING_CONNECTION_MDNS</a>, macro in <a class="link" href="NMSettingConnection.html" title="NMSettingConnection">NMSettingConnection</a>
 </dt>
 <dd></dd>
 <dt>
@@ -7949,11 +8101,19 @@ NMSettingUser:data, object property in nm-core-types
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPTunnel.html#NM-SETTING-IP-TUNNEL-FLAGS:CAPS" title="NM_SETTING_IP_TUNNEL_FLAGS">NM_SETTING_IP_TUNNEL_FLAGS</a>, macro in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingIPTunnel.html#NM-SETTING-IP-TUNNEL-FLOW-LABEL:CAPS" title="NM_SETTING_IP_TUNNEL_FLOW_LABEL">NM_SETTING_IP_TUNNEL_FLOW_LABEL</a>, macro in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIPTunnel.html#nm-setting-ip-tunnel-get-encapsulation-limit" title="nm_setting_ip_tunnel_get_encapsulation_limit ()">nm_setting_ip_tunnel_get_encapsulation_limit</a>, function in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPTunnel.html#nm-setting-ip-tunnel-get-flags" title="nm_setting_ip_tunnel_get_flags ()">nm_setting_ip_tunnel_get_flags</a>, function in <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9249,6 +9409,10 @@ nm_setting_user_set_data, function in nm-setting-user
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingVpn.html#nm-setting-vpn-get-data-keys" title="nm_setting_vpn_get_data_keys ()">nm_setting_vpn_get_data_keys</a>, function in <a class="link" href="NMSettingVpn.html" title="NMSettingVpn">NMSettingVpn</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingVpn.html#nm-setting-vpn-get-num-data-items" title="nm_setting_vpn_get_num_data_items ()">nm_setting_vpn_get_num_data_items</a>, function in <a class="link" href="NMSettingVpn.html" title="NMSettingVpn">NMSettingVpn</a>
 </dt>
 <dd></dd>
@@ -9262,6 +9426,10 @@ nm_setting_user_set_data, function in nm-setting-user
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingVpn.html#nm-setting-vpn-get-secret" title="nm_setting_vpn_get_secret ()">nm_setting_vpn_get_secret</a>, function in <a class="link" href="NMSettingVpn.html" title="NMSettingVpn">NMSettingVpn</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingVpn.html#nm-setting-vpn-get-secret-keys" title="nm_setting_vpn_get_secret_keys ()">nm_setting_vpn_get_secret_keys</a>, function in <a class="link" href="NMSettingVpn.html" title="NMSettingVpn">NMSettingVpn</a>
 </dt>
 <dd></dd>
 <dt>
@@ -9833,7 +10001,15 @@ nm_setting_user_set_data, function in nm-setting-user
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS:CAPS" title="NM_SETTING_WIRELESS_SECURITY_FILS">NM_SETTING_WIRELESS_SECURITY_FILS</a>, macro in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-auth-alg" title="nm_setting_wireless_security_get_auth_alg ()">nm_setting_wireless_security_get_auth_alg</a>, function in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-fils" title="nm_setting_wireless_security_get_fils ()">nm_setting_wireless_security_get_fils</a>, function in <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>
 </dt>
 <dd></dd>
 <dt>
@@ -10319,7 +10495,11 @@ nm_tc_tfilter_unref, function in nm-setting-tc-config
 </dt>
 <dd></dd>
 <dt>
-nm_utils_fixup_desc_string, function in nm-libnm-utils
+nm_utils_fixup_product_string, function in nm-libnm-utils
+</dt>
+<dd></dd>
+<dt>
+nm_utils_fixup_vendor_string, function in nm-libnm-utils
 </dt>
 <dd></dd>
 <dt>
@@ -10664,7 +10844,7 @@ NMVpnEditorInterface, struct in <a class="link" href="NMVpnEditorPlugin.html#NMV
 </dt>
 <dd></dd>
 <dt>
-NMVpnPluginInfo, struct in nm-vpn-plugin-info
+<a class="link" href="NMVpnEditorPlugin.html#NMVpnPluginInfo" title="NMVpnPluginInfo">NMVpnPluginInfo</a>, struct in nm-vpn-plugin-info
 </dt>
 <dd></dd>
 <dt>

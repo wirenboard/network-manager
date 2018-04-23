@@ -53,7 +53,6 @@ int nmc_string_to_arg_array (const char *line, const char *delim, gboolean unquo
                              char ***argv, int *argc);
 const char *nmc_string_is_valid (const char *input, const char **allowed, GError **error);
 char * nmc_util_strv_for_display (const char *const*strv, gboolean brackets);
-char **nmc_strsplit_set (const char *str, const char *delimiter, int max_tokens);
 int nmc_string_screen_width (const char *start, const char *end);
 void set_val_str  (NmcOutputField fields_array[], guint32 index, char *value);
 void set_val_strc (NmcOutputField fields_array[], guint32 index, const char *value);
@@ -151,6 +150,7 @@ struct _NmcMetaGenericInfo {
 	                          NMMetaAccessorGetType get_type,
 	                          NMMetaAccessorGetFlags get_flags,
 	                          NMMetaAccessorGetOutFlags *out_flags,
+	                          gboolean *out_is_default,
 	                          gpointer *out_to_free);
 };
 

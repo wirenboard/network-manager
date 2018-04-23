@@ -319,6 +319,14 @@ an hardware address (e.g. '01:xx:xx:xx:xx:xx:xx' where 1 is the Ethernet
 ARP type and the rest is a MAC address).
 If the property is not a hex string it is considered as a
 non-hardware-address client ID and the 'type' field is set to 0.</p>
+<p>The special values "mac" and "perm-mac" are supported, which use the
+current or permanent MAC address of the device to generate a client identifier
+with type ethernet type (01). Currently, these options only work for ethernet
+type of links.</p>
+<p>The special value "stable" is supported to generate a type 0 client identifier based
+on the stable-id (see connection.stable-id).</p>
+<p>If unset, a globally configured default is used. If still unset, the
+client-id from the last lease is reused.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>

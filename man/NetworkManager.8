@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 03/12/2018
+.\"      Date: 04/23/2018
 .\"    Manual: Network management daemons
-.\"    Source: NetworkManager 1.10.6
+.\"    Source: NetworkManager 1.11.3
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER" "8" "" "NetworkManager 1\&.10\&.6" "Network management daemons"
+.TH "NETWORKMANAGER" "8" "" "NetworkManager 1\&.11\&.3" "Network management daemons"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -257,10 +257,11 @@ for more information on configuration file\&.
 .PP
 \fB\-\-plugins\fR
 .RS 4
-List plugins used to manage system\-wide connection settings\&. This list has preference over plugins specified in the configuration file\&. Currently supported plugins are: keyfile,
-\fBifcfg\-rh\fR,
-\fBifcfg\-suse\fR,
-\fBifupdown\fR\&.
+List plugins used to manage system\-wide connection settings\&. This list has preference over plugins specified in the configuration file\&. See
+main\&.plugins
+setting in
+\fBNetworkManager.conf\fR(5)
+for supported options\&.
 .RE
 .PP
 \fB\-\-log\-level\fR

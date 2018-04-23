@@ -119,6 +119,13 @@
 </td>
 </tr>
 <tr>
+<td class="function_type">const <span class="returnvalue">char</span> **
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingVpn.html#nm-setting-vpn-get-data-keys" title="nm_setting_vpn_get_data_keys ()">nm_setting_vpn_get_data_keys</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
 <td class="function_type">
 <a href="../glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
 </td>
@@ -155,6 +162,13 @@
 </td>
 <td class="function_name">
 <a class="link" href="NMSettingVpn.html#nm-setting-vpn-foreach-secret" title="nm_setting_vpn_foreach_secret ()">nm_setting_vpn_foreach_secret</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> **
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingVpn.html#nm-setting-vpn-get-secret-keys" title="nm_setting_vpn_get_secret_keys ()">nm_setting_vpn_get_secret_keys</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
@@ -581,6 +595,45 @@ during iteration will not be part of the iteration.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-setting-vpn-get-data-keys"></a><h3>nm_setting_vpn_get_data_keys ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> **
+nm_setting_vpn_get_data_keys (<em class="parameter"><code><a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a> *setting</code></em>,
+                              <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a> *out_length</code></em>);</pre>
+<p>Retrieves every data key inside <em class="parameter"><code>setting</code></em>
+, as an array.</p>
+<div class="refsect3">
+<a name="nm-setting-vpn-get-data-keys.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_length</p></td>
+<td class="parameter_description"><p>(out): the length of the returned array. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-setting-vpn-get-data-keys.returns"></a><h4>Returns</h4>
+<p>a
+<a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array containing each data key or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+there are no data items. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=out_length][<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-setting-vpn-get-num-secrets"></a><h3>nm_setting_vpn_get_num_secrets ()</h3>
 <pre class="programlisting"><a href="../glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
 nm_setting_vpn_get_num_secrets (<em class="parameter"><code><a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a> *setting</code></em>);</pre>
@@ -759,6 +812,45 @@ iteration will not be part of the iteration.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-setting-vpn-get-secret-keys"></a><h3>nm_setting_vpn_get_secret_keys ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> **
+nm_setting_vpn_get_secret_keys (<em class="parameter"><code><a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a> *setting</code></em>,
+                                <em class="parameter"><code><a href="../glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a> *out_length</code></em>);</pre>
+<p>Retrieves every secret key inside <em class="parameter"><code>setting</code></em>
+, as an array.</p>
+<div class="refsect3">
+<a name="nm-setting-vpn-get-secret-keys.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_length</p></td>
+<td class="parameter_description"><p>(out): the length of the returned array. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-setting-vpn-get-secret-keys.returns"></a><h4>Returns</h4>
+<p>a
+<a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>-terminated array containing each secret key or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if
+there are no secrets. </p>
+<p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=out_length][<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-setting-vpn-get-timeout"></a><h3>nm_setting_vpn_get_timeout ()</h3>
 <pre class="programlisting"><a href="../glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>
 nm_setting_vpn_get_timeout (<em class="parameter"><code><a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a> *setting</code></em>);</pre>
@@ -839,9 +931,6 @@ nm_setting_vpn_get_timeout (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect2">
 <a name="NMSettingVpn--data"></a><h3>The <code class="literal">“data”</code> property</h3>
 <pre class="programlisting">  “data”                     <a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *</pre>
-<p>Dictionary of key/value pairs of VPN plugin specific data.  Both keys and
-values must be strings.</p>
-<p>Type: GHashTable(utf8,utf8)</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
@@ -858,9 +947,6 @@ until explicitly disconnected.</p>
 <div class="refsect2">
 <a name="NMSettingVpn--secrets"></a><h3>The <code class="literal">“secrets”</code> property</h3>
 <pre class="programlisting">  “secrets”                  <a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *</pre>
-<p>Dictionary of key/value pairs of VPN plugin specific secrets like
-passwords or private keys.  Both keys and values must be strings.</p>
-<p>Type: GHashTable(utf8,utf8)</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>

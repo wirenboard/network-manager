@@ -52,7 +52,7 @@ struct NMTCQdisc {
  *
  * Returns: (transfer full): the new #NMTCQdisc object, or %NULL on error
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCQdisc *
 nm_tc_qdisc_new (const char *kind,
@@ -92,7 +92,7 @@ nm_tc_qdisc_new (const char *kind,
  *
  * Increases the reference count of the object.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_qdisc_ref (NMTCQdisc *qdisc)
@@ -110,7 +110,7 @@ nm_tc_qdisc_ref (NMTCQdisc *qdisc)
  * Decreases the reference count of the object.  If the reference count
  * reaches zero, the object will be destroyed.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_qdisc_unref (NMTCQdisc *qdisc)
@@ -135,7 +135,7 @@ nm_tc_qdisc_unref (NMTCQdisc *qdisc)
  *
  * Returns: %TRUE if the objects contain the same values, %FALSE if they do not.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_tc_qdisc_equal (NMTCQdisc *qdisc, NMTCQdisc *other)
@@ -162,7 +162,7 @@ nm_tc_qdisc_equal (NMTCQdisc *qdisc, NMTCQdisc *other)
  *
  * Returns: (transfer full): a copy of @qdisc
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCQdisc *
 nm_tc_qdisc_dup (NMTCQdisc *qdisc)
@@ -184,7 +184,7 @@ nm_tc_qdisc_dup (NMTCQdisc *qdisc)
  *
  * Returns:
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 const char *
 nm_tc_qdisc_get_kind (NMTCQdisc *qdisc)
@@ -201,7 +201,7 @@ nm_tc_qdisc_get_kind (NMTCQdisc *qdisc)
  *
  * Returns: the queueing discipline handle
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 guint32
 nm_tc_qdisc_get_handle (NMTCQdisc *qdisc)
@@ -219,7 +219,7 @@ nm_tc_qdisc_get_handle (NMTCQdisc *qdisc)
  *
  * Sets the queueing discipline handle.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_qdisc_set_handle (NMTCQdisc *qdisc, guint32 handle)
@@ -236,7 +236,7 @@ nm_tc_qdisc_set_handle (NMTCQdisc *qdisc, guint32 handle)
  *
  * Returns: the parent class
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 guint32
 nm_tc_qdisc_get_parent (NMTCQdisc *qdisc)
@@ -268,7 +268,7 @@ struct NMTCAction {
  *
  * Returns: (transfer full): the new #NMTCAction object, or %NULL on error
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCAction *
 nm_tc_action_new (const char *kind,
@@ -298,7 +298,7 @@ nm_tc_action_new (const char *kind,
  *
  * Increases the reference count of the object.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_action_ref (NMTCAction *action)
@@ -316,7 +316,7 @@ nm_tc_action_ref (NMTCAction *action)
  * Decreases the reference count of the object.  If the reference count
  * reaches zero, the object will be destroyed.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_action_unref (NMTCAction *action)
@@ -343,7 +343,7 @@ nm_tc_action_unref (NMTCAction *action)
  *
  * Returns: %TRUE if the objects contain the same values, %FALSE if they do not.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_tc_action_equal (NMTCAction *action, NMTCAction *other)
@@ -389,7 +389,7 @@ nm_tc_action_equal (NMTCAction *action, NMTCAction *other)
  *
  * Returns: (transfer full): a copy of @action
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCAction *
 nm_tc_action_dup (NMTCAction *action)
@@ -420,7 +420,7 @@ nm_tc_action_dup (NMTCAction *action)
  *
  * Returns:
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 const char *
 nm_tc_action_get_kind (NMTCAction *action)
@@ -442,22 +442,12 @@ nm_tc_action_get_kind (NMTCAction *action)
 char **
 nm_tc_action_get_attribute_names (NMTCAction *action)
 {
-	GHashTableIter iter;
-	const char *key;
-	GPtrArray *names;
+	const char **names;
 
-	g_return_val_if_fail (action != NULL, NULL);
+	g_return_val_if_fail (action, NULL);
 
-	names = g_ptr_array_new ();
-
-	if (action->attributes) {
-		g_hash_table_iter_init (&iter, action->attributes);
-		while (g_hash_table_iter_next (&iter, (gpointer *) &key, NULL))
-			g_ptr_array_add (names, g_strdup (key));
-	}
-	g_ptr_array_add (names, NULL);
-
-	return (char **) g_ptr_array_free (names, FALSE);
+	names = nm_utils_strdict_get_keys (action->attributes, TRUE, NULL);
+	return nm_utils_strv_make_deep_copied_nonnull (names);
 }
 
 /**
@@ -498,8 +488,8 @@ nm_tc_action_set_attribute (NMTCAction *action, const char *name, GVariant *valu
 	g_return_if_fail (strcmp (name, "kind") != 0);
 
 	if (!action->attributes) {
-		action->attributes = g_hash_table_new_full (g_str_hash, g_str_equal,
-		                                            g_free, (GDestroyNotify) g_variant_unref);
+		action->attributes = g_hash_table_new_full (nm_str_hash, g_str_equal,
+		                                             g_free, (GDestroyNotify) g_variant_unref);
 	}
 
 	if (value)
@@ -531,7 +521,7 @@ struct NMTCTfilter {
  *
  * Returns: (transfer full): the new #NMTCTfilter object, or %NULL on error
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCTfilter *
 nm_tc_tfilter_new (const char *kind,
@@ -571,7 +561,7 @@ nm_tc_tfilter_new (const char *kind,
  *
  * Increases the reference count of the object.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_tfilter_ref (NMTCTfilter *tfilter)
@@ -589,7 +579,7 @@ nm_tc_tfilter_ref (NMTCTfilter *tfilter)
  * Decreases the reference count of the object.  If the reference count
  * reaches zero, the object will be destroyed.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_tfilter_unref (NMTCTfilter *tfilter)
@@ -616,7 +606,7 @@ nm_tc_tfilter_unref (NMTCTfilter *tfilter)
  *
  * Returns: %TRUE if the objects contain the same values, %FALSE if they do not.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_tc_tfilter_equal (NMTCTfilter *tfilter, NMTCTfilter *other)
@@ -644,7 +634,7 @@ nm_tc_tfilter_equal (NMTCTfilter *tfilter, NMTCTfilter *other)
  *
  * Returns: (transfer full): a copy of @tfilter
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCTfilter *
 nm_tc_tfilter_dup (NMTCTfilter *tfilter)
@@ -667,7 +657,7 @@ nm_tc_tfilter_dup (NMTCTfilter *tfilter)
  *
  * Returns:
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 const char *
 nm_tc_tfilter_get_kind (NMTCTfilter *tfilter)
@@ -684,7 +674,7 @@ nm_tc_tfilter_get_kind (NMTCTfilter *tfilter)
  *
  * Returns: the queueing discipline handle
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 guint32
 nm_tc_tfilter_get_handle (NMTCTfilter *tfilter)
@@ -702,7 +692,7 @@ nm_tc_tfilter_get_handle (NMTCTfilter *tfilter)
  *
  * Sets the queueing discipline handle.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_tfilter_set_handle (NMTCTfilter *tfilter, guint32 handle)
@@ -719,7 +709,7 @@ nm_tc_tfilter_set_handle (NMTCTfilter *tfilter, guint32 handle)
  *
  * Returns: the parent class
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 guint32
 nm_tc_tfilter_get_parent (NMTCTfilter *tfilter)
@@ -736,7 +726,7 @@ nm_tc_tfilter_get_parent (NMTCTfilter *tfilter)
  *
  * Returns: the action associated with a traffic filter.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCAction *
 nm_tc_tfilter_get_action (NMTCTfilter *tfilter)
@@ -757,7 +747,7 @@ nm_tc_tfilter_get_action (NMTCTfilter *tfilter)
  *
  * Sets the action associated with a traffic filter.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_tc_tfilter_set_action (NMTCTfilter *tfilter, NMTCAction *action)
@@ -787,7 +777,7 @@ enum {
  *
  * Linux Traffic Contril Settings.
  *
- * Since: 1.10.2
+ * Since: 1.12
  */
 struct _NMSettingTCConfig {
         NMSetting parent;
@@ -810,7 +800,7 @@ NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_TC_CONFIG)
  *
  * Returns: (transfer full): the new empty #NMSettingTCConfig object
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMSetting *
 nm_setting_tc_config_new (void)
@@ -824,7 +814,7 @@ nm_setting_tc_config_new (void)
  *
  * Returns: the number of configured queueing disciplines
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 guint
 nm_setting_tc_config_get_num_qdiscs (NMSettingTCConfig *self)
@@ -841,7 +831,7 @@ nm_setting_tc_config_get_num_qdiscs (NMSettingTCConfig *self)
  *
  * Returns: (transfer none): the qdisc at index @idx
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCQdisc *
 nm_setting_tc_config_get_qdisc (NMSettingTCConfig *self, guint idx)
@@ -864,7 +854,7 @@ nm_setting_tc_config_get_qdisc (NMSettingTCConfig *self, guint idx)
  *
  * Returns: %TRUE if the qdisc was added; %FALSE if the qdisc was already known.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_setting_tc_config_add_qdisc (NMSettingTCConfig *self,
@@ -892,7 +882,7 @@ nm_setting_tc_config_add_qdisc (NMSettingTCConfig *self,
  *
  * Removes the qdisc at index @idx.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_setting_tc_config_remove_qdisc (NMSettingTCConfig *self, guint idx)
@@ -914,7 +904,7 @@ nm_setting_tc_config_remove_qdisc (NMSettingTCConfig *self, guint idx)
  *
  * Returns: %TRUE if the qdisc was found and removed; %FALSE if it was not.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_setting_tc_config_remove_qdisc_by_value (NMSettingTCConfig *self,
@@ -941,7 +931,7 @@ nm_setting_tc_config_remove_qdisc_by_value (NMSettingTCConfig *self,
  *
  * Removes all configured queueing disciplines.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_setting_tc_config_clear_qdiscs (NMSettingTCConfig *self)
@@ -959,7 +949,7 @@ nm_setting_tc_config_clear_qdiscs (NMSettingTCConfig *self)
  *
  * Returns: the number of configured queueing disciplines
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 guint
 nm_setting_tc_config_get_num_tfilters (NMSettingTCConfig *self)
@@ -976,7 +966,7 @@ nm_setting_tc_config_get_num_tfilters (NMSettingTCConfig *self)
  *
  * Returns: (transfer none): the tfilter at index @idx
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 NMTCTfilter *
 nm_setting_tc_config_get_tfilter (NMSettingTCConfig *self, guint idx)
@@ -999,7 +989,7 @@ nm_setting_tc_config_get_tfilter (NMSettingTCConfig *self, guint idx)
  *
  * Returns: %TRUE if the tfilter was added; %FALSE if the tfilter was already known.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_setting_tc_config_add_tfilter (NMSettingTCConfig *self,
@@ -1027,7 +1017,7 @@ nm_setting_tc_config_add_tfilter (NMSettingTCConfig *self,
  *
  * Removes the tfilter at index @idx.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_setting_tc_config_remove_tfilter (NMSettingTCConfig *self, guint idx)
@@ -1048,7 +1038,7 @@ nm_setting_tc_config_remove_tfilter (NMSettingTCConfig *self, guint idx)
  *
  * Returns: %TRUE if the tfilter was found and removed; %FALSE if it was not.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 gboolean
 nm_setting_tc_config_remove_tfilter_by_value (NMSettingTCConfig *self,
@@ -1075,7 +1065,7 @@ nm_setting_tc_config_remove_tfilter_by_value (NMSettingTCConfig *self,
  *
  * Removes all configured queueing disciplines.
  *
- * Since: 1.10.2
+ * Since: 1.12
  **/
 void
 nm_setting_tc_config_clear_tfilters (NMSettingTCConfig *self)
@@ -1329,7 +1319,7 @@ _action_to_variant (NMTCAction *action)
 
 	for (i = 0; attrs[i]; i++) {
 		g_variant_builder_add (&builder, "{sv}", attrs[i],
-				       nm_tc_action_get_attribute (action, attrs[i]));
+		                       nm_tc_action_get_attribute (action, attrs[i]));
 	}
 
 	return g_variant_builder_end (&builder);
@@ -1517,11 +1507,9 @@ nm_setting_tc_config_class_init (NMSettingTCConfigClass *setting_class)
 	/* Properties */
 
 	/**
-	 * NMSettingTCConfig:qdiscs:
+	 * NMSettingTCConfig:qdiscs: (type GPtrArray(NMTCQdisc))
 	 *
 	 * Array of TC queuening disciplines.
-	 *
-	 * Element-Type: NMTCQdisc
 	 **/
 	/* ---ifcfg-rh---
 	 * property: qdiscs
@@ -1546,11 +1534,9 @@ nm_setting_tc_config_class_init (NMSettingTCConfigClass *setting_class)
 	                                     NULL);
 
 	/**
-	 * NMSettingTCConfig:tfilters:
+	 * NMSettingTCConfig:tfilters: (type GPtrArray(NMTCTfilter))
 	 *
 	 * Array of TC traffic filters.
-	 *
-	 * Element-Type: NMTCTfilter
 	 **/
 	/* ---ifcfg-rh---
 	 * property: qdiscs

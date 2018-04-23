@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -174,7 +175,7 @@ int prioq_put(Prioq *q, void *data, unsigned *idx) {
                 struct prioq_item *j;
 
                 n = MAX((q->n_items+1) * 2, 16u);
-                j = realloc(q->items, sizeof(struct prioq_item) * n);
+                j = reallocarray(q->items, n, sizeof(struct prioq_item));
                 if (!j)
                         return -ENOMEM;
 

@@ -157,7 +157,7 @@ nm_client_init (NMClient *client)
 
 	priv->state = NM_STATE_UNKNOWN;
 
-	priv->permissions = g_hash_table_new (g_direct_hash, g_direct_equal);
+	priv->permissions = g_hash_table_new (NULL, NULL);
 }
 
 static void
@@ -2329,10 +2329,9 @@ nm_client_class_init (NMClientClass *client_class)
 		                       G_PARAM_STATIC_STRINGS));
 
 	/**
-	 * NMClient:active-connections:
+	 * NMClient:active-connections: (type GPtrArray):
 	 *
 	 * The active connections.
-	 * Type: GLib.PtrArray
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_ACTIVE_CONNECTIONS,

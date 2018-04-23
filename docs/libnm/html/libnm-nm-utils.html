@@ -2051,9 +2051,11 @@ nm_utils_wifi_5ghz_freqs (<em class="parameter"><code><span class="type">void</s
 nm_utils_wifi_strength_bars (<em class="parameter"><code><a href="../glib/glib-Basic-Types.html#guint8"><span class="type">guint8</span></a> strength</code></em>);</pre>
 <p>Converts <em class="parameter"><code>strength</code></em>
  into a 4-character-wide graphical representation of
-strength suitable for printing to stdout. If the current locale and terminal
-support it, this will use unicode graphics characters to represent
-"bars". Otherwise it will use 0 to 4 asterisks.</p>
+strength suitable for printing to stdout.</p>
+<p>Previous versions used to take a guess at the terminal type and possibly
+return a wide UTF-8 encoded string. Now it always returns a 7-bit
+clean strings of one to 0 to 4 asterisks. Users that actually need
+the functionality are encouraged to make their implementations instead.</p>
 <div class="refsect3">
 <a name="nm-utils-wifi-strength-bars.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -2209,8 +2211,8 @@ Bytes in <em class="parameter"><code>asc</code></em>
 </tr>
 <tr>
 <td class="parameter_name"><p>buffer</p></td>
-<td class="parameter_description"><p>buffer to store the result into</p></td>
-<td class="parameter_annotations"> </td>
+<td class="parameter_description"><p>buffer to store the result into. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> guint8][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> length=length]</span></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>length</p></td>
@@ -2362,8 +2364,8 @@ guaranteed to not match if they are invalid.)</p>
 <tbody>
 <tr>
 <td class="parameter_name"><p>hwaddr1</p></td>
-<td class="parameter_description"><p>pointer to a binary or ASCII hardware address, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
-<td class="parameter_annotations"> </td>
+<td class="parameter_description"><p>pointer to a binary or ASCII hardware address, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>hwaddr1_len</p></td>
@@ -2374,8 +2376,8 @@ is ASCII</p></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>hwaddr2</p></td>
-<td class="parameter_description"><p>pointer to a binary or ASCII hardware address, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p></td>
-<td class="parameter_annotations"> </td>
+<td class="parameter_description"><p>pointer to a binary or ASCII hardware address, or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL may be passed as the value in, out, in-out; or as a return value."><span class="acronym">nullable</span></acronym>]</span></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>hwaddr2_len</p></td>
@@ -2598,7 +2600,7 @@ nm_utils_inet4_ntop (<em class="parameter"><code><span class="type">in_addr_t</s
 characters. If set to <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it will return a pointer to an internal, static
 buffer (shared with <a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a>).  Beware, that the internal
 buffer will be overwritten with ever new call of <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="nm_utils_inet4_ntop ()"><code class="function">nm_utils_inet4_ntop()</code></a> or
-<a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a> that does not provied it's own <em class="parameter"><code>dst</code></em>
+<a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a> that does not provide its own <em class="parameter"><code>dst</code></em>
 buffer. Also,
 using the internal buffer is not thread safe. When in doubt, pass your own
 <em class="parameter"><code>dst</code></em>
@@ -2644,7 +2646,7 @@ nm_utils_inet6_ntop (<em class="parameter"><code>const <span class="type">struct
 characters. If set to <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, it will return a pointer to an internal, static
 buffer (shared with <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="nm_utils_inet4_ntop ()"><code class="function">nm_utils_inet4_ntop()</code></a>).  Beware, that the internal
 buffer will be overwritten with ever new call of <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="nm_utils_inet4_ntop ()"><code class="function">nm_utils_inet4_ntop()</code></a> or
-<a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a> that does not provied it's own <em class="parameter"><code>dst</code></em>
+<a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a> that does not provide its own <em class="parameter"><code>dst</code></em>
 buffer. Also,
 using the internal buffer is not thread safe. When in doubt, pass your own
 <em class="parameter"><code>dst</code></em>
@@ -3015,8 +3017,9 @@ nm_utils_parse_variant_attributes (<em class="parameter"><code>const <span class
 </div>
 <div class="refsect3">
 <a name="nm-utils-parse-variant-attributes.returns"></a><h4>Returns</h4>
-<p>a <a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> mapping attribute names to <a href="../glib/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> values. </p>
-<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+<p>a <a href="../glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> mapping
+attribute names to <a href="../glib/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> values. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GVariant]</span></p>
 </div>
 <p class="since">Since: 1.8</p>
 </div>
@@ -3062,7 +3065,7 @@ discipline to a <code class="literal">NMTCQdisc</code> instance. Supports a subs
 <a name="nm-utils-tc-qdisc-from-str.returns"></a><h4>Returns</h4>
 <p> the <code class="literal">NMTCQdisc</code> or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -3098,7 +3101,7 @@ discipline.</p>
 <a name="nm-utils-tc-qdisc-to-str.returns"></a><h4>Returns</h4>
 <p> formatted string or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -3134,7 +3137,7 @@ discipline to a <code class="literal">NMTCAction</code> instance. Supports a sub
 <a name="nm-utils-tc-action-from-str.returns"></a><h4>Returns</h4>
 <p> the <code class="literal">NMTCAction</code> or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -3170,7 +3173,7 @@ discipline.</p>
 <a name="nm-utils-tc-action-to-str.returns"></a><h4>Returns</h4>
 <p> formatted string or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -3206,7 +3209,7 @@ discipline to a <code class="literal">NMTCTfilter</code> instance. Supports a su
 <a name="nm-utils-tc-tfilter-from-str.returns"></a><h4>Returns</h4>
 <p> the <code class="literal">NMTCTfilter</code> or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -3242,7 +3245,7 @@ discipline.</p>
 <a name="nm-utils-tc-tfilter-to-str.returns"></a><h4>Returns</h4>
 <p> formatted string or <a href="../glib/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
-<p class="since">Since: 1.10.2</p>
+<p class="since">Since: 1.12</p>
 </div>
 </div>
 <div class="refsect1">

@@ -297,6 +297,14 @@ use WEP, LEAP, WPA or WPA2/RSN security</p>
 <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wps-method" title="nm_setting_wireless_security_get_wps_method ()">nm_setting_wireless_security_get_wps_method</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
+<tr>
+<td class="function_type">
+<a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityFils" title="enum NMSettingWirelessSecurityFils"><span class="returnvalue">NMSettingWirelessSecurityFils</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-fils" title="nm_setting_wireless_security_get_fils ()">nm_setting_wireless_security_get_fils</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -314,6 +322,11 @@ use WEP, LEAP, WPA or WPA2/RSN security</p>
 <a href="../glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
 <td class="property_name"><a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--auth-alg" title="The “auth-alg” property">auth-alg</a></td>
 <td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type"><a href="../glib/glib-Basic-Types.html#gint"><span class="type">gint</span></a></td>
+<td class="property_name"><a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--fils" title="The “fils” property">fils</a></td>
+<td class="property_flags">Read / Write / Construct</td>
 </tr>
 <tr>
 <td class="property_type"><a href="../glib/glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></td>
@@ -441,6 +454,10 @@ use WEP, LEAP, WPA or WPA2/RSN security</p>
 <td class="function_name"><a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityWpsMethod" title="enum NMSettingWirelessSecurityWpsMethod">NMSettingWirelessSecurityWpsMethod</a></td>
 </tr>
 <tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityFils" title="enum NMSettingWirelessSecurityFils">NMSettingWirelessSecurityFils</a></td>
+</tr>
+<tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-KEY-MGMT:CAPS" title="NM_SETTING_WIRELESS_SECURITY_KEY_MGMT">NM_SETTING_WIRELESS_SECURITY_KEY_MGMT</a></td>
 </tr>
@@ -517,6 +534,10 @@ use WEP, LEAP, WPA or WPA2/RSN security</p>
 <td class="function_name"><a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-WPS-METHOD:CAPS" title="NM_SETTING_WIRELESS_SECURITY_WPS_METHOD">NM_SETTING_WIRELESS_SECURITY_WPS_METHOD</a></td>
 </tr>
 <tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS:CAPS" title="NM_SETTING_WIRELESS_SECURITY_FILS">NM_SETTING_WIRELESS_SECURITY_FILS</a></td>
+</tr>
+<tr>
 <td class="datatype_keyword"> </td>
 <td class="function_name"><a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity-struct" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a></td>
 </tr>
@@ -526,6 +547,7 @@ use WEP, LEAP, WPA or WPA2/RSN security</p>
 <div class="refsect1">
 <a name="NMSettingWirelessSecurity.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+    <span class="lineart">├──</span> NMSettingWirelessSecurityFils
     <span class="lineart">├──</span> NMSettingWirelessSecurityPmf
     <span class="lineart">├──</span> NMSettingWirelessSecurityWpsMethod
     <span class="lineart">╰──</span> NMWepKeyType
@@ -1512,6 +1534,12 @@ nm_setting_wireless_security_get_wps_method
 </div>
 <p class="since">Since: 1.10</p>
 </div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-wireless-security-get-fils"></a><h3>nm_setting_wireless_security_get_fils ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityFils" title="enum NMSettingWirelessSecurityFils"><span class="returnvalue">NMSettingWirelessSecurityFils</span></a>
+nm_setting_wireless_security_get_fils (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
+</div>
 </div>
 <div class="refsect1">
 <a name="NMSettingWirelessSecurity.other_details"></a><h2>Types and Values</h2>
@@ -1689,6 +1717,66 @@ the actual WEP key using the MD5 hash algorithm.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMSettingWirelessSecurityFils"></a><h3>enum NMSettingWirelessSecurityFils</h3>
+<p>These flags indicate whether FILS must be enabled.</p>
+<div class="refsect3">
+<a name="NMSettingWirelessSecurityFils.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-SECURITY-FILS-DEFAULT:CAPS"></a>NM_SETTING_WIRELESS_SECURITY_FILS_DEFAULT</p></td>
+<td class="enum_member_description">
+<p>use the default value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-SECURITY-FILS-DISABLE:CAPS"></a>NM_SETTING_WIRELESS_SECURITY_FILS_DISABLE</p></td>
+<td class="enum_member_description">
+<p>disable FILS</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-SECURITY-FILS-OPTIONAL:CAPS"></a>NM_SETTING_WIRELESS_SECURITY_FILS_OPTIONAL</p></td>
+<td class="enum_member_description">
+<p>enable FILS if the supplicant and the AP support it</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-SECURITY-FILS-REQUIRED:CAPS"></a>NM_SETTING_WIRELESS_SECURITY_FILS_REQUIRED</p></td>
+<td class="enum_member_description">
+<p>require FILS and fail if not available</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-SECURITY-FILS-NUM:CAPS"></a>_NM_SETTING_WIRELESS_SECURITY_FILS_NUM</p></td>
+<td class="enum_member_description">
+<p>placeholder value for bounds-checking</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-SECURITY-FILS-LAST:CAPS"></a>NM_SETTING_WIRELESS_SECURITY_FILS_LAST</p></td>
+<td class="enum_member_description">
+<p>placeholder value for bounds-checking</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-WIRELESS-SECURITY-KEY-MGMT:CAPS"></a><h3>NM_SETTING_WIRELESS_SECURITY_KEY_MGMT</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_SECURITY_KEY_MGMT "key-mgmt"
 </pre>
@@ -1803,6 +1891,12 @@ the actual WEP key using the MD5 hash algorithm.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-SETTING-WIRELESS-SECURITY-FILS:CAPS"></a><h3>NM_SETTING_WIRELESS_SECURITY_FILS</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_SECURITY_FILS "fils"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NMSettingWirelessSecurity-struct"></a><h3>NMSettingWirelessSecurity</h3>
 <pre class="programlisting">typedef struct _NMSettingWirelessSecurity NMSettingWirelessSecurity;</pre>
 <p>Wi-Fi Security Settings</p>
@@ -1820,6 +1914,22 @@ using Cisco LEAP (ie, key-mgmt = "ieee8021x" and auth-alg = "leap") the
 "leap-username" and "leap-password" properties must be specified.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWirelessSecurity--fils"></a><h3>The <code class="literal">“fils”</code> property</h3>
+<pre class="programlisting">  “fils”                     <a href="../glib/glib-Basic-Types.html#gint"><span class="type">gint</span></a></pre>
+<p>Indicates whether Fast Initial Link Setup (802.11ai) must be enabled for
+the connection.  One of <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS-DEFAULT:CAPS"><code class="literal">NM_SETTING_WIRELESS_SECURITY_FILS_DEFAULT</code></a> (use
+global default value), <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS-DISABLE:CAPS"><code class="literal">NM_SETTING_WIRELESS_SECURITY_FILS_DISABLE</code></a>
+(disable FILS), <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS-OPTIONAL:CAPS"><code class="literal">NM_SETTING_WIRELESS_SECURITY_FILS_OPTIONAL</code></a> (enable FILS
+if the supplicant and the access point support it) or
+<a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS-REQUIRED:CAPS"><code class="literal">NM_SETTING_WIRELESS_SECURITY_FILS_REQUIRED</code></a> (enable FILS and fail if not
+supported).  When set to <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-FILS-DEFAULT:CAPS"><code class="literal">NM_SETTING_WIRELESS_SECURITY_FILS_DEFAULT</code></a> and
+no global default is set, FILS will be optionally enabled.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: 0</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">

@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 03/12/2018
+.\"      Date: 04/23/2018
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.10.6
+.\"    Source: NetworkManager 1.11.3
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.10\&.6" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.11\&.3" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -223,6 +223,7 @@ default
 is used, unless
 /etc/resolv\&.conf
 is a symlink to
+/run/systemd/resolve/stub\-resolv\&.conf,
 /run/systemd/resolve/resolv\&.conf,
 /lib/systemd/resolv\&.conf
 or
@@ -595,6 +596,10 @@ If left unspecified, the default value is 3 tries before failing the connection\
 .RS 4
 .RE
 .PP
+\fIconnection\&.mdns\fR
+.RS 4
+.RE
+.PP
 \fIconnection\&.stable\-id\fR
 .RS 4
 .RE
@@ -628,6 +633,10 @@ If configured explicitly to 0, the MTU is not reconfigured during device activat
 .RE
 .PP
 \fIipv4\&.dad\-timeout\fR
+.RS 4
+.RE
+.PP
+\fIipv4\&.dhcp\-client\-id\fR
 .RS 4
 .RE
 .PP
@@ -697,6 +706,11 @@ If left unspecified, the default value "ignore" will be used\&.
 .RE
 .PP
 \fIwifi\-sec\&.pmf\fR
+.RS 4
+If left unspecified, the default value "optional" will be used\&.
+.RE
+.PP
+\fIwifi\-sec\&.fils\fR
 .RS 4
 If left unspecified, the default value "optional" will be used\&.
 .RE
@@ -821,6 +835,15 @@ allows to influence the generated MAC address to use certain vendor OUIs\&. If d
 wifi\&.cloned\-mac\-address\&.
 .RE
 .PP
+\fIwifi\&.backend\fR
+.RS 4
+Specify the Wi\-Fi backend used for the device\&. Currently supported are
+wpa_supplicant
+and
+iwd
+(experimental)\&.
+.RE
+.PP
 \fIwifi\&.scan\-generate\-mac\-address\-mask\fR
 .RS 4
 Like the per\-connection settings
@@ -851,7 +874,7 @@ This section controls NetworkManager\*(Aqs optional connectivity checking functi
 .PP
 \fIuri\fR
 .RS 4
-The URI of a web page to periodically request when connectivity is being checked\&. This page should return the header "X\-NetworkManager\-Status" with a value of "online"\&. Alternatively, it\*(Aqs body content should be set to "NetworkManager is online"\&. The body content check can be controlled by the
+The URI of a web page to periodically request when connectivity is being checked\&. This page should return the header "X\-NetworkManager\-Status" with a value of "online"\&. Alternatively, its body content should be set to "NetworkManager is online"\&. The body content check can be controlled by the
 response
 option\&. If this option is blank or missing, connectivity checking is disabled\&.
 .RE
@@ -1020,13 +1043,6 @@ plugin, if it is available\&. This can be disabled by adding
 no\-ibft\&.
 .RE
 .PP
-\fIifcfg\-suse\fR
-.RS 4
-This plugin is deprecated and its selection has no effect\&. The
-keyfile
-plugin should be used instead\&.
-.RE
-.PP
 \fIifupdown\fR
 .RS 4
 This plugin is used on the Debian and Ubuntu distributions, and reads Ethernet and Wi\-Fi connections from
@@ -1051,6 +1067,13 @@ or to change the plugin order\&.
 Note that ibft plugin uses
 /sbin/iscsiadm
 and thus requires CAP_SYS_ADMIN capability\&.
+.RE
+.PP
+\fIifcfg\-suse\fR, \fIifnet\fR
+.RS 4
+These plugins are deprecated and their selection has no effect\&. The
+keyfile
+plugin should be used instead\&.
 .RE
 .SH "APPENDIX"
 .SS "Device List Format"

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 #ifndef foosddhcpclienthfoo
 #define foosddhcpclienthfoo
 
@@ -128,6 +129,11 @@ int sd_dhcp_client_set_client_id(
 int sd_dhcp_client_set_iaid_duid(
                 sd_dhcp_client *client,
                 uint32_t iaid,
+                uint16_t duid_type,
+                const void *duid,
+                size_t duid_len);
+int sd_dhcp_client_set_duid(
+                sd_dhcp_client *client,
                 uint16_t duid_type,
                 const void *duid,
                 size_t duid_len);
