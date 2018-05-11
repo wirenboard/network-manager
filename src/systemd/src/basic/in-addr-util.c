@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -333,7 +332,6 @@ int in_addr_from_string_auto(const char *s, int *ret_family, union in_addr_union
         return -EINVAL;
 }
 
-#if 0 /* NM_IGNORED */
 int in_addr_ifindex_from_string_auto(const char *s, int *family, union in_addr_union *ret, int *ifindex) {
         const char *suffix;
         int r, ifi = 0;
@@ -374,7 +372,6 @@ int in_addr_ifindex_from_string_auto(const char *s, int *family, union in_addr_u
 
         return r;
 }
-#endif /* NM_IGNORED */
 
 unsigned char in4_addr_netmask_to_prefixlen(const struct in_addr *addr) {
         assert(addr);

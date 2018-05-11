@@ -57,7 +57,7 @@ nm_test_device_init (NMTestDevice *self)
 }
 
 /* We jump over NMDevice's construct/destruct methods, which require NMPlatform
- * and NMSettings to be initialized.
+ * and NMConnectionProvider to be initialized.
  */
 static void
 constructed (GObject *object)

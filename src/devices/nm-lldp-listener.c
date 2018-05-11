@@ -286,21 +286,19 @@ lldp_neighbor_id_hash (gconstpointer ptr)
 }
 
 static int
-lldp_neighbor_id_cmp (const LldpNeighbor *x, const LldpNeighbor *y)
+lldp_neighbor_id_cmp (gconstpointer a, gconstpointer b)
 {
-	NM_CMP_SELF (x, y);
-	NM_CMP_FIELD (x, y, chassis_id_type);
-	NM_CMP_FIELD (x, y, port_id_type);
-	NM_CMP_FIELD_STR0 (x, y, chassis_id);
-	NM_CMP_FIELD_STR0 (x, y, port_id);
-	return 0;
-}
+	const LldpNeighbor *x = a, *y = b;
+	int c;
 
-static int
-lldp_neighbor_id_cmp_p (gconstpointer a, gconstpointer b, gpointer user_data)
-{
-	return lldp_neighbor_id_cmp (*((const LldpNeighbor *const*) a),
-	                             *((const LldpNeighbor *const*) b));
+	if (x->chassis_id_type != y->chassis_id_type)
+		return x->chassis_id_type < y->chassis_id_type ? -1 : 1;
+	if (x->port_id_type != y->port_id_type)
+		return x->port_id_type < y->port_id_type ? -1 : 1;
+	c = g_strcmp0 (x->chassis_id, y->chassis_id);
+	if (c == 0)
+		c = g_strcmp0 (x->port_id, y->port_id);
+	return c < 0 ? -1 : (c > 0 ? 1 : 0);
 }
 
 static gboolean
@@ -840,23 +838,20 @@ GVariant *
 nm_lldp_listener_get_neighbors (NMLldpListener *self)
 {
 	NMLldpListenerPrivate *priv;
+	GVariantBuilder array_builder;
+	GList *neighbors, *iter;
 
 	g_return_val_if_fail (NM_IS_LLDP_LISTENER (self), FALSE);
 
 	priv = NM_LLDP_LISTENER_GET_PRIVATE (self);
 
-	if (G_UNLIKELY (!priv->variant)) {
-		GVariantBuilder array_builder;
-		gs_free LldpNeighbor **neighbors = NULL;
-		guint i, n;
-
+	if (!priv->variant) {
 		g_variant_builder_init (&array_builder, G_VARIANT_TYPE ("aa{sv}"));
-		neighbors = (LldpNeighbor **) nm_utils_hash_keys_to_array (priv->lldp_neighbors,
-		                                                           lldp_neighbor_id_cmp_p,
-		                                                           NULL,
-		                                                           &n);
-		for (i = 0; i < n; i++)
-			g_variant_builder_add_value (&array_builder, lldp_neighbor_to_variant (neighbors[i]));
+		neighbors = g_hash_table_get_keys (priv->lldp_neighbors);
+		neighbors = g_list_sort (neighbors, lldp_neighbor_id_cmp);
+		for (iter = neighbors; iter; iter = iter->next)
+			g_variant_builder_add_value (&array_builder, lldp_neighbor_to_variant (iter->data));
+		g_list_free (neighbors);
 		priv->variant = g_variant_ref_sink (g_variant_builder_end (&array_builder));
 	}
 	return priv->variant;

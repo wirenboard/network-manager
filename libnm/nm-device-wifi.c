@@ -887,9 +887,11 @@ nm_device_wifi_class_init (NMDeviceWifiClass *wifi_class)
 		                     G_PARAM_STATIC_STRINGS));
 
 	/**
-	 * NMDeviceWifi:access-points: (type GPtrArray(NMAccessPoint))
+	 * NMDeviceWifi:access-points:
 	 *
 	 * List of all Wi-Fi access points the device can see.
+	 *
+	 * Element-type: NMAccessPoint
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_ACCESS_POINTS,

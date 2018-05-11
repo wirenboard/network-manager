@@ -38,17 +38,20 @@
 #include "platform/nm-platform-utils.h"
 
 gpointer
-wifi_data_new (const WifiDataClass *klass, int ifindex)
+wifi_data_new (int ifindex, gsize len)
 {
 	WifiData *data;
 
-	nm_assert (klass);
-	nm_assert (klass->struct_size > sizeof (WifiData));
-
-	data = g_malloc0 (klass->struct_size);
-	data->klass = klass;
+	data = g_malloc0 (len);
 	data->ifindex = ifindex;
 	return data;
+}
+
+void
+wifi_data_free (WifiData *data)
+{
+	memset (data, 0, sizeof (*data));
+	g_free (data);
 }
 
 /*****************************************************************************/
@@ -82,14 +85,14 @@ wifi_utils_get_caps (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, NM_WIFI_DEVICE_CAP_NONE);
 
-	return data->caps;
+	return data->caps;	
 }
 
 NM80211Mode
 wifi_utils_get_mode (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, NM_802_11_MODE_UNKNOWN);
-	return data->klass->get_mode (data);
+	return data->get_mode (data);
 }
 
 gboolean
@@ -101,7 +104,7 @@ wifi_utils_set_mode (WifiData *data, const NM80211Mode mode)
 	                      || (mode == NM_802_11_MODE_ADHOC), FALSE);
 
 	/* nl80211 probably doesn't need this */
-	return data->klass->set_mode ? data->klass->set_mode (data, mode) : TRUE;
+	return data->set_mode ? data->set_mode (data, mode) : TRUE;
 }
 
 gboolean
@@ -109,14 +112,14 @@ wifi_utils_set_powersave (WifiData *data, guint32 powersave)
 {
 	g_return_val_if_fail (data != NULL, FALSE);
 
-	return data->klass->set_powersave ? data->klass->set_powersave (data, powersave) : TRUE;
+	return data->set_powersave ? data->set_powersave (data, powersave) : TRUE;
 }
 
 guint32
 wifi_utils_get_freq (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, 0);
-	return data->klass->get_freq (data);
+	return data->get_freq (data);
 }
 
 guint32
@@ -124,7 +127,7 @@ wifi_utils_find_freq (WifiData *data, const guint32 *freqs)
 {
 	g_return_val_if_fail (data != NULL, 0);
 	g_return_val_if_fail (freqs != NULL, 0);
-	return data->klass->find_freq (data, freqs);
+	return data->find_freq (data, freqs);
 }
 
 gboolean
@@ -134,40 +137,38 @@ wifi_utils_get_bssid (WifiData *data, guint8 *out_bssid)
 	g_return_val_if_fail (out_bssid != NULL, FALSE);
 
 	memset (out_bssid, 0, ETH_ALEN);
-	return data->klass->get_bssid (data, out_bssid);
+	return data->get_bssid (data, out_bssid);
 }
 
 guint32
 wifi_utils_get_rate (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, 0);
-	return data->klass->get_rate (data);
+	return data->get_rate (data);
 }
 
 int
 wifi_utils_get_qual (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, 0);
-	return data->klass->get_qual (data);
+	return data->get_qual (data);
 }
 
 gboolean
 wifi_utils_get_wowlan (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, 0);
-
-	if (!data->klass->get_wowlan)
+	if (!data->get_wowlan)
 		return FALSE;
-	return data->klass->get_wowlan (data);
+	return data->get_wowlan (data);
 }
 
 void
-wifi_utils_unref (WifiData *data)
+wifi_utils_deinit (WifiData *data)
 {
 	g_return_if_fail (data != NULL);
-
-	data->klass->deinit (data);
-	g_free (data);
+	data->deinit (data);
+	wifi_data_free (data);
 }
 
 gboolean
@@ -190,8 +191,8 @@ guint32
 wifi_utils_get_mesh_channel (WifiData *data)
 {
 	g_return_val_if_fail (data != NULL, FALSE);
-	g_return_val_if_fail (data->klass->get_mesh_channel != NULL, FALSE);
-	return data->klass->get_mesh_channel (data);
+	g_return_val_if_fail (data->get_mesh_channel != NULL, FALSE);
+	return data->get_mesh_channel (data);
 }
 
 gboolean
@@ -199,24 +200,24 @@ wifi_utils_set_mesh_channel (WifiData *data, guint32 channel)
 {
 	g_return_val_if_fail (data != NULL, FALSE);
 	g_return_val_if_fail (channel <= 13, FALSE);
-	g_return_val_if_fail (data->klass->set_mesh_channel != NULL, FALSE);
-	return data->klass->set_mesh_channel (data, channel);
+	g_return_val_if_fail (data->set_mesh_channel != NULL, FALSE);
+	return data->set_mesh_channel (data, channel);
 }
 
 gboolean
 wifi_utils_set_mesh_ssid (WifiData *data, const guint8 *ssid, gsize len)
 {
 	g_return_val_if_fail (data != NULL, FALSE);
-	g_return_val_if_fail (data->klass->set_mesh_ssid != NULL, FALSE);
-	return data->klass->set_mesh_ssid (data, ssid, len);
+	g_return_val_if_fail (data->set_mesh_ssid != NULL, FALSE);
+	return data->set_mesh_ssid (data, ssid, len);
 }
 
 gboolean
 wifi_utils_indicate_addressing_running (WifiData *data, gboolean running)
 {
 	g_return_val_if_fail (data != NULL, FALSE);
-	if (data->klass->indicate_addressing_running)
-		return data->klass->indicate_addressing_running (data, running);
+	if (data->indicate_addressing_running)
+		return data->indicate_addressing_running (data, running);
 	return FALSE;
 }
 

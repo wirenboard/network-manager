@@ -313,18 +313,16 @@ _set_fcn_precheck_connection_secondaries (const char *value,
 {
 	const GPtrArray *connections;
 	NMConnection *con;
-	gs_free const char **strv0 = NULL;
 	gs_strfreev char **strv = NULL;
 	char **iter;
-	gboolean modified = FALSE;
+	gboolean modified;
 
-	strv0 = nm_utils_strsplit_set (value, " \t,");
-	if (!strv0)
+	strv = nmc_strsplit_set (value, " \t,", 0);
+	if (!strv)
 		return TRUE;
 
 	connections = nm_client_get_connections (nm_cli.client);
 
-	strv = g_strdupv ((char **) strv0);
 	for (iter = strv; *iter; iter++) {
 		if (nm_utils_is_uuid (*iter)) {
 			con = nmc_find_connection (connections, "uuid", *iter, NULL, FALSE);
@@ -474,7 +472,6 @@ get_property_val (NMSetting *setting, const char *prop, NMMetaAccessorGetType ge
 			                                               get_type,
 			                                               show_secrets ? NM_META_ACCESSOR_GET_FLAGS_SHOW_SECRETS : 0,
 			                                               &out_flags,
-			                                               NULL,
 			                                               (gpointer *) &to_free);
 			nm_assert (!out_flags);
 			return to_free ?: g_strdup (value);

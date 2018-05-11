@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -27,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sd-id128.h"
 #include "sd-ipv4acd.h"
 #include "sd-ipv4ll.h"
 

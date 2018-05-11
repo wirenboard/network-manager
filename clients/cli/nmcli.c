@@ -36,6 +36,8 @@
 
 #include "nm-client-utils.h"
 
+#include "nm-utils/nm-hash-utils.h"
+
 #include "polkit-agent.h"
 #include "utils.h"
 #include "common.h"
@@ -184,7 +186,6 @@ usage (void)
 	g_printerr (_("Usage: nmcli [OPTIONS] OBJECT { COMMAND | help }\n"
 	              "\n"
 	              "OPTIONS\n"
-	              "  -o[verview]                                    overview mode (hide default values)\n"
 	              "  -t[erse]                                       terse output\n"
 	              "  -p[retty]                                      pretty output\n"
 	              "  -m[ode] tabular|multiline                      output mode\n"
@@ -296,10 +297,9 @@ process_command_line (NmCli *nmc, int argc, char **argv)
 			break;
 
 		if (argc == 1 && nmc->complete) {
-			nmc_complete_strings (argv[0], "--terse", "--pretty", "--mode", "--overview",
-			                               "--colors", "--escape",
-			                               "--fields", "--nocheck", "--get-values",
-			                               "--wait", "--version", "--help", NULL);
+			nmc_complete_strings (argv[0], "--terse", "--pretty", "--mode", "--colors", "--escape",
+			                           "--fields", "--nocheck", "--get-values",
+			                            "--wait", "--version", "--help", NULL);
 		}
 
 		if (argv[0][1] == '-' && argv[0][2] == '\0') {
@@ -308,9 +308,7 @@ process_command_line (NmCli *nmc, int argc, char **argv)
 			break;
 		}
 
-		if (matches_arg (nmc, &argc, &argv, "-overview", NULL)) {
-			nmc->nmc_config_mutable.overview = TRUE;
-		} else if (matches_arg (nmc, &argc, &argv, "-terse", NULL)) {
+		if (matches_arg (nmc, &argc, &argv, "-terse", NULL)) {
 			if (nmc->nmc_config.print_output == NMC_PRINT_TERSE) {
 				g_string_printf (nmc->return_text, _("Error: Option '--terse' is specified the second time."));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
@@ -418,10 +416,6 @@ process_command_line (NmCli *nmc, int argc, char **argv)
 
 		next_arg (nmc, &argc, &argv, NULL);
 	}
-
-	/* Ignore --overview when fields are set explicitly */
-	if (nmc->required_fields)
-		nmc->nmc_config_mutable.overview = FALSE;
 
 	/* Now run the requested command */
 	nmc_do_cmd (nmc, nmcli_cmds, *argv, argc, argv);
@@ -634,6 +628,8 @@ main (int argc, char *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 #endif
+
+	nm_g_type_init ();
 
 	/* Save terminal settings */
 	tcgetattr (STDIN_FILENO, &termios_orig);

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 #pragma once
 
 /***
@@ -26,77 +25,89 @@
 /* BE */
 
 static inline uint16_t unaligned_read_be16(const void *_u) {
-        const struct __attribute__((packed, may_alias)) { uint16_t x; } *u = _u;
+        const uint8_t *u = _u;
 
-        return be16toh(u->x);
+        return (((uint16_t) u[0]) << 8) |
+                ((uint16_t) u[1]);
 }
 
 static inline uint32_t unaligned_read_be32(const void *_u) {
-        const struct __attribute__((packed, may_alias)) { uint32_t x; } *u = _u;
+        const uint8_t *u = _u;
 
-        return be32toh(u->x);
+        return (((uint32_t) unaligned_read_be16(u)) << 16) |
+                ((uint32_t) unaligned_read_be16(u + 2));
 }
 
 static inline uint64_t unaligned_read_be64(const void *_u) {
-        const struct __attribute__((packed, may_alias)) { uint64_t x; } *u = _u;
+        const uint8_t *u = _u;
 
-        return be64toh(u->x);
+        return (((uint64_t) unaligned_read_be32(u)) << 32) |
+                ((uint64_t) unaligned_read_be32(u + 4));
 }
 
 static inline void unaligned_write_be16(void *_u, uint16_t a) {
-        struct __attribute__((packed, may_alias)) { uint16_t x; } *u = _u;
+        uint8_t *u = _u;
 
-        u->x = be16toh(a);
+        u[0] = (uint8_t) (a >> 8);
+        u[1] = (uint8_t) a;
 }
 
 static inline void unaligned_write_be32(void *_u, uint32_t a) {
-        struct __attribute__((packed, may_alias)) { uint32_t x; } *u = _u;
+        uint8_t *u = _u;
 
-        u->x = be32toh(a);
+        unaligned_write_be16(u, (uint16_t) (a >> 16));
+        unaligned_write_be16(u + 2, (uint16_t) a);
 }
 
 static inline void unaligned_write_be64(void *_u, uint64_t a) {
-        struct __attribute__((packed, may_alias)) { uint64_t x; } *u = _u;
+        uint8_t *u = _u;
 
-        u->x = be64toh(a);
+        unaligned_write_be32(u, (uint32_t) (a >> 32));
+        unaligned_write_be32(u + 4, (uint32_t) a);
 }
 
 /* LE */
 
 static inline uint16_t unaligned_read_le16(const void *_u) {
-        const struct __attribute__((packed, may_alias)) { uint16_t x; } *u = _u;
+        const uint8_t *u = _u;
 
-        return le16toh(u->x);
+        return (((uint16_t) u[1]) << 8) |
+                ((uint16_t) u[0]);
 }
 
 static inline uint32_t unaligned_read_le32(const void *_u) {
-        const struct __attribute__((packed, may_alias)) { uint32_t x; } *u = _u;
+        const uint8_t *u = _u;
 
-        return le32toh(u->x);
+        return (((uint32_t) unaligned_read_le16(u + 2)) << 16) |
+                ((uint32_t) unaligned_read_le16(u));
 }
 
 static inline uint64_t unaligned_read_le64(const void *_u) {
-        const struct __attribute__((packed, may_alias)) { uint64_t x; } *u = _u;
+        const uint8_t *u = _u;
 
-        return le64toh(u->x);
+        return (((uint64_t) unaligned_read_le32(u + 4)) << 32) |
+                ((uint64_t) unaligned_read_le32(u));
 }
 
 static inline void unaligned_write_le16(void *_u, uint16_t a) {
-        struct __attribute__((packed, may_alias)) { uint16_t x; } *u = _u;
+        uint8_t *u = _u;
 
-        u->x = le16toh(a);
+        u[0] = (uint8_t) a;
+        u[1] = (uint8_t) (a >> 8);
 }
 
 static inline void unaligned_write_le32(void *_u, uint32_t a) {
-        struct __attribute__((packed, may_alias)) { uint32_t x; } *u = _u;
+        uint8_t *u = _u;
 
-        u->x = le32toh(a);
+        unaligned_write_le16(u, (uint16_t) a);
+        unaligned_write_le16(u + 2, (uint16_t) (a >> 16));
 }
 
 static inline void unaligned_write_le64(void *_u, uint64_t a) {
-        struct __attribute__((packed, may_alias)) { uint64_t x; } *u = _u;
+        uint8_t *u = _u;
 
-        u->x = le64toh(a);
+        unaligned_write_le32(u, (uint32_t) a);
+        unaligned_write_le32(u + 4, (uint32_t) (a >> 32));
 }
 
 #if __BYTE_ORDER == __BIG_ENDIAN

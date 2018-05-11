@@ -147,12 +147,16 @@ static gboolean
 verify (NMSetting *setting, NMConnection *connection, GError **error)
 {
 	NMSettingMacvlanPrivate *priv = NM_SETTING_MACVLAN_GET_PRIVATE (setting);
+	NMSettingConnection *s_con;
 	NMSettingWired *s_wired;
 
-	if (connection)
+	if (connection) {
+		s_con = nm_connection_get_setting_connection (connection);
 		s_wired = nm_connection_get_setting_wired (connection);
-	else
+	} else {
+		s_con = NULL;
 		s_wired = NULL;
+	}
 
 	if (priv->parent) {
 		if (   !nm_utils_is_uuid (priv->parent)

@@ -32,8 +32,6 @@
 
 G_BEGIN_DECLS
 
-#define NM_IP_ADDRESS_ATTRIBUTE_LABEL        "label"
-
 typedef struct NMIPAddress NMIPAddress;
 
 GType        nm_ip_address_get_type            (void);

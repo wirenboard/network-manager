@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -20,12 +19,10 @@
 
 #include "nm-sd-adapt.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 #include "fd-util.h"
-#include "fs-util.h"
 #include "hexdecoct.h"
 #include "id128-util.h"
 #include "io-util.h"
@@ -123,7 +120,7 @@ int id128_read_fd(int fd, Id128Format f, sd_id128_t *ret) {
                 if (buffer[32] != '\n')
                         return -EINVAL;
 
-                _fallthrough_;
+                /* fall through */
         case 32: /* plain UUID without trailing newline */
                 if (f == ID128_UUID)
                         return -EINVAL;
@@ -135,7 +132,7 @@ int id128_read_fd(int fd, Id128Format f, sd_id128_t *ret) {
                 if (buffer[36] != '\n')
                         return -EINVAL;
 
-                _fallthrough_;
+                /* fall through */
         case 36: /* RFC UUID without trailing newline */
                 if (f == ID128_PLAIN)
                         return -EINVAL;
@@ -186,13 +183,9 @@ int id128_write_fd(int fd, Id128Format f, sd_id128_t id, bool do_sync) {
         if (do_sync) {
                 if (fsync(fd) < 0)
                         return -errno;
-
-                r = fsync_directory_of_file(fd);
-                if (r < 0)
-                        return r;
         }
 
-        return 0;
+        return r;
 }
 
 int id128_write(const char *p, Id128Format f, sd_id128_t id, bool do_sync) {

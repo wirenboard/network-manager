@@ -25,6 +25,10 @@
 #include "NetworkManager.h"
 #include "nm-dbus-compat.h"
 
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
+#include "nm-dbus-glib-types.h"
+#endif
+
 #include "nm-test-libnm-utils.h"
 
 /*****************************************************************************/
@@ -54,7 +58,8 @@ name_exists (GDBusConnection *c, const char *name)
 	return exists;
 }
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
+
 static DBusGProxy *
 _libdbus_create_proxy_test (DBusGConnection *bus)
 {
@@ -70,6 +75,7 @@ _libdbus_create_proxy_test (DBusGConnection *bus)
 
 	return proxy;
 }
+
 #endif
 
 NMTstcServiceInfo *
@@ -115,7 +121,7 @@ nmtstc_service_init (void)
 	                                     NULL, &error);
 	g_assert_no_error (error);
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
 	info->libdbus.bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
 	g_assert_no_error (error);
 	g_assert (info->libdbus.bus);
@@ -142,7 +148,7 @@ nmtstc_service_cleanup (NMTstcServiceInfo *info)
 	g_object_unref (info->bus);
 	nm_close (info->keepalive_fd);
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
 	g_clear_pointer (&info->libdbus.bus, dbus_g_connection_unref);
 #endif
 
@@ -150,7 +156,8 @@ nmtstc_service_cleanup (NMTstcServiceInfo *info)
 	g_free (info);
 }
 
-#if !((NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB)
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB)
+
 typedef struct {
 	GMainLoop *loop;
 	const char *ifname;
@@ -263,7 +270,8 @@ nmtstc_service_add_wired_device (NMTstcServiceInfo *sinfo, NMClient *client,
 {
 	return add_device_common (sinfo, client, "AddWiredDevice", ifname, hwaddr, subchannels);
 }
-#endif
+
+#endif /* NM_NETWORKMANAGER_COMPILATION_LIB */
 
 void
 nmtstc_service_add_connection (NMTstcServiceInfo *sinfo,
@@ -271,7 +279,7 @@ nmtstc_service_add_connection (NMTstcServiceInfo *sinfo,
                                gboolean verify_connection,
                                char **out_path)
 {
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
 	gs_unref_hashtable GHashTable *new_settings = NULL;
 	gboolean success;
 	gs_free_error GError *error = NULL;
@@ -345,7 +353,7 @@ nmtstc_service_update_connection (NMTstcServiceInfo *sinfo,
 		path = nm_connection_get_path (connection);
 	g_assert (path);
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
 	{
 		gs_unref_hashtable GHashTable *new_settings = NULL;
 		gboolean success;
@@ -406,7 +414,8 @@ nmtstc_service_update_connection_variant (NMTstcServiceInfo *sinfo,
 
 /*****************************************************************************/
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
+
 NMClient *
 nmtstc_nm_client_new (void)
 {
@@ -452,6 +461,7 @@ nmtstc_nm_remote_settings_new (void)
 
 	return settings;
 }
-#endif
+
+#endif /* NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY */
 
 /*****************************************************************************/

@@ -44,6 +44,7 @@ void *_nm_jansson_json_true;
 void *_nm_jansson_json_object_size;
 void *_nm_jansson_json_object_set_new;
 void *_nm_jansson_json_object_iter;
+void *_nm_jansson_json_object_iter_at;
 void *_nm_jansson_json_integer_value;
 void *_nm_jansson_json_string_value;
 
@@ -79,6 +80,7 @@ bind_symbols (void *handle)
 	TRY_BIND_SYMBOL (json_object_size);
 	TRY_BIND_SYMBOL (json_object_set_new);
 	TRY_BIND_SYMBOL (json_object_iter);
+	TRY_BIND_SYMBOL (json_object_iter_at);
 	TRY_BIND_SYMBOL (json_integer_value);
 	TRY_BIND_SYMBOL (json_string_value);
 
@@ -94,7 +96,6 @@ nm_jansson_load (void)
 		MISSING,
 	} state = UNKNOWN;
 	void *handle;
-	int mode;
 
 	if (G_LIKELY (state != UNKNOWN))
 		goto out;
@@ -103,13 +104,7 @@ nm_jansson_load (void)
 	if (!bind_symbols (RTLD_DEFAULT))
 		goto out;
 
-	mode = RTLD_LAZY | RTLD_LOCAL | RTLD_NODELETE | RTLD_DEEPBIND;
-#if defined (ASAN_BUILD)
-	/* Address sanitizer is incompatible with RTLD_DEEPBIND. */
-	mode &= ~RTLD_DEEPBIND;
-#endif
-	handle = dlopen (JANSSON_SONAME, mode);
-
+	handle = dlopen (JANSSON_SONAME, RTLD_LAZY | RTLD_LOCAL | RTLD_NODELETE | RTLD_DEEPBIND);
 	if (!handle)
 		goto out;
 

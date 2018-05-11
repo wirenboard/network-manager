@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -196,7 +195,8 @@ finish:
 
 finish_force_next:
         s[sz] = 0;
-        *ret = TAKE_PTR(s);
+        *ret = s;
+        s = NULL;
 
         return 1;
 }

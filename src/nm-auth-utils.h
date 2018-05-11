@@ -23,9 +23,14 @@
 
 #include "nm-connection.h"
 
-#include "nm-auth-manager.h"
-
 typedef struct NMAuthChain NMAuthChain;
+
+typedef enum {
+	NM_AUTH_CALL_RESULT_UNKNOWN,
+	NM_AUTH_CALL_RESULT_YES,
+	NM_AUTH_CALL_RESULT_AUTH,
+	NM_AUTH_CALL_RESULT_NO,
+} NMAuthCallResult;
 
 typedef void (*NMAuthChainResultFunc) (NMAuthChain *chain,
                                        GError *error,
@@ -50,6 +55,12 @@ void nm_auth_chain_set_data (NMAuthChain *chain,
                              gpointer data,
                              GDestroyNotify data_destroy);
 
+void nm_auth_chain_set_data_ulong (NMAuthChain *chain,
+                                   const char *tag,
+                                   gulong data);
+
+gulong nm_auth_chain_get_data_ulong (NMAuthChain *chain, const char *tag);
+
 NMAuthCallResult nm_auth_chain_get_result (NMAuthChain *chain,
                                            const char *permission);
 
@@ -57,20 +68,14 @@ void nm_auth_chain_add_call (NMAuthChain *chain,
                              const char *permission,
                              gboolean allow_interaction);
 
-void nm_auth_chain_destroy (NMAuthChain *chain);
-
-NMAuthSubject *nm_auth_chain_get_subject (NMAuthChain *self);
+void nm_auth_chain_unref (NMAuthChain *chain);
 
 /* Caller must free returned error description */
 gboolean nm_auth_is_subject_in_acl (NMConnection *connection,
                                     NMAuthSubject *subect,
                                     char **out_error_desc);
 
-gboolean nm_auth_is_subject_in_acl_set_error (NMConnection *connection,
-                                              NMAuthSubject *subject,
-                                              GQuark err_domain,
-                                              int err_code,
-                                              GError **error);
+NMAuthSubject *nm_auth_chain_get_subject (NMAuthChain *self);
 
 #endif /* __NETWORKMANAGER_MANAGER_AUTH_H__ */
 

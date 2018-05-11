@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -193,7 +192,9 @@ static int parse_options(const uint8_t options[], size_t buflen, uint8_t *overlo
                                 if (!ascii_is_valid(string))
                                         return -EINVAL;
 
-                                free_and_replace(*error_message, string);
+                                free(*error_message);
+                                *error_message = string;
+                                string = NULL;
                         }
 
                         break;
@@ -255,8 +256,10 @@ int dhcp_option_parse(DHCPMessage *message, size_t len, dhcp_option_callback_t c
         if (message_type == 0)
                 return -ENOMSG;
 
-        if (_error_message && IN_SET(message_type, DHCP_NAK, DHCP_DECLINE))
-                *_error_message = TAKE_PTR(error_message);
+        if (_error_message && IN_SET(message_type, DHCP_NAK, DHCP_DECLINE)) {
+                *_error_message = error_message;
+                error_message = NULL;
+        }
 
         return message_type;
 }

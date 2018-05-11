@@ -41,7 +41,9 @@
 #define NM_DEVICE_IP_TUNNEL_OUTPUT_KEY          "output-key"
 #define NM_DEVICE_IP_TUNNEL_ENCAPSULATION_LIMIT "encapsulation-limit"
 #define NM_DEVICE_IP_TUNNEL_FLOW_LABEL          "flow-label"
-#define NM_DEVICE_IP_TUNNEL_FLAGS               "flags"
+
+/* defined in the parent class, but exposed on D-Bus by the subclass. */
+#define NM_DEVICE_IP_TUNNEL_PARENT              NM_DEVICE_PARENT
 
 typedef struct _NMDeviceIPTunnel NMDeviceIPTunnel;
 typedef struct _NMDeviceIPTunnelClass NMDeviceIPTunnelClass;

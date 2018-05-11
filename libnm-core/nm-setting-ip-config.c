@@ -526,14 +526,6 @@ nm_ip_address_set_prefix (NMIPAddress *address,
 	address->prefix = prefix;
 }
 
-const char **
-_nm_ip_address_get_attribute_names (const NMIPAddress *address, gboolean sorted, guint *out_length)
-{
-	nm_assert (address);
-
-	return nm_utils_strdict_get_keys (address->attributes, sorted, out_length);
-}
-
 /**
  * nm_ip_address_get_attribute_names:
  * @address: the #NMIPAddress
@@ -545,12 +537,22 @@ _nm_ip_address_get_attribute_names (const NMIPAddress *address, gboolean sorted,
 char **
 nm_ip_address_get_attribute_names (NMIPAddress *address)
 {
-	const char **names;
+	GHashTableIter iter;
+	const char *key;
+	GPtrArray *names;
 
-	g_return_val_if_fail (address, NULL);
+	g_return_val_if_fail (address != NULL, NULL);
 
-	names = _nm_ip_address_get_attribute_names (address, TRUE, NULL);
-	return nm_utils_strv_make_deep_copied_nonnull (names);
+	names = g_ptr_array_new ();
+
+	if (address->attributes) {
+		g_hash_table_iter_init (&iter, address->attributes);
+		while (g_hash_table_iter_next (&iter, (gpointer *) &key, NULL))
+			g_ptr_array_add (names, g_strdup (key));
+	}
+	g_ptr_array_add (names, NULL);
+
+	return (char **) g_ptr_array_free (names, FALSE);
 }
 
 /**
@@ -591,7 +593,7 @@ nm_ip_address_set_attribute (NMIPAddress *address, const char *name, GVariant *v
 	g_return_if_fail (strcmp (name, "address") != 0 && strcmp (name, "prefix") != 0);
 
 	if (!address->attributes) {
-		address->attributes = g_hash_table_new_full (nm_str_hash, g_str_equal,
+		address->attributes = g_hash_table_new_full (g_str_hash, g_str_equal,
 		                                             g_free, (GDestroyNotify) g_variant_unref);
 	}
 
@@ -1129,14 +1131,33 @@ _nm_ip_route_get_attributes_direct (NMIPRoute *route)
  *
  * Returns: (array length=out_length) (transfer container): a %NULL-terminated array
  *   of attribute names or %NULL if there are no attributes. The order of the returned
- *   names depends on @sorted.
+ *   names is undefined.
  **/
 const char **
 _nm_ip_route_get_attribute_names (const NMIPRoute *route, gboolean sorted, guint *out_length)
 {
-	nm_assert (route);
+	const char **names;
+	guint length;
 
-	return nm_utils_strdict_get_keys (route->attributes, sorted, out_length);
+	g_return_val_if_fail (route != NULL, NULL);
+
+	if (   !route->attributes
+	    || !g_hash_table_size (route->attributes)) {
+		NM_SET_OUT (out_length, 0);
+		return NULL;
+	}
+
+	names = (const char **) g_hash_table_get_keys_as_array (route->attributes, &length);
+	if (   sorted
+	    && length > 1) {
+		g_qsort_with_data (names,
+		                   length,
+		                   sizeof (char *),
+		                   nm_strcmp_p_with_data,
+		                   NULL);
+	}
+	NM_SET_OUT (out_length, length);
+	return names;
 }
 
 /**
@@ -1150,12 +1171,21 @@ _nm_ip_route_get_attribute_names (const NMIPRoute *route, gboolean sorted, guint
 char **
 nm_ip_route_get_attribute_names (NMIPRoute *route)
 {
-	const char **names;
+	char **names;
+	guint i, len;
 
 	g_return_val_if_fail (route != NULL, NULL);
 
-	names = _nm_ip_route_get_attribute_names (route, TRUE, NULL);
-	return nm_utils_strv_make_deep_copied_nonnull (names);
+	names = (char **) _nm_ip_route_get_attribute_names (route, TRUE, &len);
+	if (!names)
+		return g_new0 (char *, 1);
+
+	nm_assert (len > 0 && names && names[len] == NULL);
+	for (i = 0; i < len; i++) {
+		nm_assert (names[i]);
+		names[i] = g_strdup (names[i]);
+	}
+	return names;
 }
 
 /**
@@ -1197,7 +1227,7 @@ nm_ip_route_set_attribute (NMIPRoute *route, const char *name, GVariant *value)
 	                  && strcmp (name, "next-hop") != 0 && strcmp (name, "metric") != 0);
 
 	if (!route->attributes) {
-		route->attributes = g_hash_table_new_full (nm_str_hash, g_str_equal,
+		route->attributes = g_hash_table_new_full (g_str_hash, g_str_equal,
 		                                           g_free, (GDestroyNotify) g_variant_unref);
 	}
 
@@ -2523,7 +2553,7 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 			return FALSE;
 		}
 
-		label = nm_ip_address_get_attribute (addr, NM_IP_ADDRESS_ATTRIBUTE_LABEL);
+		label = nm_ip_address_get_attribute (addr, "label");
 		if (label) {
 			if (!g_variant_is_of_type (label, G_VARIANT_TYPE_STRING)) {
 				g_set_error (error,
@@ -2930,10 +2960,7 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 	/**
 	 * NMSettingIPConfig:dns-search:
 	 *
-	 * Array of DNS search domains. Domains starting with a tilde ('~')
-	 * are considered 'routing' domains and are used only to decide the
-	 * interface over which a query must be forwarded; they are not used
-	 * to complete unqualified host names.
+	 * Array of DNS search domains.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_DNS_SEARCH,
@@ -2993,9 +3020,11 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 	                       G_PARAM_STATIC_STRINGS));
 
 	/**
-	 * NMSettingIPConfig:addresses: (type GPtrArray(NMIPAddress))
+	 * NMSettingIPConfig:addresses:
 	 *
 	 * Array of IP addresses.
+	 *
+	 * Element-Type: NMIPAddress
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_ADDRESSES,
@@ -3032,9 +3061,11 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 	                                     NULL);
 
 	/**
-	 * NMSettingIPConfig:routes: (type GPtrArray(NMIPRoute))
+	 * NMSettingIPConfig:routes:
 	 *
 	 * Array of IP routes.
+	 *
+	 * Element-Type: NMIPRoute
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_ROUTES,
@@ -3201,10 +3232,8 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 	 * addresses on the network.  If an address conflict is detected, the
 	 * activation will fail.  A zero value means that no duplicate address
 	 * detection is performed, -1 means the default value (either configuration
-	 * ipvx.dad-timeout override or zero).  A value greater than zero is a
+	 * ipvx.dad-timeout override or 3 seconds).  A value greater than zero is a
 	 * timeout in milliseconds.
-	 *
-	 * The property is currently implemented only for IPv4.
 	 *
 	 * Since: 1.2
 	 **/

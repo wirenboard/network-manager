@@ -31,10 +31,7 @@ typedef struct _NMUtilsEnumValueInfo {
 	int value;
 } NMUtilsEnumValueInfo;
 
-char *_nm_utils_enum_to_str_full (GType type,
-                                  int value,
-                                  const char *sep,
-                                  const NMUtilsEnumValueInfo *value_infos);
+char *_nm_utils_enum_to_str_full (GType type, int value, const char *sep);
 gboolean _nm_utils_enum_from_str_full (GType type,
                                        const char *str,
                                        int *out_value,

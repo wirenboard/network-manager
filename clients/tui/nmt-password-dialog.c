@@ -144,12 +144,12 @@ nmt_password_dialog_constructed (GObject *object)
 		NMSecretAgentSimpleSecret *secret = priv->secrets->pdata[i];
 		NmtNewtEntryFlags flags;
 
-		widget = nmt_newt_label_new (secret->pretty_name);
+		widget = nmt_newt_label_new (secret->name);
 		nmt_newt_grid_add (secret_grid, widget, 0, i);
 		nmt_newt_widget_set_padding (widget, 4, 0, 1, 0);
 
 		flags = NMT_NEWT_ENTRY_NONEMPTY;
-		if (secret->is_secret)
+		if (secret->password)
 			flags |= NMT_NEWT_ENTRY_PASSWORD;
 		widget = nmt_newt_entry_new (30, flags);
 		if (secret->value)

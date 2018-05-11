@@ -25,10 +25,5 @@
     <method name="SetState">
       <arg name="state" type="u" direction="in"/>
     </method>
-
-    <method name="SetIfindex">
-      <arg name="ifindex" type="i" direction="in"/>
-    </method>
-
   </interface>
 </node>

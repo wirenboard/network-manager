@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -290,7 +289,8 @@ static int ipv4acd_on_timeout(sd_event_source *s, uint64_t usec, void *userdata)
                         break;
                 }
 
-                _fallthrough_;
+                /* fall through */
+
         case IPV4ACD_STATE_WAITING_ANNOUNCE:
                 /* Send announcement packet */
                 r = arp_send_announcement(acd->fd, acd->ifindex, acd->address, &acd->mac_addr);

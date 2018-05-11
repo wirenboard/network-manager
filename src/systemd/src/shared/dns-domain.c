@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -302,7 +301,8 @@ int dns_label_escape_new(const char *p, size_t l, char **ret) {
         if (r < 0)
                 return r;
 
-        *ret = TAKE_PTR(s);
+        *ret = s;
+        s = NULL;
 
         return r;
 }
@@ -609,7 +609,8 @@ int dns_name_endswith(const char *name, const char *suffix) {
 
                         /* Not the same, let's jump back, and try with the next label again */
                         s = suffix;
-                        n = TAKE_PTR(saved_n);
+                        n = saved_n;
+                        saved_n = NULL;
                 }
         }
 }
@@ -700,26 +701,23 @@ int dns_name_change_suffix(const char *name, const char *old_suffix, const char 
 }
 
 int dns_name_between(const char *a, const char *b, const char *c) {
+        int n;
+
         /* Determine if b is strictly greater than a and strictly smaller than c.
            We consider the order of names to be circular, so that if a is
            strictly greater than c, we consider b to be between them if it is
            either greater than a or smaller than c. This is how the canonical
            DNS name order used in NSEC records work. */
 
-        if (dns_name_compare_func(a, c) < 0)
-                /*
-                   a and c are properly ordered:
-                   a<---b--->c
-                */
+        n = dns_name_compare_func(a, c);
+        if (n == 0)
+                return -EINVAL;
+        else if (n < 0)
+                /*       a<---b--->c       */
                 return dns_name_compare_func(a, b) < 0 &&
                        dns_name_compare_func(b, c) < 0;
         else
-                /*
-                   a and c are equal or 'reversed':
-                   <--b--c         a----->
-                   or:
-                   <-----c         a--b-->
-                */
+                /* <--b--c         a--b--> */
                 return dns_name_compare_func(b, c) < 0 ||
                        dns_name_compare_func(a, b) < 0;
 }
@@ -969,12 +967,6 @@ bool dns_srv_type_is_valid(const char *name) {
         }
 
         return c == 2; /* exactly two labels */
-}
-
-bool dnssd_srv_type_is_valid(const char *name) {
-        return dns_srv_type_is_valid(name) &&
-                ((dns_name_endswith(name, "_tcp") > 0) ||
-                 (dns_name_endswith(name, "_udp") > 0)); /* Specific to DNS-SD. RFC 6763, Section 7 */
 }
 
 bool dns_service_name_is_valid(const char *name) {

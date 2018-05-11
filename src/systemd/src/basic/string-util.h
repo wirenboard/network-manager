@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 #pragma once
 
 /***
@@ -52,15 +51,15 @@ static inline bool streq_ptr(const char *a, const char *b) {
 }
 
 static inline const char* strempty(const char *s) {
-        return s ?: "";
+        return s ? s : "";
 }
 
 static inline const char* strnull(const char *s) {
-        return s ?: "(null)";
+        return s ? s : "(null)";
 }
 
 static inline const char *strna(const char *s) {
-        return s ?: "n/a";
+        return s ? s : "n/a";
 }
 
 static inline bool isempty(const char *p) {
@@ -134,19 +133,7 @@ char *strjoin_real(const char *x, ...) _sentinel_;
 
 char *strstrip(char *s);
 char *delete_chars(char *s, const char *bad);
-char *delete_trailing_chars(char *s, const char *bad);
 char *truncate_nl(char *s);
-
-static inline char *skip_leading_chars(const char *s, const char *bad) {
-
-        if (!s)
-                return NULL;
-
-        if (!bad)
-                bad = WHITESPACE;
-
-        return (char*) s + strspn(s, bad);
-}
 
 char ascii_tolower(char x);
 char *ascii_strlower(char *s);
@@ -177,11 +164,9 @@ char* strshorten(char *s, size_t l);
 
 char *strreplace(const char *text, const char *old_string, const char *new_string);
 
-char *strip_tab_ansi(char **ibuf, size_t *_isz, size_t highlight[2]);
+char *strip_tab_ansi(char **p, size_t *l);
 
-char *strextend_with_separator(char **x, const char *separator, ...) _sentinel_;
-
-#define strextend(x, ...) strextend_with_separator(x, NULL, __VA_ARGS__)
+char *strextend(char **x, ...) _sentinel_;
 
 char *strrep(const char *s, unsigned n);
 

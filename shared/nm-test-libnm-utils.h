@@ -22,10 +22,6 @@
 
 #include "nm-utils/nm-test-utils.h"
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
-#include "nm-dbus-glib-types.h"
-#endif
-
 /*****************************************************************************/
 
 typedef struct {
@@ -33,7 +29,7 @@ typedef struct {
 	GDBusProxy *proxy;
 	GPid pid;
 	int keepalive_fd;
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
 	struct {
 		DBusGConnection *bus;
 	} libdbus;
@@ -58,15 +54,7 @@ static inline void _nmtstc_auto_service_cleanup (NMTstcServiceInfo **info)
 
 /*****************************************************************************/
 
-#if (NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_GLIB
-
-#include "nm-client.h"
-#include "nm-remote-settings.h"
-
-NMClient *nmtstc_nm_client_new (void);
-NMRemoteSettings *nmtstc_nm_remote_settings_new (void);
-
-#else
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB)
 
 NMDevice *nmtstc_service_add_device (NMTstcServiceInfo *info,
                                      NMClient *client,
@@ -79,9 +67,17 @@ NMDevice * nmtstc_service_add_wired_device (NMTstcServiceInfo *sinfo,
                                             const char *hwaddr,
                                             const char **subchannels);
 
-#endif
+#endif /* NM_NETWORKMANAGER_COMPILATION_LIB */
 
-/*****************************************************************************/
+#if ((NETWORKMANAGER_COMPILATION) == NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY)
+
+#include "nm-client.h"
+#include "nm-remote-settings.h"
+
+NMClient *nmtstc_nm_client_new (void);
+NMRemoteSettings *nmtstc_nm_remote_settings_new (void);
+
+#endif /* NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY */
 
 void nmtstc_service_add_connection (NMTstcServiceInfo *sinfo,
                                     NMConnection *connection,

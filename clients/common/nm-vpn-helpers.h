@@ -19,6 +19,8 @@
 #ifndef __NM_VPN_HELPERS_H__
 #define __NM_VPN_HELPERS_H__
 
+#include "NetworkManager.h"
+
 typedef struct {
 	const char *name;
 	const char *ui_name;

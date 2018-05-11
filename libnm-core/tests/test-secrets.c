@@ -651,7 +651,8 @@ test_update_secrets_null_setting_name_with_setting_hash (void)
 
 	secrets = build_wep_secrets (wepkey);
 
-	NMTST_EXPECT_LIBNM_CRITICAL (NMTST_G_RETURN_MSG (setting_name != NULL || full_connection));
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL,
+	                       NMTST_G_RETURN_MSG (setting_name != NULL || full_connection));
 	success = nm_connection_update_secrets (connection, NULL, secrets, &error);
 	g_test_assert_expected_messages ();
 	g_assert_no_error (error);

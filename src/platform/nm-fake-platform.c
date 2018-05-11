@@ -938,6 +938,7 @@ wifi_find_frequency (NMPlatform *platform, int ifindex, const guint32 *freqs)
 static void
 wifi_indicate_addressing_running (NMPlatform *platform, int ifindex, gboolean running)
 {
+	;
 }
 
 static guint32

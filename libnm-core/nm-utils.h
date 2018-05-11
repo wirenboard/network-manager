@@ -233,19 +233,19 @@ char * nm_utils_format_variant_attributes (GHashTable *attributes,
 
 /*****************************************************************************/
 
-NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_10_2
 NMTCQdisc *nm_utils_tc_qdisc_from_str      (const char *str, GError **error);
-NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_10_2
 char *nm_utils_tc_qdisc_to_str             (NMTCQdisc *qdisc, GError **error);
 
-NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_10_2
 NMTCAction *nm_utils_tc_action_from_str    (const char *str, GError **error);
-NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_10_2
 char *nm_utils_tc_action_to_str            (NMTCAction *action, GError **error);
 
-NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_10_2
 NMTCTfilter *nm_utils_tc_tfilter_from_str  (const char *str, GError **error);
-NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_10_2
 char *nm_utils_tc_tfilter_to_str           (NMTCTfilter *tfilter, GError **error);
 
 G_END_DECLS

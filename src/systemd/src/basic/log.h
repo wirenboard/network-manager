@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 #pragma once
 
 /***
@@ -20,16 +19,18 @@
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <sys/signalfd.h>
+#include <sys/socket.h>
 #include <syslog.h>
 
-#include "macro.h"
+#include "sd-id128.h"
 
-/* Some structures we reference but don't want to pull in headers for */
-struct iovec;
-struct signalfd_siginfo;
+#include "macro.h"
+#include "process-util.h"
 
 typedef enum LogRealm {
         LOG_REALM_SYSTEMD,
@@ -50,6 +51,7 @@ typedef enum LogTarget{
         LOG_TARGET_SYSLOG,
         LOG_TARGET_SYSLOG_OR_KMSG,
         LOG_TARGET_AUTO, /* console if stderr is tty, JOURNAL_OR_KMSG otherwise */
+        LOG_TARGET_SAFE, /* console if stderr is tty, KMSG otherwise */
         LOG_TARGET_NULL,
         _LOG_TARGET_MAX,
         _LOG_TARGET_INVALID = -1
@@ -95,6 +97,11 @@ int log_get_max_level_realm(LogRealm realm) _pure_;
 int log_open(void);
 void log_close(void);
 void log_forget_fds(void);
+
+void log_close_syslog(void);
+void log_close_journal(void);
+void log_close_kmsg(void);
+void log_close_console(void);
 
 void log_parse_environment_realm(LogRealm realm);
 #define log_parse_environment() \
@@ -149,6 +156,19 @@ int log_object_internal(
                 const char *extra,
                 const char *format, ...) _printf_(10,11);
 
+int log_object_internalv(
+                int level,
+                int error,
+                const char *file,
+                int line,
+                const char *func,
+                const char *object_field,
+                const char *object,
+                const char *extra_field,
+                const char *extra,
+                const char *format,
+                va_list ap) _printf_(10,0);
+
 int log_struct_internal(
                 int level,
                 int error,
@@ -165,8 +185,8 @@ int log_oom_internal(
 
 int log_format_iovec(
                 struct iovec *iovec,
-                size_t iovec_len,
-                size_t *n,
+                unsigned iovec_len,
+                unsigned *n,
                 bool newline_separator,
                 int error,
                 const char *format,
@@ -178,7 +198,7 @@ int log_struct_iovec_internal(
                 const char *file,
                 int line,
                 const char *func,
-                const struct iovec *input_iovec,
+                const struct iovec input_iovec[],
                 size_t n_input_iovec);
 
 /* This modifies the buffer passed! */
@@ -191,7 +211,7 @@ int log_dump_internal(
                 char *buffer);
 
 /* Logging for various assertions */
-_noreturn_ void log_assert_failed_realm(
+noreturn void log_assert_failed_realm(
                 LogRealm realm,
                 const char *text,
                 const char *file,
@@ -200,7 +220,7 @@ _noreturn_ void log_assert_failed_realm(
 #define log_assert_failed(text, ...) \
         log_assert_failed_realm(LOG_REALM, (text), __VA_ARGS__)
 
-_noreturn_ void log_assert_failed_unreachable_realm(
+noreturn void log_assert_failed_unreachable_realm(
                 LogRealm realm,
                 const char *text,
                 const char *file,
@@ -225,9 +245,9 @@ void log_assert_failed_return_realm(
 /* Logging with level */
 #define log_full_errno_realm(realm, level, error, ...)                  \
         ({                                                              \
-                int _level = (level), _e = (error), _realm = (realm);   \
-                (log_get_max_level_realm(_realm) >= LOG_PRI(_level))   \
-                        ? log_internal_realm(LOG_REALM_PLUS_LEVEL(_realm, _level), _e, \
+                int _level = (level), _e = (error);                     \
+                (log_get_max_level_realm((realm)) >= LOG_PRI(_level))   \
+                        ? log_internal_realm(LOG_REALM_PLUS_LEVEL((realm), _level), _e, \
                                              __FILE__, __LINE__, __func__, __VA_ARGS__) \
                         : -abs(_e);                                     \
         })
@@ -237,15 +257,13 @@ void log_assert_failed_return_realm(
 
 #define log_full(level, ...) log_full_errno((level), 0, __VA_ARGS__)
 
-int log_emergency_level(void);
-
 /* Normal logging */
 #define log_debug(...)     log_full(LOG_DEBUG,   __VA_ARGS__)
 #define log_info(...)      log_full(LOG_INFO,    __VA_ARGS__)
 #define log_notice(...)    log_full(LOG_NOTICE,  __VA_ARGS__)
 #define log_warning(...)   log_full(LOG_WARNING, __VA_ARGS__)
 #define log_error(...)     log_full(LOG_ERR,     __VA_ARGS__)
-#define log_emergency(...) log_full(log_emergency_level(), __VA_ARGS__)
+#define log_emergency(...) log_full(getpid_cached() == 1 ? LOG_EMERG : LOG_ERR, __VA_ARGS__)
 
 /* Logging triggered by an errno-like error */
 #define log_debug_errno(error, ...)     log_full_errno(LOG_DEBUG,   error, __VA_ARGS__)
@@ -253,7 +271,7 @@ int log_emergency_level(void);
 #define log_notice_errno(error, ...)    log_full_errno(LOG_NOTICE,  error, __VA_ARGS__)
 #define log_warning_errno(error, ...)   log_full_errno(LOG_WARNING, error, __VA_ARGS__)
 #define log_error_errno(error, ...)     log_full_errno(LOG_ERR,     error, __VA_ARGS__)
-#define log_emergency_errno(error, ...) log_full_errno(log_emergency_level(), error, __VA_ARGS__)
+#define log_emergency_errno(error, ...) log_full_errno(getpid_cached() == 1 ? LOG_EMERG : LOG_ERR, error, __VA_ARGS__)
 
 #ifdef LOG_TRACE
 #  define log_trace(...) log_debug(__VA_ARGS__)
@@ -289,19 +307,9 @@ LogTarget log_target_from_string(const char *s) _pure_;
 
 void log_received_signal(int level, const struct signalfd_siginfo *si);
 
-/* If turned on, any requests for a log target involving "syslog" will be implicitly upgraded to the equivalent journal target */
 void log_set_upgrade_syslog_to_journal(bool b);
-
-/* If turned on, and log_open() is called, we'll not use STDERR_FILENO for logging ever, but rather open /dev/console */
 void log_set_always_reopen_console(bool b);
-
-/* If turned on, we'll open the log stream implicitly if needed on each individual log call. This is normally not
- * desired as we want to reuse our logging streams. It is useful however  */
 void log_set_open_when_needed(bool b);
-
-/* If turned on, then we'll never use IPC-based logging, i.e. never log to syslog or the journal. We'll only log to
- * stderr, the console or kmsg */
-void log_set_prohibit_ipc(bool b);
 
 int log_syntax_internal(
                 const char *unit,
@@ -314,16 +322,6 @@ int log_syntax_internal(
                 const char *func,
                 const char *format, ...) _printf_(9, 10);
 
-int log_syntax_invalid_utf8_internal(
-                const char *unit,
-                int level,
-                const char *config_file,
-                unsigned config_line,
-                const char *file,
-                int line,
-                const char *func,
-                const char *rvalue);
-
 #define log_syntax(unit, level, config_file, config_line, error, ...)   \
         ({                                                              \
                 int _level = (level), _e = (error);                     \
@@ -335,9 +333,10 @@ int log_syntax_invalid_utf8_internal(
 #define log_syntax_invalid_utf8(unit, level, config_file, config_line, rvalue) \
         ({                                                              \
                 int _level = (level);                                   \
-                (log_get_max_level() >= LOG_PRI(_level))                \
-                        ? log_syntax_invalid_utf8_internal(unit, _level, config_file, config_line, __FILE__, __LINE__, __func__, rvalue) \
-                        : -EINVAL;                                      \
+                if (log_get_max_level() >= LOG_PRI(_level)) {           \
+                        _cleanup_free_ char *_p = NULL;                 \
+                        _p = utf8_escape_invalid(rvalue);               \
+                        log_syntax_internal(unit, _level, config_file, config_line, 0, __FILE__, __LINE__, __func__, \
+                                            "String is not UTF-8 clean, ignoring assignment: %s", strna(_p)); \
+                }                                                       \
         })
-
-#define DEBUG_LOGGING _unlikely_(log_get_max_level() >= LOG_DEBUG)

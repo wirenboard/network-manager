@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -84,36 +83,14 @@ char *path_make_absolute(const char *p, const char *prefix) {
         /* Makes every item in the list an absolute path by prepending
          * the prefix, if specified and necessary */
 
-        if (path_is_absolute(p) || isempty(prefix))
+        if (path_is_absolute(p) || !prefix)
                 return strdup(p);
 
-        if (endswith(prefix, "/"))
-                return strjoin(prefix, p);
-        else
-                return strjoin(prefix, "/", p);
-}
-
-int safe_getcwd(char **ret) {
-        char *cwd;
-
-        cwd = get_current_dir_name();
-        if (!cwd)
-                return negative_errno();
-
-        /* Let's make sure the directory is really absolute, to protect us from the logic behind
-         * CVE-2018-1000001 */
-        if (cwd[0] != '/') {
-                free(cwd);
-                return -ENOMEDIUM;
-        }
-
-        *ret = cwd;
-        return 0;
+        return strjoin(prefix, "/", p);
 }
 
 int path_make_absolute_cwd(const char *p, char **ret) {
         char *c;
-        int r;
 
         assert(p);
         assert(ret);
@@ -126,14 +103,11 @@ int path_make_absolute_cwd(const char *p, char **ret) {
         else {
                 _cleanup_free_ char *cwd = NULL;
 
-                r = safe_getcwd(&cwd);
-                if (r < 0)
-                        return r;
+                cwd = get_current_dir_name();
+                if (!cwd)
+                        return negative_errno();
 
-                if (endswith(cwd, "/"))
-                        c = strjoin(cwd, p);
-                else
-                        c = strjoin(cwd, "/", p);
+                c = strjoin(cwd, "/", p);
         }
         if (!c)
                 return -ENOMEM;
@@ -251,8 +225,8 @@ int path_strv_make_absolute_cwd(char **l) {
                 if (r < 0)
                         return r;
 
-                path_kill_slashes(t);
-                free_and_replace(*s, t);
+                free(*s);
+                *s = t;
         }
 
         return 0;
@@ -293,7 +267,8 @@ char **path_strv_resolve(char **l, const char *root) {
                 r = chase_symlinks(t, root, 0, &u);
                 if (r == -ENOENT) {
                         if (root) {
-                                u = TAKE_PTR(orig);
+                                u = orig;
+                                orig = NULL;
                                 free(t);
                         } else
                                 u = t;
@@ -567,7 +542,7 @@ bool paths_check_timestamp(const char* const* paths, usec_t *timestamp, bool upd
 
         assert(timestamp);
 
-        if (!paths)
+        if (paths == NULL)
                 return false;
 
         STRV_FOREACH(i, paths) {
@@ -731,37 +706,6 @@ char* dirname_malloc(const char *path) {
 
         return dir2;
 }
-
-const char *last_path_component(const char *path) {
-        /* Finds the last component of the path, preserving the
-         * optional trailing slash that signifies a directory.
-         *    a/b/c → c
-         *    a/b/c/ → c/
-         *    / → /
-         *    // → /
-         *    /foo/a → a
-         *    /foo/a/ → a/
-         * This is different than basename, which returns "" when
-         * a trailing slash is present.
-         */
-
-        unsigned l, k;
-
-        l = k = strlen(path);
-        if (l == 0) /* special case — an empty string */
-                return path;
-
-        while (k > 0 && path[k-1] == '/')
-                k--;
-
-        if (k == 0) /* the root directory */
-                return path + l - 1;
-
-        while (k > 0 && path[k-1] != '/')
-                k--;
-
-        return path + k;
-}
 #endif /* NM_IGNORED */
 
 bool filename_is_valid(const char *p) {
@@ -784,7 +728,7 @@ bool filename_is_valid(const char *p) {
 }
 
 #if 0 /* NM_IGNORED */
-bool path_is_normalized(const char *p) {
+bool path_is_safe(const char *p) {
 
         if (isempty(p))
                 return false;
@@ -798,6 +742,7 @@ bool path_is_normalized(const char *p) {
         if (strlen(p)+1 > PATH_MAX)
                 return false;
 
+        /* The following two checks are not really dangerous, but hey, they still are confusing */
         if (startswith(p, "./") || endswith(p, "/.") || strstr(p, "/./"))
                 return false;
 
@@ -913,9 +858,7 @@ int systemd_installation_has_version(const char *root, unsigned minimal_version)
                         * for Gentoo which does a merge without making /lib a symlink.
                         */
                        "lib/systemd/libsystemd-shared-*.so\0"
-                       "lib64/systemd/libsystemd-shared-*.so\0"
-                       "usr/lib/systemd/libsystemd-shared-*.so\0"
-                       "usr/lib64/systemd/libsystemd-shared-*.so\0") {
+                       "usr/lib/systemd/libsystemd-shared-*.so\0") {
 
                 _cleanup_strv_free_ char **names = NULL;
                 _cleanup_free_ char *path = NULL;

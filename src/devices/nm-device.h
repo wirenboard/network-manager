@@ -24,8 +24,7 @@
 
 #include <netinet/in.h>
 
-#include "nm-setting-connection.h"
-#include "nm-dbus-object.h"
+#include "nm-exported-object.h"
 #include "nm-dbus-interface.h"
 #include "nm-connection.h"
 #include "nm-rfkill-manager.h"
@@ -114,7 +113,8 @@ nm_device_state_reason_check (NMDeviceStateReason reason)
 #define NM_DEVICE_PARENT           "parent"
 
 /* the "slaves" property is internal in the parent class, but exposed
- * by the derived classes NMDeviceBond, NMDeviceBridge and NMDeviceTeam. */
+ * by the derived classes NMDeviceBond, NMDeviceBridge and NMDeviceTeam.
+ * It is thus important that the property name matches. */
 #define NM_DEVICE_SLAVES           "slaves"         /* partially internal */
 
 #define NM_DEVICE_TYPE_DESC        "type-desc"      /* Internal only */
@@ -135,7 +135,6 @@ nm_device_state_reason_check (NMDeviceStateReason reason)
 #define NM_DEVICE_STATE_CHANGED         "state-changed"
 #define NM_DEVICE_LINK_INITIALIZED      "link-initialized"
 #define NM_DEVICE_AUTOCONNECT_ALLOWED   "autoconnect-allowed"
-#define NM_DEVICE_CONNECTIVITY_CHANGED  "connectivity-changed"
 
 #define NM_DEVICE_STATISTICS_REFRESH_RATE_MS "refresh-rate-ms"
 #define NM_DEVICE_STATISTICS_TX_BYTES        "tx-bytes"
@@ -173,9 +172,10 @@ typedef enum { /*< skip >*/
 struct _NMDevicePrivate;
 
 struct _NMDevice {
-	NMDBusObject parent;
+	NMExportedObject parent;
+
+	/* private */
 	struct _NMDevicePrivate *_priv;
-	CList devices_lst;
 };
 
 /* The flags have an relaxing meaning, that means, specifying more flags, can make
@@ -190,9 +190,7 @@ typedef enum { /*< skip >*/
 } NMDeviceCheckDevAvailableFlags;
 
 typedef struct {
-	NMDBusObjectClass parent;
-
-	const char *default_type_description;
+	NMExportedObjectClass parent;
 
 	const char *connection_type;
 	const NMLinkType *link_types;
@@ -314,7 +312,7 @@ typedef struct {
 	gboolean    (* complete_connection)         (NMDevice *self,
 	                                             NMConnection *connection,
 	                                             const char *specific_object,
-	                                             NMConnection *const*existing_connections,
+	                                             const GSList *existing_connections,
 	                                             GError **error);
 
 	NMActStageReturn    (* act_stage1_prepare)  (NMDevice *self,
@@ -522,7 +520,7 @@ gboolean nm_device_can_auto_connect (NMDevice *self,
 gboolean nm_device_complete_connection (NMDevice *device,
                                         NMConnection *connection,
                                         const char *specific_object,
-                                        NMConnection *const*existing_connections,
+                                        const GSList *existing_connection,
                                         GError **error);
 
 gboolean nm_device_check_connection_compatible (NMDevice *device, NMConnection *connection);
@@ -756,10 +754,12 @@ void nm_device_update_firewall_zone (NMDevice *self);
 void nm_device_update_metered (NMDevice *self);
 void nm_device_reactivate_ip4_config (NMDevice *device,
                                       NMSettingIPConfig *s_ip4_old,
-                                      NMSettingIPConfig *s_ip4_new);
+                                      NMSettingIPConfig *s_ip4_new,
+                                      gboolean force_restart);
 void nm_device_reactivate_ip6_config (NMDevice *device,
                                       NMSettingIPConfig *s_ip6_old,
-                                      NMSettingIPConfig *s_ip6_new);
+                                      NMSettingIPConfig *s_ip6_new,
+                                      gboolean force_restart);
 
 gboolean nm_device_update_hw_address (NMDevice *self);
 void nm_device_update_initial_hw_address (NMDevice *self);
@@ -776,22 +776,12 @@ gboolean nm_device_hw_addr_get_cloned (NMDevice *self,
                                        gboolean *preserve,
                                        GError **error);
 
-typedef struct _NMDeviceConnectivityHandle NMDeviceConnectivityHandle;
-
 typedef void (*NMDeviceConnectivityCallback) (NMDevice *self,
-                                              NMDeviceConnectivityHandle *handle,
                                               NMConnectivityState state,
-                                              GError *error,
                                               gpointer user_data);
-
-void nm_device_check_connectivity_update_interval (NMDevice *self);
-
-NMDeviceConnectivityHandle *nm_device_check_connectivity (NMDevice *self,
-                                                          NMDeviceConnectivityCallback callback,
-                                                          gpointer user_data);
-
-void nm_device_check_connectivity_cancel (NMDeviceConnectivityHandle *handle);
-
+void nm_device_check_connectivity (NMDevice *self,
+                                   NMDeviceConnectivityCallback callback,
+                                   gpointer user_data);
 NMConnectivityState nm_device_get_connectivity_state (NMDevice *self);
 
 typedef struct _NMBtVTableNetworkServer NMBtVTableNetworkServer;

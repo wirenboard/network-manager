@@ -37,6 +37,8 @@
 #include "nm-act-request.h"
 #include "nm-ip4-config.h"
 
+#include "introspection/org.freedesktop.NetworkManager.Device.IPTunnel.h"
+
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF(NMDeviceIPTunnel);
 
@@ -53,7 +55,6 @@ NM_GOBJECT_PROPERTIES_DEFINE (NMDeviceIPTunnel,
 	PROP_OUTPUT_KEY,
 	PROP_ENCAPSULATION_LIMIT,
 	PROP_FLOW_LABEL,
-	PROP_FLAGS,
 );
 
 typedef struct {
@@ -68,7 +69,6 @@ typedef struct {
 	char *output_key;
 	guint8 encap_limit;
 	guint32 flow_label;
-	NMIPTunnelFlags flags;
 } NMDeviceIPTunnelPrivate;
 
 struct _NMDeviceIPTunnel {
@@ -83,30 +83,6 @@ struct _NMDeviceIPTunnelClass {
 G_DEFINE_TYPE (NMDeviceIPTunnel, nm_device_ip_tunnel, NM_TYPE_DEVICE)
 
 #define NM_DEVICE_IP_TUNNEL_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMDeviceIPTunnel, NM_IS_DEVICE_IP_TUNNEL)
-
-/*****************************************************************************/
-
-static guint32
-ip6tnl_flags_setting_to_plat (NMIPTunnelFlags flags)
-{
-	G_STATIC_ASSERT (NM_IP_TUNNEL_FLAG_IP6_IGN_ENCAP_LIMIT    == IP6_TNL_F_IGN_ENCAP_LIMIT);
-	G_STATIC_ASSERT (NM_IP_TUNNEL_FLAG_IP6_USE_ORIG_TCLASS    == IP6_TNL_F_USE_ORIG_TCLASS);
-	G_STATIC_ASSERT (NM_IP_TUNNEL_FLAG_IP6_USE_ORIG_FLOWLABEL == IP6_TNL_F_USE_ORIG_FLOWLABEL);
-	G_STATIC_ASSERT (NM_IP_TUNNEL_FLAG_IP6_MIP6_DEV           == IP6_TNL_F_MIP6_DEV);
-	G_STATIC_ASSERT (NM_IP_TUNNEL_FLAG_IP6_RCV_DSCP_COPY      == IP6_TNL_F_RCV_DSCP_COPY);
-	G_STATIC_ASSERT (NM_IP_TUNNEL_FLAG_IP6_USE_ORIG_FWMARK    == IP6_TNL_F_USE_ORIG_FWMARK);
-
-	/* NOTE: "accidentally", the numeric values correspond.
-	 *       For flags added in the future, that might no longer
-	 *       be the case. */
-	return flags & _NM_IP_TUNNEL_FLAG_ALL_IP6TNL;
-}
-
-static NMIPTunnelFlags
-ip6tnl_flags_plat_to_setting (guint32 flags)
-{
-	return flags & ((guint32) _NM_IP_TUNNEL_FLAG_ALL_IP6TNL);
-}
 
 /*****************************************************************************/
 
@@ -153,7 +129,6 @@ update_properties_from_ifindex (NMDevice *device, int ifindex)
 	guint8 ttl = 0, tos = 0, encap_limit = 0;
 	gboolean pmtud = FALSE;
 	guint32 flow_label = 0;
-	NMIPTunnelFlags flags = NM_IP_TUNNEL_FLAG_NONE;
 	char *key;
 
 	if (ifindex <= 0) {
@@ -271,7 +246,6 @@ clear:
 		tos = lnk->tclass;
 		encap_limit = lnk->encap_limit;
 		flow_label = lnk->flow_label;
-		flags = ip6tnl_flags_plat_to_setting (lnk->flags);
 	} else
 		g_return_if_reached ();
 
@@ -333,11 +307,6 @@ out:
 		priv->flow_label = flow_label;
 		_notify (self, PROP_FLOW_LABEL);
 	}
-
-	if (priv->flags != flags) {
-		priv->flags = flags;
-		_notify (self, PROP_FLAGS);
-	}
 }
 
 static void
@@ -358,7 +327,7 @@ static gboolean
 complete_connection (NMDevice *device,
                      NMConnection *connection,
                      const char *specific_object,
-                     NMConnection *const*existing_connections,
+                     const GSList *existing_connections,
                      GError **error)
 {
 	NMSettingIPTunnel *s_ip_tunnel;
@@ -716,7 +685,6 @@ create_and_realize (NMDevice *device,
 		lnk_ip6tnl.encap_limit = nm_setting_ip_tunnel_get_encapsulation_limit (s_ip_tunnel);
 		lnk_ip6tnl.flow_label = nm_setting_ip_tunnel_get_flow_label (s_ip_tunnel);
 		lnk_ip6tnl.proto = nm_setting_ip_tunnel_get_mode (s_ip_tunnel) == NM_IP_TUNNEL_MODE_IPIP6 ? IPPROTO_IPIP : IPPROTO_IPV6;
-		lnk_ip6tnl.flags = ip6tnl_flags_setting_to_plat (nm_setting_ip_tunnel_get_flags (s_ip_tunnel));
 
 		plerr = nm_platform_link_ip6tnl_add (nm_device_get_platform (device), iface, &lnk_ip6tnl, out_plink);
 		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
@@ -846,9 +814,6 @@ get_property (GObject *object, guint prop_id,
 	case PROP_FLOW_LABEL:
 		g_value_set_uint (value, priv->flow_label);
 		break;
-	case PROP_FLAGS:
-		g_value_set_uint (value, priv->flags);
-		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -905,43 +870,16 @@ dispose (GObject *object)
 	G_OBJECT_CLASS (nm_device_ip_tunnel_parent_class)->dispose (object);
 }
 
-static const NMDBusInterfaceInfoExtended interface_info_device_ip_tunnel = {
-	.parent = NM_DEFINE_GDBUS_INTERFACE_INFO_INIT (
-		NM_DBUS_INTERFACE_DEVICE_IP_TUNNEL,
-		.signals = NM_DEFINE_GDBUS_SIGNAL_INFOS (
-			&nm_signal_info_property_changed_legacy,
-		),
-		.properties = NM_DEFINE_GDBUS_PROPERTY_INFOS (
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Mode",               "u",  NM_DEVICE_IP_TUNNEL_MODE),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Parent",             "o",  NM_DEVICE_PARENT),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Local",              "s",  NM_DEVICE_IP_TUNNEL_LOCAL),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Remote",             "s",  NM_DEVICE_IP_TUNNEL_REMOTE),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Ttl",                "y",  NM_DEVICE_IP_TUNNEL_TTL),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Tos",                "y",  NM_DEVICE_IP_TUNNEL_TOS),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("PathMtuDiscovery",   "b",  NM_DEVICE_IP_TUNNEL_PATH_MTU_DISCOVERY),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("InputKey",           "s",  NM_DEVICE_IP_TUNNEL_INPUT_KEY),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("OutputKey",          "s",  NM_DEVICE_IP_TUNNEL_OUTPUT_KEY),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("EncapsulationLimit", "y",  NM_DEVICE_IP_TUNNEL_ENCAPSULATION_LIMIT),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("FlowLabel",          "u",  NM_DEVICE_IP_TUNNEL_FLOW_LABEL),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Flags",              "u",  NM_DEVICE_IP_TUNNEL_FLAGS),
-		),
-	),
-	.legacy_property_changed = TRUE,
-};
-
 static void
 nm_device_ip_tunnel_class_init (NMDeviceIPTunnelClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMDBusObjectClass *dbus_object_class = NM_DBUS_OBJECT_CLASS (klass);
 	NMDeviceClass *device_class = NM_DEVICE_CLASS (klass);
 
 	object_class->constructed = constructed;
 	object_class->dispose = dispose;
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
-
-	dbus_object_class->interface_infos = NM_DBUS_INTERFACE_INFOS (&interface_info_device_ip_tunnel);
 
 	device_class->link_changed = link_changed;
 	device_class->can_reapply_change = can_reapply_change;
@@ -1021,13 +959,11 @@ nm_device_ip_tunnel_class_init (NMDeviceIPTunnelClass *klass)
 	                        G_PARAM_READABLE |
 	                        G_PARAM_STATIC_STRINGS);
 
-	obj_properties[PROP_FLAGS] =
-	     g_param_spec_uint (NM_DEVICE_IP_TUNNEL_FLAGS, "", "",
-	                        0, G_MAXUINT32, 0,
-	                        G_PARAM_READWRITE |
-	                        G_PARAM_STATIC_STRINGS);
-
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
+
+	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
+	                                        NMDBUS_TYPE_DEVICE_IPTUNNEL_SKELETON,
+	                                        NULL);
 }
 
 /*****************************************************************************/

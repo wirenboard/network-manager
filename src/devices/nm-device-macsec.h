@@ -43,6 +43,9 @@
 #define NM_DEVICE_MACSEC_SCB             "scb"
 #define NM_DEVICE_MACSEC_REPLAY_PROTECT  "replay-protect"
 
+/* defined in the parent class, but exposed on D-Bus by the subclass. */
+#define NM_DEVICE_MACSEC_PARENT          NM_DEVICE_PARENT
+
 typedef struct _NMDeviceMacsec NMDeviceMacsec;
 typedef struct _NMDeviceMacsecClass NMDeviceMacsecClass;
 

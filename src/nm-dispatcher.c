@@ -284,10 +284,9 @@ fill_device_props (NMDevice *device,
 	                       g_variant_new_uint32 (nm_device_get_device_type (device)));
 	g_variant_builder_add (dev_builder, "{sv}", NMD_DEVICE_PROPS_STATE,
 	                       g_variant_new_uint32 (nm_device_get_state (device)));
-	if (nm_dbus_object_is_exported (NM_DBUS_OBJECT (device))) {
+	if (nm_exported_object_is_exported (NM_EXPORTED_OBJECT (device)))
 		g_variant_builder_add (dev_builder, "{sv}", NMD_DEVICE_PROPS_PATH,
-		                       g_variant_new_object_path (nm_dbus_object_get_path (NM_DBUS_OBJECT (device))));
-	}
+		                       g_variant_new_object_path (nm_exported_object_get_path (NM_EXPORTED_OBJECT (device))));
 
 	proxy_config = nm_device_get_proxy_config (device);
 	if (proxy_config)
@@ -346,8 +345,8 @@ static void
 _ensure_requests (void)
 {
 	if (G_UNLIKELY (requests == NULL)) {
-		requests = g_hash_table_new_full (nm_direct_hash,
-		                                  NULL,
+		requests = g_hash_table_new_full (g_direct_hash,
+		                                  g_direct_equal,
 		                                  NULL,
 		                                  (GDestroyNotify) dispatcher_info_free);
 	}
@@ -579,7 +578,7 @@ _dispatcher_call (NMDispatcherAction action,
 		const char *connection_path;
 		const char *filename;
 
-		connection_path = nm_dbus_object_get_path (NM_DBUS_OBJECT (settings_connection));
+		connection_path = nm_connection_get_path (NM_CONNECTION (settings_connection));
 		if (connection_path) {
 			g_variant_builder_add (&connection_props, "{sv}",
 			                       NMD_CONNECTION_PROPS_PATH,
@@ -631,7 +630,9 @@ _dispatcher_call (NMDispatcherAction action,
 	if (!device_dhcp6_props)
 		device_dhcp6_props = g_variant_ref_sink (g_variant_new_array (G_VARIANT_TYPE ("{sv}"), NULL, 0));
 
+#if WITH_CONCHECK
 	connectivity_state_string = nm_connectivity_state_to_string (connectivity_state);
+#endif
 
 	/* Send the action to the dispatcher */
 	if (blocking) {

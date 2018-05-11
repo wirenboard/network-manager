@@ -1,4 +1,5 @@
 ESSID="Test SSID"
+MODE=Managed
 SSID_HIDDEN=yes
 MAC_ADDRESS_RANDOMIZATION=default
 TYPE=Wireless

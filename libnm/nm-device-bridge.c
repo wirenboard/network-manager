@@ -253,9 +253,11 @@ nm_device_bridge_class_init (NMDeviceBridgeClass *bridge_class)
 		                       G_PARAM_STATIC_STRINGS));
 
 	/**
-	 * NMDeviceBridge:slaves: (type GPtrArray(NMDevice))
+	 * NMDeviceBridge:slaves:
 	 *
 	 * The devices slaved to the bridge device.
+	 *
+	 * Element-type: NMDevice
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_SLAVES,

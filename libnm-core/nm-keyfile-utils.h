@@ -21,9 +21,7 @@
 #ifndef __NM_KEYFILE_UTILS_H__
 #define __NM_KEYFILE_UTILS_H__
 
-#if !((NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_CORE_PRIVATE)
-#error Cannot use this header.
-#endif
+#include <glib.h>
 
 #define NM_KEYFILE_GROUP_VPN_SECRETS "vpn-secrets"
 

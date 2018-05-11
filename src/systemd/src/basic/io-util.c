@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -35,7 +34,6 @@ int flush_fd(int fd) {
                 .fd = fd,
                 .events = POLLIN,
         };
-        int count = 0;
 
         /* Read from the specified file descriptor, until POLLIN is not set anymore, throwing away everything
          * read. Note that some file descriptors (notable IP sockets) will trigger POLLIN even when no data can be read
@@ -55,7 +53,7 @@ int flush_fd(int fd) {
                         return -errno;
 
                 } else if (r == 0)
-                        return count;
+                        return 0;
 
                 l = read(fd, buf, sizeof(buf));
                 if (l < 0) {
@@ -64,13 +62,11 @@ int flush_fd(int fd) {
                                 continue;
 
                         if (errno == EAGAIN)
-                                return count;
+                                return 0;
 
                         return -errno;
                 } else if (l == 0)
-                        return count;
-
-                count += (int) l;
+                        return 0;
         }
 }
 
@@ -139,7 +135,7 @@ int loop_write(int fd, const void *buf, size_t nbytes, bool do_poll) {
         assert(fd >= 0);
         assert(buf);
 
-        if (_unlikely_(nbytes > (size_t) SSIZE_MAX))
+        if (nbytes > (size_t) SSIZE_MAX)
                 return -EINVAL;
 
         do {
@@ -205,6 +201,7 @@ int fd_wait_for_event(int fd, int event, usec_t t) {
         r = ppoll(&pollfd, 1, t == USEC_INFINITY ? NULL : timespec_store(&ts, t), NULL);
         if (r < 0)
                 return -errno;
+
         if (r == 0)
                 return 0;
 

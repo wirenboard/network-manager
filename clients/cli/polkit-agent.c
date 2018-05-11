@@ -19,6 +19,8 @@
 
 #include "nm-default.h"
 
+#if WITH_POLKIT_AGENT
+
 #include "polkit-agent.h"
 
 #include <stdio.h>
@@ -27,18 +29,17 @@
 #include <unistd.h>
 
 #include "nm-polkit-listener.h"
+
 #include "common.h"
 
-#if WITH_POLKIT_AGENT
 static char *
-polkit_request (NMPolkitListener *listener,
-                const char *request,
+polkit_request (const char *request,
                 const char *action_id,
                 const char *message,
                 const char *icon_name,
                 const char *user,
                 gboolean echo_on,
-                gpointer user_data)
+		gpointer user_data)
 {
 	char *response, *tmp, *p;
 
@@ -61,42 +62,28 @@ polkit_request (NMPolkitListener *listener,
 }
 
 static void
-polkit_show_info (NMPolkitListener *listener,
-                  const char *text,
-                  gpointer user_data)
+polkit_show_info (const char *text)
 {
 	g_print (_("Authentication message: %s\n"), text);
 }
 
 static void
-polkit_show_error (NMPolkitListener *listener,
-                   const char *text,
-                   gpointer user_data)
+polkit_show_error (const char *text)
 {
 	g_print (_("Authentication error: %s\n"), text);
 }
 
 static void
-polkit_completed (NMPolkitListener *listener,
-                  gboolean gained_authorization,
-                  gpointer user_data)
+polkit_completed (gboolean gained_authorization)
 {
 	/* We don't print anything here. The outcome will be evident from
 	 * the operation result anyway. */
 }
-#endif
 
 gboolean
 nmc_polkit_agent_init (NmCli* nmc, gboolean for_session, GError **error)
 {
-#if WITH_POLKIT_AGENT
-	static const NMPolkitListenVtable vtable = {
-		.on_request = polkit_request,
-		.on_show_info = polkit_show_info,
-		.on_show_error = polkit_show_error,
-		.on_completed = polkit_completed,
-	};
-	NMPolkitListener *listener;
+	PolkitAgentListener *listener;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -104,28 +91,24 @@ nmc_polkit_agent_init (NmCli* nmc, gboolean for_session, GError **error)
 	if (!listener)
 		return FALSE;
 
-	nm_polkit_listener_set_vtable (listener, &vtable, nmc);
+	nm_polkit_listener_set_request_callback (NM_POLKIT_LISTENER (listener), polkit_request, nmc);
+	nm_polkit_listener_set_show_info_callback (NM_POLKIT_LISTENER (listener), polkit_show_info);
+	nm_polkit_listener_set_show_error_callback (NM_POLKIT_LISTENER (listener), polkit_show_error);
+	nm_polkit_listener_set_completed_callback (NM_POLKIT_LISTENER (listener), polkit_completed);
 
-	nmc->pk_listener = listener;
-#endif
+	nmc->pk_listener = NM_POLKIT_LISTENER (listener);
 	return TRUE;
 }
 
 void
 nmc_polkit_agent_fini (NmCli* nmc)
 {
-#if WITH_POLKIT_AGENT
-	if (nmc->pk_listener) {
-		nm_polkit_listener_set_vtable (nmc->pk_listener, NULL, NULL);
-		g_clear_object (&nmc->pk_listener);
-	}
-#endif
+	g_clear_object (&nmc->pk_listener);
 }
 
 gboolean
 nmc_start_polkit_agent_start_try (NmCli *nmc)
 {
-#if WITH_POLKIT_AGENT
 	GError *error = NULL;
 
 	/* We don't register polkit agent at all when running non-interactively */
@@ -138,6 +121,30 @@ nmc_start_polkit_agent_start_try (NmCli *nmc)
 		g_error_free (error);
 		return FALSE;
 	}
-#endif
 	return TRUE;
 }
+
+#else
+/* polkit agent is not avalable; implement stub functions. */
+
+#include "nmcli.h"
+#include "polkit-agent.h"
+
+gboolean
+nmc_polkit_agent_init (NmCli* nmc, gboolean for_session, GError **error)
+{
+	return TRUE;
+}
+
+void
+nmc_polkit_agent_fini (NmCli* nmc)
+{
+}
+
+gboolean
+nmc_start_polkit_agent_start_try (NmCli *nmc)
+{
+	return TRUE;
+}
+
+#endif /* #if WITH_POLKIT_AGENT */

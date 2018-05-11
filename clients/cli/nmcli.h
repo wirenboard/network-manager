@@ -20,10 +20,17 @@
 #ifndef NMC_NMCLI_H
 #define NMC_NMCLI_H
 
+#include "NetworkManager.h"
 #include "nm-secret-agent-old.h"
+
 #include "nm-meta-setting-desc.h"
 
-struct _NMPolkitListener;
+#if WITH_POLKIT_AGENT
+#include "nm-polkit-listener.h"
+#else
+/* polkit agent is not available; define fake NMPolkitListener */
+typedef gpointer NMPolkitListener;
+#endif
 
 typedef char *(*NmcCompEntryFunc) (const char *, int);
 
@@ -110,7 +117,6 @@ typedef struct _NmcConfig {
 	bool escape_values;                               /* Whether to escape ':' and '\' in terse tabular mode */
 	bool in_editor;                                   /* Whether running the editor - nmcli con edit' */
 	bool show_secrets;                                /* Whether to display secrets (both input and output): option '--show-secrets' */
-	bool overview;                                    /* Overview mode (hide default values) */
 } NmcConfig;
 
 typedef struct _NmcOutputData {
@@ -129,7 +135,7 @@ typedef struct _NmCli {
 
 	NMSecretAgentOld *secret_agent;                   /* Secret agent */
 	GHashTable *pwds_hash;                            /* Hash table with passwords in passwd-file */
-	struct _NMPolkitListener *pk_listener;            /* polkit agent listener */
+	NMPolkitListener *pk_listener ;                   /* polkit agent listener */
 
 	int should_wait;                                  /* Semaphore indicating whether nmcli should not end or not yet */
 	gboolean nowait_flag;                             /* '--nowait' option; used for passing to callbacks */

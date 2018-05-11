@@ -24,8 +24,9 @@
 #include "nm-dbus-interface.h"
 #include "wifi-utils.h"
 
-typedef struct {
-	gsize struct_size;
+struct WifiData {
+	int ifindex;
+	NMDeviceWifiCapabilities caps;
 
 	NM80211Mode (*get_mode) (WifiData *data);
 
@@ -65,14 +66,9 @@ typedef struct {
 	gboolean (*set_mesh_ssid) (WifiData *data, const guint8 *ssid, gsize len);
 
 	gboolean (*indicate_addressing_running) (WifiData *data, gboolean running);
-} WifiDataClass;
-
-struct WifiData {
-	const WifiDataClass *klass;
-	int ifindex;
-	NMDeviceWifiCapabilities caps;
 };
 
-gpointer wifi_data_new (const WifiDataClass *klass, int ifindex);
+gpointer wifi_data_new (int ifindex, gsize len);
+void wifi_data_free (WifiData *data);
 
 #endif  /* __WIFI_UTILS_PRIVATE_H__ */

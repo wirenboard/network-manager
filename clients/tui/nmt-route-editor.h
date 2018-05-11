@@ -19,6 +19,8 @@
 #ifndef NMT_ROUTE_EDITOR_H
 #define NMT_ROUTE_EDITOR_H
 
+#include "NetworkManager.h"
+
 #include "nmt-newt.h"
 
 #define NMT_TYPE_ROUTE_EDITOR            (nmt_route_editor_get_type ())

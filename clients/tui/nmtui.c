@@ -30,6 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "NetworkManager.h"
+
 #include "nmt-newt.h"
 #include "nm-editor-bindings.h"
 

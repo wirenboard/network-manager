@@ -721,15 +721,11 @@ error:
 }
 
 char *
-nm_dhcp_utils_duid_to_string (GBytes *duid)
+nm_dhcp_utils_duid_to_string (const GByteArray *duid)
 {
-	gconstpointer data;
-	gsize len;
-
 	g_return_val_if_fail (duid != NULL, NULL);
 
-	data = g_bytes_get_data (duid, &len);
-	return _nm_utils_bin2str (data, len, FALSE);
+	return _nm_utils_bin2str (duid->data, duid->len, FALSE);
 }
 
 /**

@@ -21,12 +21,10 @@
 #ifndef __NM_DNS_MANAGER_H__
 #define __NM_DNS_MANAGER_H__
 
-#if !((NETWORKMANAGER_COMPILATION) & NM_NETWORKMANAGER_COMPILATION_WITH_LIBNM_PRIVATE)
-#error Cannot use this header.
-#endif
-
 #include "nm-object.h"
 #include "nm-client.h"
+
+G_BEGIN_DECLS
 
 #define NM_TYPE_DNS_MANAGER            (nm_dns_manager_get_type ())
 #define NM_DNS_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_DNS_MANAGER, NMDnsManager))
@@ -51,7 +49,12 @@ struct _NMDnsManager {
 
 struct _NMDnsManagerClass {
 	NMObjectClass parent;
+
+	/*< private >*/
+	gpointer padding[8];
 };
+
+G_END_DECLS
 
 GType nm_dns_manager_get_type (void);
 

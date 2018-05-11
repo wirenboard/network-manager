@@ -179,8 +179,8 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 {
 	NMSettingTunPrivate *priv = NM_SETTING_TUN_GET_PRIVATE (setting);
 
-	if (!NM_IN_SET (priv->mode, NM_SETTING_TUN_MODE_TUN,
-	                            NM_SETTING_TUN_MODE_TAP)) {
+	if (   priv->mode != NM_SETTING_TUN_MODE_TUN
+	    && priv->mode != NM_SETTING_TUN_MODE_TAP) {
 		g_set_error (error,
 		             NM_CONNECTION_ERROR,
 		             NM_CONNECTION_ERROR_INVALID_PROPERTY,

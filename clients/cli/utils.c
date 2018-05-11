@@ -75,7 +75,6 @@ _meta_type_nmc_generic_info_get_fcn (const NMMetaAbstractInfo *abstract_info,
                                      NMMetaAccessorGetType get_type,
                                      NMMetaAccessorGetFlags get_flags,
                                      NMMetaAccessorGetOutFlags *out_flags,
-                                     gboolean *out_is_default,
                                      gpointer *out_to_free)
 {
 	const NmcMetaGenericInfo *info = (const NmcMetaGenericInfo *) abstract_info;
@@ -98,7 +97,6 @@ _meta_type_nmc_generic_info_get_fcn (const NMMetaAbstractInfo *abstract_info,
 		                      get_type,
 		                      get_flags,
 		                      out_flags,
-		                      out_is_default,
 		                      out_to_free);
 	}
 
@@ -526,7 +524,7 @@ nmc_count_color_escape_chars (const char *start, const char *end)
 			inside = TRUE;
 		if (inside)
 			num++;
-		if (*start == 'm')
+		if (*start == 'm') 
 			inside = FALSE;
 		start++;
 	}
@@ -605,14 +603,9 @@ int
 nmc_string_to_arg_array (const char *line, const char *delim, gboolean unquote,
                          char ***argv, int *argc)
 {
-	gs_free const char **arr0 = NULL;
 	char **arr;
 
-	arr0 = nm_utils_strsplit_set (line ?: "", delim ?: " \t");
-	if (!arr0)
-		arr = g_new0 (char *, 1);
-	else
-		arr = g_strdupv ((char **) arr0);
+	arr = nmc_strsplit_set (line ? line : "", delim ? delim : " \t", 0);
 
 	if (unquote) {
 		int i = 0;
@@ -620,7 +613,7 @@ nmc_string_to_arg_array (const char *line, const char *delim, gboolean unquote,
 		size_t l;
 		const char *quotes = "\"'";
 
-		while (arr[i]) {
+		while (arr && arr[i]) {
 			s = arr[i];
 			l = strlen (s);
 			if (l >= 2) {
@@ -635,6 +628,7 @@ nmc_string_to_arg_array (const char *line, const char *delim, gboolean unquote,
 
 	*argv = arr;
 	*argc = g_strv_length (arr);
+
 	return 0;
 }
 
@@ -1004,7 +998,6 @@ typedef struct {
 	const PrintDataCol *col;
 	const char *title;
 	bool title_to_free:1;
-	bool skip:1;
 	int width;
 } PrintDataHeaderCell;
 
@@ -1103,7 +1096,6 @@ _print_fill (const NmcConfig *nmc_config,
 
 		header_cell->col_idx = col_idx;
 		header_cell->col = col;
-		header_cell->skip = FALSE;
 
 		header_cell->title = nm_meta_abstract_info_get_name (info, TRUE);
 		if (   nmc_config->multiline_output
@@ -1138,11 +1130,10 @@ _print_fill (const NmcConfig *nmc_config,
 		for (i_col = 0; i_col < header_row->len; i_col++) {
 			char *to_free = NULL;
 			PrintDataCell *cell = &cells_line[i_col];
-			PrintDataHeaderCell *header_cell;
+			const PrintDataHeaderCell *header_cell;
 			const NMMetaAbstractInfo *info;
 			NMMetaAccessorGetOutFlags text_out_flags, color_out_flags;
 			gconstpointer value;
-			gboolean is_default;
 
 			header_cell = &g_array_index (header_row, PrintDataHeaderCell, i_col);
 			info = header_cell->col->selection_item->info;
@@ -1157,11 +1148,7 @@ _print_fill (const NmcConfig *nmc_config,
 			                                   text_get_type,
 			                                   text_get_flags,
 			                                   &text_out_flags,
-			                                   &is_default,
 			                                   (gpointer *) &to_free);
-
-			header_cell->skip = nmc_config->overview && is_default;
-
 			if (NM_FLAGS_HAS (text_out_flags, NM_META_ACCESSOR_GET_OUT_FLAGS_STRV)) {
 				if (value) {
 					if (nmc_config->multiline_output) {
@@ -1187,7 +1174,6 @@ _print_fill (const NmcConfig *nmc_config,
 			                                                      NM_META_ACCESSOR_GET_TYPE_TERMFORMAT,
 			                                                      NM_META_ACCESSOR_GET_FLAGS_NONE,
 			                                                      &color_out_flags,
-			                                                      NULL,
 			                                                      NULL),
 			                           &cell->term_color,
 			                           &cell->term_format);
@@ -1244,9 +1230,6 @@ _print_skip_column (const NmcConfig *nmc_config,
 
 	selection_item = header_cell->col->selection_item;
 	info = selection_item->info;
-
-	if (header_cell->skip)
-		return TRUE;
 
 	if (nmc_config->multiline_output) {
 		if (info->meta_type == &nm_meta_type_setting_info_editor) {

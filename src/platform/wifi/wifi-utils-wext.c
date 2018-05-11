@@ -21,13 +21,16 @@
 
 #include "nm-default.h"
 
-#include "wifi-utils-wext.h"
-
 #include <errno.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <net/ethernet.h>
 #include <unistd.h>
+
+#include "wifi-utils-private.h"
+#include "wifi-utils-wext.h"
+#include "nm-utils.h"
+#include "platform/nm-platform-utils.h"
 
 /* Hacks necessary to #include wireless.h; yay for WEXT */
 #ifndef __user
@@ -37,10 +40,6 @@
 #include <linux/types.h>
 #include <sys/socket.h>
 #include <linux/wireless.h>
-
-#include "wifi-utils-private.h"
-#include "nm-utils.h"
-#include "platform/nm-platform-utils.h"
 
 typedef struct {
 	WifiData parent;
@@ -629,21 +628,6 @@ wext_get_caps (WifiDataWext *wext, const char *ifname, struct iw_range *range)
 WifiData *
 wifi_wext_init (int ifindex, gboolean check_scan)
 {
-	static const WifiDataClass klass = {
-		.struct_size = sizeof (WifiDataWext),
-		.get_mode = wifi_wext_get_mode,
-		.set_mode = wifi_wext_set_mode,
-		.set_powersave = wifi_wext_set_powersave,
-		.get_freq = wifi_wext_get_freq,
-		.find_freq = wifi_wext_find_freq,
-		.get_bssid = wifi_wext_get_bssid,
-		.get_rate = wifi_wext_get_rate,
-		.get_qual = wifi_wext_get_qual,
-		.deinit = wifi_wext_deinit,
-		.get_mesh_channel = wifi_wext_get_mesh_channel,
-		.set_mesh_channel = wifi_wext_set_mesh_channel,
-		.set_mesh_ssid = wifi_wext_set_mesh_ssid,
-	};
 	WifiDataWext *wext;
 	struct iw_range range;
 	guint32 response_len = 0;
@@ -658,7 +642,19 @@ wifi_wext_init (int ifindex, gboolean check_scan)
 		return NULL;
 	}
 
-	wext = wifi_data_new (&klass, ifindex);
+	wext = wifi_data_new (ifindex, sizeof (*wext));
+	wext->parent.get_mode = wifi_wext_get_mode;
+	wext->parent.set_mode = wifi_wext_set_mode;
+	wext->parent.set_powersave = wifi_wext_set_powersave;
+	wext->parent.get_freq = wifi_wext_get_freq;
+	wext->parent.find_freq = wifi_wext_find_freq;
+	wext->parent.get_bssid = wifi_wext_get_bssid;
+	wext->parent.get_rate = wifi_wext_get_rate;
+	wext->parent.get_qual = wifi_wext_get_qual;
+	wext->parent.deinit = wifi_wext_deinit;
+	wext->parent.get_mesh_channel = wifi_wext_get_mesh_channel;
+	wext->parent.set_mesh_channel = wifi_wext_set_mesh_channel;
+	wext->parent.set_mesh_ssid = wifi_wext_set_mesh_ssid;
 
 	wext->fd = socket (PF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
 	if (wext->fd < 0)
@@ -734,7 +730,7 @@ wifi_wext_init (int ifindex, gboolean check_scan)
 	return (WifiData *) wext;
 
 error:
-	wifi_utils_unref ((WifiData *) wext);
+	wifi_utils_deinit ((WifiData *) wext);
 	return NULL;
 }
 

@@ -19,6 +19,8 @@
 #ifndef NMT_EDITOR_PAGE_H
 #define NMT_EDITOR_PAGE_H
 
+#include "NetworkManager.h"
+
 #include "nmt-editor-grid.h"
 #include "nmt-editor-section.h"
 

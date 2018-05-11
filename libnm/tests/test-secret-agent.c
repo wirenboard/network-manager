@@ -349,9 +349,10 @@ connection_activated_none_cb (GObject *c,
                               gpointer user_data)
 {
 	TestSecretAgentData *sadata = user_data;
+	NMActiveConnection *ac;
 	gs_free_error GError *error = NULL;
 
-	nm_client_activate_connection_finish (sadata->client, result, &error);
+	ac = nm_client_activate_connection_finish (sadata->client, result, &error);
 	g_assert_error (error, NM_AGENT_MANAGER_ERROR, NM_AGENT_MANAGER_ERROR_NO_SECRETS);
 
 	g_main_loop_quit (sadata->loop);

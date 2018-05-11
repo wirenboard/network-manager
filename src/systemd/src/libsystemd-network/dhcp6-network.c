@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
@@ -69,7 +68,9 @@ int dhcp6_network_bind_udp_socket(int index, struct in6_addr *local_address) {
         if (r < 0)
                 return -errno;
 
-        return TAKE_FD(s);
+        r = s;
+        s = -1;
+        return r;
 }
 
 int dhcp6_network_send_udp_socket(int s, struct in6_addr *server_address,
