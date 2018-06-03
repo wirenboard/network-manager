@@ -48,7 +48,6 @@
 #define NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED "state-changed"
 #define NM_DHCP_CLIENT_SIGNAL_PREFIX_DELEGATED "prefix-delegated"
 
-
 typedef enum {
 	NM_DHCP_STATE_UNKNOWN = 0,
 	NM_DHCP_STATE_BOUND,        /* new lease or lease changed */
@@ -169,7 +168,7 @@ void nm_dhcp_client_watch_child (NMDhcpClient *self, pid_t pid);
 
 void nm_dhcp_client_set_state (NMDhcpClient *self,
                                NMDhcpState new_state,
-                               GObject *ip_config,   /* NMIP4Config or NMIP6Config */
+                               NMIPConfig *ip_config,
                                GHashTable *options); /* str:str hash */
 
 gboolean nm_dhcp_client_handle_event (gpointer unused,

@@ -58,9 +58,6 @@
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
-/* Define if you have libgnutls */
-#undef HAVE_GNUTLS
-
 /* Define to 1 if you have the <history.h> header file. */
 #undef HAVE_HISTORY_H
 
@@ -78,9 +75,6 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define if you have NSS */
-#undef HAVE_NSS
 
 /* Define to 1 if you have the <pppd/pppd.h> header file. */
 #undef HAVE_PPPD_PPPD_H

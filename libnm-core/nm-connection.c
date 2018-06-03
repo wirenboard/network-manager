@@ -515,7 +515,6 @@ nm_connection_compare (NMConnection *a,
 	return TRUE;
 }
 
-
 static gboolean
 diff_one_connection (NMConnection *a,
                      NMConnection *b,
@@ -1531,7 +1530,7 @@ nm_connection_update_secrets (NMConnection *connection,
 
 		g_signal_handlers_block_by_func (setting, (GCallback) setting_changed_cb, connection);
 		success_detail = _nm_setting_update_secrets (setting,
-		                                             setting_dict ? setting_dict : secrets,
+		                                             setting_dict ?: secrets,
 		                                             error);
 		g_signal_handlers_unblock_by_func (setting, (GCallback) setting_changed_cb, connection);
 

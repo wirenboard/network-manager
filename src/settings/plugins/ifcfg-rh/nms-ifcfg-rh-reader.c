@@ -256,7 +256,6 @@ make_connection_setting (const char *file,
 		}
 	}
 
-
 	nm_clear_g_free (&value);
 	v = svGetValueStr (ifcfg, "ZONE", &value);
 	g_object_set (s_con, NM_SETTING_CONNECTION_ZONE, v, NULL);
@@ -387,7 +386,7 @@ is_any_ip4_address_defined (shvarFile *ifcfg, int *idx)
 {
 	int i, ignore, *ret_idx;
 
-	ret_idx = idx ? idx : &ignore;
+	ret_idx = idx ?: &ignore;
 
 	for (i = -1; i <= 2; i++) {
 		gs_free char *value = NULL;
@@ -503,7 +502,7 @@ parse_route_line_is_comment (const char *line)
 	 *
 	 * initscripts compares: "$line" =~ '^[[:space:]]*(\#.*)?$'
 	 */
-	while (NM_IN_SET (line[0], ' ', '\t'))
+	while (nm_utils_is_separator (line[0]))
 		line++;
 	if (NM_IN_SET (line[0], '\0', '#'))
 		return TRUE;
@@ -1848,8 +1847,8 @@ make_ip6_setting (shvarFile *ifcfg,
 	ipv6addr_secondaries = svGetValueStr_cp (ifcfg, "IPV6ADDR_SECONDARIES");
 
 	value = g_strjoin (ipv6addr && ipv6addr_secondaries ? " " : NULL,
-	                   ipv6addr ? ipv6addr : "",
-	                   ipv6addr_secondaries ? ipv6addr_secondaries : "",
+	                   ipv6addr ?: "",
+	                   ipv6addr_secondaries ?: "",
 	                   NULL);
 	g_free (ipv6addr);
 	g_free (ipv6addr_secondaries);
@@ -4420,7 +4419,6 @@ parse_infiniband_p_key (shvarFile *ifcfg,
 	return ret;
 }
 
-
 static NMSetting *
 make_infiniband_setting (shvarFile *ifcfg,
                          const char *file,
@@ -4526,9 +4524,9 @@ handle_bond_option (NMSettingBond *s_bond,
 		}
 	}
 
-	if (!nm_setting_bond_add_option (s_bond, key, sanitized ? sanitized : value))
+	if (!nm_setting_bond_add_option (s_bond, key, sanitized ?: value))
 		PARSE_WARNING ("invalid bonding option '%s' = %s",
-		               key, sanitized ? sanitized : value);
+		               key, sanitized ?: value);
 	g_free (sanitized);
 }
 

@@ -3,19 +3,6 @@
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -26,12 +13,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 
 #include "alloc-util.h"
 #include "errno-list.h"
 #include "extract-word.h"
 #include "locale-util.h"
 #include "macro.h"
+#include "missing.h"
 #include "parse-util.h"
 #include "process-util.h"
 #include "string-util.h"
@@ -106,6 +95,30 @@ int parse_ifindex(const char *s, int *ret) {
                 return -EINVAL;
 
         *ret = ifi;
+        return 0;
+}
+
+int parse_mtu(int family, const char *s, uint32_t *ret) {
+        uint64_t u;
+        size_t m;
+        int r;
+
+        r = parse_size(s, 1024, &u);
+        if (r < 0)
+                return r;
+
+        if (u > UINT32_MAX)
+                return -ERANGE;
+
+        if (family == AF_INET6)
+                m = IPV6_MIN_MTU; /* This is 1280 */
+        else
+                m = IPV4_MIN_MTU; /* For all other protocols, including 'unspecified' we assume the IPv4 minimal MTU */
+
+        if (u < m)
+                return -ERANGE;
+
+        *ret = (uint32_t) u;
         return 0;
 }
 
@@ -666,6 +679,23 @@ int parse_dev(const char *s, dev_t *ret) {
                 return -EINVAL;
 
         *ret = d;
+        return 0;
+}
+
+int parse_oom_score_adjust(const char *s, int *ret) {
+        int r, v;
+
+        assert(s);
+        assert(ret);
+
+        r = safe_atoi(s, &v);
+        if (r < 0)
+                return r;
+
+        if (v < OOM_SCORE_ADJ_MIN || v > OOM_SCORE_ADJ_MAX)
+                return -ERANGE;
+
+        *ret = v;
         return 0;
 }
 #endif /* NM_IGNORED */

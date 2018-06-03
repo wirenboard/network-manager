@@ -8,7 +8,7 @@ dnl    "shared/nm-version-macros.h.in"
 dnl  - update number in meson.build
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [11])
-m4_define([nm_micro_version], [3])
+m4_define([nm_micro_version], [4])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -183,10 +183,9 @@ dnl
 AC_ARG_WITH(dist-version,
             AS_HELP_STRING([--with-dist-version=<NM-distribution-version>],
                            [Define the NM''s distribution version string]),
-            ac_distver=$withval, ac_distver="")
-if ! test x"$ac_distver" = x""; then
-	AC_DEFINE_UNQUOTED(NM_DIST_VERSION, "$ac_distver", [Define the distribution version string])
-fi
+            ac_distver=$withval, ac_distver=$NM_VERSION)
+AC_DEFINE_UNQUOTED(NM_DIST_VERSION, "$ac_distver", [Define the distribution version string])
+AC_SUBST(NM_DIST_VERSION, "$ac_distver")
 
 AC_ARG_ENABLE(wifi, AS_HELP_STRING([--enable-wifi], [enable Wi-Fi support]))
 if test "${enable_wifi}" != "no"; then
@@ -669,12 +668,9 @@ AC_SUBST(NM_MODIFY_SYSTEM_POLICY)
 AC_ARG_WITH(crypto,
             AS_HELP_STRING([--with-crypto=nss|gnutls],
                            [Cryptography library to use for certificate and key operations]),
-            ac_crypto=$withval,
-            ac_crypto=nss)
-
-with_nss=no
-with_gnutls=no
-if test x"$ac_crypto" = xnss; then
+            with_crypto=$withval,
+            with_crypto=nss)
+if test "$with_crypto" = 'nss'; then
 	PKG_CHECK_MODULES(NSS, [nss])
 
 	# Work around a pkg-config bug (fdo #29801) where exists != usable
@@ -682,23 +678,13 @@ if test x"$ac_crypto" = xnss; then
 	if test x"$?" != "x0"; then
 		AC_MSG_ERROR([No usable NSS found])
 	fi
-
-	AC_DEFINE(HAVE_NSS, 1, [Define if you have NSS])
-	with_nss=yes
-elif test x"$ac_crypto" = xgnutls; then
+elif test "$with_crypto" = 'gnutls'; then
 	PKG_CHECK_MODULES(GNUTLS, [gnutls >= 2.12])
-	AC_DEFINE(HAVE_GNUTLS, 1, [Define if you have libgnutls])
-	with_gnutls=yes
 else
 	AC_MSG_ERROR([Please choose either 'nss' or 'gnutls' for certificate and crypto operations])
 fi
-AM_CONDITIONAL(WITH_NSS, test x"$with_nss" != xno)
-AM_CONDITIONAL(WITH_GNUTLS, test x"$with_gnutls" != xno)
-
-# Shouldn't ever trigger this, but just in case...
-if test x"$ac_nss" = xno -a x"$ac_gnutls" = xno; then
-	AC_MSG_ERROR([Could not find required development headers and libraries for '$ac_crypto'])
-fi
+AM_CONDITIONAL(WITH_NSS, test "$with_crypto" = 'nss')
+AM_CONDITIONAL(WITH_GNUTLS, test "$with_crypto" = 'gnutls')
 
 GLIB_MAKEFILE='$(top_srcdir)/Makefile.glib'
 AC_SUBST(GLIB_MAKEFILE)
@@ -1228,7 +1214,7 @@ else
 		with_valgrind_suppressions='$(top_srcdir)/valgrind.suppressions'
 	fi
 fi
-AC_SUBST(NM_LOG_COMPILER, 'LOG_COMPILER = "$(top_srcdir)/tools/run-nm-test.sh" --called-from-make "$(LIBTOOL)" "$(with_valgrind)" "'"$with_valgrind_suppressions"'" --launch-dbus=auto')
+AC_SUBST(NM_LOG_COMPILER, 'LOG_COMPILER = "$(top_srcdir)/tools/run-nm-test.sh" --called-from-make "$(abs_top_builddir)" "$(LIBTOOL)" "$(with_valgrind)" "'"$with_valgrind_suppressions"'" --launch-dbus=auto')
 
 AM_PATH_PYTHON([], [], [PYTHON=python])
 AC_SUBST(PYTHON, [$PYTHON])
@@ -1394,6 +1380,7 @@ echo "  code coverage: $enable_code_coverage"
 echo "  LTO: $enable_lto"
 echo "  linker garbage collection: $enable_ld_gc"
 echo "  JSON validation for libnm: $enable_json_validation"
+echo "  crypto: $with_crypto"
 echo "  sanitizers: $sanitizers"
 echo "  Mozilla Public Suffix List: $with_libpsl"
 echo

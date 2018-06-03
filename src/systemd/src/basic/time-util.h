@@ -5,19 +5,6 @@
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include <inttypes.h>
@@ -141,7 +128,7 @@ int parse_nsec(const char *t, nsec_t *nsec);
 bool ntp_synced(void);
 
 int get_timezones(char ***l);
-bool timezone_is_valid(const char *name);
+bool timezone_is_valid(const char *name, int log_level);
 
 bool clock_boottime_supported(void);
 bool clock_supported(clockid_t clock);

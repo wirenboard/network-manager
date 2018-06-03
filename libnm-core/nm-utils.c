@@ -136,7 +136,6 @@ static const struct IsoLangToEncodings isoLangEntries2[] =
 	LANG_ENCODINGS (NULL, NULL)
 };
 
-
 static GHashTable * langToEncodings5 = NULL;
 static GHashTable * langToEncodings2 = NULL;
 
@@ -250,7 +249,7 @@ _nm_utils_init (void)
 		g_error ("libnm-util symbols detected; Mixing libnm with libnm-util/libnm-glib is not supported");
 	g_module_close (self);
 
-	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+	bindtextdomain (GETTEXT_PACKAGE, NMLOCALEDIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 
 	_nm_dbus_errors_init ();
@@ -2237,7 +2236,6 @@ nm_utils_tc_qdisc_to_str (NMTCQdisc *qdisc, GError **error)
 	return g_string_free (string, FALSE);
 }
 
-
 static gboolean
 _tc_read_common_opts (const char *str,
                       guint32 *handle,
@@ -3038,7 +3036,6 @@ _nm_utils_check_file (const char *filename,
 	return TRUE;
 }
 
-
 gboolean
 _nm_utils_check_module_file (const char *name,
                              int check_owner,
@@ -3688,8 +3685,8 @@ nm_utils_hwaddr_aton (const char *asc, gpointer buffer, gsize length)
 	return buffer;
 }
 
-static void
-_bin2str (gconstpointer addr, gsize length, const char delimiter, gboolean upper_case, char *out)
+void
+_nm_utils_bin2str_full (gconstpointer addr, gsize length, const char delimiter, gboolean upper_case, char *out)
 {
 	const guint8 *in = addr;
 	const char *LOOKUP = upper_case ? "0123456789ABCDEF" : "0123456789abcdef";
@@ -3739,7 +3736,7 @@ nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len)
 	g_return_val_if_fail (final_len < 0 || (gsize) final_len < buflen, NULL);
 
 	result = g_malloc (buflen);
-	_bin2str (src, len, '\0', FALSE, result);
+	_nm_utils_bin2str_full (src, len, '\0', FALSE, result);
 
 	/* Cut converted key off at the correct length for this cipher type */
 	if (final_len >= 0 && (gsize) final_len < buflen)
@@ -3766,7 +3763,7 @@ nm_utils_hwaddr_ntoa (gconstpointer addr, gsize length)
 	g_return_val_if_fail (length > 0, g_strdup (""));
 
 	result = g_malloc (length * 3);
-	_bin2str (addr, length, ':', TRUE, result);
+	_nm_utils_bin2str_full (addr, length, ':', TRUE, result);
 	return result;
 }
 
@@ -3779,7 +3776,7 @@ nm_utils_hwaddr_ntoa_buf (gconstpointer addr, gsize addr_len, gboolean upper_cas
 	if (buf_len < addr_len * 3)
 		g_return_val_if_reached (NULL);
 
-	_bin2str (addr, addr_len, ':', upper_case, buf);
+	_nm_utils_bin2str_full (addr, addr_len, ':', upper_case, buf);
 	return buf;
 }
 
@@ -3802,7 +3799,7 @@ _nm_utils_bin2str (gconstpointer addr, gsize length, gboolean upper_case)
 	g_return_val_if_fail (length > 0, g_strdup (""));
 
 	result = g_malloc (length * 3);
-	_bin2str (addr, length, ':', upper_case, result);
+	_nm_utils_bin2str_full (addr, length, ':', upper_case, result);
 	return result;
 }
 
@@ -3830,9 +3827,11 @@ nm_utils_hwaddr_valid (const char *asc, gssize length)
 		if (!hwaddr_aton (asc, buf, length, &l))
 			return FALSE;
 		return length == l;
-	} else if (length == -1) {
+	} else if (length == -1)
 		return !!hwaddr_aton (asc, buf, sizeof (buf), &l);
-	} else
+	else if (length == 0)
+		return FALSE;
+	else
 		g_return_val_if_reached (FALSE);
 }
 
@@ -4321,7 +4320,7 @@ nm_utils_inet_ntop (int addr_family, gconstpointer addr, char *dst)
 
 	s = inet_ntop (addr_family,
 	               addr,
-	               dst ? dst : _nm_utils_inet_ntop_buffer,
+	               dst ?: _nm_utils_inet_ntop_buffer,
 	               addr_family == AF_INET6 ? INET6_ADDRSTRLEN : INET_ADDRSTRLEN);
 	nm_assert (s);
 	return s;
@@ -4347,7 +4346,7 @@ nm_utils_inet_ntop (int addr_family, gconstpointer addr, char *dst)
 const char *
 nm_utils_inet4_ntop (in_addr_t inaddr, char *dst)
 {
-	return inet_ntop (AF_INET, &inaddr, dst ? dst : _nm_utils_inet_ntop_buffer,
+	return inet_ntop (AF_INET, &inaddr, dst ?: _nm_utils_inet_ntop_buffer,
 	                  INET_ADDRSTRLEN);
 }
 
@@ -4373,7 +4372,7 @@ const char *
 nm_utils_inet6_ntop (const struct in6_addr *in6addr, char *dst)
 {
 	g_return_val_if_fail (in6addr, NULL);
-	return inet_ntop (AF_INET6, in6addr, dst ? dst : _nm_utils_inet_ntop_buffer,
+	return inet_ntop (AF_INET6, in6addr, dst ?: _nm_utils_inet_ntop_buffer,
 	                  INET6_ADDRSTRLEN);
 }
 
@@ -5018,7 +5017,6 @@ _json_team_add_defaults (json_t *json,
 		json_object_set_new (json_element, "name", json_string (runner));
 	}
 
-
 	if (nm_streq (runner, NM_SETTING_TEAM_RUNNER_ACTIVEBACKUP)) {
 		_json_add_object (json, "notify_peers", "count", NULL,
 				  json_integer (NM_SETTING_TEAM_NOTIFY_PEERS_COUNT_ACTIVEBACKUP_DEFAULT));
@@ -5305,7 +5303,6 @@ fail:
 	return NULL;
 }
 
-
 /**
  * nm_utils_is_json_object:
  * @str: the JSON string to test
@@ -5420,7 +5417,6 @@ out:
 
 	return ret;
 }
-
 
 GValue *
 _nm_utils_team_config_get (const char *conf,

@@ -513,7 +513,7 @@ bound4_handle (NMDhcpSystemd *self)
 
 		nm_dhcp_client_set_state (NM_DHCP_CLIENT (self),
 		                          NM_DHCP_STATE_BOUND,
-		                          G_OBJECT (ip4_config),
+		                          NM_IP_CONFIG_CAST (ip4_config),
 		                          options);
 	} else {
 		_LOGW ("%s", error->message);
@@ -666,7 +666,6 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 			                 client_id_len - 1);
 		}
 	}
-
 
 	/* Add requested options */
 	for (i = 0; dhcp4_requests[i].name; i++) {
@@ -823,7 +822,7 @@ bound6_handle (NMDhcpSystemd *self)
 	if (ip6_config) {
 		nm_dhcp_client_set_state (NM_DHCP_CLIENT (self),
 		                          NM_DHCP_STATE_BOUND,
-		                          G_OBJECT (ip6_config),
+		                          NM_IP_CONFIG_CAST (ip6_config),
 		                          options);
 	} else {
 		_LOGW ("%s", error->message);

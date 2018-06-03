@@ -1311,7 +1311,6 @@ nm_device_set_autoconnect (NMDevice *device, gboolean autoconnect)
 	g_value_init (&value, G_TYPE_BOOLEAN);
 	g_value_set_boolean (&value, autoconnect);
 
-
 	NM_DEVICE_GET_PRIVATE (device)->autoconnect = autoconnect;
 
 	_nm_object_set_property (NM_OBJECT (device),
@@ -2100,7 +2099,7 @@ nm_device_get_physical_port_id (NMDevice *device)
  *
  * Gets the  MTU of the #NMDevice.
  *
- * Returns: the MTU of the device.
+ * Returns: the MTU of the device in bytes.
  *
  * Since: 0.9.10
  **/

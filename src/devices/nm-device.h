@@ -73,7 +73,6 @@ nm_device_state_reason_check (NMDeviceStateReason reason)
 #define NM_PENDING_ACTIONPREFIX_QUEUED_STATE_CHANGE "queued-state-change-"
 #define NM_PENDING_ACTIONPREFIX_ACTIVATION          "activation-"
 
-
 /* Properties */
 #define NM_DEVICE_UDI              "udi"
 #define NM_DEVICE_IFACE            "interface"
@@ -189,9 +188,10 @@ typedef enum { /*< skip >*/
 	NM_DEVICE_CHECK_DEV_AVAILABLE_ALL                                   = (1L << 1) - 1,
 } NMDeviceCheckDevAvailableFlags;
 
-typedef struct {
+typedef struct _NMDeviceClass {
 	NMDBusObjectClass parent;
 
+	struct _NMDeviceClass *default_type_description_klass;
 	const char *default_type_description;
 
 	const char *connection_type;
@@ -717,7 +717,7 @@ void nm_device_queue_state   (NMDevice *self,
 
 gboolean nm_device_get_firmware_missing (NMDevice *self);
 
-void nm_device_steal_connection (NMDevice *device, NMSettingsConnection *connection);
+void nm_device_disconnect_active_connection (NMActiveConnection *active);
 
 void nm_device_queue_activation (NMDevice *device, NMActRequest *req);
 

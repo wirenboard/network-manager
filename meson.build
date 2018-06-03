@@ -4,7 +4,7 @@ project(
 #  - add corresponding NM_VERSION_x_y_z macros in
 #    "shared/nm-version-macros.h.in"
 #  - update number in configure.ac
-  version: '1.11.3',
+  version: '1.11.4',
   license: 'GPL2+',
   default_options: [
     'buildtype=debugoptimized',
@@ -25,6 +25,12 @@ nm_id_prefix = 'NM'
 
 nm_gir_version = '1.0'
 
+# Distribution version string
+dist_version = get_option('dist_version')
+if dist_version == ''
+  dist_version = nm_version
+endif
+
 nm_prefix = get_option('prefix')
 nm_bindir = join_paths(nm_prefix, get_option('bindir'))
 nm_datadir = join_paths(nm_prefix, get_option('datadir'))
@@ -42,9 +48,16 @@ nm_pkgsbindir = join_paths(nm_sbindir, nm_name)
 nm_pkgconfdir = join_paths(nm_sysconfdir, nm_name)
 nm_pkgdatadir = join_paths(nm_datadir, nm_name)
 nm_pkgincludedir = join_paths(nm_includedir, nm_name)
-nm_pkglibdir = join_paths(nm_libdir, nm_name)
+nm_pkglibdir = join_paths(nm_prefix, 'lib', nm_name)
 nm_pkgrundir = join_paths(nm_runstatedir, nm_name)
 nm_pkgstatedir = join_paths(nm_localstatedir, nm_name)
+nm_vpndir = join_paths(nm_libdir, nm_name)
+nm_plugindir = join_paths(nm_libdir, nm_name, dist_version)
+
+nm_build_cflags = [
+  '-DNM_BUILD_SRCDIR="@0@"'.format(meson.source_root()),
+  '-DNM_BUILD_BUILDDIR="@0@"'.format(meson.build_root()),
+]
 
 libnm_name = 'libnm'
 
@@ -258,11 +271,7 @@ if config_plugins_default == ''
 endif
 config_h.set_quoted('NM_CONFIG_DEFAULT_MAIN_PLUGINS', config_plugins_default)
 
-# Distribution version string
-dist_version = get_option('dist_version')
-if dist_version != ''
-  config_h.set('NM_DIST_VERSION', dist_version)
-endif
+config_h.set_quoted('NM_DIST_VERSION', dist_version)
 
 enable_wifi = get_option('wifi')
 config_h.set10('WITH_WIFI', enable_wifi)
@@ -740,14 +749,12 @@ endif
 
 test_args = [
   '--called-from-make',
+  meson.build_root(),
   '',
   enable_valgrind ? valgrind.path() : '',
   enable_valgrind ? valgrind_suppressions_path : '',
   '--launch-dbus=auto'
 ]
-
-# FIXME
-#AC_SUBST(NM_LOG_COMPILER, 'LOG_COMPILER = "$(top_srcdir)/tools/run-nm-test.sh" --called-from-make "$(LIBTOOL)" "$(with_valgrind)" "'"$with_valgrind_suppressions"'" --launch-dbus=auto')
 
 py3 = import('python3')
 python = py3.find_python()
@@ -886,6 +893,8 @@ output += '  nmlibdir: ' + nm_pkglibdir + '\n'
 output += '  nmdatadir: ' + nm_pkgdatadir + '\n'
 output += '  nmstatedir: ' + nm_pkgstatedir + '\n'
 output += '  nmrundir: ' + nm_pkgrundir + '\n'
+output += '  nmvpndir: ' + nm_vpndir + '\n'
+output += '  nmplugindir: ' + nm_plugindir + '\n'
 output += '\nPlatform:\n'
 output += '  session tracking: ' + ','.join(session_trackers) + '\n'
 output += '  suspend/resume: ' + suspend_resume + '\n'

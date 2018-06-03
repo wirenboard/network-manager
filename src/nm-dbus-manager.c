@@ -83,6 +83,8 @@ typedef struct {
 	GDBusConnection *connection;
 	GDBusProxy *proxy;
 	guint objmgr_registration_id;
+	bool started:1;
+	bool shutting_down:1;
 } NMDBusManagerPrivate;
 
 struct _NMDBusManager {
@@ -787,6 +789,8 @@ dbus_vtable_method_call (GDBusConnection *connection,
                          GDBusMethodInvocation *invocation,
                          gpointer user_data)
 {
+	NMDBusManager *self;
+	NMDBusManagerPrivate *priv;
 	RegistrationData *reg_data = user_data;
 	NMDBusObject *obj = reg_data->obj;
 	const NMDBusInterfaceInfoExtended *interface_info = _reg_data_get_interface_info (reg_data);
@@ -799,12 +803,13 @@ dbus_vtable_method_call (GDBusConnection *connection,
 	if (   !on_same_interface
 	    && nm_streq (interface_name, DBUS_INTERFACE_PROPERTIES)
 	    && nm_streq (method_name, "Set")) {
-		NMDBusManager *self = nm_dbus_object_get_manager (obj);
-		NMDBusManagerPrivate *priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
 		const NMDBusPropertyInfoExtended *property_info = NULL;
 		const char *property_interface;
 		const char *property_name;
 		gs_unref_variant GVariant *value = NULL;
+
+		self = nm_dbus_object_get_manager (obj);
+		priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
 
 		g_variant_get (parameters, "(&s&sv)", &property_interface, &property_name, &value);
 
@@ -847,6 +852,17 @@ dbus_vtable_method_call (GDBusConnection *connection,
 		                                       G_DBUS_ERROR_UNKNOWN_METHOD,
 		                                       "Unknown method %s",
 		                                       method_name);
+		return;
+	}
+
+	self = nm_dbus_object_get_manager (obj);
+	priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
+	if (   priv->shutting_down
+	    && !method_info->allow_during_shutdown) {
+		g_dbus_method_invocation_return_error_literal (invocation,
+		                                               G_DBUS_ERROR,
+		                                               G_DBUS_ERROR_FAILED,
+		                                               "NetworkManager is exiting");
 		return;
 	}
 
@@ -930,6 +946,7 @@ _obj_register (NMDBusManager *self,
 
 	nm_assert (c_list_is_empty (&obj->internal.registration_lst_head));
 	nm_assert (priv->connection);
+	nm_assert (priv->started);
 
 	n_klasses = 0;
 	gtype = G_OBJECT_TYPE (obj);
@@ -1107,7 +1124,7 @@ _nm_dbus_manager_obj_export (NMDBusObject *obj)
 		nm_assert_not_reached ();
 	c_list_link_tail (&priv->objects_lst_head, &obj->internal.objects_lst);
 
-	if (priv->connection)
+	if (priv->connection && priv->started)
 		_obj_register (self, obj);
 }
 
@@ -1306,7 +1323,7 @@ _nm_dbus_manager_obj_emit_signal (NMDBusObject *obj,
 	self = obj->internal.bus_manager;
 	priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
 
-	if (!priv->connection) {
+	if (!priv->connection || !priv->started) {
 		nm_g_variant_unref_floating (args);
 		return;
 	}
@@ -1453,10 +1470,28 @@ static const GDBusInterfaceInfo interface_info_objmgr = NM_DEFINE_GDBUS_INTERFAC
 
 /*****************************************************************************/
 
-gboolean
+void
 nm_dbus_manager_start (NMDBusManager *self,
                        NMDBusManagerSetPropertyHandler set_property_handler,
                        gpointer set_property_handler_data)
+{
+	NMDBusManagerPrivate *priv;
+	NMDBusObject *obj;
+
+	g_return_if_fail (NM_IS_DBUS_MANAGER (self));
+	priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
+	g_return_if_fail (priv->connection);
+
+	priv->set_property_handler = set_property_handler;
+	priv->set_property_handler_data = set_property_handler_data;
+	priv->started = TRUE;
+
+	c_list_for_each_entry (obj, &priv->objects_lst_head, internal.objects_lst)
+		_obj_register (self, obj);
+}
+
+gboolean
+nm_dbus_manager_acquire_bus (NMDBusManager *self)
 {
 	NMDBusManagerPrivate *priv;
 	gs_free_error GError *error = NULL;
@@ -1465,16 +1500,10 @@ nm_dbus_manager_start (NMDBusManager *self,
 	gs_unref_object GDBusProxy *proxy = NULL;
 	guint32 result;
 	guint registration_id;
-	NMDBusObject *obj;
 
 	g_return_val_if_fail (NM_IS_DBUS_MANAGER (self), FALSE);
 
 	priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
-
-	priv->set_property_handler = set_property_handler;
-	priv->set_property_handler_data = set_property_handler_data;
-
-	g_return_val_if_fail (!priv->connection, FALSE);
 
 	/* we will create the D-Bus connection and registering the name synchronously.
 	 * The reason why that is necessary is because:
@@ -1527,7 +1556,7 @@ nm_dbus_manager_start (NMDBusManager *self,
 	                                NULL,
 	                                &error);
 	if (!ret) {
-		_LOGE ("fatal failure to aquire D-Bus service \"%s"": %s",
+		_LOGE ("fatal failure to acquire D-Bus service \"%s"": %s",
 		       NM_DBUS_SERVICE, error->message);
 		return FALSE;
 	}
@@ -1555,12 +1584,30 @@ nm_dbus_manager_start (NMDBusManager *self,
 	priv->connection = g_steal_pointer (&connection);
 	priv->proxy = g_steal_pointer (&proxy);
 
-	_LOGI ("aquired D-Bus service \"%s\"", NM_DBUS_SERVICE);
-
-	c_list_for_each_entry (obj, &priv->objects_lst_head, internal.objects_lst)
-		_obj_register (self, obj);
+	_LOGI ("acquired D-Bus service \"%s\"", NM_DBUS_SERVICE);
 
 	return TRUE;
+}
+
+void
+nm_dbus_manager_stop (NMDBusManager *self)
+{
+	NMDBusManagerPrivate *priv = NM_DBUS_MANAGER_GET_PRIVATE (self);
+
+	priv->shutting_down = TRUE;
+
+	/* during shutdown we also clear the set-property-handler. It's no longer
+	 * possible to set a property, because doing so would require authorization,
+	 * which is async, which is just complicated to get right. No more property
+	 * setting from now on. */
+	priv->set_property_handler = NULL;
+	priv->set_property_handler_data = NULL;
+}
+
+gboolean
+nm_dbus_manager_is_stopping (NMDBusManager *self)
+{
+	return NM_DBUS_MANAGER_GET_PRIVATE (self)->shutting_down;
 }
 
 /*****************************************************************************/

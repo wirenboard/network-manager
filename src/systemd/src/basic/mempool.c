@@ -4,19 +4,6 @@
 
   Copyright 2010-2014 Lennart Poettering
   Copyright 2014 Michal Schmidt
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -30,12 +17,12 @@
 
 struct pool {
         struct pool *next;
-        unsigned n_tiles;
-        unsigned n_used;
+        size_t n_tiles;
+        size_t n_used;
 };
 
 void* mempool_alloc_tile(struct mempool *mp) {
-        unsigned i;
+        size_t i;
 
         /* When a tile is released we add it to the list and simply
          * place the next pointer at its offset 0. */
@@ -53,8 +40,7 @@ void* mempool_alloc_tile(struct mempool *mp) {
 
         if (_unlikely_(!mp->first_pool) ||
             _unlikely_(mp->first_pool->n_used >= mp->first_pool->n_tiles)) {
-                unsigned n;
-                size_t size;
+                size_t size, n;
                 struct pool *p;
 
                 n = mp->first_pool ? mp->first_pool->n_tiles : 0;
@@ -92,7 +78,7 @@ void mempool_free_tile(struct mempool *mp, void *p) {
         mp->freelist = p;
 }
 
-#ifdef VALGRIND
+#if VALGRIND
 
 void mempool_drop(struct mempool *mp) {
         struct pool *p = mp->first_pool;

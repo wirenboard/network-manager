@@ -3,19 +3,6 @@
   This file is part of systemd.
 
   Copyright (C) 2013 Intel Corporation. All rights reserved.
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -42,6 +29,7 @@
 #include "random-util.h"
 #include "string-util.h"
 #include "util.h"
+#include "strv.h"
 
 #define MAX_CLIENT_ID_LEN (sizeof(uint32_t) + MAX_DUID_LEN)  /* Arbitrary limit */
 #define MAX_MAC_ADDR_LEN CONST_MAX(INFINIBAND_ALEN, ETH_ALEN)
@@ -98,6 +86,7 @@ struct sd_dhcp_client {
         size_t client_id_len;
         char *hostname;
         char *vendor_class_identifier;
+        char **user_class;
         uint32_t mtu;
         uint32_t xid;
         usec_t start_time;
@@ -458,6 +447,26 @@ int sd_dhcp_client_set_vendor_class_identifier(
         return free_and_strdup(&client->vendor_class_identifier, vci);
 }
 
+int sd_dhcp_client_set_user_class(
+                sd_dhcp_client *client,
+                const char* const* user_class) {
+
+        _cleanup_strv_free_ char **s = NULL;
+        char **p;
+
+        STRV_FOREACH(p, (char **) user_class)
+                if (strlen(*p) > 255)
+                        return -ENAMETOOLONG;
+
+        s = strv_copy((char **) user_class);
+        if (!s)
+                return -ENOMEM;
+
+        client->user_class = TAKE_PTR(s);
+
+        return 0;
+}
+
 int sd_dhcp_client_set_client_port(
                 sd_dhcp_client *client,
                 uint16_t port) {
@@ -687,8 +696,7 @@ static int client_message_init(
 
         *_optlen = optlen;
         *_optoffset = optoffset;
-        *ret = packet;
-        packet = NULL;
+        *ret = TAKE_PTR(packet);
 
         return 0;
 }
@@ -778,6 +786,15 @@ static int client_send_discover(sd_dhcp_client *client) {
                                        SD_DHCP_OPTION_VENDOR_CLASS_IDENTIFIER,
                                        strlen(client->vendor_class_identifier),
                                        client->vendor_class_identifier);
+                if (r < 0)
+                        return r;
+        }
+
+        if (client->user_class) {
+                r = dhcp_option_append(&discover->dhcp, optlen, &optoffset, 0,
+                                       SD_DHCP_OPTION_USER_CLASS,
+                                       strv_length(client->user_class),
+                                       client->user_class);
                 if (r < 0)
                         return r;
         }
@@ -1293,8 +1310,7 @@ static int client_handle_offer(sd_dhcp_client *client, DHCPMessage *offer, size_
         }
 
         sd_dhcp_lease_unref(client->lease);
-        client->lease = lease;
-        lease = NULL;
+        client->lease = TAKE_PTR(lease);
 
         log_dhcp_client(client, "OFFER");
 
@@ -1375,8 +1391,7 @@ static int client_handle_ack(sd_dhcp_client *client, DHCPMessage *ack, size_t le
                 client->lease = sd_dhcp_lease_unref(client->lease);
         }
 
-        client->lease = lease;
-        lease = NULL;
+        client->lease = TAKE_PTR(lease);
 
         log_dhcp_client(client, "ACK");
 
@@ -1939,6 +1954,7 @@ sd_dhcp_client *sd_dhcp_client_unref(sd_dhcp_client *client) {
         free(client->req_opts);
         free(client->hostname);
         free(client->vendor_class_identifier);
+        client->user_class = strv_free(client->user_class);
         return mfree(client);
 }
 
@@ -1971,8 +1987,7 @@ int sd_dhcp_client_new(sd_dhcp_client **ret, int anonymize) {
         if (!client->req_opts)
                 return -ENOMEM;
 
-        *ret = client;
-        client = NULL;
+        *ret = TAKE_PTR(client);
 
         return 0;
 }

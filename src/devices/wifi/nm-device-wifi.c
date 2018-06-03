@@ -2147,9 +2147,9 @@ supplicant_iface_notify_current_bss (NMSupplicantInterface *iface,
 		}
 
 		_LOGD (LOGD_WIFI, "roamed from BSSID %s (%s) to %s (%s)",
-		       old_bssid ? old_bssid : "(none)",
+		       old_bssid ?: "(none)",
 		       old_ssid ? nm_utils_escape_ssid (old_ssid->data, old_ssid->len) : "(none)",
-		       new_bssid ? new_bssid : "(none)",
+		       new_bssid ?: "(none)",
 		       new_ssid ? nm_utils_escape_ssid (new_ssid->data, new_ssid->len) : "(none)");
 
 		set_current_ap (self, new_ap, TRUE);
@@ -2832,7 +2832,6 @@ handle_ip_config_timeout (NMDeviceWifi *self,
 
 	return ret;
 }
-
 
 static NMActStageReturn
 act_stage4_ip4_config_timeout (NMDevice *device, NMDeviceStateReason *out_failure_reason)

@@ -1070,6 +1070,14 @@ test_software_detect (gconstpointer user_data)
 			if (lnk)
 				g_assert (memcmp (plnk, &lnk_tun2, sizeof (NMPlatformLnkTun)) == 0);
 
+			if (i_step == 0) {
+				/* Before we upped the device for the first time the kernel didn't notify
+				 * us of the owner set after the link creation:
+				 * https://bugzilla.redhat.com/show_bug.cgi?id=1566062
+				 */
+				break;
+			}
+
 			g_assert (nm_platform_lnk_tun_cmp (plnk, &lnk_tun) == 0);
 			break;
 		}
@@ -1513,7 +1521,6 @@ test_vlan_set_xgress (void)
 		                              6, 7);
 	}
 
-
 	{
 		const NMVlanQosMapping ingress_map[] = {
 			{ .from = 1, .to = 5 },
@@ -1826,13 +1833,11 @@ test_nl_bugs_veth (void)
 	}
 	g_assert_cmpint (pllink_veth0->parent, ==, ifindex_veth1);
 
-
 	/* The following tests whether we have a workaround for kernel bug
 	 * https://bugzilla.redhat.com/show_bug.cgi?id=1285827 in place. */
 	pllink_veth1 = nm_platform_link_get (NM_PLATFORM_GET, ifindex_veth1);
 	g_assert (pllink_veth1);
 	g_assert_cmpint (pllink_veth1->parent, ==, ifindex_veth0);
-
 
 	/* move one veth peer to another namespace and check that the
 	 * parent/IFLA_LINK of the remaining peer properly updates
@@ -2380,7 +2385,6 @@ test_netns_push (gpointer fixture, gconstpointer test_data)
 		} else
 			g_assert_not_reached ();
 	}
-
 
 	for (i = nstack; i >= 1; ) {
 		i--;

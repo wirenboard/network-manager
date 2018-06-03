@@ -549,6 +549,108 @@ nm_cmp_int2ptr_p_with_data (gconstpointer p_a, gconstpointer p_b, gpointer user_
 
 /*****************************************************************************/
 
+const char *
+nm_utils_dbus_path_get_last_component (const char *dbus_path)
+{
+	if (dbus_path) {
+		dbus_path = strrchr (dbus_path, '/');
+		if (dbus_path)
+			return dbus_path + 1;
+	}
+	return NULL;
+}
+
+static gint64
+_dbus_path_component_as_num (const char *p)
+{
+	gint64 n;
+
+	/* no odd stuff. No leading zeros, only a non-negative, decimal integer.
+	 *
+	 * Otherwise, there would be multiple ways to encode the same number "10"
+	 * and "010". That is just confusing. A number has no leading zeros,
+	 * if it has, it's not a number (as far as we are concerned here). */
+	if (p[0] == '0') {
+		if (p[1] != '\0')
+			return -1;
+		else
+			return 0;
+	}
+	if (!(p[0] >= '1' && p[0] <= '9'))
+		return -1;
+	if (!NM_STRCHAR_ALL (&p[1], ch, (ch >= '0' && ch <= '9')))
+		return -1;
+	n = _nm_utils_ascii_str_to_int64 (p, 10, 0, G_MAXINT64, -1);
+	nm_assert (n == -1 || nm_streq0 (p, nm_sprintf_bufa (100, "%"G_GINT64_FORMAT, n)));
+	return n;
+}
+
+int
+nm_utils_dbus_path_cmp (const char *dbus_path_a, const char *dbus_path_b)
+{
+	const char *l_a, *l_b;
+	gsize plen;
+	gint64 n_a, n_b;
+
+	/* compare function for two D-Bus paths. It behaves like
+	 * strcmp(), except, if both paths have the same prefix,
+	 * and both end in a (positive) number, then the paths
+	 * will be sorted by number. */
+
+	NM_CMP_SELF (dbus_path_a, dbus_path_b);
+
+	/* if one or both paths have no slash (and no last component)
+	 * compare the full paths directly. */
+	if (   !(l_a = nm_utils_dbus_path_get_last_component (dbus_path_a))
+	    || !(l_b = nm_utils_dbus_path_get_last_component (dbus_path_b)))
+		goto comp_full;
+
+	/* check if both paths have the same prefix (up to the last-component). */
+	plen = l_a - dbus_path_a;
+	if (plen != (l_b - dbus_path_b))
+		goto comp_full;
+	NM_CMP_RETURN (strncmp (dbus_path_a, dbus_path_b, plen));
+
+	n_a = _dbus_path_component_as_num (l_a);
+	n_b = _dbus_path_component_as_num (l_b);
+	if (n_a == -1 && n_b == -1)
+		goto comp_l;
+
+	/* both components must be convertiable to a number. If they are not,
+	 * (and only one of them is), then we must always strictly sort numeric parts
+	 * after non-numeric components. If we wouldn't, we wouldn't have
+	 * a total order.
+	 *
+	 * An example of a not total ordering would be:
+	 *   "8"   < "010"  (numeric)
+	 *   "0x"  < "8"    (lexical)
+	 *   "0x"  > "010"  (lexical)
+	 * We avoid this, by forcing that a non-numeric entry "0x" always sorts
+	 * before numeric entries.
+	 *
+	 * Additionally, _dbus_path_component_as_num() would also reject "010" as
+	 * not a valid number.
+	 */
+	if (n_a == -1)
+		return -1;
+	if (n_b == -1)
+		return 1;
+
+	NM_CMP_DIRECT (n_a, n_b);
+	nm_assert (nm_streq (dbus_path_a, dbus_path_b));
+	return 0;
+
+comp_full:
+	NM_CMP_DIRECT_STRCMP0 (dbus_path_a, dbus_path_b);
+	return 0;
+comp_l:
+	NM_CMP_DIRECT_STRCMP0 (l_a, l_b);
+	nm_assert (nm_streq (dbus_path_a, dbus_path_b));
+	return 0;
+}
+
+/*****************************************************************************/
+
 /**
  * nm_utils_strsplit_set:
  * @str: the string to split.
@@ -1269,8 +1371,7 @@ nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid)
 	char filename[256];
 	gs_free gchar *contents = NULL;
 	size_t length;
-	gs_strfreev gchar **tokens = NULL;
-	guint num_tokens;
+	gs_free const char **tokens = NULL;
 	gchar *p;
 	char state = ' ';
 	gint64 ppid = 0;
@@ -1290,7 +1391,7 @@ nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid)
 	 * processes trying to fool us
 	 */
 	p = strrchr (contents, ')');
-	if (p == NULL)
+	if (!p)
 		goto fail;
 	p += 2; /* skip ') ' */
 	if (p - contents >= (int) length)
@@ -1298,11 +1399,9 @@ nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid)
 
 	state = p[0];
 
-	tokens = g_strsplit (p, " ", 0);
+	tokens = nm_utils_strsplit_set (p, " ");
 
-	num_tokens = g_strv_length (tokens);
-
-	if (num_tokens < 20)
+	if (NM_PTRARRAY_LEN (tokens) < 20)
 		goto fail;
 
 	if (out_ppid) {
@@ -1358,4 +1457,45 @@ _nm_utils_strv_sort (const char **strv, gssize len)
 	                   sizeof (const char *),
 	                   nm_strcmp_p_with_data,
 	                   NULL);
+}
+
+/*****************************************************************************/
+
+gpointer
+_nm_utils_user_data_pack (int nargs, gconstpointer *args)
+{
+	int i;
+	gpointer *data;
+
+	nm_assert (nargs > 0);
+	nm_assert (args);
+
+	data = g_slice_alloc (((gsize) nargs) * sizeof (gconstpointer));
+	for (i = 0; i < nargs; i++)
+		data[i] = (gpointer) args[i];
+	return data;
+}
+
+void
+_nm_utils_user_data_unpack (gpointer user_data, int nargs, ...)
+{
+	gpointer *data = user_data;
+	va_list ap;
+	int i;
+
+	nm_assert (data);
+	nm_assert (nargs > 0);
+
+	va_start (ap, nargs);
+	for (i = 0; i < nargs; i++) {
+		gpointer *dst;
+
+		dst = va_arg (ap, gpointer *);
+		nm_assert (dst);
+
+		*dst = data[i];
+	}
+	va_end (ap);
+
+	g_slice_free1 (((gsize) nargs) * sizeof (gconstpointer), user_data);
 }

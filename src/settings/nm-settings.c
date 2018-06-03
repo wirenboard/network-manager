@@ -493,21 +493,28 @@ nm_settings_get_connection_by_path (NMSettings *self, const char *path)
 gboolean
 nm_settings_has_connection (NMSettings *self, NMSettingsConnection *connection)
 {
-	NMSettingsConnection *candidate = NULL;
-	const char *path;
+	gboolean has;
 
 	g_return_val_if_fail (NM_IS_SETTINGS (self), FALSE);
 	g_return_val_if_fail (NM_IS_SETTINGS_CONNECTION (connection), FALSE);
 
-	path = nm_dbus_object_get_path (NM_DBUS_OBJECT (connection));
-	if (path)
-		candidate = nm_settings_get_connection_by_path (self, path);
+	has = !c_list_is_empty (&connection->_connections_lst);
 
-	nm_assert (!candidate || candidate == connection);
-	nm_assert (!!candidate == nm_c_list_contains_entry (&NM_SETTINGS_GET_PRIVATE (self)->connections_lst_head,
-	                                                    connection,
-	                                                    _connections_lst));
-	return !!candidate;
+	nm_assert (has == nm_c_list_contains_entry (&NM_SETTINGS_GET_PRIVATE (self)->connections_lst_head,
+                                                connection,
+                                                _connections_lst));
+	nm_assert (({
+		NMSettingsConnection *candidate = NULL;
+		const char *path;
+
+		path = nm_dbus_object_get_path (NM_DBUS_OBJECT (connection));
+		if (path)
+			candidate = nm_settings_get_connection_by_path (self, path);
+
+		(has == (connection == candidate));
+	}));
+
+	return has;
 }
 
 const GSList *
@@ -519,7 +526,7 @@ nm_settings_get_unmanaged_specs (NMSettings *self)
 }
 
 static NMSettingsPlugin *
-get_plugin (NMSettings *self, NMSettingsPluginCapabilities capability)
+get_plugin (NMSettings *self, gboolean has_add_connection)
 {
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
 	GSList *iter;
@@ -528,11 +535,13 @@ get_plugin (NMSettings *self, NMSettingsPluginCapabilities capability)
 
 	/* Do any of the plugins support the given capability? */
 	for (iter = priv->plugins; iter; iter = iter->next) {
-		NMSettingsPluginCapabilities caps = NM_SETTINGS_PLUGIN_CAP_NONE;
+		NMSettingsPlugin *plugin = NM_SETTINGS_PLUGIN (iter->data);
 
-		g_object_get (G_OBJECT (iter->data), NM_SETTINGS_PLUGIN_CAPABILITIES, &caps, NULL);
-		if (NM_FLAGS_ALL (caps, capability))
-			return NM_SETTINGS_PLUGIN (iter->data);
+		if (!has_add_connection)
+			return plugin;
+
+		if (NM_SETTINGS_PLUGIN_GET_INTERFACE (iter->data)->add_connection != NULL)
+			return plugin;
 	}
 
 	return NULL;
@@ -602,8 +611,6 @@ static gboolean
 add_plugin (NMSettings *self, NMSettingsPlugin *plugin)
 {
 	NMSettingsPrivate *priv;
-	char *pname = NULL;
-	char *pinfo = NULL;
 	const char *path;
 
 	g_return_val_if_fail (NM_IS_SETTINGS (self), FALSE);
@@ -619,44 +626,102 @@ add_plugin (NMSettings *self, NMSettingsPlugin *plugin)
 	priv->plugins = g_slist_append (priv->plugins, g_object_ref (plugin));
 	nm_settings_plugin_init (plugin);
 
-	g_object_get (G_OBJECT (plugin),
-	              NM_SETTINGS_PLUGIN_NAME, &pname,
-	              NM_SETTINGS_PLUGIN_INFO, &pinfo,
-	              NULL);
 
 	path = g_object_get_qdata (G_OBJECT (plugin), plugin_module_path_quark ());
 
-	_LOGI ("loaded plugin %s: %s%s%s%s", pname, pinfo,
-	       NM_PRINT_FMT_QUOTED (path, " (", path, ")", ""));
-	g_free (pname);
-	g_free (pinfo);
+	_LOGI ("Loaded settings plugin: %s (%s)", G_OBJECT_TYPE_NAME (plugin), path ?: "internal");
 
 	return TRUE;
 }
 
-static GObject *
-find_plugin (GSList *list, const char *pname)
+static gboolean
+plugin_loaded (GSList *list, const char *path)
 {
 	GSList *iter;
-	GObject *obj = NULL;
 
-	g_return_val_if_fail (pname != NULL, NULL);
+	g_return_val_if_fail (path != NULL, TRUE);
 
-	for (iter = list; iter && !obj; iter = g_slist_next (iter)) {
-		NMSettingsPlugin *plugin = NM_SETTINGS_PLUGIN (iter->data);
-		char *list_pname = NULL;
+	for (iter = list; iter; iter = g_slist_next (iter)) {
+		const char *list_path = g_object_get_qdata (G_OBJECT (iter->data),
+		                                            plugin_module_path_quark ());
 
-		g_object_get (G_OBJECT (plugin),
-		              NM_SETTINGS_PLUGIN_NAME,
-		              &list_pname,
-		              NULL);
-		if (list_pname && !strcmp (pname, list_pname))
-			obj = G_OBJECT (plugin);
-
-		g_free (list_pname);
+		if (g_strcmp0 (path, list_path) == 0)
+			return TRUE;
 	}
 
-	return obj;
+	return FALSE;
+}
+
+static gboolean
+load_plugin (NMSettings *self, GSList *list, const char *pname, GError **error)
+{
+	gs_free char *full_name = NULL;
+	gs_free char *path = NULL;
+	gs_unref_object GObject *obj = NULL;
+	GModule *plugin;
+	GObject * (*factory_func) (void);
+	struct stat st;
+	int errsv;
+
+	full_name = g_strdup_printf ("nm-settings-plugin-%s", pname);
+	path = g_module_build_path (NMPLUGINDIR, full_name);
+
+	if (plugin_loaded (list, path))
+		return TRUE;
+
+	if (stat (path, &st) != 0) {
+		errsv = errno;
+		_LOGW ("could not load plugin '%s' from file '%s': %s", pname, path, strerror (errsv));
+		return TRUE;
+	}
+	if (!S_ISREG (st.st_mode)) {
+		_LOGW ("could not load plugin '%s' from file '%s': not a file", pname, path);
+		return TRUE;
+	}
+	if (st.st_uid != 0) {
+		_LOGW ("could not load plugin '%s' from file '%s': file must be owned by root", pname, path);
+		return TRUE;
+	}
+	if (st.st_mode & (S_IWGRP | S_IWOTH | S_ISUID)) {
+		_LOGW ("could not load plugin '%s' from file '%s': invalid file permissions", pname, path);
+		return TRUE;
+	}
+
+	plugin = g_module_open (path, G_MODULE_BIND_LOCAL);
+	if (!plugin) {
+		_LOGW ("could not load plugin '%s' from file '%s': %s",
+		     pname, path, g_module_error ());
+		return TRUE;
+	}
+
+	/* errors after this point are fatal, because we loaded the shared library already. */
+
+	if (!g_module_symbol (plugin, "nm_settings_plugin_factory", (gpointer) (&factory_func))) {
+		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
+		             "Could not find plugin '%s' factory function.",
+		             pname);
+		g_module_close (plugin);
+		return FALSE;
+	}
+
+	/* after accessing the plugin we cannot unload it anymore, because the glib
+	 * types cannot be properly unregistered. */
+	g_module_make_resident (plugin);
+
+	obj = (*factory_func) ();
+	if (!obj || !NM_IS_SETTINGS_PLUGIN (obj)) {
+		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
+		             "Plugin '%s' returned invalid system config object.",
+		             pname);
+		return FALSE;
+	}
+
+	g_object_set_qdata_full (obj, plugin_module_path_quark (), path, g_free);
+	path = NULL;
+	if (add_plugin (self, NM_SETTINGS_PLUGIN (obj)))
+		list = g_slist_append (list, g_steal_pointer (&obj));
+
+	return TRUE;
 }
 
 static void
@@ -689,7 +754,6 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 
 	for (iter = plugins; iter && *iter; iter++) {
 		const char *pname = *iter;
-		GObject *obj;
 
 		if (!*pname || strchr (pname, '/')) {
 			_LOGW ("ignore invalid plugin \"%s\"", pname);
@@ -723,84 +787,19 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 			continue;
 		}
 
-		if (find_plugin (list, pname))
-			continue;
+		success = load_plugin (self, list, pname, error);
+		if (!success)
+			break;
 
-load_plugin:
-		{
-			GModule *plugin;
-			gs_free char *full_name = NULL;
-			gs_free char *path = NULL;
-			GObject * (*factory_func) (void);
-			struct stat st;
-			int errsv;
-
-			full_name = g_strdup_printf ("nm-settings-plugin-%s", pname);
-			path = g_module_build_path (NMPLUGINDIR, full_name);
-
-			if (stat (path, &st) != 0) {
-				errsv = errno;
-				_LOGW ("could not load plugin '%s' from file '%s': %s", pname, path, strerror (errsv));
-				goto next;
-			}
-			if (!S_ISREG (st.st_mode)) {
-				_LOGW ("could not load plugin '%s' from file '%s': not a file", pname, path);
-				goto next;
-			}
-			if (st.st_uid != 0) {
-				_LOGW ("could not load plugin '%s' from file '%s': file must be owned by root", pname, path);
-				goto next;
-			}
-			if (st.st_mode & (S_IWGRP | S_IWOTH | S_ISUID)) {
-				_LOGW ("could not load plugin '%s' from file '%s': invalid file permissions", pname, path);
-				goto next;
-			}
-
-			plugin = g_module_open (path, G_MODULE_BIND_LOCAL);
-			if (!plugin) {
-				_LOGW ("could not load plugin '%s' from file '%s': %s",
-				     pname, path, g_module_error ());
-				goto next;
-			}
-
-			/* errors after this point are fatal, because we loaded the shared library already. */
-
-			if (!g_module_symbol (plugin, "nm_settings_plugin_factory", (gpointer) (&factory_func))) {
-				g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
-				             "Could not find plugin '%s' factory function.",
-				             pname);
-				success = FALSE;
-				g_module_close (plugin);
-				break;
-			}
-
-			/* after accessing the plugin we cannot unload it anymore, because the glib
-			 * types cannot be properly unregistered. */
-			g_module_make_resident (plugin);
-
-			obj = (*factory_func) ();
-			if (!obj || !NM_IS_SETTINGS_PLUGIN (obj)) {
-				g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
-				             "Plugin '%s' returned invalid system config object.",
-				             pname);
-				success = FALSE;
-				break;
-			}
-
-			g_object_set_qdata_full (obj, plugin_module_path_quark (), path, g_free);
-			path = NULL;
-			if (add_plugin (self, NM_SETTINGS_PLUGIN (obj)))
-				list = g_slist_append (list, obj);
-			else
-				g_object_unref (obj);
-		}
-next:
 		if (add_ibft && !strcmp (pname, "ifcfg-rh")) {
 			/* The plugin ibft is not explicitly mentioned but we just enabled "ifcfg-rh".
 			 * Enable "ibft" by default after "ifcfg-rh". */
 			pname = "ibft";
 			add_ibft = FALSE;
-			goto load_plugin;
+
+			success = load_plugin (self, list, "ibft", error);
+			if (!success)
+				break;
 		}
 	}
 
@@ -1239,19 +1238,20 @@ void
 nm_settings_add_connection_dbus (NMSettings *self,
                                  NMConnection *connection,
                                  gboolean save_to_disk,
+                                 NMAuthSubject *subject,
                                  GDBusMethodInvocation *context,
                                  NMSettingsAddCallback callback,
                                  gpointer user_data)
 {
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
 	NMSettingConnection *s_con;
-	NMAuthSubject *subject = NULL;
 	NMAuthChain *chain;
 	GError *error = NULL, *tmp_error = NULL;
 	const char *perm;
 
-	g_return_if_fail (connection != NULL);
-	g_return_if_fail (context != NULL);
+	g_return_if_fail (NM_IS_CONNECTION (connection));
+	g_return_if_fail (NM_IS_AUTH_SUBJECT (subject));
+	g_return_if_fail (G_IS_DBUS_METHOD_INVOCATION (context));
 
 	/* Connection must be valid, of course */
 	if (!nm_connection_verify (connection, &tmp_error)) {
@@ -1275,18 +1275,10 @@ nm_settings_add_connection_dbus (NMSettings *self,
 	}
 
 	/* Do any of the plugins support adding? */
-	if (!get_plugin (self, NM_SETTINGS_PLUGIN_CAP_MODIFY_CONNECTIONS)) {
+	if (!get_plugin (self, TRUE)) {
 		error = g_error_new_literal (NM_SETTINGS_ERROR,
 		                             NM_SETTINGS_ERROR_NOT_SUPPORTED,
 		                             "None of the registered plugins support add.");
-		goto done;
-	}
-
-	subject = nm_auth_subject_new_unix_process_from_context (context);
-	if (!subject) {
-		error = g_error_new_literal (NM_SETTINGS_ERROR,
-		                             NM_SETTINGS_ERROR_PERMISSION_DENIED,
-		                             "Unable to determine UID of request.");
 		goto done;
 	}
 
@@ -1318,20 +1310,19 @@ nm_settings_add_connection_dbus (NMSettings *self,
 	}
 
 	priv->auths = g_slist_append (priv->auths, chain);
-	nm_auth_chain_add_call (chain, perm, TRUE);
 	nm_auth_chain_set_data (chain, "perm", (gpointer) perm, NULL);
 	nm_auth_chain_set_data (chain, "connection", g_object_ref (connection), g_object_unref);
 	nm_auth_chain_set_data (chain, "callback", callback, NULL);
 	nm_auth_chain_set_data (chain, "callback-data", user_data, NULL);
 	nm_auth_chain_set_data (chain, "subject", g_object_ref (subject), g_object_unref);
 	nm_auth_chain_set_data (chain, "save-to-disk", GUINT_TO_POINTER (save_to_disk), NULL);
+	nm_auth_chain_add_call (chain, perm, TRUE);
+	return;
 
 done:
-	if (error)
-		callback (self, NULL, error, context, subject, user_data);
-
-	g_clear_error (&error);
-	g_clear_object (&subject);
+	nm_assert (error);
+	callback (self, NULL, error, context, subject, user_data);
+	g_error_free (error);
 }
 
 static void
@@ -1362,6 +1353,7 @@ settings_add_connection_helper (NMSettings *self,
 {
 	gs_unref_object NMConnection *connection = NULL;
 	GError *error = NULL;
+	gs_unref_object NMAuthSubject *subject = NULL;
 
 	connection = _nm_simple_connection_new_from_dbus (settings,
 	                                                    NM_SETTING_PARSE_FLAGS_STRICT
@@ -1374,9 +1366,19 @@ settings_add_connection_helper (NMSettings *self,
 		return;
 	}
 
+	subject = nm_auth_subject_new_unix_process_from_context (context);
+	if (!subject) {
+		g_dbus_method_invocation_return_error_literal (context,
+		                                               NM_SETTINGS_ERROR,
+		                                               NM_SETTINGS_ERROR_PERMISSION_DENIED,
+		                                               "Unable to determine UID of request.");
+		return;
+	}
+
 	nm_settings_add_connection_dbus (self,
 	                                 connection,
 	                                 save_to_disk,
+	                                 subject,
 	                                 context,
 	                                 settings_add_connection_add_cb,
 	                                 NULL);
@@ -1857,7 +1859,7 @@ get_property (GObject *object, guint prop_id,
 		                      : NULL);
 		break;
 	case PROP_CAN_MODIFY:
-		g_value_set_boolean (value, !!get_plugin (self, NM_SETTINGS_PLUGIN_CAP_MODIFY_CONNECTIONS));
+		g_value_set_boolean (value, !!get_plugin (self, TRUE));
 		break;
 	case PROP_CONNECTIONS:
 		if (priv->connections_loaded) {

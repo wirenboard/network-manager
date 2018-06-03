@@ -151,7 +151,6 @@ typedef struct _NMIP4ConfigClass NMIP4ConfigClass;
 
 GType nm_ip4_config_get_type (void);
 
-
 NMIP4Config * nm_ip4_config_new (NMDedupMultiIndex *multi_idx,
                                  int ifindex);
 
@@ -177,7 +176,6 @@ void nm_ip4_config_merge_setting (NMIP4Config *self,
                                   guint32 route_table,
                                   guint32 route_metric);
 NMSetting *nm_ip4_config_create_setting (const NMIP4Config *self);
-
 
 void nm_ip4_config_merge (NMIP4Config *dst,
                           const NMIP4Config *src,
@@ -290,14 +288,22 @@ gboolean nm_ip4_config_nmpobj_remove (NMIP4Config *self,
 void nm_ip4_config_hash (const NMIP4Config *self, GChecksum *sum, gboolean dns_only);
 gboolean nm_ip4_config_equal (const NMIP4Config *a, const NMIP4Config *b);
 
+gboolean _nm_ip_config_check_and_add_domain (GPtrArray *array, const char *domain);
+
 /*****************************************************************************/
 
 #include "nm-ip6-config.h"
 
 static inline gboolean
-NM_IS_IP_CONFIG (gconstpointer config)
+NM_IS_IP_CONFIG (gconstpointer config, int addr_family)
 {
-	return NM_IS_IP4_CONFIG (config) || NM_IS_IP6_CONFIG (config);
+	if (addr_family == AF_UNSPEC)
+		return NM_IS_IP4_CONFIG (config) || NM_IS_IP6_CONFIG (config);
+	if (addr_family == AF_INET)
+		return NM_IS_IP4_CONFIG (config);
+	if (addr_family == AF_INET6)
+		return NM_IS_IP6_CONFIG (config);
+	g_return_val_if_reached (FALSE);
 }
 
 #if _NM_CC_SUPPORT_GENERIC
@@ -334,7 +340,7 @@ NM_IS_IP_CONFIG (gconstpointer config)
 		                NMIP6Config *     : (NM_IS_IP6_CONFIG (_config))); \
 	})
 #else
-#define _NM_IS_IP_CONFIG(typeexpr, config) NM_IS_IP_CONFIG(config)
+#define _NM_IS_IP_CONFIG(typeexpr, config) NM_IS_IP_CONFIG(config, AF_UNSPEC)
 #endif
 
 #define NM_IP_CONFIG_CAST(config) \
@@ -499,6 +505,12 @@ static inline const char *
 nm_ip_config_get_dns_option (const NMIPConfig *self, guint i)
 {
 	_NM_IP_CONFIG_DISPATCH (self, nm_ip4_config_get_dns_option, nm_ip6_config_get_dns_option, i);
+}
+
+static inline const NMPObject *
+nm_ip_config_best_default_route_get (const NMIPConfig *self)
+{
+	_NM_IP_CONFIG_DISPATCH (self, nm_ip4_config_best_default_route_get, nm_ip6_config_best_default_route_get);
 }
 
 #define _NM_IP_CONFIG_DISPATCH_SET_OP(_return, dst, src, v4_func, v6_func, ...) \

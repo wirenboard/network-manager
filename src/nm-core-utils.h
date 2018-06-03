@@ -158,7 +158,7 @@ double nm_utils_exp10 (gint16 e);
 static inline guint32
 nm_utils_ip6_route_metric_normalize (guint32 metric)
 {
-	return metric ? metric : 1024 /*NM_PLATFORM_ROUTE_METRIC_DEFAULT_IP6*/;
+	return metric ?: 1024 /*NM_PLATFORM_ROUTE_METRIC_DEFAULT_IP6*/;
 }
 
 static inline guint32
@@ -283,7 +283,8 @@ gboolean nm_utils_file_set_contents (const gchar *filename,
 char *nm_utils_machine_id_read (void);
 gboolean nm_utils_machine_id_parse (const char *id_str, /*uuid_t*/ guchar *out_uuid);
 
-guint8 *nm_utils_secret_key_read (gsize *out_key_len, GError **error);
+gboolean nm_utils_secret_key_get (const guint8 **out_secret_key,
+                                  gsize *out_key_len);
 
 const char *nm_utils_get_boot_id (void);
 
@@ -339,8 +340,9 @@ typedef enum {
 } NMUtilsStableType;
 
 NMUtilsStableType nm_utils_stable_id_parse (const char *stable_id,
-                                            const char *uuid,
+                                            const char *deviceid,
                                             const char *bootid,
+                                            const char *uuid,
                                             char **out_generated);
 
 char *nm_utils_stable_id_random (void);
@@ -431,6 +433,8 @@ struct stat;
 gboolean nm_utils_validate_plugin (const char *path, struct stat *stat, GError **error);
 char **nm_utils_read_plugin_paths (const char *dirname, const char *prefix);
 char *nm_utils_format_con_diff_for_audit (GHashTable *diff);
+
+GVariant *nm_utils_strdict_to_variant (GHashTable *options);
 
 /*****************************************************************************/
 

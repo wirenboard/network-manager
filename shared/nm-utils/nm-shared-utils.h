@@ -113,6 +113,9 @@ nm_ip_addr_set (int addr_family, gpointer dst, const NMIPAddr *src)
 #define NM_CMP_DIRECT_MEMCMP(a, b, size) \
     NM_CMP_RETURN (memcmp ((a), (b), (size)))
 
+#define NM_CMP_DIRECT_STRCMP0(a, b) \
+    NM_CMP_RETURN (g_strcmp0 ((a), (b)))
+
 #define NM_CMP_DIRECT_IN6ADDR(a, b) \
     G_STMT_START { \
         const struct in6_addr *const _a = (a); \
@@ -190,6 +193,18 @@ void nm_utils_strbuf_append_c (char **buf, gsize *len, char c);
 void nm_utils_strbuf_append_str (char **buf, gsize *len, const char *str);
 
 const char *nm_strquote (char *buf, gsize buf_len, const char *str);
+
+static inline gboolean
+nm_utils_is_separator (const char c)
+{
+	return NM_IN_SET (c, ' ', '\t');
+}
+
+/*****************************************************************************/
+
+const char *nm_utils_dbus_path_get_last_component (const char *dbus_path);
+
+int nm_utils_dbus_path_cmp (const char *dbus_path_a, const char *dbus_path_b);
 
 /*****************************************************************************/
 
@@ -440,6 +455,16 @@ nm_g_variant_unref_floating (GVariant *var)
 
 /*****************************************************************************/
 
+static inline int
+nm_utf8_collate0 (const char *a, const char *b)
+{
+	if (!a)
+		return !b ? 0 : -1;
+	if (!b)
+		return 1;
+	return g_utf8_collate (a, b);
+}
+
 int nm_strcmp_p_with_data (gconstpointer a, gconstpointer b, gpointer user_data);
 int nm_cmp_uint32_p_with_data (gconstpointer p_a, gconstpointer p_b, gpointer user_data);
 int nm_cmp_int2ptr_p_with_data (gconstpointer p_a, gconstpointer p_b, gpointer user_data);
@@ -608,6 +633,18 @@ nm_utils_dbus_normalize_object_path (const char *path)
 /*****************************************************************************/
 
 guint64 nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid);
+
+/*****************************************************************************/
+
+gpointer _nm_utils_user_data_pack (int nargs, gconstpointer *args);
+
+#define nm_utils_user_data_pack(...) \
+	_nm_utils_user_data_pack(NM_NARG (__VA_ARGS__), (gconstpointer[]) { __VA_ARGS__ })
+
+void _nm_utils_user_data_unpack (gpointer user_data, int nargs, ...);
+
+#define nm_utils_user_data_unpack(user_data, ...) \
+	_nm_utils_user_data_unpack(user_data, NM_NARG (__VA_ARGS__), __VA_ARGS__)
 
 /*****************************************************************************/
 

@@ -37,6 +37,8 @@
 
 #include "nm-utils/nm-test-utils.h"
 
+#define TEST_CERT_DIR NM_BUILD_SRCDIR"/libnm-core/tests/certs"
+
 /*****************************************************************************/
 
 static void
@@ -599,7 +601,6 @@ test_bond_normalize (void)
                        NM_SETTING_DCB_FLAG_ADVERTISE | \
                        NM_SETTING_DCB_FLAG_WILLING)
 
-
 static void
 test_dcb_flags_valid (void)
 {
@@ -943,7 +944,6 @@ _test_team_config_sync (const char *team_config,
 	g_assert (nm_setting_verify ((NMSetting *) s_team, NULL, NULL));
 }
 
-
 static void
 test_runner_roundrobin_sync_from_config (void)
 {
@@ -1182,7 +1182,6 @@ _test_team_port_config_sync (const char *team_port_config,
 
 	g_assert (nm_setting_verify ((NMSetting *) s_team_port, NULL, NULL));
 }
-
 
 static void
 test_team_port_default (void)

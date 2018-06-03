@@ -211,7 +211,6 @@ _nmtst_exit (void) \
 	nmtst_free (); \
 }
 
-
 static inline gboolean
 nmtst_initialized (void)
 {
@@ -275,7 +274,6 @@ BREAK_INNER_LOOPS:
 
 	return (char **) g_array_free (result, FALSE);
 }
-
 
 /* free instances allocated by nmtst (especially nmtst_init()) on shutdown
  * to release memory. After nmtst_free(), the test is uninitialized again. */
@@ -923,33 +921,26 @@ _nmtst_main_loop_run_timeout (gpointer user_data)
 {
 	GMainLoop **p_loop = user_data;
 
-	g_assert (p_loop);
-	g_assert (*p_loop);
-
-	g_main_loop_quit (*p_loop);
-	*p_loop = NULL;
-
+	g_assert (p_loop && *p_loop);
+	g_main_loop_quit (g_steal_pointer (p_loop));
 	return G_SOURCE_REMOVE;
 }
 
 static inline gboolean
 nmtst_main_loop_run (GMainLoop *loop, guint timeout_ms)
 {
-	GSource *source = NULL;
-	guint id = 0;
+	nm_auto_unref_gsource GSource *source = NULL;
 	GMainLoop *loopx = loop;
 
 	if (timeout_ms > 0) {
 		source = g_timeout_source_new (timeout_ms);
 		g_source_set_callback (source, _nmtst_main_loop_run_timeout, &loopx, NULL);
-		id = g_source_attach (source, g_main_loop_get_context (loop));
-		g_assert (id);
-		g_source_unref (source);
+		g_source_attach (source, g_main_loop_get_context (loop));
 	}
 
 	g_main_loop_run (loop);
 
-	if (source && loopx)
+	if (source)
 		g_source_destroy (source);
 
 	/* if the timeout was reached, return FALSE. */
@@ -1140,7 +1131,7 @@ _nmtst_assert_ip4_address (const char *file, int line, in_addr_t addr, const cha
 		char buf[100];
 
 		g_error ("%s:%d: Unexpected IPv4 address: expected %s, got %s",
-		         file, line, str_expected ? str_expected : "0.0.0.0",
+		         file, line, str_expected ?: "0.0.0.0",
 		         inet_ntop (AF_INET, &addr, buf, sizeof (buf)));
 	}
 }
@@ -1158,7 +1149,7 @@ _nmtst_assert_ip6_address (const char *file, int line, const struct in6_addr *ad
 		char buf[100];
 
 		g_error ("%s:%d: Unexpected IPv6 address: expected %s, got %s",
-		         file, line, str_expected ? str_expected : "::",
+		         file, line, str_expected ?: "::",
 		         inet_ntop (AF_INET6, addr, buf, sizeof (buf)));
 	}
 }
@@ -1830,7 +1821,6 @@ nmtst_assert_hwaddr_equals (gconstpointer hwaddr1, gssize hwaddr1_len, const cha
 #define nmtst_assert_hwaddr_equals(hwaddr1, hwaddr1_len, expected) \
     nmtst_assert_hwaddr_equals (hwaddr1, hwaddr1_len, expected, __FILE__, __LINE__)
 #endif
-
 
 #if defined(__NM_SIMPLE_CONNECTION_H__) && defined(__NM_SETTING_CONNECTION_H__) && defined(__NM_KEYFILE_INTERNAL_H__)
 

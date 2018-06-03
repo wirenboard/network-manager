@@ -1169,9 +1169,11 @@ pending_ac_state_changed (NMActiveConnection *ac, guint state, guint reason, NMP
 		 * device, but block the current connection to avoid an activation
 		 * loop.
 		 */
-		con = nm_active_connection_get_settings_connection (ac);
-		nm_settings_connection_autoconnect_blocked_reason_set (con, NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_FAILED, TRUE);
-		schedule_activate_check (self, nm_active_connection_get_device (ac));
+		if (reason != NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED) {
+			con = nm_active_connection_get_settings_connection (ac);
+			nm_settings_connection_autoconnect_blocked_reason_set (con, NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_FAILED, TRUE);
+			schedule_activate_check (self, nm_active_connection_get_device (ac));
+		}
 
 		/* Cleanup */
 		g_signal_handlers_disconnect_by_func (ac, pending_ac_state_changed, self);
@@ -1910,8 +1912,8 @@ device_ip_config_changed (NMDevice *device,
 	int addr_family;
 
 	nm_assert (new_config || old_config);
-	nm_assert (!new_config || NM_IS_IP_CONFIG (new_config));
-	nm_assert (!old_config || NM_IS_IP_CONFIG (old_config));
+	nm_assert (!new_config || NM_IS_IP_CONFIG (new_config, AF_UNSPEC));
+	nm_assert (!old_config || NM_IS_IP_CONFIG (old_config, AF_UNSPEC));
 
 	if (new_config) {
 		addr_family = nm_ip_config_get_addr_family (new_config);
@@ -2119,7 +2121,7 @@ vpn_connection_retry_after_failure (NMVpnConnection *vpn, NMPolicy *self)
 	                                     &error)) {
 		_LOGW (LOGD_DEVICE, "VPN '%s' reconnect failed: %s",
 		       nm_settings_connection_get_id (connection),
-		       error->message ? error->message : "unknown");
+		       error->message ?: "unknown");
 		g_clear_error (&error);
 	}
 }

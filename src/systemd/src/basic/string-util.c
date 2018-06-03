@@ -3,19 +3,6 @@
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -30,11 +17,13 @@
 
 #include "alloc-util.h"
 #include "gunicode.h"
+#include "locale-util.h"
 #include "macro.h"
 #include "string-util.h"
 #include "terminal-util.h"
 #include "utf8.h"
 #include "util.h"
+#include "fileio.h"
 
 int strcmp_ptr(const char *a, const char *b) {
 
@@ -470,42 +459,88 @@ bool string_has_cc(const char *p, const char *ok) {
 
 #if 0 /* NM_IGNORED */
 static char *ascii_ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigned percent) {
-        size_t x;
+        size_t x, need_space;
         char *r;
 
         assert(s);
         assert(percent <= 100);
-        assert(new_length >= 3);
+        assert(new_length != (size_t) -1);
 
-        if (old_length <= 3 || old_length <= new_length)
+        if (old_length <= new_length)
                 return strndup(s, old_length);
 
-        r = new0(char, new_length+3);
+        /* Special case short ellipsations */
+        switch (new_length) {
+
+        case 0:
+                return strdup("");
+
+        case 1:
+                if (is_locale_utf8())
+                        return strdup("…");
+                else
+                        return strdup(".");
+
+        case 2:
+                if (!is_locale_utf8())
+                        return strdup("..");
+
+                break;
+
+        default:
+                break;
+        }
+
+        /* Calculate how much space the ellipsis will take up. If we are in UTF-8 mode we only need space for one
+         * character ("…"), otherwise for three characters ("..."). Note that in both cases we need 3 bytes of storage,
+         * either for the UTF-8 encoded character or for three ASCII characters. */
+        need_space = is_locale_utf8() ? 1 : 3;
+
+        r = new(char, new_length+3);
         if (!r)
                 return NULL;
 
-        x = (new_length * percent) / 100;
+        assert(new_length >= need_space);
 
-        if (x > new_length - 3)
-                x = new_length - 3;
+        x = ((new_length - need_space) * percent + 50) / 100;
+        assert(x <= new_length - need_space);
 
         memcpy(r, s, x);
-        r[x] = 0xe2; /* tri-dot ellipsis: … */
-        r[x+1] = 0x80;
-        r[x+2] = 0xa6;
+
+        if (is_locale_utf8()) {
+                r[x+0] = 0xe2; /* tri-dot ellipsis: … */
+                r[x+1] = 0x80;
+                r[x+2] = 0xa6;
+        } else {
+                r[x+0] = '.';
+                r[x+1] = '.';
+                r[x+2] = '.';
+        }
+
         memcpy(r + x + 3,
-               s + old_length - (new_length - x - 1),
-               new_length - x - 1);
+               s + old_length - (new_length - x - need_space),
+               new_length - x - need_space + 1);
 
         return r;
 }
 
 char *ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigned percent) {
-        size_t x;
-        char *e;
+        size_t x, k, len, len2;
         const char *i, *j;
-        unsigned k, len, len2;
+        char *e;
         int r;
+
+        /* Note that 'old_length' refers to bytes in the string, while 'new_length' refers to character cells taken up
+         * on screen. This distinction doesn't matter for ASCII strings, but it does matter for non-ASCII UTF-8
+         * strings.
+         *
+         * Ellipsation is done in a locale-dependent way:
+         * 1. If the string passed in is fully ASCII and the current locale is not UTF-8, three dots are used ("...")
+         * 2. Otherwise, a unicode ellipsis is used ("…")
+         *
+         * In other words: you'll get a unicode ellipsis as soon as either the string contains non-ASCII characters or
+         * the current locale is UTF-8.
+         */
 
         assert(s);
         assert(percent <= 100);
@@ -513,19 +548,15 @@ char *ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigne
         if (new_length == (size_t) -1)
                 return strndup(s, old_length);
 
-        assert(new_length >= 3);
+        if (new_length == 0)
+                return strdup("");
 
-        /* if no multibyte characters use ascii_ellipsize_mem for speed */
+        /* If no multibyte characters use ascii_ellipsize_mem for speed */
         if (ascii_is_valid(s))
                 return ascii_ellipsize_mem(s, old_length, new_length, percent);
 
-        if (old_length <= 3 || old_length <= new_length)
-                return strndup(s, old_length);
-
-        x = (new_length * percent) / 100;
-
-        if (x > new_length - 3)
-                x = new_length - 3;
+        x = ((new_length - 1) * percent) / 100;
+        assert(x <= new_length - 1);
 
         k = 0;
         for (i = s; k < x && i < s + old_length; i = utf8_next_char(i)) {
@@ -570,7 +601,7 @@ char *ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigne
         */
 
         memcpy(e, s, len);
-        e[len]   = 0xe2; /* tri-dot ellipsis: … */
+        e[len + 0] = 0xe2; /* tri-dot ellipsis: … */
         e[len + 1] = 0x80;
         e[len + 2] = 0xa6;
 
@@ -670,7 +701,8 @@ char *strip_tab_ansi(char **ibuf, size_t *_isz, size_t highlight[2]) {
         enum {
                 STATE_OTHER,
                 STATE_ESCAPE,
-                STATE_BRACKET
+                STATE_CSI,
+                STATE_CSO,
         } state = STATE_OTHER;
         char *obuf = NULL;
         size_t osz = 0, isz, shift[2] = {};
@@ -679,7 +711,17 @@ char *strip_tab_ansi(char **ibuf, size_t *_isz, size_t highlight[2]) {
         assert(ibuf);
         assert(*ibuf);
 
-        /* Strips ANSI color and replaces TABs by 8 spaces */
+        /* This does three things:
+         *
+         * 1. Replaces TABs by 8 spaces
+         * 2. Strips ANSI color sequences (a subset of CSI), i.e. ESC '[' … 'm' sequences
+         * 3. Strips ANSI operating system sequences (CSO), i.e. ESC ']' … BEL sequences
+         *
+         * Everything else will be left as it is. In particular other ANSI sequences are left as they are, as are any
+         * other special characters. Truncated ANSI sequences are left-as is too. This call is supposed to suppress the
+         * most basic formatting noise, but nothing else.
+         *
+         * Why care for CSO sequences? Well, to undo what terminal_urlify() and friends generate. */
 
         isz = _isz ? *_isz : strlen(*ibuf);
 
@@ -714,8 +756,11 @@ char *strip_tab_ansi(char **ibuf, size_t *_isz, size_t highlight[2]) {
                                 fputc('\x1B', f);
                                 advance_offsets(i - *ibuf, highlight, shift, 1);
                                 break;
-                        } else if (*i == '[') {
-                                state = STATE_BRACKET;
+                        } else if (*i == '[') { /* ANSI CSI */
+                                state = STATE_CSI;
+                                begin = i + 1;
+                        } else if (*i == ']') { /* ANSI CSO */
+                                state = STATE_CSO;
                                 begin = i + 1;
                         } else {
                                 fputc('\x1B', f);
@@ -726,10 +771,10 @@ char *strip_tab_ansi(char **ibuf, size_t *_isz, size_t highlight[2]) {
 
                         break;
 
-                case STATE_BRACKET:
+                case STATE_CSI:
 
-                        if (i >= *ibuf + isz || /* EOT */
-                            (!(*i >= '0' && *i <= '9') && !IN_SET(*i, ';', 'm'))) {
+                        if (i >= *ibuf + isz || /* EOT … */
+                            !strchr("01234567890;m", *i)) { /* … or invalid chars in sequence */
                                 fputc('\x1B', f);
                                 fputc('[', f);
                                 advance_offsets(i - *ibuf, highlight, shift, 2);
@@ -737,11 +782,26 @@ char *strip_tab_ansi(char **ibuf, size_t *_isz, size_t highlight[2]) {
                                 i = begin-1;
                         } else if (*i == 'm')
                                 state = STATE_OTHER;
+
+                        break;
+
+                case STATE_CSO:
+
+                        if (i >= *ibuf + isz || /* EOT … */
+                            (*i != '\a' && (uint8_t) *i < 32U) || (uint8_t) *i > 126U) { /* … or invalid chars in sequence */
+                                fputc('\x1B', f);
+                                fputc(']', f);
+                                advance_offsets(i - *ibuf, highlight, shift, 2);
+                                state = STATE_OTHER;
+                                i = begin-1;
+                        } else if (*i == '\a')
+                                state = STATE_OTHER;
+
                         break;
                 }
         }
 
-        if (ferror(f)) {
+        if (fflush_and_check(f) < 0) {
                 fclose(f);
                 return mfree(obuf);
         }

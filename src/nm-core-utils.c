@@ -2044,8 +2044,8 @@ _log_connection_sort_hashes_fcn (gconstpointer a, gconstpointer b)
 	NMSettingPriority p1, p2;
 	NMSetting *s1, *s2;
 
-	s1 = v1->setting ? v1->setting : v1->diff_base_setting;
-	s2 = v2->setting ? v2->setting : v2->diff_base_setting;
+	s1 = v1->setting ?: v1->diff_base_setting;
+	s2 = v2->setting ?: v2->diff_base_setting;
 
 	g_assert (s1 && s2);
 
@@ -2279,13 +2279,13 @@ nm_utils_log_connection_diff (NMConnection *connection,
 			g_string_printf (str1, "%s.%s", setting_data->name, item->item_name);
 			switch (item->diff_result & (NM_SETTING_DIFF_RESULT_IN_A | NM_SETTING_DIFF_RESULT_IN_B)) {
 				case NM_SETTING_DIFF_RESULT_IN_B:
-					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s < %s", prefix, str1->str, str_diff ? str_diff : "NULL");
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s < %s", prefix, str1->str, str_diff ?: "NULL");
 					break;
 				case NM_SETTING_DIFF_RESULT_IN_A:
-					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s = %s", prefix, str1->str, str_conn ? str_conn : "NULL");
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s = %s", prefix, str1->str, str_conn ?: "NULL");
 					break;
 				default:
-					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s = %s < %s", prefix, str1->str, str_conn ? str_conn : "NULL", str_diff ? str_diff : "NULL");
+					nm_log (level, domain, NULL, NULL, "%s%"_NM_LOG_ALIGN"s = %s < %s", prefix, str1->str, str_conn ?: "NULL", str_diff ?: "NULL");
 					break;
 #undef _NM_LOG_ALIGN
 			}
@@ -2343,7 +2343,6 @@ nm_utils_monotonic_timestamp_as_boottime (gint64 timestamp, gint64 timestamp_ns_
 
 	return timestamp - offset;
 }
-
 
 #define IPV6_PROPERTY_DIR "/proc/sys/net/ipv6/conf/"
 #define IPV4_PROPERTY_DIR "/proc/sys/net/ipv4/conf/"
@@ -2798,53 +2797,103 @@ nm_utils_file_get_contents (int dirfd,
 
 /*****************************************************************************/
 
-guint8 *
-nm_utils_secret_key_read (gsize *out_key_len, GError **error)
+static gboolean
+_secret_key_read (guint8 **out_secret_key,
+                  gsize *out_key_len)
 {
-	guint8 *secret_key = NULL;
+	guint8 *secret_key;
+	gboolean success = TRUE;
 	gsize key_len;
-
-	/* out_key_len is not optional, because without it you cannot safely
-	 * access the returned memory. */
-	*out_key_len = 0;
+	gs_free_error GError *error = NULL;
 
 	/* Let's try to load a saved secret key first. */
-	if (g_file_get_contents (NMSTATEDIR "/secret_key", (char **) &secret_key, &key_len, NULL)) {
-		if (key_len < 16) {
-			g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
-			                     "Key is too short to be usable");
-			key_len = 0;
-		}
-	} else {
-		mode_t key_mask;
-
-		/* RFC7217 mandates the key SHOULD be at least 128 bits.
-		 * Let's use twice as much. */
-		key_len = 32;
-		secret_key = g_malloc (key_len);
-
-		if (!nm_utils_random_bytes (secret_key, key_len)) {
-			g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
-			             "Can't get random data to generate secret key");
-			key_len = 0;
+	if (g_file_get_contents (NMSTATEDIR "/secret_key", (char **) &secret_key, &key_len, &error)) {
+		if (key_len >= 16)
 			goto out;
-		}
 
-		key_mask = umask (0077);
-		if (!g_file_set_contents (NMSTATEDIR "/secret_key", (char *) secret_key, key_len, error)) {
-			g_prefix_error (error, "Can't write " NMSTATEDIR "/secret_key: ");
-			key_len = 0;
+		/* the secret key is borked. Log a warning, but proceed below to generate
+		 * a new one. */
+		nm_log_warn (LOGD_CORE, "secret-key: too short secret key in \"%s\" (generate new key)", NMSTATEDIR "/secret_key");
+		nm_clear_g_free (&secret_key);
+	} else {
+		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+			nm_log_warn (LOGD_CORE, "secret-key: failure reading secret key in \"%s\": %s (generate new key)",
+			             NMSTATEDIR "/secret_key", error->message);
 		}
-		umask (key_mask);
+		g_clear_error (&error);
+	}
+
+	/* RFC7217 mandates the key SHOULD be at least 128 bits.
+	 * Let's use twice as much. */
+	key_len = 32;
+	secret_key = g_malloc (key_len + 1);
+
+	/* the secret-key is binary. Still, ensure that it's NULL terminated, just like
+	 * g_file_set_contents() does. */
+	secret_key[32] = '\0';
+
+	if (!nm_utils_random_bytes (secret_key, key_len)) {
+		nm_log_warn (LOGD_CORE, "secret-key: failure to generate good random data for secret-key (use non-persistent key)");
+		success = FALSE;
+		goto out;
+	}
+
+	if (!nm_utils_file_set_contents (NMSTATEDIR "/secret_key", (char *) secret_key, key_len, 0077, &error)) {
+		nm_log_warn (LOGD_CORE, "secret-key: failure to persist secret key in \"%s\" (%s) (use non-persistent key)",
+		             NMSTATEDIR "/secret_key", error->message);
+		success = FALSE;
+		goto out;
 	}
 
 out:
-	if (key_len) {
-		*out_key_len = key_len;
-		return secret_key;
+	/* regardless of success or failue, we always return a secret-key. The
+	 * caller may choose to ignore the error and proceed. */
+	*out_key_len = key_len;
+	*out_secret_key = secret_key;
+	return success;
+}
+
+typedef struct {
+	const guint8 *secret_key;
+	gsize key_len;
+	bool is_good:1;
+} SecretKeyData;
+
+gboolean
+nm_utils_secret_key_get (const guint8 **out_secret_key,
+                         gsize *out_key_len)
+{
+	static volatile const SecretKeyData *secret_key_static;
+	const SecretKeyData *secret_key;
+
+	secret_key = g_atomic_pointer_get (&secret_key_static);
+	if (G_UNLIKELY (!secret_key)) {
+		static gsize init_value = 0;
+		static SecretKeyData secret_key_data;
+		gboolean tmp_success;
+		gs_free guint8 *tmp_secret_key = NULL;
+		gsize tmp_key_len;
+
+		tmp_success = _secret_key_read (&tmp_secret_key, &tmp_key_len);
+		if (g_once_init_enter (&init_value)) {
+			secret_key_data.secret_key = tmp_secret_key;
+			secret_key_data.key_len = tmp_key_len;
+			secret_key_data.is_good = tmp_success;
+
+			if (g_atomic_pointer_compare_and_exchange (&secret_key_static, NULL, &secret_key_data)) {
+				g_steal_pointer (&tmp_secret_key);
+				secret_key = &secret_key_data;
+			}
+
+			g_once_init_leave (&init_value, 1);
+		}
+		if (!secret_key)
+			secret_key = g_atomic_pointer_get (&secret_key_static);
 	}
-	g_free (secret_key);
-	return NULL;
+
+	*out_secret_key = secret_key->secret_key;
+	*out_key_len = secret_key->key_len;
+	return secret_key->is_good;
 }
 
 /*****************************************************************************/
@@ -3132,8 +3181,9 @@ _stable_id_append (GString *str,
 
 NMUtilsStableType
 nm_utils_stable_id_parse (const char *stable_id,
-                          const char *uuid,
+                          const char *deviceid,
                           const char *bootid,
+                          const char *uuid,
                           char **out_generated)
 {
 	gsize i, idx_start;
@@ -3208,6 +3258,8 @@ nm_utils_stable_id_parse (const char *stable_id,
 			_stable_id_append (str, uuid);
 		else if (CHECK_PREFIX ("${BOOT}"))
 			_stable_id_append (str, bootid ?: nm_utils_get_boot_id ());
+		else if (CHECK_PREFIX ("${DEVICE}"))
+			_stable_id_append (str, deviceid);
 		else if (g_str_has_prefix (&stable_id[i], "${RANDOM}")) {
 			/* RANDOM makes not so much sense for cloned-mac-address
 			 * as the result is simmilar to specyifing "cloned-mac-address=random".
@@ -3284,7 +3336,7 @@ _set_stable_privacy (NMUtilsStableType stable_type,
                      const char *ifname,
                      const char *network_id,
                      guint32 dad_counter,
-                     guint8 *secret_key,
+                     const guint8 *secret_key,
                      gsize key_len,
                      GError **error)
 {
@@ -3383,8 +3435,8 @@ nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType stable_type,
                                        guint32 dad_counter,
                                        GError **error)
 {
-	gs_free guint8 *secret_key = NULL;
-	gsize key_len = 0;
+	const guint8 *secret_key;
+	gsize key_len;
 
 	g_return_val_if_fail (network_id, FALSE);
 
@@ -3394,9 +3446,7 @@ nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType stable_type,
 		return FALSE;
 	}
 
-	secret_key = nm_utils_secret_key_read (&key_len, error);
-	if (!secret_key)
-		return FALSE;
+	nm_utils_secret_key_get (&secret_key, &key_len);
 
 	return _set_stable_privacy (stable_type, addr, ifname, network_id, dad_counter,
 	                            secret_key, key_len, error);
@@ -3532,14 +3582,12 @@ nm_utils_hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
                                  const char *current_mac_address,
                                  const char *generate_mac_address_mask)
 {
-	gs_free guint8 *secret_key = NULL;
-	gsize key_len = 0;
+	const guint8 *secret_key;
+	gsize key_len;
 
 	g_return_val_if_fail (stable_id, NULL);
 
-	secret_key = nm_utils_secret_key_read (&key_len, NULL);
-	if (!secret_key)
-		return NULL;
+	nm_utils_secret_key_get (&secret_key, &key_len);
 
 	return _hw_addr_gen_stable_eth (stable_type,
 	                                stable_id,
@@ -4087,7 +4135,7 @@ nm_utils_read_plugin_paths (const char *dirname, const char *prefix)
 
 		if (!g_str_has_prefix (item, prefix))
 			continue;
-		if (g_str_has_suffix (item, ".la"))
+		if (!g_str_has_suffix (item, ".so"))
 			continue;
 
 		data.path = g_build_filename (dirname, item, NULL);
@@ -4169,6 +4217,28 @@ nm_utils_parse_dns_domain (const char *domain, gboolean *is_routing)
 		NM_SET_OUT (is_routing, FALSE);
 
 	return domain;
+}
+
+/*****************************************************************************/
+
+GVariant *
+nm_utils_strdict_to_variant (GHashTable *options)
+{
+	GVariantBuilder builder;
+	gs_free const char **keys = NULL;
+	guint i;
+	guint nkeys;
+
+	keys = nm_utils_strdict_get_keys (options, TRUE, &nkeys);
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+	for (i = 0; i < nkeys; i++) {
+		g_variant_builder_add (&builder,
+		                       "{sv}",
+		                       keys[i],
+		                       g_variant_new_string (g_hash_table_lookup (options, keys[i])));
+	}
+	return g_variant_builder_end (&builder);
 }
 
 /*****************************************************************************/

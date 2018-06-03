@@ -142,6 +142,8 @@ G_STMT_START { \
 #  endif
 #endif
 
+#define VALGRIND 0
+
 static inline pid_t
 raw_getpid (void) {
 #if defined(__alpha__)
@@ -177,7 +179,6 @@ sd_notify (int unset_environment, const char *state)
 #ifndef MAX_HANDLE_SZ
 #define MAX_HANDLE_SZ 128
 #endif
-
 
 /*
  * Some toolchains (E.G. uClibc 0.9.33 and earlier) don't export

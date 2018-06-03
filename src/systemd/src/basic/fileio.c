@@ -3,19 +3,6 @@
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -66,6 +53,7 @@ int write_string_stream_ts(
                 struct timespec *ts) {
 
         bool needs_nl;
+        int r;
 
         assert(f);
         assert(line);
@@ -90,6 +78,13 @@ int write_string_stream_ts(
                 if (fputc('\n', f) == EOF)
                         return -errno;
 
+        if (flags & WRITE_STRING_FILE_SYNC)
+                r = fflush_sync_and_check(f);
+        else
+                r = fflush_and_check(f);
+        if (r < 0)
+                return r;
+
         if (ts) {
                 struct timespec twice[2] = {*ts, *ts};
 
@@ -97,10 +92,7 @@ int write_string_stream_ts(
                         return -errno;
         }
 
-        if (flags & WRITE_STRING_FILE_SYNC)
-                return fflush_sync_and_check(f);
-        else
-                return fflush_and_check(f);
+        return 0;
 }
 
 static int write_string_file_atomic(
@@ -1619,8 +1611,7 @@ int read_line(FILE *f, size_t limit, char **ret) {
         if (ret) {
                 buffer[n] = 0;
 
-                *ret = buffer;
-                buffer = NULL;
+                *ret = TAKE_PTR(buffer);
         }
 
         return (int) count;

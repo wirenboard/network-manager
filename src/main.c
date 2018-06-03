@@ -214,7 +214,7 @@ do_early_setup (int *argc, char **argv[], NMConfigCmdLineOptions *config_cli)
 	                                _("NetworkManager monitors all network connections and automatically\nchooses the best connection to use.  It also allows the user to\nspecify wireless access points which wireless cards in the computer\nshould associate with.")))
 		exit (1);
 
-	global_opt.pidfile = global_opt.pidfile ? global_opt.pidfile : g_strdup (NM_DEFAULT_PID_FILE);
+	global_opt.pidfile = global_opt.pidfile ?: g_strdup(NM_DEFAULT_PID_FILE);
 }
 
 /*
@@ -225,7 +225,7 @@ int
 main (int argc, char *argv[])
 {
 	gboolean success = FALSE;
-	NMManager *manager;
+	NMManager *manager = NULL;
 	NMConfig *config;
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
@@ -395,12 +395,13 @@ main (int argc, char *argv[])
 	                                                         NM_CONFIG_KEYFILE_KEY_MAIN_AUTH_POLKIT,
 	                                                         NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT_BOOL));
 
-	manager = nm_manager_setup ();
+	if (!nm_dbus_manager_acquire_bus (nm_dbus_manager_get ()))
+		goto done_no_manager;
 
-	if (!nm_dbus_manager_start (nm_dbus_manager_get (),
-	                            nm_manager_dbus_set_property_handle,
-	                            manager))
-		goto done;
+	manager = nm_manager_setup ();
+	nm_dbus_manager_start (nm_dbus_manager_get(),
+	                       nm_manager_dbus_set_property_handle,
+	                       manager);
 
 	nm_dispatcher_init ();
 
@@ -442,17 +443,13 @@ done:
 	 * it misses to update the state. */
 	nm_manager_write_device_state (manager);
 
-	/* FIXME: we don't properly shut down on exit. That is a bug.
-	 * NMDBusObject have an assertion that they get unexported before disposing.
-	 * We need this workaround and disable the assertion during our leaky shutdown. */
-	nm_dbus_object_set_quitting ();
-
 	nm_manager_stop (manager);
 
 	nm_config_state_set (config, TRUE, TRUE);
 
 	nm_dns_manager_stop (nm_dns_manager_get ());
 
+done_no_manager:
 	if (global_opt.pidfile && wrote_pidfile)
 		unlink (global_opt.pidfile);
 

@@ -125,7 +125,6 @@ connection_ifcfg_changed (NMIfcfgConnection *connection, gpointer user_data)
 	path = nm_settings_connection_get_filename (NM_SETTINGS_CONNECTION (connection));
 	g_return_if_fail (path != NULL);
 
-
 	if (!priv->ifcfg_monitor) {
 		_LOGD ("connection_ifcfg_changed("NM_IFCFG_CONNECTION_LOG_FMTD"): %s", NM_IFCFG_CONNECTION_LOG_ARGD (connection), "ignore event");
 		return;
@@ -419,7 +418,7 @@ ifcfg_dir_changed (GFileMonitor *monitor,
 	path = g_file_get_path (file);
 
 	ifcfg_path = utils_detect_ifcfg_path (path, FALSE);
-	_LOGD ("ifcfg_dir_changed(%s) = %d // %s", path, event_type, ifcfg_path ? ifcfg_path : "(none)");
+	_LOGD ("ifcfg_dir_changed(%s) = %d // %s", path, event_type, ifcfg_path ?: "(none)");
 	if (ifcfg_path) {
 		connection = find_by_path (plugin, ifcfg_path);
 		switch (event_type) {
@@ -892,7 +891,7 @@ _dbus_request_name_done (GObject *source_object,
 		}
 	}
 
-	_LOGD ("dbus: aquired D-Bus service %s and exported %s object",
+	_LOGD ("dbus: acquired D-Bus service %s and exported %s object",
 	       IFCFGRH1_BUS_NAME,
 	       IFCFGRH1_OBJECT_PATH);
 }
@@ -999,28 +998,6 @@ config_changed_cb (NMConfig *config,
 /*****************************************************************************/
 
 static void
-get_property (GObject *object, guint prop_id,
-              GValue *value, GParamSpec *pspec)
-{
-	switch (prop_id) {
-	case NM_SETTINGS_PLUGIN_PROP_NAME:
-		g_value_set_string (value, IFCFG_PLUGIN_NAME);
-		break;
-	case NM_SETTINGS_PLUGIN_PROP_INFO:
-		g_value_set_string (value, IFCFG_PLUGIN_INFO);
-		break;
-	case NM_SETTINGS_PLUGIN_PROP_CAPABILITIES:
-		g_value_set_uint (value, NM_SETTINGS_PLUGIN_CAP_MODIFY_CONNECTIONS);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-/*****************************************************************************/
-
-static void
 init (NMSettingsPlugin *config)
 {
 }
@@ -1088,19 +1065,6 @@ settings_plugin_ifcfg_class_init (SettingsPluginIfcfgClass *req_class)
 
 	object_class->constructed = constructed;
 	object_class->dispose = dispose;
-	object_class->get_property = get_property;
-
-	g_object_class_override_property (object_class,
-	                                  NM_SETTINGS_PLUGIN_PROP_NAME,
-	                                  NM_SETTINGS_PLUGIN_NAME);
-
-	g_object_class_override_property (object_class,
-	                                  NM_SETTINGS_PLUGIN_PROP_INFO,
-	                                  NM_SETTINGS_PLUGIN_INFO);
-
-	g_object_class_override_property (object_class,
-	                                  NM_SETTINGS_PLUGIN_PROP_CAPABILITIES,
-	                                  NM_SETTINGS_PLUGIN_CAPABILITIES);
 }
 
 static void

@@ -609,7 +609,6 @@ _get_text_hidden (NMMetaAccessorGetType get_type)
 	return NM_META_TEXT_HIDDEN;
 }
 
-
 /*****************************************************************************/
 
 G_GNUC_PRINTF (4, 5)
@@ -1191,7 +1190,6 @@ _set_fcn_gobject_mac (ARGS_SET_FCN)
 	else
 		mode = NM_META_PROPERTY_TYPE_MAC_MODE_DEFAULT;
 
-
 	if (mode == NM_META_PROPERTY_TYPE_MAC_MODE_INFINIBAND)
 		valid = nm_utils_hwaddr_valid (value, INFINIBAND_ALEN);
 	else {
@@ -1688,7 +1686,6 @@ vpn_data_item (const char *key, const char *value, gpointer user_data)
 		return TRUE; \
 	}
 
-
 static gboolean
 verify_string_list (const char *const*strv,
                     const char *prop,
@@ -2160,7 +2157,7 @@ _get_fcn_802_1x_phase2_private_key (ARGS_GET_FCN)
 		password = path + strcspn (path, " \t"); \
 		if (password[0] != '\0') { \
 			password[0] = '\0'; \
-			while (NM_IN_SET (password[0], ' ', '\t')) \
+			while (nm_utils_is_separator (password[0])) \
 				password++; \
 		} else \
 			password = password_free = g_strdup (pwd_func (NM_SETTING_802_1X (setting))); \
@@ -2894,7 +2891,7 @@ dcb_parse_uint_array (const char *val,
 
 		*iter = g_strstrip (*iter);
 
-		num = _nm_utils_ascii_str_to_int64 (*iter, 10, 0, other ? other : max, -1);
+		num = _nm_utils_ascii_str_to_int64 (*iter, 10, 0, other ?: max, -1);
 
 		/* If number is greater than 'max' it must equal 'other' */
 		if (   num == -1
@@ -3090,7 +3087,6 @@ _set_fcn_infiniband_p_key (ARGS_SET_FCN)
 	g_object_set (setting, property_info->property_name, (int) p_key, NULL);
 	return TRUE;
 }
-
 
 static gconstpointer
 _get_fcn_infiniband_p_key (ARGS_GET_FCN)
@@ -4421,7 +4417,6 @@ _describe_fcn_wired_s390_options (ARGS_DESCRIBE_FCN)
 	return (*out_to_free = s);
 }
 
-
 static gconstpointer
 _get_fcn_wireless_ssid (ARGS_GET_FCN)
 {
@@ -4935,7 +4930,6 @@ static const NMMetaPropertyType _pt_gobject_devices = {
 	   "Properties flagged with a '*' are mandatory.\n\n" \
 	   "Example:\n" \
 	   "   name=arp_ping source-host=172.16.1.1 target-host=172.16.1.254, name=ethtool delay-up=3\n")
-
 
 #define DEFINE_DCB_PROPRITY_PROPERTY_TYPE \
 		.property_type =                &_pt_gobject_int, \

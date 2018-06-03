@@ -29,6 +29,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "nm-utils/nm-c-list.h"
+
 #include "nm-common-macros.h"
 #include "nm-dbus-manager.h"
 #include "vpn/nm-vpn-manager.h"
@@ -72,6 +74,32 @@ typedef struct {
 	const char *prop;
 	const char *hw_prop;
 } RadioState;
+
+typedef enum {
+	ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_INTERNAL,
+	ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_USER,
+	ASYNC_OP_TYPE_AC_AUTH_ADD_AND_ACTIVATE,
+} AsyncOpType;
+
+typedef struct {
+	CList async_op_lst;
+	NMManager *self;
+	AsyncOpType async_op_type;
+	union {
+		struct {
+			NMActiveConnection *active;
+			union {
+				struct {
+					GDBusMethodInvocation *invocation;
+				} activate_user;
+				struct {
+					GDBusMethodInvocation *invocation;
+					NMConnection *connection;
+				} add_and_activate;
+			};
+		} ac_auth;
+	};
+} AsyncOpData;
 
 enum {
 	DEVICE_ADDED,
@@ -122,7 +150,7 @@ typedef struct {
 	GArray *capabilities;
 
 	CList active_connections_lst_head;
-	GSList *authorizing_connections;
+	CList async_op_lst_head;
 	guint ac_cleanup_id;
 	NMActiveConnection *primary_connection;
 	NMActiveConnection *activating_connection;
@@ -324,16 +352,31 @@ static void active_connection_parent_active (NMActiveConnection *active,
                                              NMActiveConnection *parent_ac,
                                              NMManager *self);
 
-static NMActiveConnection *active_connection_find_first (NMManager *self,
-                                                         NMSettingsConnection *settings_connection,
-                                                         const char *uuid,
-                                                         NMActiveConnectionState max_state);
+static NMActiveConnection *active_connection_find (NMManager *self,
+                                                   NMSettingsConnection *settings_connection,
+                                                   const char *uuid,
+                                                   NMActiveConnectionState max_state,
+                                                   GPtrArray **out_all_matching);
 
 static NMConnectivity *concheck_get_mgr (NMManager *self);
 
-/*****************************************************************************/
+static void _internal_activation_auth_done (NMManager *self,
+                                            NMActiveConnection *active,
+                                            gboolean success,
+                                            const char *error_desc);
+static void _add_and_activate_auth_done (NMManager *self,
+                                         NMActiveConnection *active,
+                                         NMConnection *connection,
+                                         GDBusMethodInvocation *invocation,
+                                         gboolean success,
+                                         const char *error_desc);
+static void _activation_auth_done (NMManager *self,
+                                   NMActiveConnection *active,
+                                   GDBusMethodInvocation *invocation,
+                                   gboolean success,
+                                   const char *error_desc);
 
-static NM_CACHED_QUARK_FCN ("active-connection-add-and-activate", active_connection_add_and_activate_quark)
+/*****************************************************************************/
 
 static NM_CACHED_QUARK_FCN ("autoconnect-root", autoconnect_root_quark)
 
@@ -402,6 +445,104 @@ concheck_get_mgr (NMManager *self)
 		                  self);
 	}
 	return priv->concheck_mgr;
+}
+
+/*****************************************************************************/
+
+static AsyncOpData *
+_async_op_data_new_authorize_activate_internal (NMManager *self, NMActiveConnection *active_take)
+{
+	AsyncOpData *async_op_data;
+
+	async_op_data = g_slice_new0 (AsyncOpData);
+	async_op_data->async_op_type = ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_INTERNAL;
+	async_op_data->self = g_object_ref (self);
+	async_op_data->ac_auth.active = active_take;
+	c_list_link_tail (&NM_MANAGER_GET_PRIVATE (self)->async_op_lst_head, &async_op_data->async_op_lst);
+	return async_op_data;
+}
+
+static AsyncOpData *
+_async_op_data_new_ac_auth_activate_user (NMManager *self,
+                                          NMActiveConnection *active_take,
+                                          GDBusMethodInvocation *invocation_take)
+{
+	AsyncOpData *async_op_data;
+
+	async_op_data = g_slice_new0 (AsyncOpData);
+	async_op_data->async_op_type = ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_USER;
+	async_op_data->self = g_object_ref (self);
+	async_op_data->ac_auth.active = active_take;
+	async_op_data->ac_auth.activate_user.invocation = invocation_take;
+	c_list_link_tail (&NM_MANAGER_GET_PRIVATE (self)->async_op_lst_head, &async_op_data->async_op_lst);
+	return async_op_data;
+}
+
+static AsyncOpData *
+_async_op_data_new_ac_auth_add_and_activate (NMManager *self,
+                                             NMActiveConnection *active_take,
+                                             GDBusMethodInvocation *invocation_take,
+                                             NMConnection *connection_take)
+{
+	AsyncOpData *async_op_data;
+
+	async_op_data = g_slice_new0 (AsyncOpData);
+	async_op_data->async_op_type = ASYNC_OP_TYPE_AC_AUTH_ADD_AND_ACTIVATE;
+	async_op_data->self = g_object_ref (self);
+	async_op_data->ac_auth.active = active_take;
+	async_op_data->ac_auth.add_and_activate.invocation = invocation_take;
+	async_op_data->ac_auth.add_and_activate.connection = connection_take;
+	c_list_link_tail (&NM_MANAGER_GET_PRIVATE (self)->async_op_lst_head, &async_op_data->async_op_lst);
+	return async_op_data;
+}
+
+static void
+_async_op_complete_ac_auth_cb (NMActiveConnection *active,
+                               gboolean success,
+                               const char *error_desc,
+                               gpointer user_data)
+{
+	AsyncOpData *async_op_data = user_data;
+
+	nm_assert (async_op_data);
+	nm_assert (NM_IS_MANAGER (async_op_data->self));
+	nm_assert (nm_c_list_contains_entry (&NM_MANAGER_GET_PRIVATE (async_op_data->self)->async_op_lst_head, async_op_data, async_op_lst));
+	nm_assert (NM_IS_ACTIVE_CONNECTION (active));
+	nm_assert (active == async_op_data->ac_auth.active);
+
+	c_list_unlink (&async_op_data->async_op_lst);
+
+	switch (async_op_data->async_op_type) {
+	case ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_INTERNAL:
+		_internal_activation_auth_done (async_op_data->self,
+		                                async_op_data->ac_auth.active,
+		                                success,
+		                                error_desc);
+		break;
+	case ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_USER:
+		_activation_auth_done (async_op_data->self,
+		                       async_op_data->ac_auth.active,
+		                       async_op_data->ac_auth.activate_user.invocation,
+		                       success,
+		                       error_desc);
+		break;
+	case ASYNC_OP_TYPE_AC_AUTH_ADD_AND_ACTIVATE:
+		_add_and_activate_auth_done (async_op_data->self,
+		                             async_op_data->ac_auth.active,
+		                             async_op_data->ac_auth.add_and_activate.connection,
+		                             async_op_data->ac_auth.add_and_activate.invocation,
+		                             success,
+		                             error_desc);
+		g_object_unref (async_op_data->ac_auth.add_and_activate.connection);
+		break;
+	default:
+		nm_assert_not_reached ();
+		break;
+	}
+
+	g_object_unref (async_op_data->ac_auth.active);
+	g_object_unref (async_op_data->self);
+	g_slice_free (AsyncOpData, async_op_data);
 }
 
 /*****************************************************************************/
@@ -659,10 +800,11 @@ _delete_volatile_connection_do (NMManager *self,
 	if (!NM_FLAGS_HAS (nm_settings_connection_get_flags (connection),
 	                   NM_SETTINGS_CONNECTION_INT_FLAGS_VOLATILE))
 		return;
-	if (active_connection_find_first (self,
-	                                  connection,
-	                                  NULL,
-	                                  NM_ACTIVE_CONNECTION_STATE_DEACTIVATED))
+	if (active_connection_find (self,
+	                            connection,
+	                            NULL,
+	                            NM_ACTIVE_CONNECTION_STATE_DEACTIVATED,
+	                            NULL))
 		return;
 	if (!nm_settings_has_connection (priv->settings, connection))
 		return;
@@ -804,15 +946,19 @@ nm_manager_get_active_connections (NMManager *manager)
 }
 
 static NMActiveConnection *
-active_connection_find_first (NMManager *self,
-                              NMSettingsConnection *settings_connection,
-                              const char *uuid,
-                              NMActiveConnectionState max_state)
+active_connection_find (NMManager *self,
+                        NMSettingsConnection *settings_connection,
+                        const char *uuid,
+                        NMActiveConnectionState max_state /* candidates in state @max_state will be found */,
+                        GPtrArray **out_all_matching)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
 	NMActiveConnection *ac;
+	NMActiveConnection *best_ac = NULL;
+	GPtrArray *all = NULL;
 
 	nm_assert (!settings_connection || NM_IS_SETTINGS_CONNECTION (settings_connection));
+	nm_assert (!out_all_matching || !*out_all_matching);
 
 	c_list_for_each_entry (ac, &priv->active_connections_lst_head, active_connections_lst) {
 		NMSettingsConnection *con;
@@ -824,15 +970,44 @@ active_connection_find_first (NMManager *self,
 			continue;
 		if (nm_active_connection_get_state (ac) > max_state)
 			continue;
-		return ac;
+
+		if (!out_all_matching)
+			return ac;
+
+		if (!best_ac) {
+			best_ac = ac;
+			continue;
+		}
+
+		if (!all) {
+			all = g_ptr_array_new_with_free_func (g_object_unref);
+			g_ptr_array_add (all, g_object_ref (best_ac));
+		}
+		g_ptr_array_add (all, g_object_ref (ac));
 	}
 
-	return NULL;
+	if (!best_ac)
+		return NULL;
+
+	/* as an optimization, we only allocate out_all_matching, if there are more
+	 * than one result. If there is only one result, we only return the single
+	 * element and don't bother allocating an array. That's the common case.
+	 *
+	 * Also, in case we have multiple results, we return the *first* one
+	 * as @best_ac. */
+	nm_assert (   !all
+	           || (   all->len >= 2
+	               && all->pdata[0] == best_ac));
+
+	*out_all_matching = all;
+	return best_ac;
 }
 
 static NMActiveConnection *
-active_connection_find_first_by_connection (NMManager *self,
-                                            NMConnection *connection)
+active_connection_find_by_connection (NMManager *self,
+                                      NMConnection *connection,
+                                      NMActiveConnectionState max_state,
+                                      GPtrArray **out_all_matching)
 {
 	gboolean is_settings_connection;
 
@@ -842,10 +1017,11 @@ active_connection_find_first_by_connection (NMManager *self,
 	is_settings_connection = NM_IS_SETTINGS_CONNECTION (connection);
 	/* Depending on whether connection is a settings connection,
 	 * either lookup by object-identity of @connection, or compare the UUID */
-	return active_connection_find_first (self,
-	                                     is_settings_connection ? NM_SETTINGS_CONNECTION (connection) : NULL,
-	                                     is_settings_connection ? NULL : nm_connection_get_uuid (connection),
-	                                     NM_ACTIVE_CONNECTION_STATE_DEACTIVATING);
+	return active_connection_find (self,
+	                               is_settings_connection ? NM_SETTINGS_CONNECTION (connection) : NULL,
+	                               is_settings_connection ? NULL : nm_connection_get_uuid (connection),
+	                               max_state,
+	                               out_all_matching);
 }
 
 static gboolean
@@ -856,7 +1032,10 @@ _get_activatable_connections_filter (NMSettings *settings,
 	if (NM_FLAGS_HAS (nm_settings_connection_get_flags (connection),
 	                  NM_SETTINGS_CONNECTION_INT_FLAGS_VOLATILE))
 		return FALSE;
-	return !active_connection_find_first (user_data, connection, NULL, NM_ACTIVE_CONNECTION_STATE_DEACTIVATING);
+
+	/* the connection is activatable, if it has no active-connections that are in state
+	 * activated, activating, or waiting to be activated. */
+	return !active_connection_find (user_data, connection, NULL, NM_ACTIVE_CONNECTION_STATE_ACTIVATED, NULL);
 }
 
 NMSettingsConnection **
@@ -1891,8 +2070,8 @@ connection_flags_changed (NMSettings *settings,
 	                   NM_SETTINGS_CONNECTION_INT_FLAGS_VOLATILE))
 		return;
 
-	if (active_connection_find_first (self, connection, NULL, NM_ACTIVE_CONNECTION_STATE_DEACTIVATED)) {
-		/* the connection still have an active-connection. It will be purged
+	if (active_connection_find (self, connection, NULL, NM_ACTIVE_CONNECTION_STATE_DEACTIVATED, NULL)) {
+		/* the connection still has an active-connection. It will be purged
 		 * when the active connection(s) get(s) removed. */
 		return;
 	}
@@ -2265,8 +2444,9 @@ get_existing_connection (NMManager *self,
 	 */
 	if (   assume_state_connection_uuid
 	    && (connection_checked = nm_settings_get_connection_by_uuid (priv->settings, assume_state_connection_uuid))
-	    && !active_connection_find_first (self, connection_checked, NULL,
-	                                      NM_ACTIVE_CONNECTION_STATE_DEACTIVATING)
+	    && !active_connection_find (self, connection_checked, NULL,
+	                                NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+	                                NULL)
 	    && nm_device_check_connection_compatible (device, NM_CONNECTION (connection_checked))) {
 
 		if (connection) {
@@ -2422,7 +2602,7 @@ recheck_assume_connection (NMManager *self,
 		                                 device,
 		                                 subject,
 		                                 generated ? NM_ACTIVATION_TYPE_EXTERNAL : NM_ACTIVATION_TYPE_ASSUME,
-		                                 NM_ACTIVATION_REASON_AUTOCONNECT,
+		                                 generated ? NM_ACTIVATION_REASON_EXTERNAL : NM_ACTIVATION_REASON_ASSUME,
 		                                 &error);
 
 		if (!active) {
@@ -3046,19 +3226,83 @@ nm_manager_get_best_device_for_connection (NMManager *self,
                                            GHashTable *unavailable_devices)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+	NMActiveConnectionState ac_state;
 	NMActiveConnection *ac;
-	NMDevice *act_device;
+	NMDevice *ac_device;
 	NMDevice *device;
 	NMDeviceCheckConAvailableFlags flags;
-
-	ac = active_connection_find_first_by_connection (self, connection);
-	if (ac) {
-		act_device = nm_active_connection_get_device (ac);
-		if (act_device)
-			return act_device;
-	}
+	gs_unref_ptrarray GPtrArray *all_ac_arr = NULL;
 
 	flags = for_user_request ? NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST : NM_DEVICE_CHECK_CON_AVAILABLE_NONE;
+
+	ac = active_connection_find_by_connection (self, connection, NM_ACTIVE_CONNECTION_STATE_DEACTIVATING, &all_ac_arr);
+	if (ac) {
+
+		ac_device = nm_active_connection_get_device (ac);
+		if (   ac_device
+		    && (   (unavailable_devices && g_hash_table_contains (unavailable_devices, ac_device))
+		        || !nm_device_check_connection_available (ac_device, connection, flags, NULL)))
+			ac_device = NULL;
+
+		if (all_ac_arr) {
+			guint i;
+
+			ac_state = nm_active_connection_get_state (ac);
+
+			/* we found several active connections. See which one is the most suitable... */
+			nm_assert (ac == all_ac_arr->pdata[0]);
+			for (i = 1; i < all_ac_arr->len; i++) {
+				NMActiveConnection *ac2 = all_ac_arr->pdata[i];
+				NMDevice *ac_device2 = nm_active_connection_get_device (ac2);
+				NMActiveConnectionState ac_state2;
+
+				if (   !ac_device2
+				    || (unavailable_devices && g_hash_table_contains (unavailable_devices, ac_device2))
+				    || !nm_device_check_connection_available (ac_device2, connection, flags, NULL))
+					continue;
+
+				ac_state2 = nm_active_connection_get_state (ac2);
+
+				if (!ac_device)
+					goto found_better;
+
+				if (ac_state == ac_state2) {
+					/* active-connections are in their list in the order in which they are connected.
+					 * If we have two with same state, the later (newer) one is preferred. */
+					goto found_better;
+				}
+
+				switch (ac_state) {
+				case NM_ACTIVE_CONNECTION_STATE_UNKNOWN:
+					if (NM_IN_SET (ac_state2, NM_ACTIVE_CONNECTION_STATE_ACTIVATING, NM_ACTIVE_CONNECTION_STATE_ACTIVATED, NM_ACTIVE_CONNECTION_STATE_DEACTIVATING))
+						goto found_better;
+					break;
+				case NM_ACTIVE_CONNECTION_STATE_ACTIVATING:
+					if (NM_IN_SET (ac_state2, NM_ACTIVE_CONNECTION_STATE_ACTIVATED))
+						goto found_better;
+					break;
+				case NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
+					break;
+				case NM_ACTIVE_CONNECTION_STATE_DEACTIVATING:
+					if (NM_IN_SET (ac_state2, NM_ACTIVE_CONNECTION_STATE_ACTIVATING, NM_ACTIVE_CONNECTION_STATE_ACTIVATED))
+						goto found_better;
+					break;
+				default:
+					nm_assert_not_reached ();
+					goto found_better;
+				}
+
+				continue;
+found_better:
+				ac = ac2;
+				ac_state = ac_state2;
+				ac_device = ac_device2;
+			}
+		}
+
+		if (ac_device)
+			return ac_device;
+	}
 
 	/* Pick the first device that's compatible with the connection. */
 	c_list_for_each_entry (device, &priv->devices_lst_head, devices_lst) {
@@ -3288,8 +3532,9 @@ find_master (NMManager *self,
 	if (out_master_device)
 		*out_master_device = master_device;
 	if (out_master_ac && master_connection) {
-		*out_master_ac = active_connection_find_first (self, master_connection, NULL,
-		                                               NM_ACTIVE_CONNECTION_STATE_DEACTIVATING);
+		*out_master_ac = active_connection_find (self, master_connection, NULL,
+		                                         NM_ACTIVE_CONNECTION_STATE_DEACTIVATING,
+		                                         NULL);
 	}
 
 	if (master_device || master_connection)
@@ -3773,8 +4018,7 @@ active_connection_parent_active (NMActiveConnection *active,
 static gboolean
 _internal_activate_device (NMManager *self, NMActiveConnection *active, GError **error)
 {
-	NMDevice *device, *existing, *master_device = NULL;
-	NMActiveConnection *existing_ac;
+	NMDevice *device, *master_device = NULL;
 	NMConnection *applied;
 	NMSettingsConnection *connection;
 	NMSettingsConnection *master_connection = NULL;
@@ -3938,12 +4182,23 @@ _internal_activate_device (NMManager *self, NMActiveConnection *active, GError *
 	/* Check slaves for master connection and possibly activate them */
 	autoconnect_slaves (self, connection, device, nm_active_connection_get_subject (active));
 
-	/* Disconnect the connection if connected or queued on another device */
-	existing_ac = active_connection_find_first (self, connection, NULL, NM_ACTIVE_CONNECTION_STATE_DEACTIVATING);
-	if (existing_ac) {
-		existing = nm_active_connection_get_device (existing_ac);
-		if (existing)
-			nm_device_steal_connection (existing, connection);
+	{
+		gs_unref_ptrarray GPtrArray *all_ac_arr = NULL;
+		NMActiveConnection *ac;
+		guint i, n_all;
+
+		/* Disconnect the connection if already connected or queued for activation.
+		 * The connection cannot be active multiple times (at the same time).  */
+		ac = active_connection_find (self, connection, NULL, NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+		                             &all_ac_arr);
+		if (ac) {
+			n_all = all_ac_arr ? all_ac_arr->len : ((guint) 1);
+			for (i = 0; i < n_all; i++) {
+				nm_device_disconnect_active_connection (  all_ac_arr
+				                                        ? all_ac_arr->pdata[i]
+				                                        : ac);
+			}
+		}
 	}
 
 	/* If the device is there, we can ready it for the activation. */
@@ -4035,7 +4290,7 @@ _new_active_connection (NMManager *self,
 		/* FIXME: for VPN connections, we don't allow re-activating an
 		 * already active connection. It's a bug, and should be fixed together
 		 * when reworking VPN handling. */
-		if (active_connection_find_first_by_connection (self, connection)) {
+		if (active_connection_find_by_connection (self, connection, NM_ACTIVE_CONNECTION_STATE_ACTIVATED, NULL)) {
 			g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_CONNECTION_ALREADY_ACTIVE,
 			             "Connection '%s' is already active",
 			             nm_connection_get_id (connection));
@@ -4097,31 +4352,28 @@ _new_active_connection (NMManager *self,
 }
 
 static void
-_internal_activation_auth_done (NMActiveConnection *active,
+_internal_activation_auth_done (NMManager *self,
+                                NMActiveConnection *active,
                                 gboolean success,
-                                const char *error_desc,
-                                gpointer user_data1,
-                                gpointer user_data2)
+                                const char *error_desc)
 {
-	_nm_unused gs_unref_object NMActiveConnection *active_to_free = active;
-	NMManager *self = user_data1;
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
 	NMActiveConnection *ac;
 	gs_free_error GError *error = NULL;
 
-	priv->authorizing_connections = g_slist_remove (priv->authorizing_connections, active);
+	nm_assert (NM_IS_ACTIVE_CONNECTION (active));
 
 	if (!success)
 		goto fail;
 
-	/* Don't continue with an internal activation if an equivalent active
-	 * connection already exists. Note that slave autoconnections always force a
-	 * reconnection.  We also check this earlier, but there we may fail to
-	 * detect a duplicate if the existing active connection is undergoing
-	 * authorization in impl_manager_activate_connection().
+	/* Don't continue with an autoconnect-activation if a more important activation
+	 * already exists.
+	 * We also check this earlier, but there we may fail to detect a duplicate
+	 * if the existing active connection was undergoing authorization.
 	 */
-	if (   nm_auth_subject_is_internal (nm_active_connection_get_subject (active))
-	    && nm_active_connection_get_activation_reason (active) != NM_ACTIVATION_REASON_AUTOCONNECT_SLAVES) {
+	if (NM_IN_SET (nm_active_connection_get_activation_reason (active), NM_ACTIVATION_REASON_EXTERNAL,
+	                                                                    NM_ACTIVATION_REASON_ASSUME,
+	                                                                    NM_ACTIVATION_REASON_AUTOCONNECT)) {
 		c_list_for_each_entry (ac, &priv->active_connections_lst_head, active_connections_lst) {
 			if (   nm_active_connection_get_device (ac) == nm_active_connection_get_device (active)
 			    && nm_active_connection_get_settings_connection (ac) == nm_active_connection_get_settings_connection (active)
@@ -4154,7 +4406,7 @@ fail:
  * @connection: the #NMSettingsConnection to activate on @device
  * @applied: (allow-none): the applied connection to activate on @device
  * @specific_object: the specific object path, if any, for the activation
- * @device: the #NMDevice to activate @connection on
+ * @device: the #NMDevice to activate @connection on. Can be %NULL for VPNs.
  * @subject: the subject which requested activation
  * @activation_type: whether to assume the connection. That is, take over gracefully,
  *   non-destructible.
@@ -4184,11 +4436,13 @@ nm_manager_activate_connection (NMManager *self,
 {
 	NMManagerPrivate *priv;
 	NMActiveConnection *active;
-	GSList *iter;
+	AsyncOpData *async_op_data;
+	gboolean is_vpn;
 
 	g_return_val_if_fail (NM_IS_MANAGER (self), NULL);
 	g_return_val_if_fail (NM_IS_SETTINGS_CONNECTION (connection), NULL);
-	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+	is_vpn = _connection_is_vpn (NM_CONNECTION (connection));
+	g_return_val_if_fail (is_vpn || NM_IS_DEVICE (device), NULL);
 	g_return_val_if_fail (!error || !*error, NULL);
 	nm_assert (!nm_streq0 (specific_object, "/"));
 
@@ -4206,12 +4460,15 @@ nm_manager_activate_connection (NMManager *self,
 	 * otherwise race and cause the device to disconnect and reconnect repeatedly.
 	 * In particular, this allows the master and multiple slaves to concurrently auto-activate
 	 * while all the slaves would use the same active-connection. */
-	for (iter = priv->authorizing_connections; iter; iter = g_slist_next (iter)) {
-		active = iter->data;
+	c_list_for_each_entry (async_op_data, &priv->async_op_lst_head, async_op_lst) {
 
+		if (async_op_data->async_op_type != ASYNC_OP_TYPE_AC_AUTH_ACTIVATE_INTERNAL)
+			continue;
+
+		active = async_op_data->ac_auth.active;
 		if (   connection == nm_active_connection_get_settings_connection (active)
 		    && nm_streq0 (nm_active_connection_get_specific_object (active), specific_object)
-		    && nm_active_connection_get_device (active) == device
+		    && (!device || nm_active_connection_get_device (active) == device)
 		    && nm_auth_subject_is_internal (nm_active_connection_get_subject (active))
 		    && nm_auth_subject_is_internal (subject)
 		    && nm_active_connection_get_activation_reason (active) == activation_reason)
@@ -4219,7 +4476,7 @@ nm_manager_activate_connection (NMManager *self,
 	}
 
 	active = _new_active_connection (self,
-	                                 _connection_is_vpn (NM_CONNECTION (connection)),
+	                                 is_vpn,
 	                                 NM_CONNECTION (connection),
 	                                 applied,
 	                                 specific_object,
@@ -4231,8 +4488,11 @@ nm_manager_activate_connection (NMManager *self,
 	if (!active)
 		return NULL;
 
-	priv->authorizing_connections = g_slist_prepend (priv->authorizing_connections, active);
-	nm_active_connection_authorize (active, NULL, _internal_activation_auth_done, self, NULL);
+	nm_active_connection_authorize (active,
+	                                NULL,
+	                                _async_op_complete_ac_auth_cb,
+	                                _async_op_data_new_authorize_activate_internal (self,
+	                                                                                active));
 	return active;
 }
 
@@ -4362,18 +4622,15 @@ validate_activation_request (NMManager *self,
 /*****************************************************************************/
 
 static void
-_activation_auth_done (NMActiveConnection *active,
+_activation_auth_done (NMManager *self,
+                       NMActiveConnection *active,
+                       GDBusMethodInvocation *invocation,
                        gboolean success,
-                       const char *error_desc,
-                       gpointer user_data1,
-                       gpointer user_data2)
+                       const char *error_desc)
 {
-	NMManager *self = user_data1;
-	GDBusMethodInvocation *context = user_data2;
 	GError *error = NULL;
 	NMAuthSubject *subject;
 	NMSettingsConnection *connection;
-	_nm_unused gs_unref_object NMActiveConnection *active_free = active;
 
 	subject = nm_active_connection_get_subject (active);
 	connection = nm_active_connection_get_settings_connection (active);
@@ -4391,7 +4648,7 @@ _activation_auth_done (NMActiveConnection *active,
 	nm_settings_connection_autoconnect_blocked_reason_set (connection,
 	                                                       NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_USER_REQUEST,
 	                                                       FALSE);
-	g_dbus_method_invocation_return_value (context,
+	g_dbus_method_invocation_return_value (invocation,
 	                                       g_variant_new ("(o)",
 	                                       nm_dbus_object_get_path (NM_DBUS_OBJECT (active))));
 	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_ACTIVATE, connection, TRUE, NULL,
@@ -4405,7 +4662,7 @@ fail:
 	                                     NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN,
 	                                     error->message);
 
-	g_dbus_method_invocation_take_error (context, error);
+	g_dbus_method_invocation_take_error (invocation, error);
 }
 
 static void
@@ -4490,14 +4747,12 @@ impl_manager_activate_connection (NMDBusObject *obj,
 	if (!active)
 		goto error;
 
-	/* FIXME: nm_active_connection_authorize() is not cancellable,
-	 * and we pass on the only reference to @active. This construct
-	 * is unsuitable for a coordinated shutdown. */
 	nm_active_connection_authorize (g_steal_pointer (&active),
 	                                NULL,
-	                                _activation_auth_done,
-	                                self,
-	                                invocation);
+	                                _async_op_complete_ac_auth_cb,
+	                                _async_op_data_new_ac_auth_activate_user (self,
+	                                                                          active,
+	                                                                          invocation));
 	return;
 
 error:
@@ -4510,11 +4765,6 @@ error:
 
 /*****************************************************************************/
 
-typedef struct {
-	NMManager *manager;
-	NMActiveConnection *active;
-} AddAndActivateInfo;
-
 static void
 activation_add_done (NMSettings *settings,
                      NMSettingsConnection *new_connection,
@@ -4523,14 +4773,11 @@ activation_add_done (NMSettings *settings,
                      NMAuthSubject *subject,
                      gpointer user_data)
 {
-	AddAndActivateInfo *info = user_data;
 	NMManager *self;
 	gs_unref_object NMActiveConnection *active = NULL;
 	gs_free_error GError *local = NULL;
 
-	self = info->manager;
-	active = info->active;
-	g_slice_free (AddAndActivateInfo, info);
+	nm_utils_user_data_unpack (user_data, &self, &active);
 
 	if (!error) {
 		nm_active_connection_set_settings_connection (active, new_connection);
@@ -4575,21 +4822,15 @@ activation_add_done (NMSettings *settings,
 }
 
 static void
-_add_and_activate_auth_done (NMActiveConnection *active,
+_add_and_activate_auth_done (NMManager *self,
+                             NMActiveConnection *active,
+                             NMConnection *connection,
+                             GDBusMethodInvocation *invocation,
                              gboolean success,
-                             const char *error_desc,
-                             gpointer user_data1,
-                             gpointer user_data2)
+                             const char *error_desc)
 {
-	NMManager *self = user_data1;
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	GDBusMethodInvocation *context = user_data2;
-	AddAndActivateInfo *info;
+	NMManagerPrivate *priv;
 	GError *error = NULL;
-	gs_unref_object NMConnection *connection = NULL;
-
-	connection = g_object_steal_qdata (G_OBJECT (active),
-	                                   active_connection_add_and_activate_quark ());
 
 	if (!success) {
 		error = g_error_new_literal (NM_MANAGER_ERROR,
@@ -4601,24 +4842,23 @@ _add_and_activate_auth_done (NMActiveConnection *active,
 		                            NULL,
 		                            nm_active_connection_get_subject (active),
 		                            error->message);
-		g_dbus_method_invocation_take_error (context, error);
-		g_object_unref (active);
+		g_dbus_method_invocation_take_error (invocation, error);
 		return;
 	}
 
-	info = g_slice_new (AddAndActivateInfo);
-	info->manager = self;
+	priv = NM_MANAGER_GET_PRIVATE (self);
 
-	/* we pass on the reference to @active. */
-	info->active = active;
-
-	/* Basic sender auth checks performed; try to add the connection */
+	/* FIXME(shutdown): nm_settings_add_connection_dbus() cannot be cancelled. It should be made
+	 * cancellable and tracked via AsyncOpData to be able to do a clean
+	 * shutdown. */
 	nm_settings_add_connection_dbus (priv->settings,
 	                                 connection,
 	                                 FALSE,
-	                                 context,
+	                                 nm_active_connection_get_subject (active),
+	                                 invocation,
 	                                 activation_add_done,
-	                                 info);
+	                                 nm_utils_user_data_pack (self,
+	                                                          g_object_ref (active)));
 }
 
 static void
@@ -4709,19 +4949,14 @@ impl_manager_add_and_activate_connection (NMDBusObject *obj,
 	if (!active)
 		goto error;
 
-	/* FIXME: nm_active_connection_authorize() already has two user-data pointers
-	 *        to piggyback additional data. Instead of attaching the third argument to
-	 *        @active's user-data, add a third paramter.
-	 *        Or alternatively, allocate a data structure to pass on additional data.
-	 *        Then we don't need two user-data pointers. */
-	g_object_set_qdata_full (G_OBJECT (active),
-	                         active_connection_add_and_activate_quark (),
-	                         connection,
-	                         g_object_unref);
+	nm_active_connection_authorize (active, connection,
+	                                _async_op_complete_ac_auth_cb,
+	                                _async_op_data_new_ac_auth_add_and_activate (self,
+	                                                                             active,
+	                                                                             invocation,
+	                                                                             connection));
 
-	nm_active_connection_authorize (active, connection, _add_and_activate_auth_done, self, invocation);
-
-	/* we passed the pointers on to the callback of authorize. */
+	/* we passed the pointers on to _async_op_data_new_ac_auth_add_and_activate() */
 	g_steal_pointer (&connection);
 	g_steal_pointer (&active);
 	return;
@@ -5799,6 +6034,21 @@ nm_manager_stop (NMManager *self)
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
 	NMDevice *device;
 
+	/* FIXME(shutdown): we don't do a proper shutdown yet:
+	 *  - need to ensure that all pending async operations are cancelled
+	 *    - e.g. operations in priv->async_op_lst_head
+	 *  - need to ensure that no more asynchronous requests are started,
+	 *    or that they complete quickly, or that they fail quickly.
+	 *  - note that cancelling some operations is not possible synchronously.
+	 *    Hence, stop() only prepares shutdown and tells everybody to not
+	 *    accept new work, and to complete in a timely manner.
+	 *    We need to still iterate the mainloop for a bit, to give everybody
+	 *    the chance to complete.
+	 *    - e.g. see comment at nm_auth_manager_force_shutdown()
+	 */
+
+	nm_dbus_manager_stop (nm_dbus_object_get_manager (NM_DBUS_OBJECT (self)));
+
 	while ((device = c_list_first_entry (&priv->devices_lst_head, NMDevice, devices_lst)))
 		remove_device (self, device, TRUE, TRUE);
 
@@ -6577,6 +6827,7 @@ nm_manager_init (NMManager *self)
 	c_list_init (&priv->link_cb_lst);
 	c_list_init (&priv->devices_lst_head);
 	c_list_init (&priv->active_connections_lst_head);
+	c_list_init (&priv->async_op_lst_head);
 	c_list_init (&priv->delete_volatile_connection_lst_head);
 
 	priv->platform = g_object_ref (NM_PLATFORM_GET);
@@ -6726,7 +6977,7 @@ get_property (GObject *object, guint prop_id,
 			if (con)
 				type = nm_connection_get_connection_type (con);
 		}
-		g_value_set_string (value, type ? type : "");
+		g_value_set_string (value, type ?: "");
 		break;
 	case PROP_ACTIVATING_CONNECTION:
 		nm_dbus_utils_g_value_set_object_path (value, priv->activating_connection);
@@ -6823,6 +7074,8 @@ dispose (GObject *object)
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
 	CList *iter, *iter_safe;
 	NMActiveConnection *ac, *ac_safe;
+
+	nm_assert (c_list_is_empty (&priv->async_op_lst_head));
 
 	g_signal_handlers_disconnect_by_func (priv->platform,
 	                                      G_CALLBACK (platform_link_cb),

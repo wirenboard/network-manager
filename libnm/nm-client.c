@@ -110,6 +110,7 @@ typedef struct {
 	GDBusObjectManager *object_manager;
 	GCancellable *new_object_manager_cancellable;
 	struct udev *udev;
+	bool udev_inited:1;
 } NMClientPrivate;
 
 enum {
@@ -753,7 +754,6 @@ nm_client_check_connectivity_finish (NMClient *client,
 		return NM_CONNECTIVITY_UNKNOWN;
 	return (NMConnectivityState) g_simple_async_result_get_op_res_gssize (simple);
 }
-
 
 /**
  * nm_client_save_hostname:
@@ -2604,9 +2604,14 @@ obj_nm_for_gdbus_object (NMClient *self, GDBusObject *object, GDBusObjectManager
 	                       NULL);
 	if (NM_IS_DEVICE (obj_nm)) {
 		priv = NM_CLIENT_GET_PRIVATE (self);
-		if (!priv->udev)
-			priv->udev = udev_new ();
-		_nm_device_set_udev (NM_DEVICE (obj_nm), priv->udev);
+		if (G_UNLIKELY (!priv->udev_inited)) {
+			priv->udev_inited = TRUE;
+			/* for testing, we don't want to use udev in libnm. */
+			if (!nm_streq0 (g_getenv ("LIBNM_USE_NO_UDEV"), "1"))
+				priv->udev = udev_new ();
+		}
+		if (priv->udev)
+			_nm_device_set_udev (NM_DEVICE (obj_nm), priv->udev);
 	}
 	g_object_set_qdata_full (G_OBJECT (object), _nm_object_obj_nm_quark (),
 	                         obj_nm, g_object_unref);
@@ -2622,7 +2627,6 @@ obj_nm_inited (GObject *object, GAsyncResult *result, gpointer user_data)
 		g_warn_if_reached ();
 	}
 }
-
 
 static void
 object_added (GDBusObjectManager *object_manager, GDBusObject *object, gpointer user_data)
@@ -2739,7 +2743,6 @@ objects_created (NMClient *client, GDBusObjectManager *object_manager, GError **
 		g_signal_connect (priv->dns_manager, "notify",
 		                  G_CALLBACK (dns_notify), client);
 	}
-
 
 	/* The handlers don't really use the client instance. However
 	 * it makes it convenient to unhook them by data. */

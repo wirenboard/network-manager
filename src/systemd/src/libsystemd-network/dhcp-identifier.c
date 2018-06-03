@@ -3,19 +3,6 @@
   This file is part of systemd.
 
   Copyright (C) 2015 Tom Gundersen <teg@jklmen>
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -99,7 +86,7 @@ int dhcp_identifier_set_iaid(int ifindex, uint8_t *mac, size_t mac_len, void *_i
 #if 0 /* NM_IGNORED */
         /* name is a pointer to memory in the udev_device struct, so must
            have the same scope */
-        _cleanup_udev_device_unref_ struct udev_device *device = NULL;
+        _cleanup_(udev_device_unrefp) struct udev_device *device = NULL;
 #else /* NM_IGNORED */
         char name_buf[IF_NAMESIZE];
 #endif /* NM_IGNORED */
@@ -109,7 +96,7 @@ int dhcp_identifier_set_iaid(int ifindex, uint8_t *mac, size_t mac_len, void *_i
 #if 0 /* NM_IGNORED */
         if (detect_container() <= 0) {
                 /* not in a container, udev will be around */
-                _cleanup_udev_unref_ struct udev *udev;
+                _cleanup_(udev_unrefp) struct udev *udev;
                 char ifindex_str[2 + DECIMAL_STR_MAX(int)];
 
                 udev = udev_new();

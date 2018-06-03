@@ -1819,7 +1819,7 @@ nm_device_get_physical_port_id (NMDevice *device)
  *
  * Gets the  MTU of the #NMDevice.
  *
- * Returns: the MTU of the device.
+ * Returns: the MTU of the device in bytes.
  **/
 guint32
 nm_device_get_mtu (NMDevice *device)
@@ -1939,7 +1939,6 @@ nm_device_reapply (NMDevice *device,
 		dict = nm_connection_to_dbus (connection, NM_CONNECTION_SERIALIZE_ALL);
 	if (!dict)
 		dict = g_variant_new_array (G_VARIANT_TYPE ("{sa{sv}}"), NULL, 0);
-
 
 	ret = nmdbus_device_call_reapply_sync (NM_DEVICE_GET_PRIVATE (device)->proxy,
 	                                       dict, version_id, flags, cancellable, error);

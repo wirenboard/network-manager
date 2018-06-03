@@ -75,10 +75,12 @@ typedef enum {
 } NMActivationType;
 
 typedef enum {
-	NM_ACTIVATION_REASON_UNSET = 0,
-	NM_ACTIVATION_REASON_AUTOCONNECT = 1,
-	NM_ACTIVATION_REASON_AUTOCONNECT_SLAVES = 2,
-	NM_ACTIVATION_REASON_USER_REQUEST = 3,
+	NM_ACTIVATION_REASON_UNSET,
+	NM_ACTIVATION_REASON_EXTERNAL,
+	NM_ACTIVATION_REASON_ASSUME,
+	NM_ACTIVATION_REASON_AUTOCONNECT,
+	NM_ACTIVATION_REASON_AUTOCONNECT_SLAVES,
+	NM_ACTIVATION_REASON_USER_REQUEST,
 } NMActivationReason;
 
 typedef enum {
@@ -212,7 +214,6 @@ typedef enum {
 	NM_IP_CONFIG_MERGE_NO_DNS                   = (1LL << 2),
 } NMIPConfigMergeFlags;
 
-
 /**
  * NMIPRouteTableSyncMode:
  * @NM_IP_ROUTE_TABLE_SYNC_MODE_MAIN: only the main table is synced. For all
@@ -227,7 +228,6 @@ typedef enum {
 	NM_IP_ROUTE_TABLE_SYNC_MODE_FULL        = 2,
 	NM_IP_ROUTE_TABLE_SYNC_MODE_ALL         = 3,
 } NMIPRouteTableSyncMode;
-
 
 /* settings */
 typedef struct _NMAgentManager       NMAgentManager;

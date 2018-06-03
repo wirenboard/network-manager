@@ -36,7 +36,6 @@ struct Opt {
 	const char **    str_allowed;
 };
 
-
 static gboolean validate_type_int     (const struct Opt * opt,
                                        const char * value,
                                        const guint32 len);
@@ -66,7 +65,6 @@ static const struct validate_entry validate_table[] = {
 	{ TYPE_UTF8,    validate_type_utf8    },
 	{ TYPE_KEYWORD, validate_type_keyword },
 };
-
 
 const char * pairwise_allowed[] = { "CCMP", "TKIP", "NONE", NULL };
 const char * group_allowed[] =    { "CCMP", "TKIP", "WEP104", "WEP40", NULL };
@@ -155,7 +153,6 @@ static const struct Opt opt_table[] = {
 	{ "ieee80211w",         TYPE_INT,     0, 2, FALSE, NULL },
 };
 
-
 static gboolean
 validate_type_int (const struct Opt * opt,
                    const char * value,
@@ -190,7 +187,7 @@ validate_type_bytes (const struct Opt * opt,
 	g_return_val_if_fail (opt != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
 
-	check_len = opt->int_high ? opt->int_high : 255;
+	check_len = opt->int_high ?: 255;
 	if (len > check_len)
 		return FALSE;
 
@@ -207,7 +204,7 @@ validate_type_utf8 (const struct Opt *opt,
 	g_return_val_if_fail (opt != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
 
-	check_len = opt->int_high ? opt->int_high : 255;
+	check_len = opt->int_high ?: 255;
 	/* Note that we deliberately don't validate the UTF-8, because
 	   some "UTF-8" fields, such as 8021x.password, do not actually
 	   have to be valid UTF-8 */

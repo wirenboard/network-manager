@@ -14,7 +14,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright 2010 - 2014 Red Hat, Inc.
+ * Copyright 2010 - 2018 Red Hat, Inc.
  */
 
 #include "nm-default.h"
@@ -50,7 +50,6 @@ const NmcMetaGenericInfo *const nmc_fields_dev_status[] = {
 	NULL,
 };
 #define NMC_FIELDS_DEV_STATUS_COMMON  "DEVICE,TYPE,STATE,CONNECTION"
-
 
 const NmcMetaGenericInfo *const nmc_fields_dev_show_general[] = {
 	NMC_META_GENERIC ("NAME"),                /* 0 */
@@ -210,9 +209,9 @@ const NmcMetaGenericInfo *const nmc_fields_dev_show_sections[] = {
 	NMC_META_GENERIC_WITH_NESTED ("WIMAX-PROPERTIES",  nmc_fields_dev_show_wimax_prop + 1),   /* 5 */
 	NMC_META_GENERIC_WITH_NESTED ("NSP",               nmc_fields_dev_wimax_list + 1),        /* 6 */
 	NMC_META_GENERIC_WITH_NESTED ("IP4",               metagen_ip4_config),                   /* 7 */
-	NMC_META_GENERIC_WITH_NESTED ("DHCP4",             nmc_fields_dhcp4_config + 1),          /* 8 */
+	NMC_META_GENERIC_WITH_NESTED ("DHCP4",             nmc_fields_dhcp_config + 1),           /* 8 */
 	NMC_META_GENERIC_WITH_NESTED ("IP6",               nmc_fields_ip6_config + 1),            /* 9 */
-	NMC_META_GENERIC_WITH_NESTED ("DHCP6",             nmc_fields_dhcp6_config + 1),          /* 10 */
+	NMC_META_GENERIC_WITH_NESTED ("DHCP6",             nmc_fields_dhcp_config + 1),           /* 10 */
 	NMC_META_GENERIC_WITH_NESTED ("BOND",              nmc_fields_dev_show_master_prop + 1),  /* 11 */
 	NMC_META_GENERIC_WITH_NESTED ("TEAM",              nmc_fields_dev_show_team_prop + 1),    /* 12 */
 	NMC_META_GENERIC_WITH_NESTED ("BRIDGE",            nmc_fields_dev_show_master_prop + 1),  /* 13 */
@@ -708,22 +707,19 @@ sort_access_points (const GPtrArray *aps)
 	return sorted;
 }
 
-static void
-wifi_signal_to_color (guint8 strength, NMMetaTermColor *color, NMMetaTermFormat *color_fmt)
+static NMMetaColor
+wifi_signal_to_color (guint8 strength)
 {
-	*color = NM_META_TERM_COLOR_NORMAL;
-	*color_fmt = NM_META_TERM_FORMAT_NORMAL;
-
 	if (strength > 80)
-		*color = NM_META_TERM_COLOR_GREEN;
+		return NM_META_COLOR_WIFI_SIGNAL_EXCELLENT;
 	else if (strength > 55)
-		*color = NM_META_TERM_COLOR_YELLOW;
+		return NM_META_COLOR_WIFI_SIGNAL_GOOD;
 	else if (strength > 30)
-		*color = NM_META_TERM_COLOR_MAGENTA;
+		return NM_META_COLOR_WIFI_SIGNAL_FAIR;
 	else if (strength > 5)
-		*color = NM_META_TERM_COLOR_CYAN;
+		return NM_META_COLOR_WIFI_SIGNAL_POOR;
 	else
-		*color_fmt = NM_META_TERM_FORMAT_DIM;
+		return NM_META_COLOR_WIFI_SIGNAL_UNKNOWN;
 }
 
 static char *
@@ -796,8 +792,7 @@ fill_output_access_point (gpointer data, gpointer user_data)
 	GString *security_str;
 	char *ap_name;
 	const char *sig_bars;
-	NMMetaTermColor color;
-	NMMetaTermFormat color_fmt;
+	NMMetaColor color;
 
 	if (info->active_bssid) {
 		const char *current_bssid = nm_access_point_get_bssid (ap);
@@ -883,11 +878,10 @@ fill_output_access_point (gpointer data, gpointer user_data)
 	set_val_strc (arr, 16, nm_object_get_path (NM_OBJECT (ap)));
 
 	/* Set colors */
-	wifi_signal_to_color (strength, &color, &color_fmt);
+	color = wifi_signal_to_color (strength);
 	set_val_color_all (arr, color);
-	set_val_color_fmt_all (arr, color_fmt);
 	if (active)
-		arr[15].color = NM_META_TERM_COLOR_GREEN;
+		arr[15].color = NM_META_COLOR_CONNECTION_ACTIVATED;
 
 	g_ptr_array_add (info->output_data, arr);
 
@@ -1161,7 +1155,7 @@ show_device_info (NMDevice *device, NmCli *nmc)
 			set_val_strc (arr, 6, nm_device_get_driver (device) ? nm_device_get_driver (device) : _("(unknown)"));
 			set_val_strc (arr, 7, nm_device_get_driver_version (device));
 			set_val_strc (arr, 8, nm_device_get_firmware_version (device));
-			set_val_strc (arr, 9, hwaddr ? hwaddr : _("(unknown)"));
+			set_val_strc (arr, 9, hwaddr ?: _("(unknown)"));
 			set_val_str  (arr, 10, mtu_str);
 			set_val_str  (arr, 11, state_str);
 			set_val_str  (arr, 12, reason_str);
@@ -1269,7 +1263,7 @@ show_device_info (NMDevice *device, NmCli *nmc)
 				}
 
 				tmpl = (const NMMetaAbstractInfo *const*) nmc_fields_dev_wifi_list;
-				out_indices = parse_output_fields (section_fld ? section_fld : NMC_FIELDS_DEV_WIFI_LIST_FOR_DEV_LIST,
+				out_indices = parse_output_fields (section_fld ?: NMC_FIELDS_DEV_WIFI_LIST_FOR_DEV_LIST,
 				                                   tmpl, FALSE, NULL, NULL);
 				arr = nmc_dup_fields_array (tmpl, NMC_OF_FLAG_FIELD_NAMES);
 				g_ptr_array_add (out.output_data, arr);
@@ -1329,7 +1323,7 @@ show_device_info (NMDevice *device, NmCli *nmc)
 
 		/* DHCP4 */
 		if (dhcp4 && !strcasecmp (nmc_fields_dev_show_sections[section_idx]->name, nmc_fields_dev_show_sections[8]->name))
-			was_output = print_dhcp4_config (dhcp4, &nmc->nmc_config, nmc_fields_dev_show_sections[8]->name, section_fld);
+			was_output = print_dhcp_config (dhcp4, &nmc->nmc_config, nmc_fields_dev_show_sections[8]->name, section_fld);
 
 		/* IP6 */
 		if (cfg6 && !strcasecmp (nmc_fields_dev_show_sections[section_idx]->name, nmc_fields_dev_show_sections[9]->name))
@@ -1337,7 +1331,7 @@ show_device_info (NMDevice *device, NmCli *nmc)
 
 		/* DHCP6 */
 		if (dhcp6 && !strcasecmp (nmc_fields_dev_show_sections[section_idx]->name, nmc_fields_dev_show_sections[10]->name))
-			was_output = print_dhcp6_config (dhcp6, &nmc->nmc_config, nmc_fields_dev_show_sections[10]->name, section_fld);
+			was_output = print_dhcp_config (dhcp6, &nmc->nmc_config, nmc_fields_dev_show_sections[10]->name, section_fld);
 
 		/* Bond specific information */
 		if (NM_IS_DEVICE_BOND (device)) {
@@ -1464,20 +1458,19 @@ show_device_info (NMDevice *device, NmCli *nmc)
 	return TRUE;
 }
 
-void
-nmc_device_state_to_color (NMDeviceState state, NMMetaTermColor *color, NMMetaTermFormat *color_fmt)
+NMMetaColor
+nmc_device_state_to_color (NMDeviceState state)
 {
-	*color = NM_META_TERM_COLOR_NORMAL;
-	*color_fmt = NM_META_TERM_FORMAT_NORMAL;
-
 	if (state <= NM_DEVICE_STATE_UNAVAILABLE)
-		*color_fmt= NM_META_TERM_FORMAT_DIM;
+		return NM_META_COLOR_DEVICE_UNAVAILABLE;
 	else if (state == NM_DEVICE_STATE_DISCONNECTED)
-		*color = NM_META_TERM_COLOR_RED;
+		return NM_META_COLOR_DEVICE_DISCONNECTED;
 	else if (state >= NM_DEVICE_STATE_PREPARE && state <= NM_DEVICE_STATE_SECONDARIES)
-		*color = NM_META_TERM_COLOR_YELLOW;
+		return NM_META_COLOR_DEVICE_ACTIVATING;
 	else if (state == NM_DEVICE_STATE_ACTIVATED)
-		*color = NM_META_TERM_COLOR_GREEN;
+		return NM_META_COLOR_DEVICE_ACTIVATED;
+
+	g_return_val_if_reached (NM_META_COLOR_DEVICE_UNKNOWN);
 }
 
 static void
@@ -1485,8 +1478,7 @@ fill_output_device_status (NMDevice *device, GPtrArray *output_data)
 {
 	NMActiveConnection *ac;
 	NMDeviceState state;
-	NMMetaTermColor color;
-	NMMetaTermFormat color_fmt;
+	NMMetaColor color;
 	NmcOutputField *arr = nmc_dup_fields_array ((const NMMetaAbstractInfo *const*) nmc_fields_dev_status,
 	                                            0);
 
@@ -1494,9 +1486,8 @@ fill_output_device_status (NMDevice *device, GPtrArray *output_data)
 	ac = nm_device_get_active_connection (device);
 
 	/* Show devices in color */
-	nmc_device_state_to_color (state, &color, &color_fmt);
+	color = nmc_device_state_to_color (state);
 	set_val_color_all (arr, color);
-	set_val_color_fmt_all (arr, color_fmt);
 
 	set_val_strc (arr, 0, nm_device_get_iface (device));
 	set_val_strc (arr, 1, nm_device_get_type_description (device));
@@ -2407,12 +2398,11 @@ static void
 device_state (NMDevice *device, GParamSpec *pspec, NmCli *nmc)
 {
 	NMDeviceState state = nm_device_get_state (device);
-	NMMetaTermColor color;
-	NMMetaTermFormat color_fmt;
+	NMMetaColor color;
 	char *str;
 
-	nmc_device_state_to_color (state, &color, &color_fmt);
-	str = nmc_colorize (nmc->nmc_config.use_colors, color, color_fmt, "%s: %s\n",
+	color = nmc_device_state_to_color (state);
+	str = nmc_colorize (&nmc->nmc_config, color, "%s: %s\n",
 	                    nm_device_get_iface (device),
 	                    nmc_device_state_to_string (state));
 
@@ -2907,7 +2897,7 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 
 		if (nmc->ask) {
 			ssid_ask = nmc_readline (_("SSID or BSSID: "));
-			param_user = ssid_ask ? ssid_ask : "";
+			param_user = ssid_ask ?: "";
 			bssid1_arr = nm_utils_hwaddr_atoba (param_user, ETH_ALEN);
 		}
 		if (!ssid_ask) {
@@ -3657,7 +3647,6 @@ do_device_wifi_rescan (NmCli *nmc, int argc, char **argv)
 		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
 		goto finish;
 	}
-
 
 	if (ssids->len) {
 		g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);

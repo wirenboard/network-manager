@@ -2396,7 +2396,6 @@ nm_platform_link_infiniband_delete (NMPlatform *self,
 	return _infiniband_add_add_or_delete (self, parent, p_key, FALSE, NULL);
 }
 
-
 gboolean
 nm_platform_link_infiniband_get_properties (NMPlatform *self,
                                             int ifindex,
@@ -3596,6 +3595,25 @@ delete_and_next2:
 	return TRUE;
 }
 
+static guint
+ip6_address_scope_priority (const struct in6_addr *addr)
+{
+	if (IN6_IS_ADDR_LINKLOCAL (addr))
+		return 1;
+	if (IN6_IS_ADDR_SITELOCAL (addr))
+		return 2;
+	return 3;
+}
+
+static gint
+ip6_address_scope_cmp (gconstpointer a, gconstpointer b)
+{
+	const NMPlatformIP6Address *x = NMP_OBJECT_CAST_IP6_ADDRESS (*(const void **) a);
+	const NMPlatformIP6Address *y = NMP_OBJECT_CAST_IP6_ADDRESS (*(const void **) b);
+
+	return ip6_address_scope_priority (&x->address) - ip6_address_scope_priority (&y->address);
+}
+
 /**
  * nm_platform_ip6_address_sync:
  * @self: platform instance
@@ -3628,6 +3646,13 @@ nm_platform_ip6_address_sync (NMPlatform *self,
 	gs_unref_hashtable GHashTable *known_addresses_idx = NULL;
 	NMPLookup lookup;
 	guint32 ifa_flags;
+
+	/* The order we want to enforce is only among addresses with the same
+	 * scope, as the kernel keeps addresses sorted by scope. Therefore,
+	 * apply the same sorting to known addresses, so that we don't try to
+	 * unnecessary change the order of addresses with different scopes. */
+	if (known_addresses)
+		g_ptr_array_sort (known_addresses, ip6_address_scope_cmp);
 
 	if (!_addr_array_clean_expired (AF_INET6, ifindex, known_addresses, now, &known_addresses_idx))
 		known_addresses = NULL;
@@ -4019,6 +4044,7 @@ sync_route_add:
 						nmp_object_stackinit (&oo,
 						                      NMP_OBJECT_TYPE_IP4_ROUTE,
 						                      &((NMPlatformIP4Route) {
+						                          .ifindex = r->ifindex,
 						                          .network = r->gateway,
 						                          .plen = 32,
 						                          .metric = r->metric,
@@ -4031,6 +4057,7 @@ sync_route_add:
 						nmp_object_stackinit (&oo,
 						                      NMP_OBJECT_TYPE_IP6_ROUTE,
 						                      &((NMPlatformIP6Route) {
+						                          .ifindex = r->ifindex,
 						                          .network = r->gateway,
 						                          .plen = 128,
 						                          .metric = r->metric,
@@ -4651,7 +4678,6 @@ nm_platform_qdisc_sync (NMPlatform *self,
 	                                                                ifindex),
 	                                        NULL, NULL);
 
-
 	if (plat_qdiscs) {
 		for (i = 0; i < plat_qdiscs->len; i++) {
 			const NMPObject *q = g_ptr_array_index (plat_qdiscs, i);
@@ -4716,7 +4742,6 @@ nm_platform_tfilter_sync (NMPlatform *self,
 	                                                                  NMP_OBJECT_TYPE_TFILTER,
 	                                                                  ifindex),
 	                                          NULL, NULL);
-
 
 	if (plat_tfilters) {
 		for (i = 0; i < plat_tfilters->len; i++) {
@@ -4785,7 +4810,6 @@ _lifetime_to_string (guint32 timestamp, guint32 lifetime, gint32 now, char *buf,
 	            nm_utils_lifetime_rebase_relative_time_on_now (timestamp, lifetime, now));
 	return buf;
 }
-
 
 static const char *
 _lifetime_summary_to_string (gint32 now, guint32 timestamp, guint32 preferred, guint32 lifetime, char *buf, size_t buf_size)
@@ -4884,11 +4908,11 @@ nm_platform_link_to_string (const NMPlatformLink *link, char *buf, gsize len)
 	            link->inet6_addr_gen_mode_inv ? " addrgenmode " : "",
 	            link->inet6_addr_gen_mode_inv ? nm_platform_link_inet6_addrgenmode2str (_nm_platform_uint8_inv (link->inet6_addr_gen_mode_inv), str_addrmode, sizeof (str_addrmode)) : "",
 	            str_addr ? " addr " : "",
-	            str_addr ? str_addr : "",
+	            str_addr ?: "",
 	            link->inet6_token.id ? " inet6token " : "",
 	            link->inet6_token.id ? nm_utils_inet6_interface_identifier_to_token (link->inet6_token, str_inet6_token) : "",
 	            link->driver ? " driver " : "",
-	            link->driver ? link->driver : "",
+	            link->driver ?: "",
 	            link->rx_packets, link->rx_bytes,
 	            link->tx_packets, link->tx_bytes);
 	g_string_free (str_flags, TRUE);
@@ -5300,7 +5324,7 @@ nm_platform_ip4_address_to_string (const NMPlatformIP4Address *address, char *bu
 		str_label[0] = 0;
 
 	str_lft_p = _lifetime_to_string (address->timestamp,
-	                                 address->lifetime ? address->lifetime : NM_PLATFORM_LIFETIME_PERMANENT,
+	                                 address->lifetime ?: NM_PLATFORM_LIFETIME_PERMANENT,
 	                                 now, str_lft, sizeof (str_lft)),
 	str_pref_p = (address->lifetime == address->preferred)
 	             ? str_lft_p
@@ -5312,7 +5336,7 @@ nm_platform_ip4_address_to_string (const NMPlatformIP4Address *address, char *bu
 	g_snprintf (buf, len,
 	            "%s/%d lft %s pref %s%s%s%s%s%s src %s",
 	            s_address, address->plen, str_lft_p, str_pref_p, str_time_p,
-	            str_peer ? str_peer : "",
+	            str_peer ?: "",
 	            str_dev,
 	            _to_string_ifa_flags (address->n_ifa_flags, s_flags, sizeof (s_flags)),
 	            str_label,
@@ -5407,7 +5431,7 @@ nm_platform_ip6_address_to_string (const NMPlatformIP6Address *address, char *bu
 	_to_string_dev (NULL, address->ifindex, str_dev, sizeof (str_dev));
 
 	str_lft_p = _lifetime_to_string (address->timestamp,
-	                                 address->lifetime ? address->lifetime : NM_PLATFORM_LIFETIME_PERMANENT,
+	                                 address->lifetime ?: NM_PLATFORM_LIFETIME_PERMANENT,
 	                                 now, str_lft, sizeof (str_lft)),
 	str_pref_p = (address->lifetime == address->preferred)
 	             ? str_lft_p
@@ -5419,7 +5443,7 @@ nm_platform_ip6_address_to_string (const NMPlatformIP6Address *address, char *bu
 	g_snprintf (buf, len,
 	            "%s/%d lft %s pref %s%s%s%s%s src %s",
 	            s_address, address->plen, str_lft_p, str_pref_p, str_time_p,
-	            str_peer ? str_peer : "",
+	            str_peer ?: "",
 	            str_dev,
 	            _to_string_ifa_flags (address->n_ifa_flags, s_flags, sizeof (s_flags)),
 	            nmp_utils_ip_config_source_to_string (address->addr_source, s_source, sizeof (s_source)));
@@ -5491,7 +5515,6 @@ nm_platform_ip4_route_to_string (const NMPlatformIP4Route *route, char *buf, gsi
 	inet_ntop (AF_INET, &route->gateway, s_gateway, sizeof(s_gateway));
 
 	_to_string_dev (NULL, route->ifindex, str_dev, sizeof (str_dev));
-
 
 	g_snprintf (buf, len,
 	            "%s" /* table */

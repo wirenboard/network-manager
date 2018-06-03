@@ -1177,8 +1177,9 @@ _get_stable_id (NMDevice *self,
 		uuid = nm_connection_get_uuid (connection);
 
 		stable_type = nm_utils_stable_id_parse (stable_id,
-		                                        uuid,
+		                                        nm_device_get_ip_iface (self),
 		                                        NULL,
+		                                        uuid,
 		                                        &generated);
 
 		/* current_stable_id_type is a bitfield! */
@@ -1357,7 +1358,7 @@ nm_device_get_ip_iface (NMDevice *self)
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
 	/* If it's not set, default to iface */
-	return priv->ip_iface ? priv->ip_iface : priv->iface;
+	return priv->ip_iface ?: priv->iface;
 }
 
 int
@@ -2133,8 +2134,20 @@ get_type_description (NMDevice *self)
 
 	nm_assert (NM_IS_DEVICE (self));
 
+	/* the default implementation for the description just returns the (modified)
+	 * class name and depends entirely on the type of self. Note that we cache the
+	 * description in the klass itself.
+	 *
+	 * Also note, that as the GObject class gets inited, it inherrits the fields
+	 * of the parent class. That means, if NMDeviceVethClass was initialized after
+	 * NMDeviceEthernetClass already has the description cached in the class
+	 * (because we already fetched the description for an ethernet device),
+	 * then default_type_description will wrongly contain "ethernet".
+	 * To avoid that, and catch the situation, also cache the klass for
+	 * which the description was cached. If that doesn't match, it was
+	 * inherited and we need to reset it. */
 	klass = NM_DEVICE_GET_CLASS (self);
-	if (G_UNLIKELY (!klass->default_type_description)) {
+	if (G_UNLIKELY (klass->default_type_description_klass != klass)) {
 		const char *typename;
 		gs_free char *s = NULL;
 
@@ -2143,8 +2156,10 @@ get_type_description (NMDevice *self)
 			typename += 8;
 		s = g_ascii_strdown (typename, -1);
 		klass->default_type_description = g_intern_string (s);
+		klass->default_type_description_klass = klass;
 	}
 
+	nm_assert (klass->default_type_description);
 	return klass->default_type_description;
 }
 
@@ -2220,6 +2235,7 @@ nm_device_get_physical_port_id (NMDevice *self)
 
 typedef enum {
 	CONCHECK_SCHEDULE_UPDATE_INTERVAL,
+	CONCHECK_SCHEDULE_UPDATE_INTERVAL_RESTART,
 	CONCHECK_SCHEDULE_CHECK_EXTERNAL,
 	CONCHECK_SCHEDULE_CHECK_PERIODIC,
 	CONCHECK_SCHEDULE_RETURNED_MIN,
@@ -2263,10 +2279,11 @@ concheck_is_possible (NMDevice *self)
 }
 
 static gboolean
-concheck_periodic_schedule_do (NMDevice *self, gint64 interval_ns)
+concheck_periodic_schedule_do (NMDevice *self, gint64 now_ns)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	gboolean periodic_check_disabled = FALSE;
+	gint64 expiry, tdiff;
 
 	/* we always cancel whatever was pending. */
 	if (nm_clear_g_source (&priv->concheck_p_cur_id))
@@ -2277,18 +2294,25 @@ concheck_periodic_schedule_do (NMDevice *self, gint64 interval_ns)
 		goto out;
 	}
 
-	nm_assert (interval_ns >= 0);
-
 	if (!concheck_is_possible (self))
 		goto out;
 
-	_LOGT (LOGD_CONCHECK, "connectivity: periodic-check: %sscheduled in %u milliseconds (%u seconds interval)",
+	nm_assert (now_ns > 0);
+	nm_assert (priv->concheck_p_cur_interval > 0);
+
+	/* we schedule the timeout based on our current settings cur-interval and cur-basetime.
+	 * Before calling concheck_periodic_schedule_do(), make sure that these properties are
+	 * correct. */
+
+	expiry = priv->concheck_p_cur_basetime_ns + (priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND);
+	tdiff = expiry - now_ns;
+
+	_LOGT (LOGD_CONCHECK, "connectivity: periodic-check: %sscheduled in %lld milliseconds (%u seconds interval)",
 	       periodic_check_disabled ? "re-" : "",
-	       (guint) (interval_ns / NM_UTILS_NS_PER_MSEC),
+	       (long long) (tdiff / NM_UTILS_NS_PER_MSEC),
 	       priv->concheck_p_cur_interval);
 
-	nm_assert (priv->concheck_p_cur_interval > 0);
-	priv->concheck_p_cur_id = g_timeout_add (interval_ns / NM_UTILS_NS_PER_MSEC,
+	priv->concheck_p_cur_id = g_timeout_add (NM_MAX ((gint64) 0, tdiff) / NM_UTILS_NS_PER_MSEC,
 	                                         concheck_periodic_timeout_cb,
 	                                         self);
 	return TRUE;
@@ -2316,18 +2340,23 @@ concheck_periodic_schedule_set (NMDevice *self,
 	if (!priv->concheck_p_cur_id) {
 		/* we currently don't have a timeout scheduled. No need to reschedule
 		 * another one... */
-		if (mode == CONCHECK_SCHEDULE_UPDATE_INTERVAL) {
-			/* ... unless, we are initalizing. In this case, setup the current current
-			 * interval and schedule a perform a check right away.  */
-			priv->concheck_p_cur_interval = NM_MIN (priv->concheck_p_max_interval, CONCHECK_P_PROBE_INTERVAL);
-			priv->concheck_p_cur_basetime_ns = nm_utils_get_monotonic_timestamp_ns_cached (&now_ns);
-			if (concheck_periodic_schedule_do (self, priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND))
-				concheck_start (self, NULL, NULL, TRUE);
-		}
-		return;
+		if (NM_IN_SET (mode, CONCHECK_SCHEDULE_UPDATE_INTERVAL,
+		                     CONCHECK_SCHEDULE_UPDATE_INTERVAL_RESTART)) {
+			/* ... unless, we are about to start periodic checks after update-interval.
+			 * In this case, fall through and restart the periodic checks below. */
+			mode = CONCHECK_SCHEDULE_UPDATE_INTERVAL_RESTART;
+		} else
+			return;
 	}
 
 	switch (mode) {
+	case CONCHECK_SCHEDULE_UPDATE_INTERVAL_RESTART:
+		priv->concheck_p_cur_interval = NM_MIN (priv->concheck_p_max_interval, CONCHECK_P_PROBE_INTERVAL);
+		priv->concheck_p_cur_basetime_ns = nm_utils_get_monotonic_timestamp_ns_cached (&now_ns);
+		if (concheck_periodic_schedule_do (self, now_ns))
+			concheck_start (self, NULL, NULL, TRUE);
+		return;
+
 	case CONCHECK_SCHEDULE_UPDATE_INTERVAL:
 		/* called with "UPDATE_INTERVAL" and already have a concheck_p_cur_id scheduled. */
 
@@ -2352,7 +2381,7 @@ concheck_periodic_schedule_set (NMDevice *self,
 			 * new max_interval passed. We need to start a check right away (and
 			 * schedule a timeout in cur-interval in the future). */
 			priv->concheck_p_cur_basetime_ns = now_ns;
-			if (concheck_periodic_schedule_do (self, priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND))
+			if (concheck_periodic_schedule_do (self, now_ns))
 				concheck_start (self, NULL, NULL, TRUE);
 		} else {
 			/* we are reducing the max-interval to a shorter interval that we have currently
@@ -2361,14 +2390,14 @@ concheck_periodic_schedule_set (NMDevice *self,
 			 * However, since the last time we scheduled the check, not even the new max-interval
 			 * expired. All we need to do, is reschedule the timer to expire sooner. The cur_basetime
 			 * is unchanged. */
-			concheck_periodic_schedule_do (self, cur_expiry - now_ns);
+			concheck_periodic_schedule_do (self, now_ns);
 		}
 		return;
 
 	case CONCHECK_SCHEDULE_CHECK_EXTERNAL:
 		/* a external connectivity check delays our periodic check. We reset the counter. */
 		priv->concheck_p_cur_basetime_ns = nm_utils_get_monotonic_timestamp_ns_cached (&now_ns);
-		concheck_periodic_schedule_do (self, priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND);
+		concheck_periodic_schedule_do (self, now_ns);
 		return;
 
 	case CONCHECK_SCHEDULE_CHECK_PERIODIC:
@@ -2401,15 +2430,16 @@ concheck_periodic_schedule_set (NMDevice *self,
 		new_expiry = exp_expiry + (priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND);
 		tdiff = NM_MAX (new_expiry - now_ns, 0);
 		priv->concheck_p_cur_basetime_ns = (now_ns + tdiff) - (priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND);
-		concheck_periodic_schedule_do (self, tdiff);
-		handle = concheck_start (self, NULL, NULL, TRUE);
-		if (old_interval != priv->concheck_p_cur_interval) {
-			/* we just bumped the interval already when scheduling this check.
-			 * When the handle returns, don't bump a second time.
-			 *
-			 * But if we reach the timeout again before the handle returns (this
-			 * code here) we will still bump the interval. */
-			handle->is_periodic_bump_on_complete = FALSE;
+		if (concheck_periodic_schedule_do (self, now_ns)) {
+			handle = concheck_start (self, NULL, NULL, TRUE);
+			if (old_interval != priv->concheck_p_cur_interval) {
+				/* we just bumped the interval already when scheduling this check.
+				 * When the handle returns, don't bump a second time.
+				 *
+				 * But if we reach the timeout again before the handle returns (this
+				 * code here) we will still bump the interval. */
+				handle->is_periodic_bump_on_complete = FALSE;
+			}
 		}
 		return;
 	}
@@ -2436,11 +2466,11 @@ concheck_periodic_schedule_set (NMDevice *self,
 	new_expiry = priv->concheck_p_cur_basetime_ns + (priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND);
 	tdiff = NM_MAX (new_expiry - nm_utils_get_monotonic_timestamp_ns_cached (&now_ns), 0);
 	priv->concheck_p_cur_basetime_ns = now_ns + tdiff - (priv->concheck_p_cur_interval * NM_UTILS_NS_PER_SECOND);
-	concheck_periodic_schedule_do (self, tdiff);
+	concheck_periodic_schedule_do (self, now_ns);
 }
 
-void
-nm_device_check_connectivity_update_interval (NMDevice *self)
+static void
+concheck_update_interval (NMDevice *self, gboolean check_now)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	guint new_interval;
@@ -2455,7 +2485,8 @@ nm_device_check_connectivity_update_interval (NMDevice *self)
 	}
 
 	if (!new_interval) {
-		/* this will cancel any potentially pending timeout. */
+		/* this will cancel any potentially pending timeout because max-interval is zero.
+		 * But it logs a nice message... */
 		concheck_periodic_schedule_do (self, 0);
 
 		/* also update the fake connectivity state. */
@@ -2463,7 +2494,16 @@ nm_device_check_connectivity_update_interval (NMDevice *self)
 		return;
 	}
 
-	concheck_periodic_schedule_set (self, CONCHECK_SCHEDULE_UPDATE_INTERVAL);
+	concheck_periodic_schedule_set (self,
+	                                check_now
+	                                  ? CONCHECK_SCHEDULE_UPDATE_INTERVAL_RESTART
+	                                  : CONCHECK_SCHEDULE_UPDATE_INTERVAL);
+}
+
+void
+nm_device_check_connectivity_update_interval (NMDevice *self)
+{
+	concheck_update_interval (self, FALSE);
 }
 
 static void
@@ -3054,12 +3094,12 @@ carrier_changed (NMDevice *self, gboolean carrier)
 			* is restored. */
 			if (priv->state == NM_DEVICE_STATE_ACTIVATED)
 				nm_device_update_dynamic_ip_setup (self);
-			else {
-				if (nm_device_activate_ip4_state_in_wait (self))
-					nm_device_activate_stage3_ip4_start (self);
-				if (nm_device_activate_ip6_state_in_wait (self))
-					nm_device_activate_stage3_ip6_start (self);
-			}
+			/* If needed, also resume IP configuration that is
+			 * waiting for carrier. */
+			if (nm_device_activate_ip4_state_in_wait (self))
+				nm_device_activate_stage3_ip4_start (self);
+			if (nm_device_activate_ip6_state_in_wait (self))
+				nm_device_activate_stage3_ip6_start (self);
 			return;
 		}
 		/* fall-through and change state of device */
@@ -4178,7 +4218,6 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
 
 	g_return_val_if_fail (priv->iface != NULL, FALSE);
 	g_return_val_if_fail (priv->real, FALSE);
-
 
 	ifindex = nm_device_get_ifindex (self);
 
@@ -5829,7 +5868,6 @@ activate_stage1_device_prepare (NMDevice *self)
 	nm_device_activate_schedule_stage2_device_config (self);
 }
 
-
 /*
  * nm_device_activate_schedule_stage1_device_prepare
  *
@@ -6030,7 +6068,6 @@ activate_stage2_device_config (NMDevice *self)
 	lldp_init (self, TRUE);
 	nm_device_activate_schedule_stage3_ip_config_start (self);
 }
-
 
 /*
  * nm_device_activate_schedule_stage2_device_config
@@ -7036,6 +7073,8 @@ dhcp4_get_client_id (NMDevice *self, NMConnection *connection)
 		guint8 buf[20];
 		gsize buf_size;
 		guint32 salted_header;
+		const guint8 *secret_key;
+		gsize secret_key_len;
 
 		stable_id = _get_stable_id (self, connection, &stable_type);
 		if (!stable_id)
@@ -7043,10 +7082,13 @@ dhcp4_get_client_id (NMDevice *self, NMConnection *connection)
 
 		salted_header = htonl (2011610591 + stable_type);
 
+		nm_utils_secret_key_get (&secret_key, &secret_key_len);
+
 		sum = g_checksum_new (G_CHECKSUM_SHA1);
 
 		g_checksum_update (sum, (const guchar *) &salted_header, sizeof (salted_header));
-		g_checksum_update (sum, (const guchar *) stable_id, strlen (stable_id));
+		g_checksum_update (sum, (const guchar *) stable_id, strlen (stable_id) + 1);
+		g_checksum_update (sum, (const guchar *) secret_key, secret_key_len);
 
 		buf_size = sizeof (buf);
 		g_checksum_get_digest (sum, buf, &buf_size);
@@ -9325,8 +9367,8 @@ arp_cleanup (NMDevice *self)
 	}
 }
 
-static void
-arp_announce (NMDevice *self)
+void
+nm_device_arp_announce (NMDevice *self)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	NMConnection *connection;
@@ -9425,8 +9467,7 @@ activate_stage5_ip4_config_result (NMDevice *self)
 		                           NULL, NULL, NULL);
 	}
 
-	arp_announce (self);
-
+	nm_device_arp_announce (self);
 	nm_device_remove_pending_action (self, NM_PENDING_ACTION_DHCP4, FALSE);
 
 	/* Enter the IP_CHECK state if this is the first method to complete */
@@ -10800,23 +10841,37 @@ _carrier_wait_check_act_request_must_queue (NMDevice *self, NMActRequest *req)
 }
 
 void
-nm_device_steal_connection (NMDevice *self, NMSettingsConnection *connection)
+nm_device_disconnect_active_connection (NMActiveConnection *active)
 {
-	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
+	NMDevice *self;
+	NMDevicePrivate *priv;
 
-	_LOGI (LOGD_DEVICE, "disconnecting connection '%s' for new activation request",
-	       nm_settings_connection_get_id (connection));
+	g_return_if_fail (NM_IS_ACTIVE_CONNECTION (active));
 
-	if (   priv->queued_act_request
-	    && connection == nm_active_connection_get_settings_connection (NM_ACTIVE_CONNECTION (priv->queued_act_request)))
+	self = nm_active_connection_get_device (active);
+
+	if (!self) {
+		/* hm, no device? Just fail the active connection. */
+		nm_active_connection_set_state_fail (active,
+		                                     NM_ACTIVE_CONNECTION_STATE_REASON_UNKNOWN,
+		                                     NULL);
+		return;
+	}
+
+	priv = NM_DEVICE_GET_PRIVATE (self);
+
+	if (NM_ACTIVE_CONNECTION (priv->queued_act_request) == active) {
 		_clear_queued_act_request (priv);
-
-	if (   priv->act_request.obj
-	    && connection == nm_active_connection_get_settings_connection (NM_ACTIVE_CONNECTION (priv->act_request.obj))
-	    && priv->state < NM_DEVICE_STATE_DEACTIVATING) {
-		nm_device_state_changed (self,
-		                         NM_DEVICE_STATE_DEACTIVATING,
-		                         NM_DEVICE_STATE_REASON_NEW_ACTIVATION);
+		return;
+	}
+	if (NM_ACTIVE_CONNECTION (priv->act_request.obj) == active) {
+		if (priv->state < NM_DEVICE_STATE_DEACTIVATING) {
+			nm_device_state_changed (self,
+			                         NM_DEVICE_STATE_DEACTIVATING,
+			                         NM_DEVICE_STATE_REASON_NEW_ACTIVATION);
+		} else {
+			/* it's going down already... */
+		}
 	}
 }
 
@@ -10930,7 +10985,6 @@ nm_device_get_ip4_config (NMDevice *self)
 
 	return NM_DEVICE_GET_PRIVATE (self)->ip_config_4;
 }
-
 
 static gboolean
 nm_device_set_ip_config (NMDevice *self,
@@ -13887,7 +13941,8 @@ _set_state_full (NMDevice *self,
 	if (ip_config_valid (old_state) && !ip_config_valid (state))
 	    notify_ip_properties (self);
 
-	nm_device_check_connectivity_update_interval (self);
+	concheck_update_interval (self,
+	                          state == NM_DEVICE_STATE_ACTIVATED);
 
 	/* Dispose of the cached activation request */
 	if (req)
