@@ -83,6 +83,16 @@ typedef enum  { /*< skip >*/
 	LOGD_IP         = LOGD_IP4 | LOGD_IP6,
 } NMLogDomain;
 
+static inline NMLogDomain
+LOGD_IP_from_af (int addr_family)
+{
+	switch (addr_family) {
+	case AF_INET:  return LOGD_IP4;
+	case AF_INET6: return LOGD_IP6;
+	}
+	g_return_val_if_reached (LOGD_NONE);
+}
+
 /* Log levels */
 typedef enum  { /*< skip >*/
 	LOGL_TRACE,
@@ -123,7 +133,7 @@ typedef enum  { /*< skip >*/
                       ""__VA_ARGS__); \
     } G_STMT_END
 
-/* nm_log() only evaluates it's argument list after checking
+/* nm_log() only evaluates its argument list after checking
  * whether logging for the given level/domain is enabled.  */
 #define nm_log(level, domain, ifname, con_uuid, ...) \
     G_STMT_START { \
@@ -131,7 +141,6 @@ typedef enum  { /*< skip >*/
             _nm_log (level, domain, 0, ifname, con_uuid, __VA_ARGS__); \
         } \
     } G_STMT_END
-
 
 #define _nm_log_ptr(level, domain, ifname, con_uuid, self, prefix, ...) \
    nm_log ((level), \
@@ -171,7 +180,6 @@ _nm_log_ptr_is_debug (NMLogLevel level)
                     __prefix ? " " : "" _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
         } \
     } G_STMT_END
-
 
 #define _nm_log_obj(level, domain, ifname, con_uuid, self, prefix, ...) \
     _nm_log_ptr ((level), \

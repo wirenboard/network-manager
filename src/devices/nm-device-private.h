@@ -43,7 +43,11 @@ enum NMActStageReturn {
 
 #define NM_DEVICE_CAP_INTERNAL_MASK 0xc0000000
 
+void nm_device_arp_announce (NMDevice *self);
+
 NMSettings *nm_device_get_settings (NMDevice *self);
+
+gboolean nm_device_set_ip_ifindex (NMDevice *self, int ifindex);
 
 gboolean nm_device_set_ip_iface (NMDevice *self, const char *iface);
 
@@ -57,7 +61,7 @@ gboolean nm_device_bring_up (NMDevice *self, gboolean wait, gboolean *no_firmwar
 
 void nm_device_take_down (NMDevice *self, gboolean block);
 
-gboolean nm_device_take_over_link (NMDevice *self, const char *ifname, gboolean *renamed);
+gboolean nm_device_take_over_link (NMDevice *self, int ifindex, char **old_name);
 
 gboolean nm_device_hw_addr_set (NMDevice *device,
                                 const char *addr,
@@ -139,4 +143,4 @@ gboolean nm_device_match_hwaddr (NMDevice *device,
                                  NMConnection *connection,
                                  gboolean fail_if_no_hwaddr);
 
-#endif	/* NM_DEVICE_PRIVATE_H */
+#endif /* NM_DEVICE_PRIVATE_H */

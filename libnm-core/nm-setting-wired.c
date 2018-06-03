@@ -829,7 +829,7 @@ nm_setting_wired_init (NMSettingWired *setting)
 {
 	NMSettingWiredPrivate *priv = NM_SETTING_WIRED_GET_PRIVATE (setting);
 
-	priv->s390_options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	priv->s390_options = g_hash_table_new_full (nm_str_hash, g_str_equal, g_free, g_free);
 
 	/* We use GArray rather than GPtrArray so it will automatically be NULL-terminated */
 	priv->mac_address_blacklist = g_array_new (TRUE, FALSE, sizeof (char *));
@@ -1363,14 +1363,12 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_wired_class)
 		                      G_PARAM_STATIC_STRINGS));
 
 	/**
-	 * NMSettingWired:s390-options:
+	 * NMSettingWired:s390-options: (type GHashTable(utf8,utf8)):
 	 *
 	 * Dictionary of key/value pairs of s390-specific device options.  Both keys
 	 * and values must be strings.  Allowed keys include "portno", "layer2",
 	 * "portname", "protocol", among others.  Key names must contain only
 	 * alphanumeric characters (ie, [a-zA-Z0-9]).
-	 *
-	 * Type: GHashTable(utf8,utf8)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: s390-options

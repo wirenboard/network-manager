@@ -1,22 +1,10 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 #pragma once
 
 /***
   This file is part of systemd.
 
   Copyright 2010-2012 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include <alloca.h>
@@ -28,13 +16,32 @@
 #include "time-util.h"
 
 #if 0 /* NM_IGNORED */
-#define DEFAULT_PATH_NORMAL "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
-#define DEFAULT_PATH_SPLIT_USR DEFAULT_PATH_NORMAL ":/sbin:/bin"
+#define PATH_SPLIT_SBIN_BIN(x) x "sbin:" x "bin"
+#define PATH_SPLIT_SBIN_BIN_NULSTR(x) x "sbin\0" x "bin\0"
+
+#define PATH_NORMAL_SBIN_BIN(x) x "bin"
+#define PATH_NORMAL_SBIN_BIN_NULSTR(x) x "bin\0"
+
+#if HAVE_SPLIT_BIN
+#  define PATH_SBIN_BIN(x) PATH_SPLIT_SBIN_BIN(x)
+#  define PATH_SBIN_BIN_NULSTR(x) PATH_SPLIT_SBIN_BIN_NULSTR(x)
+#else
+#  define PATH_SBIN_BIN(x) PATH_NORMAL_SBIN_BIN(x)
+#  define PATH_SBIN_BIN_NULSTR(x) PATH_NORMAL_SBIN_BIN_NULSTR(x)
+#endif
+
+#define DEFAULT_PATH_NORMAL PATH_SBIN_BIN("/usr/local/") ":" PATH_SBIN_BIN("/usr/")
+#define DEFAULT_PATH_NORMAL_NULSTR PATH_SBIN_BIN_NULSTR("/usr/local/") PATH_SBIN_BIN_NULSTR("/usr/")
+#define DEFAULT_PATH_SPLIT_USR DEFAULT_PATH_NORMAL ":" PATH_SBIN_BIN("/")
+#define DEFAULT_PATH_SPLIT_USR_NULSTR DEFAULT_PATH_NORMAL_NULSTR PATH_SBIN_BIN_NULSTR("/")
+#define DEFAULT_PATH_COMPAT PATH_SPLIT_SBIN_BIN("/usr/local/") ":" PATH_SPLIT_SBIN_BIN("/usr/") ":" PATH_SPLIT_SBIN_BIN("/")
 
 #if HAVE_SPLIT_USR
 #  define DEFAULT_PATH DEFAULT_PATH_SPLIT_USR
+#  define DEFAULT_PATH_NULSTR DEFAULT_PATH_SPLIT_USR_NULSTR
 #else
 #  define DEFAULT_PATH DEFAULT_PATH_NORMAL
+#  define DEFAULT_PATH_NULSTR DEFAULT_PATH_NORMAL_NULSTR
 #endif
 #endif /* NM_IGNORED */
 
@@ -42,6 +49,7 @@ bool is_path(const char *p) _pure_;
 int path_split_and_make_absolute(const char *p, char ***ret);
 bool path_is_absolute(const char *p) _pure_;
 char* path_make_absolute(const char *p, const char *prefix);
+int safe_getcwd(char **ret);
 int path_make_absolute_cwd(const char *p, char **ret);
 int path_make_relative(const char *from_dir, const char *to_path, char **_r);
 char* path_kill_slashes(char *path);
@@ -112,7 +120,7 @@ char *prefix_root(const char *root, const char *path);
                 size_t _l;                                              \
                 while (_path[0] == '/' && _path[1] == '/')              \
                         _path ++;                                       \
-                if (isempty(_root) || path_equal(_root, "/"))           \
+                if (empty_or_root(_root))                               \
                         _ret = _path;                                   \
                 else {                                                  \
                         _l = strlen(_root) + 1 + strlen(_path) + 1;     \
@@ -131,9 +139,10 @@ char *prefix_root(const char *root, const char *path);
 int parse_path_argument_and_warn(const char *path, bool suppress_root, char **arg);
 
 char* dirname_malloc(const char *path);
+const char *last_path_component(const char *path);
 
 bool filename_is_valid(const char *p) _pure_;
-bool path_is_safe(const char *p) _pure_;
+bool path_is_normalized(const char *p) _pure_;
 
 char *file_in_same_dir(const char *path, const char *filename);
 
@@ -154,4 +163,9 @@ static inline const char *skip_dev_prefix(const char *p) {
         e = path_startswith(p, "/dev/");
 
         return e ?: p;
+}
+
+bool empty_or_root(const char *root);
+static inline const char *empty_to_root(const char *path) {
+        return isempty(path) ? "/" : path;
 }

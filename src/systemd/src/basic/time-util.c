@@ -1,20 +1,8 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include "nm-sd-adapt.h"
@@ -35,10 +23,13 @@
 #include "fd-util.h"
 #include "fileio.h"
 #include "fs-util.h"
+#include "io-util.h"
 #include "log.h"
 #include "macro.h"
 #include "parse-util.h"
 #include "path-util.h"
+#include "process-util.h"
+#include "stat-util.h"
 #include "string-util.h"
 #include "strv.h"
 #include "time-util.h"
@@ -449,7 +440,7 @@ char *format_timespan(char *buf, size_t l, usec_t t, usec_t accuracy) {
                 { "us",    1               },
         };
 
-        unsigned i;
+        size_t i;
         char *p = buf;
         bool something = false;
 
@@ -628,10 +619,9 @@ static int parse_timestamp_impl(const char *t, usec_t *usec, bool with_tz) {
         time_t x;
         usec_t x_usec, plus = 0, minus = 0, ret;
         int r, weekday = -1, dst = -1;
-        unsigned i;
+        size_t i;
 
-        /*
-         * Allowed syntaxes:
+        /* Allowed syntaxes:
          *
          *   2012-09-22 16:34:22
          *   2012-09-22 16:34     (seconds will be set to 0)
@@ -645,7 +635,6 @@ static int parse_timestamp_impl(const char *t, usec_t *usec, bool with_tz) {
          *   +5min
          *   -5days
          *   @2147483647          (seconds since epoch)
-         *
          */
 
         assert(t);
@@ -704,10 +693,10 @@ static int parse_timestamp_impl(const char *t, usec_t *usec, bool with_tz) {
                         tzset();
 
                         /* See if the timestamp is suffixed by either the DST or non-DST local timezone. Note that we only
-                        * support the local timezones here, nothing else. Not because we wouldn't want to, but simply because
-                        * there are no nice APIs available to cover this. By accepting the local time zone strings, we make
-                        * sure that all timestamps written by format_timestamp() can be parsed correctly, even though we don't
-                        * support arbitrary timezone specifications.  */
+                         * support the local timezones here, nothing else. Not because we wouldn't want to, but simply because
+                         * there are no nice APIs available to cover this. By accepting the local time zone strings, we make
+                         * sure that all timestamps written by format_timestamp() can be parsed correctly, even though we don't
+                         * support arbitrary timezone specifications. */
 
                         for (j = 0; j <= 1; j++) {
 
@@ -891,28 +880,24 @@ int parse_timestamp(const char *t, usec_t *usec) {
         char *last_space, *tz = NULL;
         ParseTimestampResult *shared, tmp;
         int r;
-        pid_t pid;
 
         last_space = strrchr(t, ' ');
-        if (last_space != NULL && timezone_is_valid(last_space + 1))
+        if (last_space != NULL && timezone_is_valid(last_space + 1, LOG_DEBUG))
                 tz = last_space + 1;
 
-        if (tz == NULL || endswith_no_case(t, " UTC"))
+        if (!tz || endswith_no_case(t, " UTC"))
                 return parse_timestamp_impl(t, usec, false);
 
         shared = mmap(NULL, sizeof *shared, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
         if (shared == MAP_FAILED)
                 return negative_errno();
 
-        pid = fork();
-
-        if (pid == -1) {
-                int fork_errno = errno;
+        r = safe_fork("(sd-timestamp)", FORK_RESET_SIGNALS|FORK_CLOSE_ALL_FDS|FORK_DEATHSIG|FORK_WAIT, NULL);
+        if (r < 0) {
                 (void) munmap(shared, sizeof *shared);
-                return -fork_errno;
+                return r;
         }
-
-        if (pid == 0) {
+        if (r == 0) {
                 bool with_tz = true;
 
                 if (setenv("TZ", tz, 1) != 0) {
@@ -923,22 +908,16 @@ int parse_timestamp(const char *t, usec_t *usec) {
                 tzset();
 
                 /* If there is a timezone that matches the tzname fields, leave the parsing to the implementation.
-                 * Otherwise just cut it off */
+                 * Otherwise just cut it off. */
                 with_tz = !STR_IN_SET(tz, tzname[0], tzname[1]);
 
-                /*cut off the timezone if we dont need it*/
+                /* Cut off the timezone if we dont need it. */
                 if (with_tz)
                         t = strndupa(t, last_space - t);
 
                 shared->return_value = parse_timestamp_impl(t, &shared->usec, with_tz);
 
                 _exit(EXIT_SUCCESS);
-        }
-
-        r = wait_for_terminate(pid, NULL);
-        if (r < 0) {
-                (void) munmap(shared, sizeof *shared);
-                return r;
         }
 
         tmp = *shared;
@@ -986,7 +965,7 @@ static char* extract_multiplier(char *p, usec_t *multiplier) {
                 { "us",      1ULL            },
                 { "µs",      1ULL            },
         };
-        unsigned i;
+        size_t i;
 
         for (i = 0; i < ELEMENTSOF(table); i++) {
                 char *e;
@@ -1160,8 +1139,8 @@ int parse_nsec(const char *t, nsec_t *nsec) {
 
         for (;;) {
                 long long l, z = 0;
+                size_t n = 0, i;
                 char *e;
-                unsigned i, n = 0;
 
                 p += strspn(p, WHITESPACE);
 
@@ -1296,17 +1275,18 @@ int get_timezones(char ***ret) {
         } else if (errno != ENOENT)
                 return -errno;
 
-        *ret = zones;
-        zones = NULL;
+        *ret = TAKE_PTR(zones);
 
         return 0;
 }
 #endif /* NM_IGNORED */
 
-bool timezone_is_valid(const char *name) {
+bool timezone_is_valid(const char *name, int log_level) {
         bool slash = false;
         const char *p, *t;
-        struct stat st;
+        _cleanup_close_ int fd = -1;
+        char buf[4];
+        int r;
 
         if (isempty(name))
                 return false;
@@ -1335,11 +1315,30 @@ bool timezone_is_valid(const char *name) {
                 return false;
 
         t = strjoina("/usr/share/zoneinfo/", name);
-        if (stat(t, &st) < 0)
-                return false;
 
-        if (!S_ISREG(st.st_mode))
+        fd = open(t, O_RDONLY|O_CLOEXEC);
+        if (fd < 0) {
+                log_full_errno(log_level, errno, "Failed to open timezone file '%s': %m", t);
                 return false;
+        }
+
+        r = fd_verify_regular(fd);
+        if (r < 0) {
+                log_full_errno(log_level, r, "Timezone file '%s' is not  a regular file: %m", t);
+                return false;
+        }
+
+        r = loop_read_exact(fd, buf, 4, false);
+        if (r < 0) {
+                log_full_errno(log_level, r, "Failed to read from timezone file '%s': %m", t);
+                return false;
+        }
+
+        /* Magic from tzfile(5) */
+        if (memcmp(buf, "TZif", 4) != 0) {
+                log_full(log_level, "Timezone file '%s' has wrong magic bytes", t);
+                return false;
+        }
 
         return true;
 }
@@ -1387,8 +1386,7 @@ bool clock_supported(clockid_t clock) {
                 if (!clock_boottime_supported())
                         return false;
 
-                /* fall through */
-
+                _fallthrough_;
         default:
                 /* For everything else, check properly */
                 return clock_gettime(clock, &ts) >= 0;
@@ -1412,7 +1410,7 @@ int get_timezone(char **tz) {
         if (!e)
                 return -EINVAL;
 
-        if (!timezone_is_valid(e))
+        if (!timezone_is_valid(e, LOG_DEBUG))
                 return -EINVAL;
 
         z = strdup(e);
@@ -1462,5 +1460,11 @@ usec_t usec_shift_clock(usec_t x, clockid_t from, clockid_t to) {
         else
                 /* x lies in the past */
                 return usec_sub_unsigned(b, usec_sub_unsigned(a, x));
+}
+
+bool in_utc_timezone(void) {
+        tzset();
+
+        return timezone == 0 && daylight == 0;
 }
 #endif /* NM_IGNORED */

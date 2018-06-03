@@ -1,22 +1,10 @@
+/* SPDX-License-Identifier: LGPL-2.1+ */
 #pragma once
 
 /***
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
-
-  systemd is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as published by
-  the Free Software Foundation; either version 2.1 of the License, or
-  (at your option) any later version.
-
-  systemd is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public License
-  along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
 #include <dirent.h>
@@ -29,11 +17,17 @@
 #include "time-util.h"
 
 typedef enum {
-        WRITE_STRING_FILE_CREATE = 1<<0,
-        WRITE_STRING_FILE_ATOMIC = 1<<1,
-        WRITE_STRING_FILE_AVOID_NEWLINE = 1<<2,
+        WRITE_STRING_FILE_CREATE            = 1<<0,
+        WRITE_STRING_FILE_ATOMIC            = 1<<1,
+        WRITE_STRING_FILE_AVOID_NEWLINE     = 1<<2,
         WRITE_STRING_FILE_VERIFY_ON_FAILURE = 1<<3,
-        WRITE_STRING_FILE_SYNC = 1<<4,
+        WRITE_STRING_FILE_SYNC              = 1<<4,
+        WRITE_STRING_FILE_DISABLE_BUFFER    = 1<<5,
+
+        /* And before you wonder, why write_string_file_atomic_label_ts() is a separate function instead of just one
+           more flag here: it's about linking: we don't want to pull -lselinux into all users of write_string_file()
+           and friends. */
+
 } WriteStringFileFlags;
 
 int write_string_stream_ts(FILE *f, const char *line, WriteStringFileFlags flags, struct timespec *ts);
