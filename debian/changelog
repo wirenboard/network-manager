@@ -1,8 +1,15 @@
-network-manager (1.11.4-1) UNRELEASED; urgency=medium
+network-manager (1.11.4-1) experimental; urgency=medium
 
   * New upstream version 1.11.4
+  * Update install path for plugins, it now includes a version number
+  * Update symbols file for libnm0
+  * Make sure the example server.conf is actually installed
+  * Rebase patches
+  * Drop dh_strip override, the dbgsym migration is done
+  * Enable iwd support
+  * Drop version requirements when oldstable ships a newer version
 
- -- Michael Biebl <biebl@debian.org>  Mon, 04 Jun 2018 00:22:29 +0200
+ -- Michael Biebl <biebl@debian.org>  Mon, 11 Jun 2018 13:28:39 +0200
 
 network-manager (1.11.3-1) experimental; urgency=medium
 
