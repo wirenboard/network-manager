@@ -36,6 +36,7 @@ override_dh_auto_configure:
 		--with-nmcli \
 		--with-selinux \
 		--with-libaudit \
+		--with-iwd \
 		--without-dhcpcanon \
 		--without-libnm-glib \
 		--enable-polkit \
