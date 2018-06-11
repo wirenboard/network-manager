@@ -170,6 +170,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_setting_pppoe@libnm_1_0_0 1.0.0
  nm_connection_get_setting_proxy@libnm_1_6_0 1.5.90
  nm_connection_get_setting_serial@libnm_1_0_0 1.0.0
+ nm_connection_get_setting_tc_config@libnm_1_12_0 1.11.4
  nm_connection_get_setting_team@libnm_1_0_0 1.0.0
  nm_connection_get_setting_team_port@libnm_1_0_0 1.0.0
  nm_connection_get_setting_vlan@libnm_1_0_0 1.0.0
