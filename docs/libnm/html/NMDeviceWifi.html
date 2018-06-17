@@ -106,6 +106,14 @@
 </tr>
 <tr>
 <td class="function_type">
+<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint64"><span class="returnvalue">gint64</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-last-scan" title="nm_device_wifi_get_last_scan ()">nm_device_wifi_get_last_scan</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
 <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
 </td>
 <td class="function_name">
@@ -177,6 +185,11 @@
 <td class="property_type">
 <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
 <td class="property_name"><a class="link" href="NMDeviceWifi.html#NMDeviceWifi--hw-address" title="The “hw-address” property">hw-address</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint64"><span class="type">gint64</span></a></td>
+<td class="property_name"><a class="link" href="NMDeviceWifi.html#NMDeviceWifi--last-scan" title="The “last-scan” property">last-scan</a></td>
 <td class="property_flags">Read</td>
 </tr>
 <tr>
@@ -255,6 +268,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-ACCESS-POINTS:CAPS" title="NM_DEVICE_WIFI_ACCESS_POINTS">NM_DEVICE_WIFI_ACCESS_POINTS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-LAST-SCAN:CAPS" title="NM_DEVICE_WIFI_LAST_SCAN">NM_DEVICE_WIFI_LAST_SCAN</a></td>
 </tr>
 <tr>
 <td class="datatype_keyword"> </td>
@@ -506,6 +523,36 @@ scanned <a href="NMAccessPoint.html#NMAccessPoint-struct"><span class="type">NMA
 The returned array is owned by the client and should not be modified. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMAccessPoint]</span></p>
 </div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-device-wifi-get-last-scan"></a><h3>nm_device_wifi_get_last_scan ()</h3>
+<pre class="programlisting"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint64"><span class="returnvalue">gint64</span></a>
+nm_device_wifi_get_last_scan (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
+<p>Returns the timestamp (in CLOCK_BOOTTIME milliseconds) for the last finished
+network scan. A value of -1 means the device never scanned for access points.</p>
+<p>Use <a class="link" href="libnm-nm-utils.html#nm-utils-get-timestamp-msec" title="nm_utils_get_timestamp_msec ()"><code class="function">nm_utils_get_timestamp_msec()</code></a> to obtain current time value suitable for
+comparing to this value.</p>
+<div class="refsect3">
+<a name="nm-device-wifi-get-last-scan.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>device</p></td>
+<td class="parameter_description"><p>a <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-device-wifi-get-last-scan.returns"></a><h4>Returns</h4>
+<p> the last scan time in seconds</p>
+</div>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -806,6 +853,12 @@ set.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-DEVICE-WIFI-LAST-SCAN:CAPS"></a><h3>NM_DEVICE_WIFI_LAST_SCAN</h3>
+<pre class="programlisting">#define NM_DEVICE_WIFI_LAST_SCAN           "last-scan"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NMDeviceWifi-struct"></a><h3>NMDeviceWifi</h3>
 <pre class="programlisting">typedef struct _NMDeviceWifi NMDeviceWifi;</pre>
 </div>
@@ -841,6 +894,18 @@ set.</p>
 <p>The hardware (MAC) address of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceWifi--last-scan"></a><h3>The <code class="literal">“last-scan”</code> property</h3>
+<pre class="programlisting">  “last-scan”                <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gint64"><span class="type">gint64</span></a></pre>
+<p>The timestamp (in CLOCK_BOOTTIME seconds) for the last finished
+network scan. A value of -1 means the device never scanned for
+access points.</p>
+<p>Flags: Read</p>
+<p>Allowed values: &gt;= -1</p>
+<p>Default value: -1</p>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">

@@ -1043,10 +1043,12 @@
     <keyword type="function" name="nm_setting_ip6_config_get_ip6_privacy ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-ip6-privacy"/>
     <keyword type="function" name="nm_setting_ip6_config_get_addr_gen_mode ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-addr-gen-mode" since="1.2"/>
     <keyword type="function" name="nm_setting_ip6_config_get_token ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-token" since="1.4"/>
+    <keyword type="function" name="nm_setting_ip6_config_get_dhcp_duid ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-dhcp-duid" since="1.12"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_SETTING_NAME" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-SETTING-NAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_IP6_PRIVACY" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-IP6-PRIVACY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ADDR-GEN-MODE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_TOKEN" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-TOKEN:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_IP6_CONFIG_DHCP_DUID" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-DHCP-DUID:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_IGNORE" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-IGNORE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_AUTO" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-AUTO:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_DHCP" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-DHCP:CAPS"/>
@@ -1057,6 +1059,7 @@
     <keyword type="enum" name="enum NMSettingIP6ConfigAddrGenMode" link="NMSettingIP6Config.html#NMSettingIP6ConfigAddrGenMode" since="1.2"/>
     <keyword type="struct" name="NMSettingIP6Config" link="NMSettingIP6Config.html#NMSettingIP6Config-struct"/>
     <keyword type="property" name="The “addr-gen-mode” property" link="NMSettingIP6Config.html#NMSettingIP6Config--addr-gen-mode"/>
+    <keyword type="property" name="The “dhcp-duid” property" link="NMSettingIP6Config.html#NMSettingIP6Config--dhcp-duid"/>
     <keyword type="property" name="The “ip6-privacy” property" link="NMSettingIP6Config.html#NMSettingIP6Config--ip6-privacy"/>
     <keyword type="property" name="The “token” property" link="NMSettingIP6Config.html#NMSettingIP6Config--token"/>
     <keyword type="function" name="nm_ip_address_new ()" link="NMSettingIPConfig.html#nm-ip-address-new"/>
@@ -1266,6 +1269,7 @@
     <keyword type="function" name="nm_setting_macsec_get_mka_ckn ()" link="NMSettingMacsec.html#nm-setting-macsec-get-mka-ckn" since="1.6"/>
     <keyword type="function" name="nm_setting_macsec_get_port ()" link="NMSettingMacsec.html#nm-setting-macsec-get-port" since="1.6"/>
     <keyword type="function" name="nm_setting_macsec_get_validation ()" link="NMSettingMacsec.html#nm-setting-macsec-get-validation" since="1.6"/>
+    <keyword type="function" name="nm_setting_macsec_get_send_sci ()" link="NMSettingMacsec.html#nm-setting-macsec-get-send-sci" since="1.12"/>
     <keyword type="macro" name="NM_SETTING_MACSEC_SETTING_NAME" link="NMSettingMacsec.html#NM-SETTING-MACSEC-SETTING-NAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_MACSEC_PARENT" link="NMSettingMacsec.html#NM-SETTING-MACSEC-PARENT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_MACSEC_MODE" link="NMSettingMacsec.html#NM-SETTING-MACSEC-MODE:CAPS"/>
@@ -1275,6 +1279,7 @@
     <keyword type="macro" name="NM_SETTING_MACSEC_MKA_CKN" link="NMSettingMacsec.html#NM-SETTING-MACSEC-MKA-CKN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_MACSEC_PORT" link="NMSettingMacsec.html#NM-SETTING-MACSEC-PORT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_MACSEC_VALIDATION" link="NMSettingMacsec.html#NM-SETTING-MACSEC-VALIDATION:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_MACSEC_SEND_SCI" link="NMSettingMacsec.html#NM-SETTING-MACSEC-SEND-SCI:CAPS"/>
     <keyword type="struct" name="NMSettingMacsec" link="NMSettingMacsec.html#NMSettingMacsec-struct"/>
     <keyword type="enum" name="enum NMSettingMacsecMode" link="NMSettingMacsec.html#NMSettingMacsecMode" since="1.6"/>
     <keyword type="enum" name="enum NMSettingMacsecValidation" link="NMSettingMacsec.html#NMSettingMacsecValidation" since="1.6"/>
@@ -1287,6 +1292,7 @@
     <keyword type="property" name="The “mode” property" link="NMSettingMacsec.html#NMSettingMacsec--mode"/>
     <keyword type="property" name="The “parent” property" link="NMSettingMacsec.html#NMSettingMacsec--parent"/>
     <keyword type="property" name="The “port” property" link="NMSettingMacsec.html#NMSettingMacsec--port"/>
+    <keyword type="property" name="The “send-sci” property" link="NMSettingMacsec.html#NMSettingMacsec--send-sci"/>
     <keyword type="property" name="The “validation” property" link="NMSettingMacsec.html#NMSettingMacsec--validation"/>
     <keyword type="function" name="nm_setting_macvlan_new ()" link="NMSettingMacvlan.html#nm-setting-macvlan-new" since="1.2"/>
     <keyword type="function" name="nm_setting_macvlan_get_parent ()" link="NMSettingMacvlan.html#nm-setting-macvlan-get-parent" since="1.2"/>
@@ -1766,7 +1772,9 @@
     <keyword type="function" name="nm_setting_wireless_get_num_seen_bssids ()" link="NMSettingWireless.html#nm-setting-wireless-get-num-seen-bssids"/>
     <keyword type="function" name="nm_setting_wireless_get_seen_bssid ()" link="NMSettingWireless.html#nm-setting-wireless-get-seen-bssid"/>
     <keyword type="function" name="nm_setting_wireless_ap_security_compatible ()" link="NMSettingWireless.html#nm-setting-wireless-ap-security-compatible"/>
+    <keyword type="function" name="nm_setting_wireless_get_wake_on_wlan ()" link="NMSettingWireless.html#nm-setting-wireless-get-wake-on-wlan" since="1.12"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SETTING_NAME" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SETTING-NAME:CAPS"/>
+    <keyword type="enum" name="enum NMSettingWirelessWakeOnWLan" link="NMSettingWireless.html#NMSettingWirelessWakeOnWLan" since="1.12"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SSID" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SSID:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_BAND" link="NMSettingWireless.html#NM-SETTING-WIRELESS-BAND:CAPS"/>
@@ -1783,6 +1791,7 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_HIDDEN" link="NMSettingWireless.html#NM-SETTING-WIRELESS-HIDDEN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_POWERSAVE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-RANDOMIZATION:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_ADHOC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-ADHOC:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_AP" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-AP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_INFRA" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-INFRA:CAPS"/>
@@ -1804,6 +1813,7 @@
     <keyword type="property" name="The “seen-bssids” property" link="NMSettingWireless.html#NMSettingWireless--seen-bssids"/>
     <keyword type="property" name="The “ssid” property" link="NMSettingWireless.html#NMSettingWireless--ssid"/>
     <keyword type="property" name="The “tx-power” property" link="NMSettingWireless.html#NMSettingWireless--tx-power"/>
+    <keyword type="property" name="The “wake-on-wlan” property" link="NMSettingWireless.html#NMSettingWireless--wake-on-wlan"/>
     <keyword type="function" name="nm_setting_wireless_security_new ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-new"/>
     <keyword type="function" name="nm_setting_wireless_security_get_key_mgmt ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-key-mgmt"/>
     <keyword type="function" name="nm_setting_wireless_security_get_num_protos ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-num-protos"/>
@@ -2288,6 +2298,7 @@
     <keyword type="function" name="nm_device_wifi_get_active_access_point ()" link="NMDeviceWifi.html#nm-device-wifi-get-active-access-point"/>
     <keyword type="function" name="nm_device_wifi_get_access_point_by_path ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path"/>
     <keyword type="function" name="nm_device_wifi_get_access_points ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-points"/>
+    <keyword type="function" name="nm_device_wifi_get_last_scan ()" link="NMDeviceWifi.html#nm-device-wifi-get-last-scan" since="1.12"/>
     <keyword type="function" name="nm_device_wifi_request_scan ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan"/>
     <keyword type="function" name="nm_device_wifi_request_scan_options ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-options" since="1.2"/>
     <keyword type="function" name="nm_device_wifi_request_scan_async ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-async"/>
@@ -2300,11 +2311,13 @@
     <keyword type="macro" name="NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_CAPABILITIES" link="NMDeviceWifi.html#NM-DEVICE-WIFI-CAPABILITIES:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_ACCESS_POINTS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ACCESS-POINTS:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_WIFI_LAST_SCAN" link="NMDeviceWifi.html#NM-DEVICE-WIFI-LAST-SCAN:CAPS"/>
     <keyword type="struct" name="NMDeviceWifi" link="NMDeviceWifi.html#NMDeviceWifi-struct"/>
     <keyword type="property" name="The “access-points” property" link="NMDeviceWifi.html#NMDeviceWifi--access-points"/>
     <keyword type="property" name="The “active-access-point” property" link="NMDeviceWifi.html#NMDeviceWifi--active-access-point"/>
     <keyword type="property" name="The “bitrate” property" link="NMDeviceWifi.html#NMDeviceWifi--bitrate"/>
     <keyword type="property" name="The “hw-address” property" link="NMDeviceWifi.html#NMDeviceWifi--hw-address"/>
+    <keyword type="property" name="The “last-scan” property" link="NMDeviceWifi.html#NMDeviceWifi--last-scan"/>
     <keyword type="property" name="The “mode” property" link="NMDeviceWifi.html#NMDeviceWifi--mode"/>
     <keyword type="property" name="The “perm-hw-address” property" link="NMDeviceWifi.html#NMDeviceWifi--perm-hw-address"/>
     <keyword type="property" name="The “wireless-capabilities” property" link="NMDeviceWifi.html#NMDeviceWifi--wireless-capabilities"/>
@@ -2413,13 +2426,16 @@
     <keyword type="function" name="nm_remote_connection_get_secrets_finish ()" link="NMRemoteConnection.html#nm-remote-connection-get-secrets-finish"/>
     <keyword type="function" name="nm_remote_connection_get_unsaved ()" link="NMRemoteConnection.html#nm-remote-connection-get-unsaved"/>
     <keyword type="function" name="nm_remote_connection_get_flags ()" link="NMRemoteConnection.html#nm-remote-connection-get-flags" since="1.12"/>
+    <keyword type="function" name="nm_remote_connection_get_filename ()" link="NMRemoteConnection.html#nm-remote-connection-get-filename" since="1.12"/>
     <keyword type="function" name="nm_remote_connection_get_visible ()" link="NMRemoteConnection.html#nm-remote-connection-get-visible"/>
     <keyword type="macro" name="NM_REMOTE_CONNECTION_DBUS_CONNECTION" link="NMRemoteConnection.html#NM-REMOTE-CONNECTION-DBUS-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_CONNECTION_PATH" link="NMRemoteConnection.html#NM-REMOTE-CONNECTION-PATH:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_CONNECTION_UNSAVED" link="NMRemoteConnection.html#NM-REMOTE-CONNECTION-UNSAVED:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_CONNECTION_FLAGS" link="NMRemoteConnection.html#NM-REMOTE-CONNECTION-FLAGS:CAPS"/>
+    <keyword type="macro" name="NM_REMOTE_CONNECTION_FILENAME" link="NMRemoteConnection.html#NM-REMOTE-CONNECTION-FILENAME:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_CONNECTION_VISIBLE" link="NMRemoteConnection.html#NM-REMOTE-CONNECTION-VISIBLE:CAPS"/>
     <keyword type="struct" name="NMRemoteConnection" link="NMRemoteConnection.html#NMRemoteConnection-struct"/>
+    <keyword type="property" name="The “filename” property" link="NMRemoteConnection.html#NMRemoteConnection--filename"/>
     <keyword type="property" name="The “flags” property" link="NMRemoteConnection.html#NMRemoteConnection--flags"/>
     <keyword type="property" name="The “unsaved” property" link="NMRemoteConnection.html#NMRemoteConnection--unsaved"/>
     <keyword type="property" name="The “visible” property" link="NMRemoteConnection.html#NMRemoteConnection--visible"/>
@@ -2575,6 +2591,7 @@
     <keyword type="function" name="nm_utils_tc_action_to_str ()" link="libnm-nm-utils.html#nm-utils-tc-action-to-str" since="1.12"/>
     <keyword type="function" name="nm_utils_tc_tfilter_from_str ()" link="libnm-nm-utils.html#nm-utils-tc-tfilter-from-str" since="1.12"/>
     <keyword type="function" name="nm_utils_tc_tfilter_to_str ()" link="libnm-nm-utils.html#nm-utils-tc-tfilter-to-str" since="1.12"/>
+    <keyword type="function" name="nm_utils_get_timestamp_msec ()" link="libnm-nm-utils.html#nm-utils-get-timestamp-msec"/>
     <keyword type="enum" name="enum NMUtilsSecurityType" link="libnm-nm-utils.html#NMUtilsSecurityType"/>
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
     <keyword type="macro" name="NM_UTILS_INET_ADDRSTRLEN" link="libnm-nm-utils.html#NM-UTILS-INET-ADDRSTRLEN:CAPS"/>
@@ -3136,6 +3153,21 @@
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-IGNORE:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_EXCLUSIVE_FLAGS" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-EXCLUSIVE-FLAGS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_NONE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_ANY" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-ANY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_DISCONNECT" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-DISCONNECT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_MAGIC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-MAGIC:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_GTK_REKEY_FAILURE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-GTK-REKEY-FAILURE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_EAP_IDENTITY_REQUEST" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-EAP-IDENTITY-REQUEST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_4WAY_HANDSHAKE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-4WAY-HANDSHAKE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_RFKILL_RELEASE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-RFKILL-RELEASE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_TCP" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-TCP:CAPS"/>
+    <keyword type="constant" name="_NM_SETTING_WIRELESS_WAKE_ON_WLAN_NUM" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-NUM:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_LAST" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-LAST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_ALL" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-ALL:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-IGNORE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_WAKE_ON_WLAN_EXCLUSIVE_FLAGS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-EXCLUSIVE-FLAGS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRELESS_POWERSAVE_DEFAULT" link="NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-DEFAULT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRELESS_POWERSAVE_IGNORE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-IGNORE:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRELESS_POWERSAVE_DISABLE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-DISABLE:CAPS"/>

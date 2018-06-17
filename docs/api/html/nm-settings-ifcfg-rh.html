@@ -1378,6 +1378,15 @@ Allowed values: </strong></span>IPV6_ADDR_GEN_MODE: eui64, stable-privacy</td>
 
 Example: </strong></span>IPV6_TOKEN=::53</td>
 </tr>
+<tr>
+<td align="left">dhcp-duid</td>
+<td align="left">DHCPV6_DUID<span class="emphasis"><em>(+)</em></span>
+</td>
+<td align="left"> </td>
+<td align="left">A string sent to the DHCPv6 server to identify the local machine. Apart from the special values "lease", "stable-llt", "stable-ll", "stable-uuid", "llt" and "ll" a binary value in hex format is expected. An hex string where each octet is separated by a colon is also accepted.<span class="bold"><strong>
+
+Example: </strong></span>DHCPV6_DUID=LL; DHCPV6_DUID=0301deadbeef0001; DHCPV6_DUID=03:01:de:ad:be:ef:00:01</td>
+</tr>
 </tbody>
 </table></div>
 </div>

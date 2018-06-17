@@ -234,7 +234,7 @@
 <a name="nm-settings.property.connection.stable-id"></a>stable-id</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>This represents the identity of the connection used for various purposes. It allows to configure multiple profiles to share the identity. Also, the stable-id can contain placeholders that are substituted dynamically and deterministically depending on the context. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. It is also used as DHCP client identifier with ipv4.dhcp-client-id=stable. Note that depending on the context where it is used, other parameters are also seeded into the generation algorithm. For example, a per-host key is commonly also included, so that different systems end up generating different IDs. Or with ipv6.addr-gen-mode=stable-privacy, also the device's name is included, so that different interfaces yield different addresses. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${DEVICE}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-device, per-boot, or every time. Note that "${DEVICE}" corresponds the the interface name of the device. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}-${BOOT}-${DEVICE}" to create a unique id for this connection that changes with every reboot and differs depending on the interface where the profile activates. If the value is unset, a global connection default is consulted. If the value is still unset, the default is similar to "${CONNECTION}" and uses a unique, fixed ID for the connection.</td>
+<td>This represents the identity of the connection used for various purposes. It allows to configure multiple profiles to share the identity. Also, the stable-id can contain placeholders that are substituted dynamically and deterministically depending on the context. The stable-id is used for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable. It is also used as DHCP client identifier with ipv4.dhcp-client-id=stable and to derive the DHCP DUID with ipv6.dhcp-duid=stable-[llt,ll,uuid]. Note that depending on the context where it is used, other parameters are also seeded into the generation algorithm. For example, a per-host key is commonly also included, so that different systems end up generating different IDs. Or with ipv6.addr-gen-mode=stable-privacy, also the device's name is included, so that different interfaces yield different addresses. The '$' character is treated special to perform dynamic substitutions at runtime. Currently supported are "${CONNECTION}", "${DEVICE}", "${BOOT}", "${RANDOM}". These effectively create unique IDs per-connection, per-device, per-boot, or every time. Note that "${DEVICE}" corresponds the the interface name of the device. Any unrecognized patterns following '$' are treated verbatim, however are reserved for future use. You are thus advised to avoid '$' or escape it as "$$". For example, set it to "${CONNECTION}-${BOOT}-${DEVICE}" to create a unique id for this connection that changes with every reboot and differs depending on the interface where the profile activates. If the value is unset, a global connection default is consulted. If the value is still unset, the default is similar to "${CONNECTION}" and uses a unique, fixed ID for the connection.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1571,6 +1571,13 @@
 </tr>
 <tr>
 <td align="left">
+<a name="nm-settings.property.ipv6.dhcp-duid"></a>dhcp-duid</td>
+<td align="left">string</td>
+<td align="left"> </td>
+<td>A string containing the DHCPv6 Unique Identifier (DUID) used by the dhcp client to identify itself to DHCPv6 servers (RFC 3315). The DUID is carried in the Client Identifier option. If the property is a hex string ('aa:bb:cc') it is interpreted as a binary DUID and filled as an opaque value in the Client Identifier option. The special value "lease" will retrieve the DUID previously used from the lease file belonging to the connection. If no DUID is found and "dhclient" is the configured dhcp client, the DUID is searched in the system-wide dhclient lease file. If still no DUID is found, or another dhcp client is used, a global and permanent DUID-UUID (RFC 6355) will be generated based on the machine-id. The special values "llt" and "ll" will generate a DUID of type LLT or LL (see RFC 3315) based on the current MAC address of the device. In order to try providing a stable DUID-LLT, the time field will contain a constant timestamp that is used globally (for all profiles) and persisted to disk. The special values "stable-llt", "stable-ll" and "stable-uuid" will generate a DUID of the corresponding type, derived from the connection's stable-id and a per-host unique key. So, the link-layer address of "stable-ll" and "stable-llt" will be a generated address derived from the stable id. The DUID-LLT time value in the "stable-llt" option will be picked among a static timespan of three years (the upper bound of the interval is the same constant timestamp used in "llt"). When the property is unset, the global value provided for "ipv6.dhcp-duid" is used. If no global value is provided, the default "lease" value is assumed.</td>
+</tr>
+<tr>
+<td align="left">
 <a name="nm-settings.property.ipv6.dhcp-hostname"></a>dhcp-hostname</td>
 <td align="left">string</td>
 <td align="left"> </td>
@@ -1904,6 +1911,13 @@
 <td align="left">int32</td>
 <td align="left">1</td>
 <td>The port component of the SCI (Secure Channel Identifier), between 1 and 65534.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.macsec.send-sci"></a>send-sci</td>
+<td align="left">boolean</td>
+<td align="left">TRUE</td>
+<td>Specifies whether the SCI (Secure Channel Identifier) is included in every packet.</td>
 </tr>
 <tr>
 <td align="left">
@@ -2673,7 +2687,7 @@
 <a name="nm-settings.property.team.runner"></a>runner</td>
 <td align="left">string</td>
 <td align="left">"roundrobin"</td>
-<td>Corresponds to the teamd runner.name. Permitted values are: "roundrobin", "broadcast", "activebackup", "loadbalance", "lacp". When setting the runner, all the properties specific to the runner will be reset to the default value; all the properties specific to other runners will be set to an empty value (or if not possible to a default value).</td>
+<td>Corresponds to the teamd runner.name. Permitted values are: "roundrobin", "broadcast", "activebackup", "loadbalance", "lacp", "random". When setting the runner, all the properties specific to the runner will be reset to the default value; all the properties specific to other runners will be set to an empty value (or if not possible to a default value).</td>
 </tr>
 <tr>
 <td align="left">
@@ -3275,7 +3289,7 @@
 <a name="nm-settings.property.802-3-ethernet.auto-negotiate"></a>auto-negotiate</td>
 <td align="left">boolean</td>
 <td align="left">FALSE</td>
-<td>If TRUE, enforce auto-negotiation of port speed and duplex mode.  If FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped.</td>
+<td>When TRUE, enforce auto-negotiation of speed and duplex mode. If "speed" and "duplex" properties are both specified, only that single mode will be advertised and accepted during the link auto-negotiation process: this works only for BASE-T 802.3 specifications and is useful for enforcing gigabits modes, as in these cases link negotiation is mandatory. When FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3289,7 +3303,7 @@
 <a name="nm-settings.property.802-3-ethernet.duplex"></a>duplex</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>Can be specified only when "auto-negotiate" is "off". In that case, statically configures the device to use that specified duplex mode, either "half" or "full". Must be set together with the "speed" property if specified. Before specifying a duplex mode be sure your device supports it.</td>
+<td>When a value is set, either "half" or "full", configures the device to use the specified duplex mode. If "auto-negotiate" is "yes" the specified duplex mode will be the only one advertised during link negotiation: this works only for BASE-T 802.3 specifications and is useful for enforcing gigabits modes, as in these cases link negotiation is mandatory. If the value is unset (the default), the link configuration will be either skipped (if "auto-negotiate" is "no", the default) or will be auto-negotiated (if "auto-negotiate" is "yes") and the local device will advertise all the supported duplex modes. Must be set together with the "speed" property if specified. Before specifying a duplex mode be sure your device supports it.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3359,7 +3373,7 @@
 <a name="nm-settings.property.802-3-ethernet.speed"></a>speed</td>
 <td align="left">uint32</td>
 <td align="left">0</td>
-<td>Can be set to a value greater than zero only when "auto-negotiate" is "off". In that case, statically configures the device to use that specified speed. In Mbit/s, ie 100 == 100Mbit/s. Must be set together with the "duplex" property when non-zero. Before specifying a speed value be sure your device supports it.</td>
+<td>When a value grater than 0 is set, configures the device to use the specified speed. If "auto-negotiate" is "yes" the specified speed will be the only one advertised during link negotiation: this works only for BASE-T 802.3 specifications and is useful for enforcing gigabit speeds, as in this case link negotiation is mandatory. If the value is unset (0, the default), the link configuration will be either skipped (if "auto-negotiate" is "no", the default) or will be auto-negotiated (if "auto-negotiate" is "yes") and the local device will advertise all the supported speeds. In Mbit/s, ie 100 == 100Mbit/s. Must be set together with the "duplex" property when non-zero. Before specifying a speed value be sure your device supports it.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3528,6 +3542,13 @@
 <td align="left">uint32</td>
 <td align="left">0</td>
 <td>If non-zero, directs the device to use the specified transmit power. Units are dBm.  This property is highly driver dependent and not all devices support setting a static transmit power.</td>
+</tr>
+<tr>
+<td align="left">
+<a name="nm-settings.property.802-11-wireless.wake-on-wlan"></a>wake-on-wlan</td>
+<td align="left">uint32</td>
+<td align="left">1</td>
+<td>The NMSettingWirelessWakeOnWLan options to enable. Not all devices support all options. May be any combination of NM_SETTING_WIRELESS_WAKE_ON_WLAN_ANY (0x2), NM_SETTING_WIRELESS_WAKE_ON_WLAN_DISCONNECT (0x4), NM_SETTING_WIRELESS_WAKE_ON_WLAN_MAGIC (0x8), NM_SETTING_WIRELESS_WAKE_ON_WLAN_GTK_REKEY_FAILURE (0x10), NM_SETTING_WIRELESS_WAKE_ON_WLAN_EAP_IDENTITY_REQUEST (0x20), NM_SETTING_WIRELESS_WAKE_ON_WLAN_4WAY_HANDSHAKE (0x40), NM_SETTING_WIRELESS_WAKE_ON_WLAN_RFKILL_RELEASE (0x80), NM_SETTING_WIRELESS_WAKE_ON_WLAN_TCP (0x100) or the special values NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT (0x1) (to use global settings) and NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE (0x8000) (to disable management of Wake-on-LAN in NetworkManager).</td>
 </tr>
 </tbody>
 </table></div>

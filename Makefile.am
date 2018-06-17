@@ -19,6 +19,7 @@ noinst_DATA =
 sbin_PROGRAMS =
 bin_PROGRAMS =
 libexec_PROGRAMS =
+dist_libexec_SCRIPTS =
 lib_LTLIBRARIES =
 plugin_LTLIBRARIES =
 core_plugins =
@@ -127,6 +128,7 @@ check_so_symbols = \
 DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-tests=yes \
 	--with-valgrind=no \
+	--with-libnm-glib=yes \
 	--enable-gtk-doc \
 	--enable-more-warnings=error \
 	--with-udev-dir=$$dc_install_base/lib/udev \
@@ -1302,6 +1304,7 @@ src_libsystemd_nm_la_SOURCES = \
 	src/systemd/sd-adapt/cgroup-util.h \
 	src/systemd/sd-adapt/condition.h \
 	src/systemd/sd-adapt/conf-parser.h \
+	src/systemd/sd-adapt/copy.h \
 	src/systemd/sd-adapt/def.h \
 	src/systemd/sd-adapt/device-nodes.h \
 	src/systemd/sd-adapt/dirent-util.h \
@@ -2200,6 +2203,10 @@ src_settings_plugins_ifcfg_rh_tests_test_ifcfg_rh_LDADD = \
 	src/libNetworkManagerTest.la
 
 $(src_settings_plugins_ifcfg_rh_tests_test_ifcfg_rh_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
+
+dist_libexec_SCRIPTS += \
+	src/settings/plugins/ifcfg-rh/nm-ifup \
+	src/settings/plugins/ifcfg-rh/nm-ifdown
 
 endif
 

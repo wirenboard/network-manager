@@ -2,12 +2,12 @@
 .\"     Title: nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 05/31/2018
+.\"      Date: 06/15/2018
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.11.4
+.\"    Source: NetworkManager 1.11.90
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.11\&.4" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.11\&.90" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1140,13 +1140,19 @@ Monitors all devices in case no interface is specified\&. The monitor terminates
 command\&.
 .RE
 .PP
-\fBwifi\fR [\fBlist\fR\ [\fBifname\fR\ \fIifname\fR]\ [\fBbssid\fR\ \fIBSSID\fR]]
+\fBwifi\fR [\fBlist\fR\ [\fB\-\-rescan\fR\ |\ \fBauto\fR\ |\ \fBno\fR\ |\ \fByes\fR]\ [\fBifname\fR\ \fIifname\fR]\ [\fBbssid\fR\ \fIBSSID\fR]]
 .RS 4
 List available Wi\-Fi access points\&. The
 \fBifname\fR
 and
 \fBbssid\fR
 options can be used to list APs for a particular interface or with a specific BSSID, respectively\&.
+.sp
+By default,
+\fBnmcli\fR
+ensures that the access point list is no older than 30 seconds and triggers a network scan if necessary\&. The
+\fB\-\-rescan\fR
+can be used to either force or disable the scan regardless of how fresh the access point list is\&.
 .RE
 .PP
 \fBwifi\fR \fBconnect\fR \fI(B)SSID\fR [\fBpassword\fR\ \fIpassword\fR] [\fBwep\-key\-type\fR\ {key\ |\ phrase}] [\fBifname\fR\ \fIifname\fR] [\fBbssid\fR\ \fIBSSID\fR] [\fBname\fR\ \fIname\fR] [\fBprivate\fR\ {yes\ |\ no}] [\fBhidden\fR\ {yes\ |\ no}]

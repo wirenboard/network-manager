@@ -61,8 +61,9 @@
 <div class="refsect1">
 <a name="id-1.4.7.2.5"></a><h2>Properties</h2>
 <pre class="synopsis">
-<a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Unsaved" title='The "Unsaved" property'>Unsaved</a>  readable   b
-<a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags" title='The "Flags" property'>Flags</a>    readable   u
+<a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Unsaved" title='The "Unsaved" property'>Unsaved</a>   readable   b
+<a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags" title='The "Flags" property'>Flags</a>     readable   u
+<a class="link" href="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Filename" title='The "Filename" property'>Filename</a>  readable   s
 </pre>
 </div>
 <div class="refsect1">
@@ -329,6 +330,17 @@ Flags  readable   u
 <p>        Additional flags of the connection profile.
 </p>
 <p>        Returns: <a class="link" href="nm-dbus-types.html#NMSettingsConnectionFlags" title="enum NMSettingsConnectionFlags">NMSettingsConnectionFlags</a>
+</p>
+<p>        Since: 1.12
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Filename"></a><h3>The "Filename" property</h3>
+<pre class="programlisting">
+Filename  readable   s
+</pre>
+<p>        File that stores the connection in case the connection is file-backed.
 </p>
 <p>        Since: 1.12
 </p>

@@ -653,7 +653,7 @@ plugin_loaded (GSList *list, const char *path)
 }
 
 static gboolean
-load_plugin (NMSettings *self, GSList *list, const char *pname, GError **error)
+load_plugin (NMSettings *self, GSList **list, const char *pname, GError **error)
 {
 	gs_free char *full_name = NULL;
 	gs_free char *path = NULL;
@@ -666,7 +666,7 @@ load_plugin (NMSettings *self, GSList *list, const char *pname, GError **error)
 	full_name = g_strdup_printf ("nm-settings-plugin-%s", pname);
 	path = g_module_build_path (NMPLUGINDIR, full_name);
 
-	if (plugin_loaded (list, path))
+	if (plugin_loaded (*list, path))
 		return TRUE;
 
 	if (stat (path, &st) != 0) {
@@ -719,7 +719,7 @@ load_plugin (NMSettings *self, GSList *list, const char *pname, GError **error)
 	g_object_set_qdata_full (obj, plugin_module_path_quark (), path, g_free);
 	path = NULL;
 	if (add_plugin (self, NM_SETTINGS_PLUGIN (obj)))
-		list = g_slist_append (list, g_steal_pointer (&obj));
+		*list = g_slist_append (*list, g_steal_pointer (&obj));
 
 	return TRUE;
 }
@@ -787,7 +787,7 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 			continue;
 		}
 
-		success = load_plugin (self, list, pname, error);
+		success = load_plugin (self, &list, pname, error);
 		if (!success)
 			break;
 
@@ -797,7 +797,7 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 			pname = "ibft";
 			add_ibft = FALSE;
 
-			success = load_plugin (self, list, "ibft", error);
+			success = load_plugin (self, &list, "ibft", error);
 			if (!success)
 				break;
 		}
@@ -886,6 +886,8 @@ connection_removed (NMSettingsConnection *connection, gpointer user_data)
 	g_object_unref (connection);
 
 	check_startup_complete (self);
+
+	g_object_unref (self);       /* Balanced by a ref in claim_connection() */
 }
 
 #define NM_DBUS_SERVICE_OPENCONNECT    "org.freedesktop.NetworkManager.openconnect"
@@ -998,6 +1000,11 @@ claim_connection (NMSettings *self, NMSettingsConnection *connection)
 	_clear_connections_cached_list (priv);
 
 	g_object_ref (connection);
+	/* FIXME(shutdown): The NMSettings instance can't be disposed
+	 * while there is any exported connection. Ideally we should
+	 * unexport all connections on NMSettings' disposal, but for now
+	 * leak @self on termination when there are connections alive. */
+	g_object_ref (self);
 	priv->connections_len++;
 	c_list_link_tail (&priv->connections_lst_head, &connection->_connections_lst);
 

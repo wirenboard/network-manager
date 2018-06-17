@@ -125,7 +125,7 @@ plugins-=remove-me
 <p>
             Lists system settings plugin names separated by ','. These
             plugins are used to read and write system-wide
-            connections. When multiple plugins are specified, the
+            connection profiles. When multiple plugins are specified, the
             connections are read from all listed plugins. When writing
             connections, the plugins will be asked to save the
             connection in the order listed here; if the first plugin
@@ -135,15 +135,12 @@ plugins-=remove-me
             to the user.
           </p>
 <p>
-            If NetworkManager defines a distro-specific
-            network-configuration plugin for your system, then that
-            will normally be listed here. (See below for the available
-            plugins.) Note that the <code class="literal">keyfile</code> plugin
-            is always appended to the end of this list (if it doesn't
-            already appear earlier in the list), so if there is no
-            distro-specific plugin for your system then you can leave
-            this key unset and NetworkManager will fall back to using
-            <code class="literal">keyfile</code>.
+            The default value and the number of available plugins is
+            distro-specific. See <a class="xref" href="NetworkManager.conf.html#settings-plugins" title="Plugins">the section called “Plugins”</a>
+            below for the available plugins.
+            Note that NetworkManager's native <code class="literal">keyfile</code>
+            plugin is always appended to the end of this list (if it doesn't
+            already appear earlier in the list).
           </p>
 </td>
 </tr>
@@ -357,8 +354,11 @@ no-auto-default=*
         a symlink.</p>
 <p><code class="literal">file</code>: NetworkManager will write
         <code class="filename">/etc/resolv.conf</code> as file. If it finds
-        a symlink, it will follow the symlink and update the target
-        instead.</p>
+        a symlink to an existing target, it will follow the symlink and
+        update the target instead. In no case will an existing symlink
+        be replaced by a file. Note that older versions of NetworkManager
+        behaved differently and would replace dangling symlinks with a
+        plain file.</p>
 <p><code class="literal">resolvconf</code>: NetworkManager will run
         resolvconf to update the DNS configuration.</p>
 <p><code class="literal">netconfig</code>: NetworkManager will run
@@ -672,6 +672,10 @@ ipv6.ip6-privacy=0
             is different from explicitly selecting the main table 254, because of how NetworkManager
             removes extraneous routes from the tables.
           </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="varname">ipv6.dhcp-duid</code></span></p></td>
+<td><p>If left unspecified, it defaults to "lease".</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">ipv6.dhcp-timeout</code></span></p></td>
@@ -1180,7 +1184,11 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.3.17"></a><h2>Plugins</h2>
+<a name="settings-plugins"></a><h2>Plugins</h2>
+<p>
+      Settings plugins for reading and writing connection profiles. The number of
+      available plugins is distribution specific.
+    </p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -1196,6 +1204,8 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
             capabilities that NetworkManager has. It writes files out
             in an .ini-style format in
             <code class="filename">/etc/NetworkManager/system-connections</code>.
+            See <a class="link" href="nm-settings-keyfile.html" title="nm-settings-keyfile"><span class="citerefentry"><span class="refentrytitle">nm-settings-keyfile</span>(5)</span></a>
+            for details about the file format.
           </p>
 <p>
             The stored connection file may contain passwords, secrets and
@@ -1224,6 +1234,9 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
             Enabling <code class="literal">ifcfg-rh</code> implicitly enables
             <code class="literal">ibft</code> plugin, if it is available.
             This can be disabled by adding <code class="literal">no-ibft</code>.
+            See <code class="filename">/usr/share/doc/initscripts/sysconfig.txt</code>
+            and <a class="link" href="nm-settings-ifcfg-rh.html" title="nm-settings-ifcfg-rh"><span class="citerefentry"><span class="refentrytitle">nm-settings-ifcfg-rh</span>(5)</span></a>
+            for more information about the ifcfg file format.
           </p></td>
 </tr>
 <tr>

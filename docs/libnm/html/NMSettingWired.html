@@ -1411,9 +1411,14 @@ are supported by all devices.</p>
 <div class="refsect2">
 <a name="NMSettingWired--auto-negotiate"></a><h3>The <code class="literal">“auto-negotiate”</code> property</h3>
 <pre class="programlisting">  “auto-negotiate”           <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
-<p>If <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, enforce auto-negotiation of port speed and duplex mode.  If
-<a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>, "speed" and "duplex" properties should be both set or link configuration
-will be skipped.</p>
+<p>When <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, enforce auto-negotiation of speed and duplex mode.
+If "speed" and "duplex" properties are both specified, only that
+single mode will be advertised and accepted during the link
+auto-negotiation process: this works only for BASE-T 802.3 specifications
+and is useful for enforcing gigabits modes, as in these cases link
+negotiation is mandatory.
+When <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>, "speed" and "duplex" properties should be both set or
+link configuration will be skipped.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: FALSE</p>
 </div>
@@ -1443,8 +1448,16 @@ of NetworkManager.conf. If still unspecified, it defaults to "preserve"
 <div class="refsect2">
 <a name="NMSettingWired--duplex"></a><h3>The <code class="literal">“duplex”</code> property</h3>
 <pre class="programlisting">  “duplex”                   <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
-<p>Can be specified only when "auto-negotiate" is "off". In that case, statically
-configures the device to use that specified duplex mode, either "half" or "full".
+<p>When a value is set, either "half" or "full", configures the device
+to use the specified duplex mode. If "auto-negotiate" is "yes" the
+specified duplex mode will be the only one advertised during link
+negotiation: this works only for BASE-T 802.3 specifications and is
+useful for enforcing gigabits modes, as in these cases link negotiation
+is mandatory.
+If the value is unset (the default), the link configuration will be
+either skipped (if "auto-negotiate" is "no", the default) or will
+be auto-negotiated (if "auto-negotiate" is "yes") and the local device
+will advertise all the supported duplex modes.
 Must be set together with the "speed" property if specified.
 Before specifying a duplex mode be sure your device supports it.</p>
 <p>Flags: Read / Write</p>
@@ -1553,8 +1566,16 @@ period (.) character.</p>
 <div class="refsect2">
 <a name="NMSettingWired--speed"></a><h3>The <code class="literal">“speed”</code> property</h3>
 <pre class="programlisting">  “speed”                    <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
-<p>Can be set to a value greater than zero only when "auto-negotiate" is "off".
-In that case, statically configures the device to use that specified speed.
+<p>When a value grater than 0 is set, configures the device to use
+the specified speed. If "auto-negotiate" is "yes" the specified
+speed will be the only one advertised during link negotiation:
+this works only for BASE-T 802.3 specifications and is useful for
+enforcing gigabit speeds, as in this case link negotiation is
+mandatory.
+If the value is unset (0, the default), the link configuration will be
+either skipped (if "auto-negotiate" is "no", the default) or will
+be auto-negotiated (if "auto-negotiate" is "yes") and the local device
+will advertise all the supported speeds.
 In Mbit/s, ie 100 == 100Mbit/s.
 Must be set together with the "duplex" property when non-zero.
 Before specifying a speed value be sure your device supports it.</p>

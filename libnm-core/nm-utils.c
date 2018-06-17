@@ -4437,6 +4437,47 @@ _nm_utils_inet6_is_token (const struct in6_addr *in6addr)
 }
 
 /**
+ * _nm_utils_dhcp_duid_valid:
+ * @duid: the candidate DUID
+ *
+ * Checks if @duid string contains either a special duid value ("ll",
+ * "llt", "lease" or the "stable" variants) or a valid hex DUID.
+ *
+ * Return value: %TRUE or %FALSE
+ */
+gboolean
+_nm_utils_dhcp_duid_valid (const char *duid, GBytes **out_duid_bin)
+{
+	guint8 duid_arr[128 + 2];
+	gsize duid_len;
+
+	NM_SET_OUT (out_duid_bin, NULL);
+
+	if (!duid)
+		return FALSE;
+
+	if (NM_IN_STRSET (duid, "lease",
+	                        "llt",
+	                        "ll",
+	                        "stable-llt",
+	                        "stable-ll",
+	                        "stable-uuid")) {
+		return TRUE;
+	}
+
+	if (_str2bin (duid, FALSE, ":", duid_arr, sizeof (duid_arr), &duid_len)) {
+		/* MAX DUID length is 128 octects + the type code (2 octects). */
+		if (   duid_len > 2
+		    && duid_len <= (128 + 2)) {
+			NM_SET_OUT (out_duid_bin, g_bytes_new (duid_arr, duid_len));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+/**
  * nm_utils_check_virtual_device_compatibility:
  * @virtual_type: a virtual connection type
  * @other_type: a connection type to test against @virtual_type
@@ -6178,6 +6219,40 @@ nm_utils_format_variant_attributes (GHashTable *attributes,
 	}
 
 	return g_string_free (str, FALSE);
+}
+
+/*****************************************************************************/
+
+/*
+ * nm_utils_get_timestamp_msec():
+ *
+ * Gets current time in milliseconds of CLOCK_BOOTTIME.
+ *
+ * Returns: time in milliseconds
+ *
+ * Since: 1.12
+ */
+gint64
+nm_utils_get_timestamp_msec (void)
+{
+	struct timespec ts;
+
+	if (clock_gettime (CLOCK_BOOTTIME, &ts) != -1)
+		goto success;
+
+	if (errno == EINVAL) {
+		/* The fallback to CLOCK_MONOTONIC is taken only if we're running on a
+		 * criminally old kernel, prior to 2.6.39 (released on 18 May, 2011).
+		 * That happens during buildcheck on old builders, we don't expect to
+		 * be actually runs on kernels that old. */
+		if (clock_gettime (CLOCK_MONOTONIC, &ts) != -1)
+			goto success;
+	}
+
+	g_return_val_if_reached (-1);
+
+success:
+	return (((gint64) ts.tv_sec) * 1000) + (ts.tv_nsec / 1000000);
 }
 
 /*****************************************************************************/
