@@ -1,8 +1,10 @@
-network-manager (1.11.90-1) UNRELEASED; urgency=medium
+network-manager (1.11.90-1) experimental; urgency=medium
 
   * New upstream version 1.11.90 (1.12 rc1)
+  * Rebase patches
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Sun, 17 Jun 2018 14:57:21 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 17 Jun 2018 15:43:10 +0200
 
 network-manager (1.11.4-1) experimental; urgency=medium
 
