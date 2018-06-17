@@ -372,6 +372,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_wifi_get_bitrate@libnm_1_0_0 1.0.0
  nm_device_wifi_get_capabilities@libnm_1_0_0 1.0.0
  nm_device_wifi_get_hw_address@libnm_1_0_0 1.0.0
+ nm_device_wifi_get_last_scan@libnm_1_12_0 1.11.90
  nm_device_wifi_get_mode@libnm_1_0_0 1.0.0
  nm_device_wifi_get_permanent_hw_address@libnm_1_0_0 1.0.0
  nm_device_wifi_get_type@libnm_1_0_0 1.0.0
@@ -475,6 +476,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_remote_connection_delete@libnm_1_0_0 1.0.0
  nm_remote_connection_delete_async@libnm_1_0_0 1.0.0
  nm_remote_connection_delete_finish@libnm_1_0_0 1.0.0
+ nm_remote_connection_get_filename@libnm_1_12_0 1.11.90
  nm_remote_connection_get_flags@libnm_1_12_0 1.11.3
  nm_remote_connection_get_secrets@libnm_1_0_0 1.0.0
  nm_remote_connection_get_secrets_async@libnm_1_0_0 1.0.0
@@ -745,6 +747,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_ip4_config_new@libnm_1_0_0 1.0.0
  nm_setting_ip6_config_addr_gen_mode_get_type@libnm_1_2_0 1.1.90
  nm_setting_ip6_config_get_addr_gen_mode@libnm_1_2_0 1.1.90
+ nm_setting_ip6_config_get_dhcp_duid@libnm_1_12_0 1.11.90
  nm_setting_ip6_config_get_ip6_privacy@libnm_1_0_0 1.0.0
  nm_setting_ip6_config_get_token@libnm_1_4_0 1.4.0
  nm_setting_ip6_config_get_type@libnm_1_0_0 1.0.0
@@ -818,6 +821,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_macsec_get_mode@libnm_1_6_0 1.5.90
  nm_setting_macsec_get_parent@libnm_1_6_0 1.5.90
  nm_setting_macsec_get_port@libnm_1_6_0 1.5.90
+ nm_setting_macsec_get_send_sci@libnm_1_12_0 1.11.90
  nm_setting_macsec_get_type@libnm_1_6_0 1.5.90
  nm_setting_macsec_get_validation@libnm_1_6_0 1.5.90
  nm_setting_macsec_mode_get_type@libnm_1_6_0 1.5.90
@@ -1080,6 +1084,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wireless_get_ssid@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_tx_power@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_type@libnm_1_0_0 1.0.0
+ nm_setting_wireless_get_wake_on_wlan@libnm_1_12_0 1.11.90
  nm_setting_wireless_new@libnm_1_0_0 1.0.0
  nm_setting_wireless_powersave_get_type@libnm_1_2_0 1.1.91
  nm_setting_wireless_remove_mac_blacklist_item@libnm_1_0_0 1.0.0
@@ -1122,6 +1127,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wireless_security_remove_proto_by_value@libnm_1_0_0 1.0.0
  nm_setting_wireless_security_set_wep_key@libnm_1_0_0 1.0.0
  nm_setting_wireless_security_wps_method_get_type@libnm_1_10_0 1.9.90
+ nm_setting_wireless_wake_on_wlan_get_type@libnm_1_12_0 1.11.90
  nm_settings_connection_flags_get_type@libnm_1_12_0 1.11.3
  nm_settings_error_get_type@libnm_1_0_0 1.0.0
  nm_settings_error_quark@libnm_1_0_0 1.0.0
@@ -1195,6 +1201,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_utils_file_is_private_key@libnm_1_0_0 1.0.0
  nm_utils_file_search_in_paths@libnm_1_0_0 1.0.0
  nm_utils_format_variant_attributes@libnm_1_8_0 1.8.0
+ nm_utils_get_timestamp_msec@libnm_1_12_0 1.11.90
  nm_utils_hexstr2bin@libnm_1_0_0 1.0.0
  nm_utils_hwaddr_atoba@libnm_1_0_0 1.0.0
  nm_utils_hwaddr_aton@libnm_1_0_0 1.0.0
