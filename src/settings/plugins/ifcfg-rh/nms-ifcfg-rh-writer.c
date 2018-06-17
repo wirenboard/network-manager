@@ -1135,6 +1135,9 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	/* Stuff ETHTOOL_OPT with required options */
 	str = NULL;
 	auto_negotiate = nm_setting_wired_get_auto_negotiate (s_wired);
+	speed = nm_setting_wired_get_speed (s_wired);
+	duplex = nm_setting_wired_get_duplex (s_wired);
+
 	/* autoneg off + speed 0 + duplex NULL, means we want NM
 	 * to skip link configuration which is default. So write
 	 * down link config only if we have auto-negotiate true or
@@ -1143,18 +1146,14 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	if (auto_negotiate) {
 		str = g_string_sized_new (64);
 		g_string_printf (str, "autoneg on");
-	} else {
-		speed = nm_setting_wired_get_speed (s_wired);
-		duplex = nm_setting_wired_get_duplex (s_wired);
-		if (speed || duplex) {
-			str = g_string_sized_new (64);
-			g_string_printf (str, "autoneg off");
-			if (speed)
-				g_string_append_printf (str, " speed %u", speed);
-			if (duplex)
-				g_string_append_printf (str, " duplex %s", duplex);
-		}
+	} else if (speed || duplex) {
+		str = g_string_sized_new (64);
+		g_string_printf (str, "autoneg off");
 	}
+	if (speed)
+		g_string_append_printf (str, " speed %u", speed);
+	if (duplex)
+		g_string_append_printf (str, " duplex %s", duplex);
 
 	wol = nm_setting_wired_get_wake_on_lan (s_wired);
 	wol_password = nm_setting_wired_get_wake_on_lan_password (s_wired);
@@ -2568,6 +2567,7 @@ write_ip6_setting (NMConnection *connection,
 		svUnsetValue (ifcfg, "IPV6INIT");
 		svUnsetValue (ifcfg, "IPV6_AUTOCONF");
 		svUnsetValue (ifcfg, "DHCPV6C");
+		svUnsetValue (ifcfg, "DHCPv6_DUID");
 		svUnsetValue (ifcfg, "DHCPV6_HOSTNAME");
 		svUnsetValue (ifcfg, "DHCPV6_SEND_HOSTNAME");
 		svUnsetValue (ifcfg, "IPV6_DEFROUTE");
@@ -2607,6 +2607,9 @@ write_ip6_setting (NMConnection *connection,
 		svSetValueStr (ifcfg, "IPV6_AUTOCONF", "shared");
 		svUnsetValue (ifcfg, "DHCPV6C");
 	}
+
+	svSetValueStr (ifcfg, "DHCPV6_DUID",
+	               nm_setting_ip6_config_get_dhcp_duid (NM_SETTING_IP6_CONFIG (s_ip6)));
 
 	write_ip6_setting_dhcp_hostname (s_ip6, ifcfg);
 

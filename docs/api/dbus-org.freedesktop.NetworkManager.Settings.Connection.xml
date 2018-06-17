@@ -33,8 +33,9 @@
   <refsect1 role="properties">
     <title role="properties.title">Properties</title>
     <synopsis>
-<link linkend="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Unsaved">Unsaved</link>  readable   b
-<link linkend="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags">Flags</link>    readable   u
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Unsaved">Unsaved</link>   readable   b
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags">Flags</link>     readable   u
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Filename">Filename</link>  readable   s
 </synopsis>
   </refsect1>
 <refsect1 role="desc" id="gdbus-interface-org-freedesktop-NetworkManager-Settings-Connection">
@@ -272,6 +273,16 @@ Flags  readable   u
 </programlisting>
 <para>        Additional flags of the connection profile.
 </para><para>        Returns: <link linkend="NMSettingsConnectionFlags">NMSettingsConnectionFlags</link>
+</para><para>        Since: 1.12
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Filename">
+  <title>The "Filename" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Filename"><primary sortas=".Settings.Connection:Filename">org.freedesktop.NetworkManager.Settings.Connection:Filename</primary></indexterm>
+<programlisting>
+Filename  readable   s
+</programlisting>
+<para>        File that stores the connection in case the connection is file-backed.
 </para><para>        Since: 1.12
 </para>
 </refsect2>

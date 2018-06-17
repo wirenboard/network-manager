@@ -49,6 +49,9 @@ _ip_config_get_routes (NMIPConfig *cfg)
 	if (!ptr_array)
 		return NULL;
 
+	if (ptr_array->len == 0)
+		return NULL;
+
 	arr = g_new (char *, ptr_array->len + 1);
 	for (i = 0; i < ptr_array->len; i++) {
 		NMIPRoute *route = g_ptr_array_index (ptr_array, i);
@@ -384,7 +387,7 @@ print_dhcp_config (NMDhcpConfig *dhcp,
 /*
  * nmc_find_connection:
  * @connections: array of NMConnections to search in
- * @filter_type: "id", "uuid", "path" or %NULL
+ * @filter_type: "id", "uuid", "path", "filename", or %NULL
  * @filter_val: connection to find (connection name, UUID or path)
  * @out_result: if not NULL, attach all matching connection to this
  *   list. If necessary, a new array will be allocated. If the array
@@ -449,6 +452,14 @@ nmc_find_connection (const GPtrArray *connections,
 				nmc_complete_strings (filter_val, v, filter_type ? v_num : NULL, NULL);
 			if (   nm_streq0 (filter_val, v)
 			    || (filter_type && nm_streq0 (filter_val, v_num)))
+				goto found;
+		}
+
+		if (NM_IN_STRSET (filter_type, NULL, "filename")) {
+			v = nm_remote_connection_get_filename (NM_REMOTE_CONNECTION (connections->pdata[i]));
+			if (complete && (filter_type || *filter_val))
+				nmc_complete_strings (filter_val, v, NULL);
+			if (nm_streq0 (filter_val, v))
 				goto found;
 		}
 
@@ -520,6 +531,14 @@ nmc_find_active_connection (const GPtrArray *active_cons,
 				nmc_complete_strings (filter_val, v, filter_type ? v_num : NULL, NULL);
 			if (   nm_streq0 (filter_val, v)
 			    || (filter_type && nm_streq0 (filter_val, v_num)))
+				goto found;
+		}
+
+		if (NM_IN_STRSET (filter_type, NULL, "filename")) {
+			v = nm_remote_connection_get_filename (con);
+			if (complete && (filter_type || *filter_val))
+				nmc_complete_strings (filter_val, v, NULL);
+			if (nm_streq0 (filter_val, v))
 				goto found;
 		}
 

@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 05/31/2018
+.\"      Date: 06/15/2018
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.11.4
+.\"    Source: NetworkManager 1.11.90
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.11\&.4" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.11\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -109,12 +109,13 @@ plugins\-=remove\-me
 .PP
 \fIplugins\fR
 .RS 4
-Lists system settings plugin names separated by \*(Aq,\*(Aq\&. These plugins are used to read and write system\-wide connections\&. When multiple plugins are specified, the connections are read from all listed plugins\&. When writing connections, the plugins will be asked to save the connection in the order listed here; if the first plugin cannot write out that connection type (or can\*(Aqt write out any connections) the next plugin is tried, etc\&. If none of the plugins can save the connection, an error is returned to the user\&.
+Lists system settings plugin names separated by \*(Aq,\*(Aq\&. These plugins are used to read and write system\-wide connection profiles\&. When multiple plugins are specified, the connections are read from all listed plugins\&. When writing connections, the plugins will be asked to save the connection in the order listed here; if the first plugin cannot write out that connection type (or can\*(Aqt write out any connections) the next plugin is tried, etc\&. If none of the plugins can save the connection, an error is returned to the user\&.
 .sp
-If NetworkManager defines a distro\-specific network\-configuration plugin for your system, then that will normally be listed here\&. (See below for the available plugins\&.) Note that the
+The default value and the number of available plugins is distro\-specific\&. See
+the section called \(lqPLUGINS\(rq
+below for the available plugins\&. Note that NetworkManager\*(Aqs native
 keyfile
-plugin is always appended to the end of this list (if it doesn\*(Aqt already appear earlier in the list), so if there is no distro\-specific plugin for your system then you can leave this key unset and NetworkManager will fall back to using
-keyfile\&.
+plugin is always appended to the end of this list (if it doesn\*(Aqt already appear earlier in the list)\&.
 .RE
 .PP
 \fImonitor\-connection\-files\fR
@@ -267,7 +268,7 @@ by replacing it with a symlink\&.
 .sp
 file: NetworkManager will write
 /etc/resolv\&.conf
-as file\&. If it finds a symlink, it will follow the symlink and update the target instead\&.
+as file\&. If it finds a symlink to an existing target, it will follow the symlink and update the target instead\&. In no case will an existing symlink be replaced by a file\&. Note that older versions of NetworkManager behaved differently and would replace dangling symlinks with a plain file\&.
 .sp
 resolvconf: NetworkManager will run resolvconf to update the DNS configuration\&.
 .sp
@@ -654,6 +655,11 @@ If left unspecified, the default value for the interface type is used\&.
 If left unspecified, routes are only added to the main table\&. Note that this is different from explicitly selecting the main table 254, because of how NetworkManager removes extraneous routes from the tables\&.
 .RE
 .PP
+\fIipv6\&.dhcp\-duid\fR
+.RS 4
+If left unspecified, it defaults to "lease"\&.
+.RE
+.PP
 \fIipv6\&.dhcp\-timeout\fR
 .RS 4
 If left unspecified, the default value for the interface type is used\&.
@@ -1017,12 +1023,16 @@ enable=nm\-version\-min:1\&.3,nm\-version\-min:1\&.2\&.6,nm\-version\-min:1\&.0\
 .RE
 .SH "PLUGINS"
 .PP
+Settings plugins for reading and writing connection profiles\&. The number of available plugins is distribution specific\&.
+.PP
 \fIkeyfile\fR
 .RS 4
 The
 keyfile
 plugin is the generic plugin that supports all the connection types and capabilities that NetworkManager has\&. It writes files out in an \&.ini\-style format in
-/etc/NetworkManager/system\-connections\&.
+/etc/NetworkManager/system\-connections\&. See
+\fBnm-settings-keyfile\fR(5)
+for details about the file format\&.
 .sp
 The stored connection file may contain passwords, secrets and private keys in plain text, so it will be made readable only to root, and the plugin will ignore files that are readable or writable by any user or group other than root\&. See "Secret flag types" in
 \fBnm-settings\fR(5)
@@ -1040,7 +1050,11 @@ ifcfg\-rh
 implicitly enables
 ibft
 plugin, if it is available\&. This can be disabled by adding
-no\-ibft\&.
+no\-ibft\&. See
+/usr/share/doc/initscripts/sysconfig\&.txt
+and
+\fBnm-settings-ifcfg-rh\fR(5)
+for more information about the ifcfg file format\&.
 .RE
 .PP
 \fIifupdown\fR

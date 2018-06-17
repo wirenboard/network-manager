@@ -199,10 +199,18 @@ next_arg (NmCli *nmc, int *argc, char ***argv, ...)
 
 		/* Check command dependent options first */
 		while ((cmd_option = va_arg (args, const char *))) {
-			/* strip heading "--" form cmd_option */
-			if (nmc_arg_is_option (**argv, cmd_option + 2)) {
-				va_end (args);
-				return cmd_option_pos;
+			if (cmd_option[0] == '-' && cmd_option[1] == '-') {
+				/* Match as an option (leading "--" stripped) */
+				if (nmc_arg_is_option (**argv, cmd_option + 2)) {
+					va_end (args);
+					return cmd_option_pos;
+				}
+			} else {
+				/* Match literally. */
+				if (strcmp (**argv, cmd_option) == 0) {
+					va_end (args);
+					return cmd_option_pos;
+				}
 			}
 			cmd_option_pos++;
 		}
@@ -1004,9 +1012,7 @@ _print_fill (const NmcConfig *nmc_config,
 	g_array_set_clear_func (cells, _print_data_cell_clear);
 	g_array_set_size (cells, targets_len * header_row->len);
 
-	text_get_type = pretty
-	                ? NM_META_ACCESSOR_GET_TYPE_PRETTY
-	                : NM_META_ACCESSOR_GET_TYPE_PARSABLE;
+	text_get_type = nmc_print_output_to_accessor_get_type (nmc_config->print_output);
 	text_get_flags = NM_META_ACCESSOR_GET_FLAGS_ACCEPT_STRV;
 	if (nmc_config->show_secrets)
 		text_get_flags |= NM_META_ACCESSOR_GET_FLAGS_SHOW_SECRETS;
@@ -1040,20 +1046,22 @@ _print_fill (const NmcConfig *nmc_config,
 			                                   &is_default,
 			                                   (gpointer *) &to_free);
 
+			nm_assert (!to_free || value == to_free);
+
 			header_cell->skip = nmc_config->overview && is_default;
 
 			if (NM_FLAGS_HAS (text_out_flags, NM_META_ACCESSOR_GET_OUT_FLAGS_STRV)) {
-				if (value) {
-					if (nmc_config->multiline_output) {
-						cell->text_format = PRINT_DATA_CELL_FORMAT_TYPE_STRV;
-						cell->text.strv = value;
-						cell->text_to_free = !!to_free;
-					} else {
+				if (nmc_config->multiline_output) {
+					cell->text_format = PRINT_DATA_CELL_FORMAT_TYPE_STRV;
+					cell->text.strv = value;
+					cell->text_to_free = !!to_free;
+				} else {
+					if (value && ((const char *const*) value)[0]) {
 						cell->text.plain = g_strjoinv (" | ", (char **) value);
 						cell->text_to_free = TRUE;
-						if (to_free)
-							g_strfreev ((char **) to_free);
 					}
+					if (to_free)
+						g_strfreev ((char **) to_free);
 				}
 			} else {
 				cell->text.plain = value;
@@ -1165,7 +1173,7 @@ _print_do (const NmcConfig *nmc_config,
 	guint i_row, i_col;
 	nm_auto_free_gstring GString *str = NULL;
 
-	g_assert (col_len && row_len);
+	g_assert (col_len);
 
 	/* Main header */
 	if (pretty && header_name_no_l10n) {

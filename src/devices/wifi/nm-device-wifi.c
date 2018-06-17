@@ -74,6 +74,7 @@ NM_GOBJECT_PROPERTIES_DEFINE (NMDeviceWifi,
 	PROP_ACTIVE_ACCESS_POINT,
 	PROP_CAPABILITIES,
 	PROP_SCANNING,
+	PROP_LAST_SCAN,
 );
 
 enum {
@@ -96,8 +97,8 @@ typedef struct {
 	bool              ssid_found:1;
 	bool              is_scanning:1;
 
-	gint32            last_scan;
-	gint32            scheduled_scan_time;
+	gint64            last_scan; /* milliseconds */
+	gint32            scheduled_scan_time; /* seconds */
 	guint8            scan_interval; /* seconds */
 	guint             pending_scan_id;
 	guint             ap_dump_id;
@@ -1126,7 +1127,7 @@ _nm_device_wifi_request_scan (NMDeviceWifi *self,
 {
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	NMDevice *device = NM_DEVICE (self);
-	gint32 last_scan;
+	gint64 last_scan;
 
 	if (   !priv->enabled
 	    || !priv->sup_iface
@@ -1147,8 +1148,8 @@ _nm_device_wifi_request_scan (NMDeviceWifi *self,
 		return;
 	}
 
-	last_scan = nm_supplicant_interface_get_last_scan_time (priv->sup_iface);
-	if (last_scan && (nm_utils_get_monotonic_timestamp_s () - last_scan) < 10) {
+	last_scan = nm_supplicant_interface_get_last_scan (priv->sup_iface);
+	if (last_scan && (nm_utils_get_monotonic_timestamp_ms () - last_scan) < 10 * NM_UTILS_MSEC_PER_SECOND) {
 		g_dbus_method_invocation_return_error_literal (invocation,
 		                                               NM_DEVICE_ERROR,
 		                                               NM_DEVICE_ERROR_NOT_ALLOWED,
@@ -1422,7 +1423,8 @@ supplicant_iface_scan_done_cb (NMSupplicantInterface *iface,
 
 	_LOGD (LOGD_WIFI, "wifi-scan: scan-done callback: %s", success ? "successful" : "failed");
 
-	priv->last_scan = nm_utils_get_monotonic_timestamp_s ();
+	priv->last_scan = nm_utils_get_monotonic_timestamp_ms ();
+	_notify (self, PROP_LAST_SCAN);
 	schedule_scan (self, success);
 
 	_requested_scan_set (self, FALSE);
@@ -1445,9 +1447,9 @@ ap_list_dump (gpointer user_data)
 		NMWifiAP *ap;
 		gint32 now_s = nm_utils_get_monotonic_timestamp_s ();
 
-		_LOGD (LOGD_WIFI_SCAN, "APs: [now:%u last:%u next:%u]",
+		_LOGD (LOGD_WIFI_SCAN, "APs: [now:%u last:%" G_GINT64_FORMAT " next:%u]",
 		       now_s,
-		       priv->last_scan,
+		       priv->last_scan / NM_UTILS_MSEC_PER_SECOND,
 		       priv->scheduled_scan_time);
 		c_list_for_each_entry (ap, &priv->aps_lst_head, aps_lst)
 			_ap_dump (self, LOGL_DEBUG, ap, "dump", now_s);
@@ -2421,6 +2423,48 @@ error:
 
 /*****************************************************************************/
 
+static gboolean
+wake_on_wlan_enable (NMDeviceWifi *self)
+{
+	NMSettingWirelessWakeOnWLan wowl;
+	NMSettingWireless *s_wireless;
+	gs_free char *value = NULL;
+
+	s_wireless = (NMSettingWireless *) nm_device_get_applied_setting (NM_DEVICE (self), NM_TYPE_SETTING_WIRELESS);
+	if (s_wireless) {
+		wowl = nm_setting_wireless_get_wake_on_wlan (s_wireless);
+		if (wowl != NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT)
+			goto found;
+	}
+
+	value = nm_config_data_get_connection_default (NM_CONFIG_GET_DATA,
+	                                               "wifi.wake-on-wlan",
+	                                               NM_DEVICE (self));
+
+	if (value) {
+		wowl = _nm_utils_ascii_str_to_int64 (value, 10,
+		                                     NM_SETTING_WIRELESS_WAKE_ON_WLAN_NONE,
+		                                     G_MAXINT32,
+		                                     NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT);
+
+		if (NM_FLAGS_ANY (wowl, NM_SETTING_WIRELESS_WAKE_ON_WLAN_EXCLUSIVE_FLAGS)) {
+			if (!nm_utils_is_power_of_two (wowl)) {
+				_LOGD (LOGD_WIFI, "invalid default value %u for wake-on-wlan: "
+				       "'default' and 'ignore' are exclusive flags", (guint) wowl);
+				wowl = NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT;
+			}
+		} else if (NM_FLAGS_ANY (wowl, ~NM_SETTING_WIRELESS_WAKE_ON_WLAN_ALL)) {
+			_LOGD (LOGD_WIFI, "invalid default value %u for wake-on-wlan", (guint) wowl);
+			wowl = NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT;
+		}
+		if (wowl != NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT)
+			goto found;
+	}
+	wowl = NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE;
+found:
+	return nm_platform_wifi_set_wake_on_wlan (NM_PLATFORM_GET, nm_device_get_ifindex (NM_DEVICE (self)), wowl);
+}
+
 static NMActStageReturn
 act_stage1_prepare (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
@@ -2613,6 +2657,8 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 
 	s_wireless = nm_connection_get_setting_wireless (connection);
 	g_assert (s_wireless);
+
+	wake_on_wlan_enable (self);
 
 	/* If we need secrets, get them */
 	setting_name = nm_connection_need_secrets (connection, NULL);
@@ -3081,7 +3127,8 @@ can_reapply_change (NMDevice *device,
 		return nm_device_hash_check_invalid_keys (diffs,
 		                                          NM_SETTING_WIRELESS_SETTING_NAME,
 		                                          error,
-		                                          NM_SETTING_WIRELESS_MTU); /* reapplied with IP config */
+		                                          NM_SETTING_WIRELESS_MTU, /* reapplied with IP config */
+		                                          NM_SETTING_WIRELESS_WAKE_ON_WLAN);
 	}
 
 	device_class = NM_DEVICE_CLASS (nm_device_wifi_parent_class);
@@ -3091,6 +3138,20 @@ can_reapply_change (NMDevice *device,
 	                                         s_new,
 	                                         diffs,
 	                                         error);
+}
+
+static void
+reapply_connection (NMDevice *device, NMConnection *con_old, NMConnection *con_new)
+{
+	NMDeviceWifi *self = NM_DEVICE_WIFI (device);
+
+	NM_DEVICE_CLASS (nm_device_wifi_parent_class)->reapply_connection (device,
+	                                                                   con_old,
+	                                                                   con_new);
+
+	_LOGD (LOGD_DEVICE, "reapplying wireless settings");
+
+	wake_on_wlan_enable (self);
 }
 
 /*****************************************************************************/
@@ -3122,6 +3183,12 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_SCANNING:
 		g_value_set_boolean (value, priv->is_scanning);
+		break;
+	case PROP_LAST_SCAN:
+		g_value_set_int64 (value,
+		                   priv->last_scan > 0
+		                       ? nm_utils_monotonic_timestamp_as_boottime (priv->last_scan, NM_UTILS_NS_PER_MSEC)
+		                       : (gint64) -1);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -3256,6 +3323,7 @@ nm_device_wifi_class_init (NMDeviceWifiClass *klass)
 	parent_class->deactivate_reset_hw_addr = deactivate_reset_hw_addr;
 	parent_class->unmanaged_on_quit = unmanaged_on_quit;
 	parent_class->can_reapply_change = can_reapply_change;
+	parent_class->reapply_connection = reapply_connection;
 
 	parent_class->state_changed = device_state_changed;
 
@@ -3299,6 +3367,11 @@ nm_device_wifi_class_init (NMDeviceWifiClass *klass)
 	                          FALSE,
 	                          G_PARAM_READABLE |
 	                          G_PARAM_STATIC_STRINGS);
+
+	obj_properties[PROP_LAST_SCAN] =
+	    g_param_spec_int64 (NM_DEVICE_WIFI_LAST_SCAN, "", "",
+	                        -1, G_MAXINT64, -1,
+	                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 

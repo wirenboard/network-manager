@@ -240,6 +240,14 @@
 <a class="link" href="NMSettingWireless.html#nm-setting-wireless-ap-security-compatible" title="nm_setting_wireless_ap_security_compatible ()">nm_setting_wireless_ap_security_compatible</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
+<tr>
+<td class="function_type">
+<a class="link" href="NMSettingWireless.html#NMSettingWirelessWakeOnWLan" title="enum NMSettingWirelessWakeOnWLan"><span class="returnvalue">NMSettingWirelessWakeOnWLan</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-wake-on-wlan" title="nm_setting_wireless_get_wake_on_wlan ()">nm_setting_wireless_get_wake_on_wlan</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -339,6 +347,11 @@
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--tx-power" title="The “tx-power” property">tx-power</a></td>
 <td class="property_flags">Read / Write / Construct</td>
 </tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--wake-on-wlan" title="The “wake-on-wlan” property">wake-on-wlan</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -353,6 +366,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-SETTING-NAME:CAPS" title="NM_SETTING_WIRELESS_SETTING_NAME">NM_SETTING_WIRELESS_SETTING_NAME</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="NMSettingWireless.html#NMSettingWirelessWakeOnWLan" title="enum NMSettingWirelessWakeOnWLan">NMSettingWirelessWakeOnWLan</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -420,6 +437,10 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN:CAPS" title="NM_SETTING_WIRELESS_WAKE_ON_WLAN">NM_SETTING_WIRELESS_WAKE_ON_WLAN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-ADHOC:CAPS" title="NM_SETTING_WIRELESS_MODE_ADHOC">NM_SETTING_WIRELESS_MODE_ADHOC</a></td>
 </tr>
 <tr>
@@ -445,6 +466,8 @@
 <a name="NMSettingWireless.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">╰──</span> NMSettingWirelessPowersave
+    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+    <span class="lineart">╰──</span> NMSettingWirelessWakeOnWLan
     <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> NMSettingWireless
@@ -1207,6 +1230,33 @@ capabilities</p></td>
 security flags and mode, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if they are not.</p>
 </div>
 </div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-wireless-get-wake-on-wlan"></a><h3>nm_setting_wireless_get_wake_on_wlan ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingWireless.html#NMSettingWirelessWakeOnWLan" title="enum NMSettingWirelessWakeOnWLan"><span class="returnvalue">NMSettingWirelessWakeOnWLan</span></a>
+nm_setting_wireless_get_wake_on_wlan (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<p>Returns the Wake-on-WLAN options enabled for the connection</p>
+<div class="refsect3">
+<a name="nm-setting-wireless-get-wake-on-wlan.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-setting-wireless-get-wake-on-wlan.returns"></a><h4>Returns</h4>
+<p> the Wake-on-WLAN options</p>
+</div>
+<p class="since">Since: 1.12</p>
+</div>
 </div>
 <div class="refsect1">
 <a name="NMSettingWireless.other_details"></a><h2>Types and Values</h2>
@@ -1214,6 +1264,129 @@ security flags and mode, <a href="https://developer.gnome.org/glib/unstable/glib
 <a name="NM-SETTING-WIRELESS-SETTING-NAME:CAPS"></a><h3>NM_SETTING_WIRELESS_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_SETTING_NAME "802-11-wireless"
 </pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWirelessWakeOnWLan"></a><h3>enum NMSettingWirelessWakeOnWLan</h3>
+<p>Options for <a class="link" href="NMSettingWireless.html#NMSettingWireless--wake-on-wlan" title="The “wake-on-wlan” property"><span class="type">“wake-on-wlan”</span></a>. Note that not all options
+are supported by all devices.</p>
+<div class="refsect3">
+<a name="NMSettingWirelessWakeOnWLan.members"></a><h4>Members</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-NONE:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_NONE</p></td>
+<td class="enum_member_description">
+<p>Wake-on-WLAN disabled</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-ANY:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_ANY</p></td>
+<td class="enum_member_description">
+<p>Wake on any activity</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-DISCONNECT:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_DISCONNECT</p></td>
+<td class="enum_member_description">
+<p>Wake on disconnect</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-MAGIC:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_MAGIC</p></td>
+<td class="enum_member_description">
+<p>Wake on magic packet</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-GTK-REKEY-FAILURE:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_GTK_REKEY_FAILURE</p></td>
+<td class="enum_member_description">
+<p>Wake on GTK rekey failure</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-EAP-IDENTITY-REQUEST:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_EAP_IDENTITY_REQUEST</p></td>
+<td class="enum_member_description">
+<p>Wake on EAP identity request</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-4WAY-HANDSHAKE:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_4WAY_HANDSHAKE</p></td>
+<td class="enum_member_description">
+<p>Wake on 4way hanshake</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-RFKILL-RELEASE:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_RFKILL_RELEASE</p></td>
+<td class="enum_member_description">
+<p>Wake on rfkill release</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-TCP:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_TCP</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-NUM:CAPS"></a>_NM_SETTING_WIRELESS_WAKE_ON_WLAN_NUM</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-LAST:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_LAST</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-ALL:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_ALL</p></td>
+<td class="enum_member_description">
+<p>Wake on all events. This does not
+  include the exclusive flags <em class="parameter"><code>NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT</code></em>
+ or
+  <em class="parameter"><code>NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE</code></em>
+.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-DEFAULT:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT</p></td>
+<td class="enum_member_description">
+<p>Use the default value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-IGNORE:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE</p></td>
+<td class="enum_member_description">
+<p>Don't change configured settings</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN-EXCLUSIVE-FLAGS:CAPS"></a>NM_SETTING_WIRELESS_WAKE_ON_WLAN_EXCLUSIVE_FLAGS</p></td>
+<td class="enum_member_description">
+<p>Mask of flags that are
+  incompatible with other flags</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.12</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1309,6 +1482,12 @@ security flags and mode, <a href="https://developer.gnome.org/glib/unstable/glib
 <div class="refsect2">
 <a name="NM-SETTING-WIRELESS-MAC-ADDRESS-RANDOMIZATION:CAPS"></a><h3>NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION   "mac-address-randomization"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIRELESS-WAKE-ON-WLAN:CAPS"></a><h3>NM_SETTING_WIRELESS_WAKE_ON_WLAN</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_WAKE_ON_WLAN "wake-on-wlan"
 </pre>
 </div>
 <hr>
@@ -1605,6 +1784,26 @@ Units are dBm.  This property is highly driver dependent and not all
 devices support setting a static transmit power.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWireless--wake-on-wlan"></a><h3>The <code class="literal">“wake-on-wlan”</code> property</h3>
+<pre class="programlisting">  “wake-on-wlan”             <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The <a class="link" href="NMSettingWireless.html#NMSettingWirelessWakeOnWLan" title="enum NMSettingWirelessWakeOnWLan"><span class="type">NMSettingWirelessWakeOnWLan</span></a> options to enable. Not all devices support all options.
+May be any combination of <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-ANY:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_ANY</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-DISCONNECT:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_DISCONNECT</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-MAGIC:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_MAGIC</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-GTK-REKEY-FAILURE:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_GTK_REKEY_FAILURE</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-EAP-IDENTITY-REQUEST:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_EAP_IDENTITY_REQUEST</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-4WAY-HANDSHAKE:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_4WAY_HANDSHAKE</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-RFKILL-RELEASE:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_RFKILL_RELEASE</code></a>,
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-TCP:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_TCP</code></a> or the special values
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-DEFAULT:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT</code></a> (to use global settings) and
+<a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-WAKE-ON-WLAN-IGNORE:CAPS"><code class="literal">NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE</code></a> (to disable management of Wake-on-LAN in
+NetworkManager).</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: 1</p>
+<p class="since">Since: 1.12</p>
 </div>
 </div>
 </div>

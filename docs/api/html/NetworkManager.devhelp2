@@ -216,6 +216,7 @@
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-signal-org-freedesktop-NetworkManager-Settings-Connection.PropertiesChanged"/>
     <keyword type="property" name="The &quot;Unsaved&quot; property" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Unsaved"/>
     <keyword type="property" name="The &quot;Flags&quot; property" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Flags"/>
+    <keyword type="property" name="The &quot;Filename&quot; property" link="gdbus-org.freedesktop.NetworkManager.Settings.Connection.html#gdbus-property-org-freedesktop-NetworkManager-Settings-Connection.Filename"/>
     <keyword type="method" name="The Reapply() method" link="gdbus-org.freedesktop.NetworkManager.Device.html#gdbus-method-org-freedesktop-NetworkManager-Device.Reapply"/>
     <keyword type="method" name="The GetAppliedConnection() method" link="gdbus-org.freedesktop.NetworkManager.Device.html#gdbus-method-org-freedesktop-NetworkManager-Device.GetAppliedConnection"/>
     <keyword type="method" name="The Disconnect() method" link="gdbus-org.freedesktop.NetworkManager.Device.html#gdbus-method-org-freedesktop-NetworkManager-Device.Disconnect"/>
@@ -369,6 +370,7 @@
     <keyword type="property" name="The &quot;AccessPoints&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.AccessPoints"/>
     <keyword type="property" name="The &quot;ActiveAccessPoint&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.ActiveAccessPoint"/>
     <keyword type="property" name="The &quot;WirelessCapabilities&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.WirelessCapabilities"/>
+    <keyword type="property" name="The &quot;LastScan&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.LastScan"/>
     <keyword type="method" name="The GetNspList() method" link="gdbus-org.freedesktop.NetworkManager.Device.WiMax.html#gdbus-method-org-freedesktop-NetworkManager-Device-WiMax.GetNspList"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.WiMax.html#gdbus-signal-org-freedesktop-NetworkManager-Device-WiMax.PropertiesChanged"/>
     <keyword type="signal" name="The &quot;NspAdded&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.WiMax.html#gdbus-signal-org-freedesktop-NetworkManager-Device-WiMax.NspAdded"/>

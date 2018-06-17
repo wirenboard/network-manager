@@ -78,6 +78,12 @@
 <td>Timeout in milliseconds used to check for the presence of duplicate IP addresses on the network.  If an address conflict is detected, the activation will fail.  A zero value means that no duplicate address detection is performed, -1 means the default value (either configuration ipvx.dad-timeout override or zero).  A value greater than zero is a timeout in milliseconds. The property is currently implemented only for IPv4.</td>
 </tr>
 <tr>
+<td><pre class="screen">dhcp-duid</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>A string containing the DHCPv6 Unique Identifier (DUID) used by the dhcp client to identify itself to DHCPv6 servers (RFC 3315). The DUID is carried in the Client Identifier option. If the property is a hex string ('aa:bb:cc') it is interpreted as a binary DUID and filled as an opaque value in the Client Identifier option. The special value "lease" will retrieve the DUID previously used from the lease file belonging to the connection. If no DUID is found and "dhclient" is the configured dhcp client, the DUID is searched in the system-wide dhclient lease file. If still no DUID is found, or another dhcp client is used, a global and permanent DUID-UUID (RFC 6355) will be generated based on the machine-id. The special values "llt" and "ll" will generate a DUID of type LLT or LL (see RFC 3315) based on the current MAC address of the device. In order to try providing a stable DUID-LLT, the time field will contain a constant timestamp that is used globally (for all profiles) and persisted to disk. The special values "stable-llt", "stable-ll" and "stable-uuid" will generate a DUID of the corresponding type, derived from the connection's stable-id and a per-host unique key. So, the link-layer address of "stable-ll" and "stable-llt" will be a generated address derived from the stable id. The DUID-LLT time value in the "stable-llt" option will be picked among a static timespan of three years (the upper bound of the interval is the same constant timestamp used in "llt"). When the property is unset, the global value provided for "ipv6.dhcp-duid" is used. If no global value is provided, the default "lease" value is assumed.</td>
+</tr>
+<tr>
 <td><pre class="screen">dhcp-hostname</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>

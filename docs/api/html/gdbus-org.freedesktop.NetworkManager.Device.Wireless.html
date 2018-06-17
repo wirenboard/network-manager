@@ -59,6 +59,7 @@
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.AccessPoints" title='The "AccessPoints" property'>AccessPoints</a>          readable   ao
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.ActiveAccessPoint" title='The "ActiveAccessPoint" property'>ActiveAccessPoint</a>     readable   o
 <a class="link" href="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.WirelessCapabilities" title='The "WirelessCapabilities" property'>WirelessCapabilities</a>  readable   u
+<a class="link" href="gdbus-org.freedesktop.NetworkManager.Device.Wireless.html#gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.LastScan" title='The "LastScan" property'>LastScan</a>              readable   x
 </pre>
 </div>
 <div class="refsect1">
@@ -254,6 +255,18 @@ WirelessCapabilities  readable   u
 <p>        The capabilities of the wireless device.
 </p>
 <p>        Returns: <a class="link" href="nm-dbus-types.html#NMDeviceWifiCapabilities" title="enum NMDeviceWifiCapabilities">NMDeviceWifiCapabilities</a>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.LastScan"></a><h3>The "LastScan" property</h3>
+<pre class="programlisting">
+LastScan  readable   x
+</pre>
+<p>        The timestamp (in CLOCK_BOOTTIME milliseconds) for the last finished network scan.
+        A value of -1 means the device never scanned for access points.
+</p>
+<p>        Since: 1.12
 </p>
 </div>
 </div>

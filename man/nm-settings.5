@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 05/31/2018
+.\"      Date: 06/15/2018
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.11.4
+.\"    Source: NetworkManager 1.11.90
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.11\&.4" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.11\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -256,7 +256,7 @@ string
 T}:T{
 \ \&
 T}:T{
-This represents the identity of the connection used for various purposes\&. It allows to configure multiple profiles to share the identity\&. Also, the stable\-id can contain placeholders that are substituted dynamically and deterministically depending on the context\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. It is also used as DHCP client identifier with ipv4\&.dhcp\-client\-id=stable\&. Note that depending on the context where it is used, other parameters are also seeded into the generation algorithm\&. For example, a per\-host key is commonly also included, so that different systems end up generating different IDs\&. Or with ipv6\&.addr\-gen\-mode=stable\-privacy, also the device\*(Aqs name is included, so that different interfaces yield different addresses\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${DEVICE}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-device, per\-boot, or every time\&. Note that "${DEVICE}" corresponds the the interface name of the device\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}\-${BOOT}\-${DEVICE}" to create a unique id for this connection that changes with every reboot and differs depending on the interface where the profile activates\&. If the value is unset, a global connection default is consulted\&. If the value is still unset, the default is similar to "${CONNECTION}" and uses a unique, fixed ID for the connection\&.
+This represents the identity of the connection used for various purposes\&. It allows to configure multiple profiles to share the identity\&. Also, the stable\-id can contain placeholders that are substituted dynamically and deterministically depending on the context\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. It is also used as DHCP client identifier with ipv4\&.dhcp\-client\-id=stable and to derive the DHCP DUID with ipv6\&.dhcp\-duid=stable\-[llt,ll,uuid]\&. Note that depending on the context where it is used, other parameters are also seeded into the generation algorithm\&. For example, a per\-host key is commonly also included, so that different systems end up generating different IDs\&. Or with ipv6\&.addr\-gen\-mode=stable\-privacy, also the device\*(Aqs name is included, so that different interfaces yield different addresses\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${DEVICE}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-device, per\-boot, or every time\&. Note that "${DEVICE}" corresponds the the interface name of the device\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}\-${BOOT}\-${DEVICE}" to create a unique id for this connection that changes with every reboot and differs depending on the interface where the profile activates\&. If the value is unset, a global connection default is consulted\&. If the value is still unset, the default is similar to "${CONNECTION}" and uses a unique, fixed ID for the connection\&.
 T}
 T{
 timestamp
@@ -1979,6 +1979,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 addr\-gen\-mode
@@ -2015,6 +2016,15 @@ T}:T{
 \-1
 T}:T{
 Timeout in milliseconds used to check for the presence of duplicate IP addresses on the network\&.  If an address conflict is detected, the activation will fail\&.  A zero value means that no duplicate address detection is performed, \-1 means the default value (either configuration ipvx\&.dad\-timeout override or zero)\&.  A value greater than zero is a timeout in milliseconds\&. The property is currently implemented only for IPv4\&.
+T}
+T{
+dhcp\-duid
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+A string containing the DHCPv6 Unique Identifier (DUID) used by the dhcp client to identify itself to DHCPv6 servers (RFC 3315)\&. The DUID is carried in the Client Identifier option\&. If the property is a hex string (\*(Aqaa:bb:cc\*(Aq) it is interpreted as a binary DUID and filled as an opaque value in the Client Identifier option\&. The special value "lease" will retrieve the DUID previously used from the lease file belonging to the connection\&. If no DUID is found and "dhclient" is the configured dhcp client, the DUID is searched in the system\-wide dhclient lease file\&. If still no DUID is found, or another dhcp client is used, a global and permanent DUID\-UUID (RFC 6355) will be generated based on the machine\-id\&. The special values "llt" and "ll" will generate a DUID of type LLT or LL (see RFC 3315) based on the current MAC address of the device\&. In order to try providing a stable DUID\-LLT, the time field will contain a constant timestamp that is used globally (for all profiles) and persisted to disk\&. The special values "stable\-llt", "stable\-ll" and "stable\-uuid" will generate a DUID of the corresponding type, derived from the connection\*(Aqs stable\-id and a per\-host unique key\&. So, the link\-layer address of "stable\-ll" and "stable\-llt" will be a generated address derived from the stable id\&. The DUID\-LLT time value in the "stable\-llt" option will be picked among a static timespan of three years (the upper bound of the interval is the same constant timestamp used in "llt")\&. When the property is unset, the global value provided for "ipv6\&.dhcp\-duid" is used\&. If no global value is provided, the default "lease" value is assumed\&.
 T}
 T{
 dhcp\-hostname
@@ -2380,6 +2390,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 encrypt
@@ -2452,6 +2463,15 @@ T}:T{
 1
 T}:T{
 The port component of the SCI (Secure Channel Identifier), between 1 and 65534\&.
+T}
+T{
+send\-sci
+T}:T{
+boolean
+T}:T{
+TRUE
+T}:T{
+Specifies whether the SCI (Secure Channel Identifier) is included in every packet\&.
 T}
 T{
 validation
@@ -3415,7 +3435,7 @@ string
 T}:T{
 "roundrobin"
 T}:T{
-Corresponds to the teamd runner\&.name\&. Permitted values are: "roundrobin", "broadcast", "activebackup", "loadbalance", "lacp"\&. When setting the runner, all the properties specific to the runner will be reset to the default value; all the properties specific to other runners will be set to an empty value (or if not possible to a default value)\&.
+Corresponds to the teamd runner\&.name\&. Permitted values are: "roundrobin", "broadcast", "activebackup", "loadbalance", "lacp", "random"\&. When setting the runner, all the properties specific to the runner will be reset to the default value; all the properties specific to other runners will be set to an empty value (or if not possible to a default value)\&.
 T}
 T{
 runner\-active
@@ -4184,7 +4204,7 @@ boolean
 T}:T{
 FALSE
 T}:T{
-If TRUE, enforce auto\-negotiation of port speed and duplex mode\&.  If FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped\&.
+When TRUE, enforce auto\-negotiation of speed and duplex mode\&. If "speed" and "duplex" properties are both specified, only that single mode will be advertised and accepted during the link auto\-negotiation process: this works only for BASE\-T 802\&.3 specifications and is useful for enforcing gigabits modes, as in these cases link negotiation is mandatory\&. When FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped\&.
 T}
 T{
 cloned\-mac\-address
@@ -4202,7 +4222,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Can be specified only when "auto\-negotiate" is "off"\&. In that case, statically configures the device to use that specified duplex mode, either "half" or "full"\&. Must be set together with the "speed" property if specified\&. Before specifying a duplex mode be sure your device supports it\&.
+When a value is set, either "half" or "full", configures the device to use the specified duplex mode\&. If "auto\-negotiate" is "yes" the specified duplex mode will be the only one advertised during link negotiation: this works only for BASE\-T 802\&.3 specifications and is useful for enforcing gigabits modes, as in these cases link negotiation is mandatory\&. If the value is unset (the default), the link configuration will be either skipped (if "auto\-negotiate" is "no", the default) or will be auto\-negotiated (if "auto\-negotiate" is "yes") and the local device will advertise all the supported duplex modes\&. Must be set together with the "speed" property if specified\&. Before specifying a duplex mode be sure your device supports it\&.
 T}
 T{
 generate\-mac\-address\-mask
@@ -4292,7 +4312,7 @@ uint32
 T}:T{
 0
 T}:T{
-Can be set to a value greater than zero only when "auto\-negotiate" is "off"\&. In that case, statically configures the device to use that specified speed\&. In Mbit/s, ie 100 == 100Mbit/s\&. Must be set together with the "duplex" property when non\-zero\&. Before specifying a speed value be sure your device supports it\&.
+When a value grater than 0 is set, configures the device to use the specified speed\&. If "auto\-negotiate" is "yes" the specified speed will be the only one advertised during link negotiation: this works only for BASE\-T 802\&.3 specifications and is useful for enforcing gigabit speeds, as in this case link negotiation is mandatory\&. If the value is unset (0, the default), the link configuration will be either skipped (if "auto\-negotiate" is "no", the default) or will be auto\-negotiated (if "auto\-negotiate" is "yes") and the local device will advertise all the supported speeds\&. In Mbit/s, ie 100 == 100Mbit/s\&. Must be set together with the "duplex" property when non\-zero\&. Before specifying a speed value be sure your device supports it\&.
 T}
 T{
 wake\-on\-lan
@@ -4330,6 +4350,7 @@ T}:T{
 Value Description
 T}
 .T&
+l l l l
 l l l l
 l l l l
 l l l l
@@ -4519,6 +4540,15 @@ T}:T{
 0
 T}:T{
 If non\-zero, directs the device to use the specified transmit power\&. Units are dBm\&.  This property is highly driver dependent and not all devices support setting a static transmit power\&.
+T}
+T{
+wake\-on\-wlan
+T}:T{
+uint32
+T}:T{
+1
+T}:T{
+The NMSettingWirelessWakeOnWLan options to enable\&. Not all devices support all options\&. May be any combination of NM_SETTING_WIRELESS_WAKE_ON_WLAN_ANY (0x2), NM_SETTING_WIRELESS_WAKE_ON_WLAN_DISCONNECT (0x4), NM_SETTING_WIRELESS_WAKE_ON_WLAN_MAGIC (0x8), NM_SETTING_WIRELESS_WAKE_ON_WLAN_GTK_REKEY_FAILURE (0x10), NM_SETTING_WIRELESS_WAKE_ON_WLAN_EAP_IDENTITY_REQUEST (0x20), NM_SETTING_WIRELESS_WAKE_ON_WLAN_4WAY_HANDSHAKE (0x40), NM_SETTING_WIRELESS_WAKE_ON_WLAN_RFKILL_RELEASE (0x80), NM_SETTING_WIRELESS_WAKE_ON_WLAN_TCP (0x100) or the special values NM_SETTING_WIRELESS_WAKE_ON_WLAN_DEFAULT (0x1) (to use global settings) and NM_SETTING_WIRELESS_WAKE_ON_WLAN_IGNORE (0x8000) (to disable management of Wake\-on\-LAN in NetworkManager)\&.
 T}
 .TE
 .sp 1
