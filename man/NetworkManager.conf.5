@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 06/15/2018
+.\"      Date: 06/29/2018
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.11.90
+.\"    Source: NetworkManager 1.12.0
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.11\&.90" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.12\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -551,7 +551,7 @@ INFO\&.
 .PP
 \fIbackend\fR
 .RS 4
-The logging backend\&. Supported values are "debug", "syslog", "journal"\&. "debug" uses syslog and logs to standard error\&. If NetworkManager is started in debug mode (\-\-debug) this option is ignored and "debug" is always used\&. Otherwise, the default is "syslog"\&.
+The logging backend\&. Supported values are "syslog" and "journal"\&. When NetworkManager is started with "\-\-debug" in addition all messages will be printed to stderr\&. If unspecified, the default is "syslog"\&.
 .RE
 .PP
 \fIaudit\fR

@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 06/15/2018
+.\"      Date: 06/29/2018
 .\"    Manual: Network management daemons
-.\"    Source: NetworkManager 1.11.90
+.\"    Source: NetworkManager 1.12.0
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER" "8" "" "NetworkManager 1\&.11\&.90" "Network management daemons"
+.TH "NETWORKMANAGER" "8" "" "NetworkManager 1\&.12\&.0" "Network management daemons"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -118,6 +118,11 @@ The network connectivity state has changed (no connectivity, went online, etc)\&
 .RE
 .PP
 The environment contains more information about the interface and the connection\&. The following variables are available for the use in the dispatcher scripts:
+.PP
+\fINM_DISPATCHER_ACTION\fR
+.RS 4
+The dispatcher action like "up" or "dhcp4\-change", identical to the first command line argument\&. Since NetworkManager 1\&.12\&.0\&.
+.RE
 .PP
 \fICONNECTION_UUID\fR
 .RS 4

@@ -7,7 +7,7 @@
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMConnection.html" title="NMConnection">
-<link rel="next" href="NMSetting.html" title="NMSetting">
+<link rel="next" href="NMRemoteConnection.html" title="NMRemoteConnection">
 <meta name="generator" content="GTK-Doc V1.28 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -22,14 +22,14 @@
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="ch03.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
 <td><a accesskey="p" href="NMConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="NMSetting.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="NMRemoteConnection.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="NMSimpleConnection"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
 <h2><span class="refentrytitle"><a name="NMSimpleConnection.top_of_page"></a>NMSimpleConnection</span></h2>
-<p>NMSimpleConnection</p>
+<p>NMSimpleConnection — An unmanaged connection</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
@@ -95,6 +95,8 @@ NMSimpleConnection implements
 </div>
 <div class="refsect1">
 <a name="NMSimpleConnection.description"></a><h2>Description</h2>
+<p>An <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> does not directly represent a D-Bus-exported connection,
+but might be used in the process of creating a new one.</p>
 </div>
 <div class="refsect1">
 <a name="NMSimpleConnection.functions_details"></a><h2>Functions</h2>
@@ -102,9 +104,7 @@ NMSimpleConnection implements
 <a name="nm-simple-connection-new"></a><h3>nm_simple_connection_new ()</h3>
 <pre class="programlisting"><a class="link" href="NMConnection.html" title="NMConnection"><span class="returnvalue">NMConnection</span></a> *
 nm_simple_connection_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>Creates a new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> object with no <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> objects. An
-<a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> does not directly represent a D-Bus-exported connection,
-but might be used in the process of creating a new one.</p>
+<p>Creates a new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> object with no <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> objects.</p>
 <div class="refsect3">
 <a name="nm-simple-connection-new.returns"></a><h4>Returns</h4>
 <p>the new empty <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> object. </p>

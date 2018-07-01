@@ -5,9 +5,9 @@
 <title>NMRemoteConnection: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="libnm Reference Manual">
-<link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
-<link rel="prev" href="NMVpnConnection.html" title="NMVpnConnection">
-<link rel="next" href="NMAccessPoint.html" title="NMAccessPoint">
+<link rel="up" href="ch03.html" title="Connection and Setting API Reference">
+<link rel="prev" href="NMSimpleConnection.html" title="NMSimpleConnection">
+<link rel="next" href="NMSetting.html" title="NMSetting">
 <meta name="generator" content="GTK-Doc V1.28 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -21,16 +21,16 @@
                   <a href="#NMRemoteConnection.properties" class="shortcut">Properties</a></span>
 </td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
-<td><a accesskey="u" href="ch04.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
-<td><a accesskey="p" href="NMVpnConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="NMAccessPoint.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<td><a accesskey="u" href="ch03.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="NMSimpleConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="NMSetting.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="refentry">
 <a name="NMRemoteConnection"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
 <h2><span class="refentrytitle"><a name="NMRemoteConnection.top_of_page"></a>NMRemoteConnection</span></h2>
-<p>NMRemoteConnection</p>
+<p>NMRemoteConnection — A connection managed by NetworkManager server</p>
 </td>
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
@@ -275,6 +275,8 @@ NMRemoteConnection implements
 </div>
 <div class="refsect1">
 <a name="NMRemoteConnection.description"></a><h2>Description</h2>
+<p>A <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> represents a connection that is exported via
+NetworkManager D-Bus interface.</p>
 </div>
 <div class="refsect1">
 <a name="NMRemoteConnection.functions_details"></a><h2>Functions</h2>

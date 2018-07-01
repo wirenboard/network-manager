@@ -280,17 +280,17 @@
             <row role="constant">
               <entry role="enum_member_name"><para>NM_DEVICE_TYPE_OVS_INTERFACE</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>24</literal></para><para></para></entry>
-              <entry role="enum_member_description"><para>a OpenVSwitch interface</para><para></para></entry>
+              <entry role="enum_member_description"><para>a Open vSwitch interface</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_DEVICE_TYPE_OVS_PORT</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>25</literal></para><para></para></entry>
-              <entry role="enum_member_description"><para>a OpenVSwitch port</para><para></para></entry>
+              <entry role="enum_member_description"><para>a Open vSwitch port</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_DEVICE_TYPE_OVS_BRIDGE</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>26</literal></para><para></para></entry>
-              <entry role="enum_member_description"><para>a OpenVSwitch bridge</para><para></para></entry>
+              <entry role="enum_member_description"><para>a Open vSwitch bridge</para><para></para></entry>
             </row>
           </tbody>
         </tgroup>
@@ -1120,7 +1120,7 @@
             <row role="constant">
               <entry role="enum_member_name"><para>NM_DEVICE_STATE_REASON_OVSDB_FAILED</para><para></para></entry>
               <entry role="enum_member_value"><para>= <literal>63</literal></para><para></para></entry>
-              <entry role="enum_member_description"><para>problem communicating with OpenVSwitch database</para><para></para></entry>
+              <entry role="enum_member_description"><para>problem communicating with Open vSwitch database</para><para></para></entry>
             </row>
             <row role="constant">
               <entry role="enum_member_name"><para>NM_DEVICE_STATE_REASON_IP_ADDRESS_DUPLICATE</para><para></para></entry>
