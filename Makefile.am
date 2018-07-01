@@ -382,6 +382,11 @@ EXTRA_DIST += \
 	$(dbusinterfaces_DATA) \
 	introspection/meson.build
 
+check-docs:
+	$(srcdir)/tools/check-docs.sh "$(srcdir)"
+
+check_local += check-docs
+
 ###############################################################################
 
 libnm_core_lib_h_pub_real = \
@@ -4517,14 +4522,23 @@ libnm_glib_tests_cppflags = \
 	$(DBUS_CFLAGS) \
 	$(NULL)
 
-libnm_glib_tests_programs_req_introspection = \
-	libnm-glib/tests/test-nm-client \
-	libnm-glib/tests/test-remote-settings-client
+if HAVE_INTROSPECTION
+check-local-libnm-glib-nm-client: libnm-glib/tests/test-nm-client
+	( $(LOG_COMPILER) "$(builddir)/libnm-glib/tests/test-nm-client"; r="$$?"; test "$$r" = 0 -o "$$r" = 77 ) || \
+	( $(LOG_COMPILER) "$(builddir)/libnm-glib/tests/test-nm-client"; r="$$?"; test "$$r" = 0 -o "$$r" = 77 ) || \
+	( $(LOG_COMPILER) "$(builddir)/libnm-glib/tests/test-nm-client"; r="$$?"; test "$$r" = 0 -o "$$r" = 77 ) || \
+	( $(LOG_COMPILER) "$(builddir)/libnm-glib/tests/test-nm-client"; r="$$?"; test "$$r" = 0 -o "$$r" = 77 ) || \
+	( $(LOG_COMPILER) "$(builddir)/libnm-glib/tests/test-nm-client"; r="$$?"; test "$$r" = 0 -o "$$r" = 77 ) || \
+	false
+
+check_local += check-local-libnm-glib-nm-client
+endif
+check_programs_norun += libnm-glib/tests/test-nm-client
 
 if HAVE_INTROSPECTION
-check_programs += $(libnm_glib_tests_programs_req_introspection)
+check_programs += libnm-glib/tests/test-remote-settings-client
 else
-check_programs_norun += $(libnm_glib_tests_programs_req_introspection)
+check_programs_norun += libnm-glib/tests/test-remote-settings-client
 endif
 
 libnm_glib_tests_test_nm_client_CPPFLAGS = $(libnm_glib_tests_cppflags)
@@ -4806,6 +4820,7 @@ EXTRA_DIST += \
 	shared/nm-version-macros.h.in \
 	shared/meson.build \
 	\
+	tools/check-docs.sh \
 	tools/check-exports.sh \
 	tools/create-exports-NetworkManager.sh \
 	tools/debug-helper.py \

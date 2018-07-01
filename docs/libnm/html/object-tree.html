@@ -6,7 +6,7 @@
 <meta name="generator" content="DocBook XSL Stylesheets Vsnapshot">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="index.html" title="libnm Reference Manual">
-<link rel="prev" href="NMVpnEditorPlugin.html" title="NMVpnEditorPlugin">
+<link rel="prev" href="libnm-nm-vpn-plugin-old.html" title="nm-vpn-plugin-old">
 <link rel="next" href="api-index-full.html" title="API Index">
 <meta name="generator" content="GTK-Doc V1.28 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
@@ -16,7 +16,7 @@
 <td width="100%" align="left" class="shortcuts"></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
-<td><a accesskey="p" href="NMVpnEditorPlugin.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="libnm-nm-vpn-plugin-old.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
 <td><a accesskey="n" href="api-index-full.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="chapter">
@@ -51,7 +51,7 @@
     <span class="lineart">│</span>   <span class="lineart">├──</span> NMSettingOvsPort
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingPpp.html" title="NMSettingPpp">NMSettingPpp</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingPppoe.html" title="NMSettingPppoe">NMSettingPppoe</a>
-    <span class="lineart">│</span>   <span class="lineart">├──</span> NMSettingProxy
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingProxy.html" title="NMSettingProxy">NMSettingProxy</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingSerial.html" title="NMSettingSerial">NMSettingSerial</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> NMSettingTCConfig
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort">NMSettingTeamPort</a>
@@ -103,7 +103,7 @@
     <span class="lineart">╰──</span> <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection">NMSimpleConnection</a>
     <a href="/usr/share/gtk-doc/html/gobject/GTypeModule.html">GInterface</a>
     <span class="lineart">├──</span> <a class="link" href="NMConnection.html" title="NMConnection">NMConnection</a>
-    <span class="lineart">├──</span> <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+    <span class="lineart">├──</span> <a class="link" href="NMVpnEditor.html" title="NMVpnEditor">NMVpnEditor</a>
     <span class="lineart">╰──</span> <a class="link" href="NMVpnEditorPlugin.html" title="NMVpnEditorPlugin">NMVpnEditorPlugin</a>
     <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NM80211ApFlags" title="enum NM80211ApFlags">NM80211ApFlags</a>
@@ -163,7 +163,7 @@
     <span class="lineart">├──</span> <a class="link" href="NMSettingMacsec.html#NMSettingMacsecMode" title="enum NMSettingMacsecMode">NMSettingMacsecMode</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingMacsec.html#NMSettingMacsecValidation" title="enum NMSettingMacsecValidation">NMSettingMacsecValidation</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingMacvlan.html#NMSettingMacvlanMode" title="enum NMSettingMacvlanMode">NMSettingMacvlanMode</a>
-    <span class="lineart">├──</span> NMSettingProxyMethod
+    <span class="lineart">├──</span> <a class="link" href="NMSettingProxy.html#NMSettingProxyMethod" title="enum NMSettingProxyMethod">NMSettingProxyMethod</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingSerial.html#NMSettingSerialParity" title="enum NMSettingSerialParity">NMSettingSerialParity</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingTun.html#NMSettingTunMode" title="enum NMSettingTunMode">NMSettingTunMode</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingWireless.html#NMSettingWirelessPowersave" title="enum NMSettingWirelessPowersave">NMSettingWirelessPowersave</a>
@@ -173,10 +173,10 @@
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMState" title="enum NMState">NMState</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-utils.html#NMUtilsSecurityType" title="enum NMUtilsSecurityType">NMUtilsSecurityType</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingVlan.html#NMVlanPriorityMap" title="enum NMVlanPriorityMap">NMVlanPriorityMap</a>
-    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionState" title="enum NMVpnConnectionState">NMVpnConnectionState</a>
-    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionStateReason" title="enum NMVpnConnectionStateReason">NMVpnConnectionStateReason</a>
-    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnPluginFailure" title="enum NMVpnPluginFailure">NMVpnPluginFailure</a>
-    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnServiceState" title="enum NMVpnServiceState">NMVpnServiceState</a>
+    <span class="lineart">├──</span> <a href="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionState">NMVpnConnectionState</a>
+    <span class="lineart">├──</span> <a href="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionStateReason">NMVpnConnectionStateReason</a>
+    <span class="lineart">├──</span> <a href="libnm-nm-vpn-dbus-interface.html#NMVpnPluginFailure">NMVpnPluginFailure</a>
+    <span class="lineart">├──</span> <a href="libnm-nm-vpn-dbus-interface.html#NMVpnServiceState">NMVpnServiceState</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType">NMWepKeyType</a>
     <span class="lineart">╰──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType">NMWimaxNspNetworkType</a>
     <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
@@ -184,9 +184,9 @@
     <span class="lineart">├──</span> <a class="link" href="NMSettingIPConfig.html#NMIPAddress">NMIPAddress</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingIPConfig.html#NMIPRoute">NMIPRoute</a>
     <span class="lineart">├──</span> <a class="link" href="NMDevice.html#NMLldpNeighbor">NMLldpNeighbor</a>
-    <span class="lineart">├──</span> NMTCAction
-    <span class="lineart">├──</span> NMTCQdisc
-    <span class="lineart">├──</span> NMTCTfilter
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction">NMTCAction</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc">NMTCQdisc</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter">NMTCTfilter</a>
     <span class="lineart">╰──</span> <a class="link" href="NMSettingTeam.html#NMTeamLinkWatcher">NMTeamLinkWatcher</a>
 </pre>
 </div>

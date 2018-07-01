@@ -7,8 +7,8 @@ dnl  - add corresponding NM_VERSION_x_y_z macros in
 dnl    "shared/nm-version-macros.h.in"
 dnl  - update number in meson.build
 m4_define([nm_major_version], [1])
-m4_define([nm_minor_version], [11])
-m4_define([nm_micro_version], [90])
+m4_define([nm_minor_version], [12])
+m4_define([nm_micro_version], [0])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -391,10 +391,8 @@ AC_ARG_WITH(config-logging-backend-default,
             nm_config_logging_backend_default="$withval",
             nm_config_logging_backend_default="")
 
-if test "$nm_config_logging_backend_default" != 'debug' \
-     -a "$nm_config_logging_backend_default" != 'syslog' \
-     -a "$nm_config_logging_backend_default" != 'journal' \
-     -a "$nm_config_logging_backend_default" != 'journal-syslog-style'; then
+if test "$nm_config_logging_backend_default" != 'syslog' \
+     -a "$nm_config_logging_backend_default" != 'journal'; then
 	# unknown backend. Reset to default. Silently accept the invalid value to
 	# be future proof.
 	nm_config_logging_backend_default=''

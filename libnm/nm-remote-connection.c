@@ -35,6 +35,14 @@
 
 #include "introspection/org.freedesktop.NetworkManager.Settings.Connection.h"
 
+/**
+ * SECTION:nm-remote-connection
+ * @short_description: A connection managed by NetworkManager server
+ *
+ * A #NMRemoteConnection represents a connection that is exported via
+ * NetworkManager D-Bus interface.
+ **/
+
 static void nm_remote_connection_connection_iface_init (NMConnectionInterface *iface);
 static void nm_remote_connection_initable_iface_init (GInitableIface *iface);
 static void nm_remote_connection_async_initable_iface_init (GAsyncInitableIface *iface);
@@ -62,7 +70,7 @@ typedef struct {
 
 	gboolean unsaved;
 	guint32 flags;
-	const char *filename;
+	char *filename;
 
 	gboolean visible;
 } NMRemoteConnectionPrivate;
@@ -939,6 +947,7 @@ dispose (GObject *object)
 	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (object);
 
 	g_clear_object (&priv->proxy);
+	nm_clear_g_free (&priv->filename);
 
 	G_OBJECT_CLASS (nm_remote_connection_parent_class)->dispose (object);
 }

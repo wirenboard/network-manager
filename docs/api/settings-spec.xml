@@ -307,7 +307,7 @@
     <row><entry><screen>rstp-enable<indexterm zone="settings-ovs-bridge"><primary sortas="rstp-enable">rstp-enable</primary></indexterm></screen></entry><entry><screen>boolean</screen></entry><entry><screen>FALSE</screen></entry><entry>Enable or disable RSTP.</entry></row>
     <row><entry><screen>stp-enable<indexterm zone="settings-ovs-bridge"><primary sortas="stp-enable">stp-enable</primary></indexterm></screen></entry><entry><screen>boolean</screen></entry><entry><screen>FALSE</screen></entry><entry>Enable or disable STP.</entry></row>
   </tbody></tgroup></table></para></refsect1></refentry>
-  <refentry id="settings-ovs-interface"><refnamediv><refname>ovs-interface</refname><refpurpose>OpenVSwitch Interface Settings</refpurpose></refnamediv><refsect1 role="properties"><title id="settings-ovs-interface.properties">
+  <refentry id="settings-ovs-interface"><refnamediv><refname>ovs-interface</refname><refpurpose>Open vSwitch Interface Settings</refpurpose></refnamediv><refsect1 role="properties"><title id="settings-ovs-interface.properties">
             Properties
         </title><para><table><tgroup cols="4"><thead><row><entry>Key Name</entry><entry>Value Type</entry><entry>Default Value</entry><entry>Value Description</entry></row></thead><tbody>
     <row><entry><screen>name<indexterm zone="settings-ovs-interface"><primary sortas="name">name</primary></indexterm></screen></entry><entry><screen>string</screen></entry><entry><screen>ovs-interface</screen></entry><entry>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</entry></row>
@@ -317,7 +317,7 @@
             Properties
         </title><para><table><tgroup cols="4"><thead><row><entry>Key Name</entry><entry>Value Type</entry><entry>Default Value</entry><entry>Value Description</entry></row></thead><tbody>
     <row><entry><screen>name<indexterm zone="settings-ovs-patch"><primary sortas="name">name</primary></indexterm></screen></entry><entry><screen>string</screen></entry><entry><screen>ovs-patch</screen></entry><entry>The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example "ppp" or "wireless" or "wired".</entry></row>
-    <row><entry><screen>peer<indexterm zone="settings-ovs-patch"><primary sortas="peer">peer</primary></indexterm></screen></entry><entry><screen>string</screen></entry><entry><screen/></entry><entry>Specifies the unicast destination IP address of a remote OpenVSwitch bridge port to connect to.</entry></row>
+    <row><entry><screen>peer<indexterm zone="settings-ovs-patch"><primary sortas="peer">peer</primary></indexterm></screen></entry><entry><screen>string</screen></entry><entry><screen/></entry><entry>Specifies the unicast destination IP address of a remote Open vSwitch bridge port to connect to.</entry></row>
   </tbody></tgroup></table></para></refsect1></refentry>
   <refentry id="settings-ovs-port"><refnamediv><refname>ovs-port</refname><refpurpose>OvsPort Link Settings</refpurpose></refnamediv><refsect1 role="properties"><title id="settings-ovs-port.properties">
             Properties

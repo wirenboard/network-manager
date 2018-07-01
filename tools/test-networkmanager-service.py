@@ -50,6 +50,11 @@ class Util:
     PY3 = (sys.version_info[0] == 3)
 
     @staticmethod
+    def g_source_remove(source_id):
+        if source_id is not None:
+            GLib.source_remove(source_id)
+
+    @staticmethod
     def addr_family_check(family, allow_af_unspec = False):
         if family == socket.AF_INET:
             return
@@ -840,6 +845,7 @@ PRP_WIFI_AP_HW_ADDRESS  = "HwAddress"
 PRP_WIFI_AP_MODE        = "Mode"
 PRP_WIFI_AP_MAX_BITRATE = "MaxBitrate"
 PRP_WIFI_AP_STRENGTH    = "Strength"
+PRP_WIFI_AP_LAST_SEEN   = "LastSeen"
 
 class WifiAp(ExportedObj):
 
@@ -864,8 +870,6 @@ class WifiAp(ExportedObj):
             strength = Util.random_int(self.path, 100)
 
         self.ssid = ssid
-        self.strength_counter = 0
-        self.strength_id = GLib.timeout_add_seconds(10, self.strength_cb, None)
 
         props = {
             PRP_WIFI_AP_FLAGS:       dbus.UInt32(flags),
@@ -877,20 +881,10 @@ class WifiAp(ExportedObj):
             PRP_WIFI_AP_MODE:        dbus.UInt32(getattr(NM,'80211Mode').INFRA),
             PRP_WIFI_AP_MAX_BITRATE: dbus.UInt32(54000),
             PRP_WIFI_AP_STRENGTH:    dbus.Byte(strength),
+            PRP_WIFI_AP_LAST_SEEN:   dbus.Int32(NM.utils_get_timestamp_msec() / 1000),
         }
 
         self.dbus_interface_add(IFACE_WIFI_AP, props, WifiAp.PropertiesChanged)
-
-    def __del__(self):
-        if self.strength_id > 0:
-            GLib.source_remove(self.strength_id)
-        self.strength_id = 0
-
-    def strength_cb(self, ignored):
-        self.strength_counter += 1
-        strength = Util.random_int(self.path + str(self.strength_counter), 100)
-        self._dbus_property_set(IFACE_WIFI_AP, PRP_WIFI_AP_STRENGTH, strength)
-        return True
 
     @dbus.service.signal(IFACE_WIFI_AP, signature='a{sv}')
     def PropertiesChanged(self, changed):
@@ -915,6 +909,18 @@ class WifiDevice(Device):
             mac = Util.random_mac(self.ident)
 
         self.aps = []
+        self.scan_cb_id = None
+
+        # Note: we would like to simulate how nmcli calls RequestScan() and we could
+        # do so by using an older timestamp. However, that makes the client tests
+        # racy, because if a bunch of nmcli instances run in parallel against this
+        # service, earlier instances will issue a RequestScan(), while later instances
+        # won't do that (because the LastScan timestamp is already updated). That means,
+        # the later instances will print the scan result immediately, and in another sort
+        # order. That should be fixed, by nmcli not starting to print anything, before
+        # all RequestScan() requests complete, and thus, always print a consistent list
+        # of results.
+        ts = NM.utils_get_timestamp_msec()
 
         props = {
             PRP_WIFI_HW_ADDRESS:            mac,
@@ -924,7 +930,7 @@ class WifiDevice(Device):
             PRP_WIFI_WIRELESS_CAPABILITIES: dbus.UInt32(0xFF),
             PRP_WIFI_ACCESS_POINTS:         ExportedObj.to_path_array(self.aps),
             PRP_WIFI_ACTIVE_ACCESS_POINT:   ExportedObj.to_path(None),
-            PRP_WIFI_LAST_SCAN:             NM.utils_get_timestamp_msec(),
+            PRP_WIFI_LAST_SCAN:             dbus.Int64(ts),
         }
 
         self.dbus_interface_add(IFACE_WIFI, props, WifiDevice.PropertiesChanged)
@@ -941,6 +947,15 @@ class WifiDevice(Device):
 
     @dbus.service.method(dbus_interface=IFACE_WIFI, in_signature='a{sv}', out_signature='')
     def RequestScan(self, props):
+        self.scan_cb_id = Util.g_source_remove(self.scan_cb_id)
+        def cb():
+            ts = NM.utils_get_timestamp_msec()
+            for ap in self.aps:
+                ap._dbus_property_set(IFACE_WIFI_AP, PRP_WIFI_AP_LAST_SEEN, dbus.Int32(ts / 1000))
+            self._dbus_property_set(IFACE_WIFI, PRP_WIFI_LAST_SCAN, dbus.Int64(ts))
+            self.scan_cb_id = None
+            return False
+        self.scan_cb_id = GLib.idle_add(cb)
         pass
 
     @dbus.service.signal(IFACE_WIFI, signature='o')
@@ -959,6 +974,10 @@ class WifiDevice(Device):
         self._dbus_property_set(IFACE_WIFI, PRP_WIFI_ACCESS_POINTS, ExportedObj.to_path_array(self.aps))
         self.AccessPointRemoved(ExportedObj.to_path(ap))
         ap.unexport()
+
+    def stop(self):
+        self.scan_cb_id = Util.g_source_remove(self.scan_cb_id)
+        super(WifiDevice, self).stop()
 
     @dbus.service.signal(IFACE_WIFI, signature='o')
     def AccessPointRemoved(self, ap_path):
@@ -991,24 +1010,15 @@ class WimaxNsp(ExportedObj):
 
         ExportedObj.__init__(self, ExportedObj.create_path(WimaxNsp))
 
-        self.strength_id = GLib.timeout_add_seconds(10, self.strength_cb, None)
+        strength = Util.random_int(self.path, 100)
 
         props = {
             PRP_WIMAX_NSP_NAME:           name,
-            PRP_WIMAX_NSP_SIGNAL_QUALITY: dbus.UInt32(random.randint(0, 100)),
+            PRP_WIMAX_NSP_SIGNAL_QUALITY: dbus.UInt32(strength),
             PRP_WIMAX_NSP_NETWORK_TYPE:   dbus.UInt32(NM.WimaxNspNetworkType.HOME),
         }
 
         self.dbus_interface_add(IFACE_WIMAX_NSP, props, WimaxNsp.PropertiesChanged)
-
-    def __del__(self):
-        if self.strength_id > 0:
-            GLib.source_remove(self.strength_id)
-        self.strength_id = 0
-
-    def strength_cb(self, ignored):
-        self._dbus_property_set(IFACE_WIMAX_NSP, PRP_WIMAX_NSP_SIGNAL_QUALITY, dbus.UInt32(random.randint(0, 100)))
-        return True
 
     @dbus.service.signal(IFACE_WIMAX_NSP, signature='a{sv}')
     def PropertiesChanged(self, changed):
@@ -1160,11 +1170,7 @@ class ActiveConnection(ExportedObj):
         self.StateChanged(state, dbus.UInt32(reason))
 
     def activation_cancel(self):
-        if self._activation_id is None:
-            return False
-        GLib.source_remove(self._activation_id)
-        self._activation_id = None
-        return True
+        self._activation_id = Util.g_source_remove(self._activation_id)
 
     def _activation_step2(self):
         assert self._activation_id is not None
@@ -2246,14 +2252,9 @@ def main():
     id1 = GLib.IOChannel(0).add_watch(GLib.IOCondition.HUP,
                                       lambda io, condition: gl.mainloop.quit() or True)
 
-    # also quit after inactivity to ensure we don't stick around if the above fails somehow
-    id2 = GLib.timeout_add_seconds(20,
-                                   lambda: gl.mainloop.quit() or True)
-
     gl.mainloop.run()
 
     GLib.source_remove(id1)
-    GLib.source_remove(id2)
 
     gl.agent_manager.remove_from_connection()
     gl.dns_manager.unexport()
