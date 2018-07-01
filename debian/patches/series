@@ -2,6 +2,3 @@ Force-online-state-with-unmanaged-devices.patch
 Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Fix-iscsiadm-path.patch
-tests-fix-race-in-setting-signal-strength-for-Wi-Fi-AP-in.patch
-tests-improve-NetworkManager-stub-service-for-Wi-Fi-scann.patch
-tests-don-t-exit-test-networkmanager-service.py-after-20-.patch
