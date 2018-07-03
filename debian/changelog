@@ -1,3 +1,54 @@
+network-manager (1.12.0-1) experimental; urgency=medium
+
+  * New upstream version 1.12.0
+  * Rebase patches
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 01 Jul 2018 21:14:07 +0200
+
+network-manager (1.11.90-2) experimental; urgency=medium
+
+  * Drop libnl3 build dependency.
+    Upstream has copied the code directly from libnl3 for the few functions it
+    needs with a few small modifications.
+  * Drop libiw build dependency.
+    Hasn't been needed for a long time and was simply a left over from older
+    releases.
+  * Cherry-pick upstream fixes to make test suite pass on slower buildds
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 18 Jun 2018 14:15:40 +0200
+
+network-manager (1.11.90-1) experimental; urgency=medium
+
+  * New upstream version 1.11.90 (1.12 rc1)
+  * Rebase patches
+  * Update symbols file for libnm0
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 17 Jun 2018 15:43:10 +0200
+
+network-manager (1.11.4-1) experimental; urgency=medium
+
+  * New upstream version 1.11.4
+  * Update install path for plugins, it now includes a version number
+  * Update symbols file for libnm0
+  * Make sure the example server.conf is actually installed
+  * Rebase patches
+  * Drop dh_strip override, the dbgsym migration is done
+  * Enable iwd support
+  * Drop version requirements when oldstable ships a newer version
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 11 Jun 2018 13:28:39 +0200
+
+network-manager (1.11.3-1) experimental; urgency=medium
+
+  * New upstream version 1.11.3
+  * Rebase patches
+  * Update symbols file for libnm0
+  * Drop inetutils-arputils Suggests.
+    The ACD functionality of NetworkManager is no longer using arping, so
+    the Suggests is no longer useful.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 23 Apr 2018 23:35:35 +0200
+
 network-manager (1.10.8-1) unstable; urgency=medium
 
   * New upstream version 1.10.8
