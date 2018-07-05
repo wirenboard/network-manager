@@ -1,3 +1,15 @@
+network-manager (1.12.0-4) unstable; urgency=medium
+
+  * Add Conflicts to network-manager-dev against deprecated libraries.
+    The deprecated libnm-glib-dev, libnm-glib-vpn-dev and libnm-util-dev
+    require header files from network-manager-dev which are no longer
+    provided in newer versions. Add Conflicts to network-manager-dev to
+    ensure that we don't get a broken combination of installed packages.
+    (Closes: #903029)
+  * Update description of network-manager-dev
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 05 Jul 2018 13:48:51 +0200
+
 network-manager (1.12.0-3) unstable; urgency=medium
 
   * Increase timeout in test-nm-client to 30s.
