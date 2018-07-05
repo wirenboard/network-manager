@@ -1,3 +1,11 @@
+network-manager (1.12.0-3) unstable; urgency=medium
+
+  * Increase timeout in test-nm-client to 30s.
+    On slow architectures it can take longer then 3s for the test service to
+    start up.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 05 Jul 2018 03:58:53 +0200
+
 network-manager (1.12.0-2) unstable; urgency=medium
 
   * Upload to unstable
