@@ -90,6 +90,9 @@ Section: devel
 Architecture: linux-any
 Multi-Arch: same
 Depends: ${misc:Depends}
+Conflicts: libnm-glib-dev,
+           libnm-glib-vpn-dev,
+           libnm-util-dev,
 Description: network management framework (development files)
  This package provides general header and development files and documentation
  of configuration formats, command line utilities and the D-Bus API.
