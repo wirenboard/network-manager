@@ -1,0 +1,23 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Thu, 5 Jul 2018 03:53:35 +0200
+Subject: Increase timeout in test-nm-client to 30s
+
+On slow architectures it can take longer then 3s for the test service to
+start up.
+---
+ shared/nm-test-utils-impl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/shared/nm-test-utils-impl.c b/shared/nm-test-utils-impl.c
+index 3add88c..9e7312c 100644
+--- a/shared/nm-test-utils-impl.c
++++ b/shared/nm-test-utils-impl.c
+@@ -164,7 +164,7 @@ nmtstc_service_init (void)
+ 		g_source_set_callback (child_source, (GSourceFunc)(void (*) (void)) _service_init_wait_child_wait, &data, NULL);
+ 		g_source_attach (child_source, context);
+ 
+-		had_timeout = !nmtst_main_loop_run (data.mainloop, 3000);
++		had_timeout = !nmtst_main_loop_run (data.mainloop, 30000);
+ 
+ 		g_source_destroy (timeout_source);
+ 		g_source_destroy (child_source);

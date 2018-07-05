@@ -2,3 +2,4 @@ Force-online-state-with-unmanaged-devices.patch
 Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Fix-iscsiadm-path.patch
+Increase-timeout-in-test-nm-client-to-30s.patch
