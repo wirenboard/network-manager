@@ -5,6 +5,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_10_0@libnm_1_10_0 1.9.90
  libnm_1_10_2@libnm_1_10_2 1.10.2
  libnm_1_12_0@libnm_1_12_0 1.11.3
+ libnm_1_12_2@libnm_1_12_2 1.12.2
  libnm_1_2_0@libnm_1_2_0 1.1.90
  libnm_1_2_4@libnm_1_2_4 1.2.4
  libnm_1_4_0@libnm_1_4_0 1.4.0
@@ -166,6 +167,10 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_setting_macsec@libnm_1_6_0 1.5.90
  nm_connection_get_setting_macvlan@libnm_1_2_0 1.1.90
  nm_connection_get_setting_olpc_mesh@libnm_1_0_0 1.0.0
+ nm_connection_get_setting_ovs_bridge@libnm_1_12_2 1.12.2
+ nm_connection_get_setting_ovs_interface@libnm_1_12_2 1.12.2
+ nm_connection_get_setting_ovs_patch@libnm_1_12_2 1.12.2
+ nm_connection_get_setting_ovs_port@libnm_1_12_2 1.12.2
  nm_connection_get_setting_ppp@libnm_1_0_0 1.0.0
  nm_connection_get_setting_pppoe@libnm_1_0_0 1.0.0
  nm_connection_get_setting_proxy@libnm_1_6_0 1.5.90
@@ -173,6 +178,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_setting_tc_config@libnm_1_12_0 1.11.4
  nm_connection_get_setting_team@libnm_1_0_0 1.0.0
  nm_connection_get_setting_team_port@libnm_1_0_0 1.0.0
+ nm_connection_get_setting_tun@libnm_1_12_2 1.12.2
  nm_connection_get_setting_vlan@libnm_1_0_0 1.0.0
  nm_connection_get_setting_vpn@libnm_1_0_0 1.0.0
  nm_connection_get_setting_vxlan@libnm_1_2_0 1.1.90
@@ -318,8 +324,10 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_olpc_mesh_get_companion@libnm_1_0_0 1.0.0
  nm_device_olpc_mesh_get_hw_address@libnm_1_0_0 1.0.0
  nm_device_olpc_mesh_get_type@libnm_1_0_0 1.0.0
+ nm_device_ovs_bridge_get_slaves@libnm_1_12_2 1.12.2
  nm_device_ovs_bridge_get_type@libnm_1_10_0 1.9.90
  nm_device_ovs_interface_get_type@libnm_1_10_0 1.9.90
+ nm_device_ovs_port_get_slaves@libnm_1_12_2 1.12.2
  nm_device_ovs_port_get_type@libnm_1_10_0 1.9.90
  nm_device_ppp_get_type@libnm_1_10_0 1.9.90
  nm_device_reapply@libnm_1_2_0 1.1.90
