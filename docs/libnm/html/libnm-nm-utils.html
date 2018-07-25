@@ -561,7 +561,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><span class="returnvalue">NMTCQdisc</span></a> *
+<a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><span class="returnvalue">NMTCQdisc</span></a> *
 </td>
 <td class="function_name">
 <a class="link" href="libnm-nm-utils.html#nm-utils-tc-qdisc-from-str" title="nm_utils_tc_qdisc_from_str ()">nm_utils_tc_qdisc_from_str</a> <span class="c_punctuation">()</span>
@@ -577,7 +577,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><span class="returnvalue">NMTCAction</span></a> *
+<a class="link" href="NMSettingTCConfig.html#NMTCAction"><span class="returnvalue">NMTCAction</span></a> *
 </td>
 <td class="function_name">
 <a class="link" href="libnm-nm-utils.html#nm-utils-tc-action-from-str" title="nm_utils_tc_action_from_str ()">nm_utils_tc_action_from_str</a> <span class="c_punctuation">()</span>
@@ -593,7 +593,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><span class="returnvalue">NMTCTfilter</span></a> *
+<a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><span class="returnvalue">NMTCTfilter</span></a> *
 </td>
 <td class="function_name">
 <a class="link" href="libnm-nm-utils.html#nm-utils-tc-tfilter-from-str" title="nm_utils_tc_tfilter_from_str ()">nm_utils_tc_tfilter_from_str</a> <span class="c_punctuation">()</span>
@@ -3042,11 +3042,11 @@ nm_utils_format_variant_attributes (<em class="parameter"><code><a href="https:/
 <hr>
 <div class="refsect2">
 <a name="nm-utils-tc-qdisc-from-str"></a><h3>nm_utils_tc_qdisc_from_str ()</h3>
-<pre class="programlisting"><a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><span class="returnvalue">NMTCQdisc</span></a> *
+<pre class="programlisting"><a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><span class="returnvalue">NMTCQdisc</span></a> *
 nm_utils_tc_qdisc_from_str (<em class="parameter"><code>const <span class="type">char</span> *str</code></em>,
                             <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
 <p>Parces the tc style string qdisc representation of the queueing
-discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a> instance. Supports a subset of the tc language.</p>
+discipline to a <a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a> instance. Supports a subset of the tc language.</p>
 <div class="refsect3">
 <a name="nm-utils-tc-qdisc-from-str.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -3071,7 +3071,7 @@ discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"
 </div>
 <div class="refsect3">
 <a name="nm-utils-tc-qdisc-from-str.returns"></a><h4>Returns</h4>
-<p> the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
+<p> the <a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
 <p class="since">Since: 1.12</p>
 </div>
@@ -3079,9 +3079,9 @@ discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"
 <div class="refsect2">
 <a name="nm-utils-tc-qdisc-to-str"></a><h3>nm_utils_tc_qdisc_to_str ()</h3>
 <pre class="programlisting"><span class="returnvalue">char</span> *
-nm_utils_tc_qdisc_to_str (<em class="parameter"><code><a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><span class="type">NMTCQdisc</span></a> *qdisc</code></em>,
+nm_utils_tc_qdisc_to_str (<em class="parameter"><code><a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><span class="type">NMTCQdisc</span></a> *qdisc</code></em>,
                           <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>Turns the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a> into a tc style string representation of the queueing
+<p>Turns the <a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a> into a tc style string representation of the queueing
 discipline.</p>
 <div class="refsect3">
 <a name="nm-utils-tc-qdisc-to-str.parameters"></a><h4>Parameters</h4>
@@ -3094,7 +3094,7 @@ discipline.</p>
 <tbody>
 <tr>
 <td class="parameter_name"><p>qdisc</p></td>
-<td class="parameter_description"><p>the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a></p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingTCConfig.html#NMTCQdisc"><code class="literal">NMTCQdisc</code></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -3114,11 +3114,11 @@ discipline.</p>
 <hr>
 <div class="refsect2">
 <a name="nm-utils-tc-action-from-str"></a><h3>nm_utils_tc_action_from_str ()</h3>
-<pre class="programlisting"><a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><span class="returnvalue">NMTCAction</span></a> *
+<pre class="programlisting"><a class="link" href="NMSettingTCConfig.html#NMTCAction"><span class="returnvalue">NMTCAction</span></a> *
 nm_utils_tc_action_from_str (<em class="parameter"><code>const <span class="type">char</span> *str</code></em>,
                              <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
 <p>Parces the tc style string action representation of the queueing
-discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><code class="literal">NMTCAction</code></a> instance. Supports a subset of the tc language.</p>
+discipline to a <a class="link" href="NMSettingTCConfig.html#NMTCAction"><code class="literal">NMTCAction</code></a> instance. Supports a subset of the tc language.</p>
 <div class="refsect3">
 <a name="nm-utils-tc-action-from-str.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -3143,7 +3143,7 @@ discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction
 </div>
 <div class="refsect3">
 <a name="nm-utils-tc-action-from-str.returns"></a><h4>Returns</h4>
-<p> the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><code class="literal">NMTCAction</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
+<p> the <a class="link" href="NMSettingTCConfig.html#NMTCAction"><code class="literal">NMTCAction</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
 <p class="since">Since: 1.12</p>
 </div>
@@ -3151,9 +3151,9 @@ discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction
 <div class="refsect2">
 <a name="nm-utils-tc-action-to-str"></a><h3>nm_utils_tc_action_to_str ()</h3>
 <pre class="programlisting"><span class="returnvalue">char</span> *
-nm_utils_tc_action_to_str (<em class="parameter"><code><a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><span class="type">NMTCAction</span></a> *action</code></em>,
+nm_utils_tc_action_to_str (<em class="parameter"><code><a class="link" href="NMSettingTCConfig.html#NMTCAction"><span class="type">NMTCAction</span></a> *action</code></em>,
                            <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>Turns the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><code class="literal">NMTCAction</code></a> into a tc style string representation of the queueing
+<p>Turns the <a class="link" href="NMSettingTCConfig.html#NMTCAction"><code class="literal">NMTCAction</code></a> into a tc style string representation of the queueing
 discipline.</p>
 <div class="refsect3">
 <a name="nm-utils-tc-action-to-str.parameters"></a><h4>Parameters</h4>
@@ -3166,7 +3166,7 @@ discipline.</p>
 <tbody>
 <tr>
 <td class="parameter_name"><p>action</p></td>
-<td class="parameter_description"><p>the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCAction"><code class="literal">NMTCAction</code></a></p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingTCConfig.html#NMTCAction"><code class="literal">NMTCAction</code></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -3186,11 +3186,11 @@ discipline.</p>
 <hr>
 <div class="refsect2">
 <a name="nm-utils-tc-tfilter-from-str"></a><h3>nm_utils_tc_tfilter_from_str ()</h3>
-<pre class="programlisting"><a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><span class="returnvalue">NMTCTfilter</span></a> *
+<pre class="programlisting"><a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><span class="returnvalue">NMTCTfilter</span></a> *
 nm_utils_tc_tfilter_from_str (<em class="parameter"><code>const <span class="type">char</span> *str</code></em>,
                               <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
 <p>Parces the tc style string tfilter representation of the queueing
-discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a> instance. Supports a subset of the tc language.</p>
+discipline to a <a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a> instance. Supports a subset of the tc language.</p>
 <div class="refsect3">
 <a name="nm-utils-tc-tfilter-from-str.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -3215,7 +3215,7 @@ discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilte
 </div>
 <div class="refsect3">
 <a name="nm-utils-tc-tfilter-from-str.returns"></a><h4>Returns</h4>
-<p> the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
+<p> the <a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a></p>
 </div>
 <p class="since">Since: 1.12</p>
 </div>
@@ -3223,9 +3223,9 @@ discipline to a <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilte
 <div class="refsect2">
 <a name="nm-utils-tc-tfilter-to-str"></a><h3>nm_utils_tc_tfilter_to_str ()</h3>
 <pre class="programlisting"><span class="returnvalue">char</span> *
-nm_utils_tc_tfilter_to_str (<em class="parameter"><code><a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><span class="type">NMTCTfilter</span></a> *tfilter</code></em>,
+nm_utils_tc_tfilter_to_str (<em class="parameter"><code><a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><span class="type">NMTCTfilter</span></a> *tfilter</code></em>,
                             <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>Turns the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a> into a tc style string representation of the queueing
+<p>Turns the <a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a> into a tc style string representation of the queueing
 discipline.</p>
 <div class="refsect3">
 <a name="nm-utils-tc-tfilter-to-str.parameters"></a><h4>Parameters</h4>
@@ -3238,7 +3238,7 @@ discipline.</p>
 <tbody>
 <tr>
 <td class="parameter_name"><p>tfilter</p></td>
-<td class="parameter_description"><p>the <a class="link" href="libnm-nm-setting-tc-config.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a></p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingTCConfig.html#NMTCTfilter"><code class="literal">NMTCTfilter</code></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>

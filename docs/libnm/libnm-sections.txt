@@ -94,6 +94,7 @@ nm_active_connection_get_type
 
 <SECTION>
 <FILE>nm-checkpoint</FILE>
+<TITLE>NMCheckpoint</TITLE>
 NM_CHECKPOINT_DEVICES
 NM_CHECKPOINT_CREATED
 NM_CHECKPOINT_ROLLBACK_TIMEOUT
@@ -466,6 +467,7 @@ nm_wimax_nsp_network_type_get_type
 
 <SECTION>
 <FILE>nm-core-types</FILE>
+<TITLE>NMSettingOvs</TITLE>
 NMConnection
 NMSetting
 NMSetting8021x
@@ -1005,6 +1007,9 @@ nm_device_olpc_mesh_get_type
 
 <SECTION>
 <FILE>nm-device-ovs-bridge</FILE>
+<TITLE>NMDeviceOvsBridge</TITLE>
+NM_DEVICE_OVS_BRIDGE_SLAVES
+nm_device_ovs_bridge_get_slaves
 <SUBSECTION Standard>
 NMDeviceOvsBridgeClass
 NM_DEVICE_OVS_BRIDGE
@@ -1017,6 +1022,7 @@ nm_device_ovs_bridge_get_type
 
 <SECTION>
 <FILE>nm-device-ovs-interface</FILE>
+<TITLE>NMDeviceOvsInterface</TITLE>
 <SUBSECTION Standard>
 NMDeviceOvsInterfaceClass
 NM_DEVICE_OVS_INTERFACE
@@ -1029,6 +1035,9 @@ nm_device_ovs_interface_get_type
 
 <SECTION>
 <FILE>nm-device-ovs-port</FILE>
+<TITLE>NMDeviceOvsPort</TITLE>
+NM_DEVICE_OVS_PORT_SLAVES
+nm_device_ovs_port_get_slaves
 <SUBSECTION Standard>
 NMDeviceOvsPortClass
 NM_DEVICE_OVS_PORT
@@ -1041,6 +1050,7 @@ nm_device_ovs_port_get_type
 
 <SECTION>
 <FILE>nm-device-ppp</FILE>
+<TITLE>NMDevicePpp</TITLE>
 <SUBSECTION Standard>
 NMDevicePppClass
 NM_DEVICE_PPP
@@ -2398,6 +2408,7 @@ nm_setting_olpc_mesh_get_type
 
 <SECTION>
 <FILE>nm-setting-ovs-bridge</FILE>
+<TITLE>NMSettingOvsBridge</TITLE>
 NM_SETTING_OVS_BRIDGE_SETTING_NAME
 NM_SETTING_OVS_BRIDGE_FAIL_MODE
 NM_SETTING_OVS_BRIDGE_MCAST_SNOOPING_ENABLE
@@ -2420,6 +2431,7 @@ nm_setting_ovs_bridge_get_type
 
 <SECTION>
 <FILE>nm-setting-ovs-interface</FILE>
+<TITLE>NMSettingOvsInterface</TITLE>
 NM_SETTING_OVS_INTERFACE_SETTING_NAME
 NM_SETTING_OVS_INTERFACE_TYPE
 nm_setting_ovs_interface_new
@@ -2436,6 +2448,7 @@ nm_setting_ovs_interface_get_type
 
 <SECTION>
 <FILE>nm-setting-ovs-patch</FILE>
+<TITLE>NMSettingOvsPatch</TITLE>
 NM_SETTING_OVS_PATCH_SETTING_NAME
 NM_SETTING_OVS_PATCH_PEER
 nm_setting_ovs_patch_new
@@ -2452,6 +2465,7 @@ nm_setting_ovs_patch_get_type
 
 <SECTION>
 <FILE>nm-setting-ovs-port</FILE>
+<TITLE>NMSettingOvsPort</TITLE>
 NM_SETTING_OVS_PORT_SETTING_NAME
 NM_SETTING_OVS_PORT_VLAN_MODE
 NM_SETTING_OVS_PORT_TAG
@@ -2608,6 +2622,7 @@ nm_setting_serial_get_type
 
 <SECTION>
 <FILE>nm-setting-tc-config</FILE>
+<TITLE>NMSettingTCConfig</TITLE>
 nm_tc_qdisc_new
 nm_tc_qdisc_ref
 nm_tc_qdisc_unref
@@ -2837,6 +2852,7 @@ nm_setting_tun_get_type
 
 <SECTION>
 <FILE>nm-setting-user</FILE>
+<TITLE>NMSettingUser</TITLE>
 NM_SETTING_USER_SETTING_NAME
 NM_SETTING_USER_DATA
 nm_setting_user_new
@@ -3209,6 +3225,7 @@ nm_simple_connection_get_type
 
 <SECTION>
 <FILE>nm-types</FILE>
+<TITLE>NMDeviceOvs</TITLE>
 NMAccessPoint
 NMActiveConnection
 NMCheckpoint
@@ -3355,6 +3372,7 @@ NM_AVAILABLE_IN_1_10
 NM_DEPRECATED_IN_1_12
 NM_DEPRECATED_IN_1_12_FOR
 NM_AVAILABLE_IN_1_12
+NM_AVAILABLE_IN_1_12_2
 </SECTION>
 
 <SECTION>

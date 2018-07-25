@@ -1,4 +1,16 @@
 =============================================
+NetworkManager-1.12.2
+Overview of changes since NetworkManager-1.12
+=============================================
+
+This is a new stable release of NetworkManager.  Notable changes include:
+
+* Fix missing symbols in libnm ABI for settings.
+* Fix a regression that disallowed activations of VPN connections with a
+  device specified.
+* Robustness fixes to connectivity checking.
+
+=============================================
 NetworkManager-1.12
 Overview of changes since NetworkManager-1.10
 =============================================

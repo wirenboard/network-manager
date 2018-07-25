@@ -585,7 +585,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<span class="returnvalue">NMCheckpoint</span> *
+<a class="link" href="NMCheckpoint.html" title="NMCheckpoint"><span class="returnvalue">NMCheckpoint</span></a> *
 </td>
 <td class="function_name">
 <a class="link" href="NMClient.html#nm-client-checkpoint-create-finish" title="nm_client_checkpoint_create_finish ()">nm_client_checkpoint_create_finish</a> <span class="c_punctuation">()</span>
@@ -3571,7 +3571,7 @@ nm_client_get_checkpoints (<em class="parameter"><code><a class="link" href="NMC
 <div class="refsect3">
 <a name="nm-client-get-checkpoints.returns"></a><h4>Returns</h4>
 <p>a <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a>
-containing all the <span class="type">NMCheckpoint</span>.  The returned array is owned by the
+containing all the <a class="link" href="NMCheckpoint.html" title="NMCheckpoint"><span class="type">NMCheckpoint</span></a>.  The returned array is owned by the
 <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> object and should not be modified. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMCheckpoint]</span></p>
 </div>
@@ -3648,7 +3648,7 @@ checkpoint should be created. </p></td>
 <hr>
 <div class="refsect2">
 <a name="nm-client-checkpoint-create-finish"></a><h3>nm_client_checkpoint_create_finish ()</h3>
-<pre class="programlisting"><span class="returnvalue">NMCheckpoint</span> *
+<pre class="programlisting"><a class="link" href="NMCheckpoint.html" title="NMCheckpoint"><span class="returnvalue">NMCheckpoint</span></a> *
 nm_client_checkpoint_create_finish (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
                                     <em class="parameter"><code><a href="https://developer.gnome.org/gio/unstable/GAsyncResult.html#GAsyncResult-struct"><span class="type">GAsyncResult</span></a> *result</code></em>,
                                     <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
@@ -3682,7 +3682,7 @@ nm_client_checkpoint_create_finish (<em class="parameter"><code><a class="link" 
 </div>
 <div class="refsect3">
 <a name="nm-client-checkpoint-create-finish.returns"></a><h4>Returns</h4>
-<p>the new <span class="type">NMCheckpoint</span> on success, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on
+<p>the new <a class="link" href="NMCheckpoint.html" title="NMCheckpoint"><span class="type">NMCheckpoint</span></a> on success, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on
 failure, in which case <em class="parameter"><code>error</code></em>
 will be set. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>

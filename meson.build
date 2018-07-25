@@ -4,7 +4,7 @@ project(
 #  - add corresponding NM_VERSION_x_y_z macros in
 #    "shared/nm-version-macros.h.in"
 #  - update number in configure.ac
-  version: '1.12.0',
+  version: '1.12.2',
   license: 'GPL2+',
   default_options: [
     'buildtype=debugoptimized',
@@ -500,6 +500,8 @@ if enable_ppp
   locations = get_option('pppd')
   pppd = find_program(locations, required: false)
   assert(pppd.found(), 'pppd required but not found, please provide a valid pppd path or use -Dppp=false to disable it')
+
+  config_h.set_quoted('PPPD_PATH', pppd.path())
 
   pppd_plugin_dir = get_option('pppd_plugin_dir')
   if pppd_plugin_dir == ''
