@@ -326,8 +326,10 @@
     <keyword type="property" name="The &quot;Companion&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.OlpcMesh.html#gdbus-property-org-freedesktop-NetworkManager-Device-OlpcMesh.Companion"/>
     <keyword type="property" name="The &quot;ActiveChannel&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.OlpcMesh.html#gdbus-property-org-freedesktop-NetworkManager-Device-OlpcMesh.ActiveChannel"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.OvsBridge.html#gdbus-signal-org-freedesktop-NetworkManager-Device-OvsBridge.PropertiesChanged"/>
+    <keyword type="property" name="The &quot;Slaves&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.OvsBridge.html#gdbus-property-org-freedesktop-NetworkManager-Device-OvsBridge.Slaves"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.OvsInterface.html#gdbus-signal-org-freedesktop-NetworkManager-Device-OvsInterface.PropertiesChanged"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.OvsPort.html#gdbus-signal-org-freedesktop-NetworkManager-Device-OvsPort.PropertiesChanged"/>
+    <keyword type="property" name="The &quot;Slaves&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.OvsPort.html#gdbus-property-org-freedesktop-NetworkManager-Device-OvsPort.Slaves"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.Ppp.html#gdbus-signal-org-freedesktop-NetworkManager-Device-Ppp.PropertiesChanged"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-signal-org-freedesktop-NetworkManager-Device-Team.PropertiesChanged"/>
     <keyword type="property" name="The &quot;HwAddress&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.HwAddress"/>

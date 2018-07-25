@@ -37,19 +37,19 @@
       <sub name="NMSettingMacsec" link="NMSettingMacsec.html"/>
       <sub name="NMSettingMacvlan" link="NMSettingMacvlan.html"/>
       <sub name="NMSettingOlpcMesh" link="NMSettingOlpcMesh.html"/>
-      <sub name="nm-setting-ovs-bridge" link="libnm-nm-setting-ovs-bridge.html"/>
-      <sub name="nm-setting-ovs-interface" link="libnm-nm-setting-ovs-interface.html"/>
-      <sub name="nm-setting-ovs-patch" link="libnm-nm-setting-ovs-patch.html"/>
-      <sub name="nm-setting-ovs-port" link="libnm-nm-setting-ovs-port.html"/>
+      <sub name="NMSettingOvsBridge" link="NMSettingOvsBridge.html"/>
+      <sub name="NMSettingOvsInterface" link="NMSettingOvsInterface.html"/>
+      <sub name="NMSettingOvsPatch" link="NMSettingOvsPatch.html"/>
+      <sub name="NMSettingOvsPort" link="NMSettingOvsPort.html"/>
       <sub name="NMSettingPppoe" link="NMSettingPppoe.html"/>
       <sub name="NMSettingPpp" link="NMSettingPpp.html"/>
       <sub name="NMSettingProxy" link="NMSettingProxy.html"/>
       <sub name="NMSettingSerial" link="NMSettingSerial.html"/>
-      <sub name="nm-setting-tc-config" link="libnm-nm-setting-tc-config.html"/>
+      <sub name="NMSettingTCConfig" link="NMSettingTCConfig.html"/>
       <sub name="NMSettingTeamPort" link="NMSettingTeamPort.html"/>
       <sub name="NMSettingTeam" link="NMSettingTeam.html"/>
       <sub name="NMSettingTun" link="NMSettingTun.html"/>
-      <sub name="nm-setting-user" link="libnm-nm-setting-user.html"/>
+      <sub name="NMSettingUser" link="NMSettingUser.html"/>
       <sub name="NMSettingVlan" link="NMSettingVlan.html"/>
       <sub name="NMSettingVpn" link="NMSettingVpn.html"/>
       <sub name="NMSettingVxlan" link="NMSettingVxlan.html"/>
@@ -73,10 +73,10 @@
       <sub name="NMDeviceMacvlan" link="NMDeviceMacvlan.html"/>
       <sub name="NMDeviceModem" link="NMDeviceModem.html"/>
       <sub name="NMDeviceOlpcMesh" link="NMDeviceOlpcMesh.html"/>
-      <sub name="nm-device-ovs-bridge" link="libnm-nm-device-ovs-bridge.html"/>
-      <sub name="nm-device-ovs-interface" link="libnm-nm-device-ovs-interface.html"/>
-      <sub name="nm-device-ovs-port" link="libnm-nm-device-ovs-port.html"/>
-      <sub name="nm-device-ppp" link="libnm-nm-device-ppp.html"/>
+      <sub name="NMDeviceOvsBridge" link="NMDeviceOvsBridge.html"/>
+      <sub name="NMDeviceOvsInterface" link="NMDeviceOvsInterface.html"/>
+      <sub name="NMDeviceOvsPort" link="NMDeviceOvsPort.html"/>
+      <sub name="NMDevicePpp" link="NMDevicePpp.html"/>
       <sub name="NMDeviceTeam" link="NMDeviceTeam.html"/>
       <sub name="NMDeviceTun" link="NMDeviceTun.html"/>
       <sub name="NMDeviceVlan" link="NMDeviceVlan.html"/>
@@ -89,7 +89,7 @@
       <sub name="NMWimaxNsp" link="NMWimaxNsp.html"/>
       <sub name="NMIPConfig" link="NMIPConfig.html"/>
       <sub name="NMDhcpConfig" link="NMDhcpConfig.html"/>
-      <sub name="nm-checkpoint" link="libnm-nm-checkpoint.html"/>
+      <sub name="NMCheckpoint" link="NMCheckpoint.html"/>
     </sub>
     <sub name="Utility API Reference" link="ch05.html">
       <sub name="nm-utils" link="libnm-nm-utils.html"/>
@@ -1366,38 +1366,38 @@
     <keyword type="property" name="The “channel” property" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh--channel"/>
     <keyword type="property" name="The “dhcp-anycast-address” property" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh--dhcp-anycast-address"/>
     <keyword type="property" name="The “ssid” property" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh--ssid"/>
-    <keyword type="function" name="nm_setting_ovs_bridge_new ()" link="libnm-nm-setting-ovs-bridge.html#nm-setting-ovs-bridge-new" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_bridge_get_fail_mode ()" link="libnm-nm-setting-ovs-bridge.html#nm-setting-ovs-bridge-get-fail-mode" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_bridge_get_mcast_snooping_enable ()" link="libnm-nm-setting-ovs-bridge.html#nm-setting-ovs-bridge-get-mcast-snooping-enable" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_bridge_get_rstp_enable ()" link="libnm-nm-setting-ovs-bridge.html#nm-setting-ovs-bridge-get-rstp-enable" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_bridge_get_stp_enable ()" link="libnm-nm-setting-ovs-bridge.html#nm-setting-ovs-bridge-get-stp-enable" since="1.10"/>
-    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_SETTING_NAME" link="libnm-nm-setting-ovs-bridge.html#NM-SETTING-OVS-BRIDGE-SETTING-NAME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_FAIL_MODE" link="libnm-nm-setting-ovs-bridge.html#NM-SETTING-OVS-BRIDGE-FAIL-MODE:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_MCAST_SNOOPING_ENABLE" link="libnm-nm-setting-ovs-bridge.html#NM-SETTING-OVS-BRIDGE-MCAST-SNOOPING-ENABLE:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_RSTP_ENABLE" link="libnm-nm-setting-ovs-bridge.html#NM-SETTING-OVS-BRIDGE-RSTP-ENABLE:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_STP_ENABLE" link="libnm-nm-setting-ovs-bridge.html#NM-SETTING-OVS-BRIDGE-STP-ENABLE:CAPS"/>
-    <keyword type="function" name="nm_setting_ovs_interface_new ()" link="libnm-nm-setting-ovs-interface.html#nm-setting-ovs-interface-new" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_interface_get_interface_type ()" link="libnm-nm-setting-ovs-interface.html#nm-setting-ovs-interface-get-interface-type" since="1.10"/>
-    <keyword type="macro" name="NM_SETTING_OVS_INTERFACE_SETTING_NAME" link="libnm-nm-setting-ovs-interface.html#NM-SETTING-OVS-INTERFACE-SETTING-NAME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_INTERFACE_TYPE" link="libnm-nm-setting-ovs-interface.html#NM-SETTING-OVS-INTERFACE-TYPE:CAPS"/>
-    <keyword type="function" name="nm_setting_ovs_patch_new ()" link="libnm-nm-setting-ovs-patch.html#nm-setting-ovs-patch-new" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_patch_get_peer ()" link="libnm-nm-setting-ovs-patch.html#nm-setting-ovs-patch-get-peer" since="1.10"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PATCH_SETTING_NAME" link="libnm-nm-setting-ovs-patch.html#NM-SETTING-OVS-PATCH-SETTING-NAME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PATCH_PEER" link="libnm-nm-setting-ovs-patch.html#NM-SETTING-OVS-PATCH-PEER:CAPS"/>
-    <keyword type="function" name="nm_setting_ovs_port_new ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-new" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_port_get_vlan_mode ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-get-vlan-mode" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_port_get_tag ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-get-tag" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_port_get_lacp ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-get-lacp" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_port_get_bond_mode ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-get-bond-mode" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_port_get_bond_updelay ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-get-bond-updelay" since="1.10"/>
-    <keyword type="function" name="nm_setting_ovs_port_get_bond_downdelay ()" link="libnm-nm-setting-ovs-port.html#nm-setting-ovs-port-get-bond-downdelay" since="1.10"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_SETTING_NAME" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-SETTING-NAME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_VLAN_MODE" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-VLAN-MODE:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_TAG" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-TAG:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_LACP" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-LACP:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_BOND_MODE" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-BOND-MODE:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_BOND_UPDELAY" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-BOND-UPDELAY:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_OVS_PORT_BOND_DOWNDELAY" link="libnm-nm-setting-ovs-port.html#NM-SETTING-OVS-PORT-BOND-DOWNDELAY:CAPS"/>
+    <keyword type="function" name="nm_setting_ovs_bridge_new ()" link="NMSettingOvsBridge.html#nm-setting-ovs-bridge-new" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_bridge_get_fail_mode ()" link="NMSettingOvsBridge.html#nm-setting-ovs-bridge-get-fail-mode" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_bridge_get_mcast_snooping_enable ()" link="NMSettingOvsBridge.html#nm-setting-ovs-bridge-get-mcast-snooping-enable" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_bridge_get_rstp_enable ()" link="NMSettingOvsBridge.html#nm-setting-ovs-bridge-get-rstp-enable" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_bridge_get_stp_enable ()" link="NMSettingOvsBridge.html#nm-setting-ovs-bridge-get-stp-enable" since="1.10"/>
+    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_SETTING_NAME" link="NMSettingOvsBridge.html#NM-SETTING-OVS-BRIDGE-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_FAIL_MODE" link="NMSettingOvsBridge.html#NM-SETTING-OVS-BRIDGE-FAIL-MODE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_MCAST_SNOOPING_ENABLE" link="NMSettingOvsBridge.html#NM-SETTING-OVS-BRIDGE-MCAST-SNOOPING-ENABLE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_RSTP_ENABLE" link="NMSettingOvsBridge.html#NM-SETTING-OVS-BRIDGE-RSTP-ENABLE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_BRIDGE_STP_ENABLE" link="NMSettingOvsBridge.html#NM-SETTING-OVS-BRIDGE-STP-ENABLE:CAPS"/>
+    <keyword type="function" name="nm_setting_ovs_interface_new ()" link="NMSettingOvsInterface.html#nm-setting-ovs-interface-new" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_interface_get_interface_type ()" link="NMSettingOvsInterface.html#nm-setting-ovs-interface-get-interface-type" since="1.10"/>
+    <keyword type="macro" name="NM_SETTING_OVS_INTERFACE_SETTING_NAME" link="NMSettingOvsInterface.html#NM-SETTING-OVS-INTERFACE-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_INTERFACE_TYPE" link="NMSettingOvsInterface.html#NM-SETTING-OVS-INTERFACE-TYPE:CAPS"/>
+    <keyword type="function" name="nm_setting_ovs_patch_new ()" link="NMSettingOvsPatch.html#nm-setting-ovs-patch-new" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_patch_get_peer ()" link="NMSettingOvsPatch.html#nm-setting-ovs-patch-get-peer" since="1.10"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PATCH_SETTING_NAME" link="NMSettingOvsPatch.html#NM-SETTING-OVS-PATCH-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PATCH_PEER" link="NMSettingOvsPatch.html#NM-SETTING-OVS-PATCH-PEER:CAPS"/>
+    <keyword type="function" name="nm_setting_ovs_port_new ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-new" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_port_get_vlan_mode ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-get-vlan-mode" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_port_get_tag ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-get-tag" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_port_get_lacp ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-get-lacp" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_port_get_bond_mode ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-get-bond-mode" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_port_get_bond_updelay ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-get-bond-updelay" since="1.10"/>
+    <keyword type="function" name="nm_setting_ovs_port_get_bond_downdelay ()" link="NMSettingOvsPort.html#nm-setting-ovs-port-get-bond-downdelay" since="1.10"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_SETTING_NAME" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_VLAN_MODE" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-VLAN-MODE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_TAG" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-TAG:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_LACP" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-LACP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_BOND_MODE" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-BOND-MODE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_BOND_UPDELAY" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-BOND-UPDELAY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_OVS_PORT_BOND_DOWNDELAY" link="NMSettingOvsPort.html#NM-SETTING-OVS-PORT-BOND-DOWNDELAY:CAPS"/>
     <keyword type="function" name="nm_setting_pppoe_new ()" link="NMSettingPppoe.html#nm-setting-pppoe-new"/>
     <keyword type="function" name="nm_setting_pppoe_get_parent ()" link="NMSettingPppoe.html#nm-setting-pppoe-get-parent" since="1.10"/>
     <keyword type="function" name="nm_setting_pppoe_get_service ()" link="NMSettingPppoe.html#nm-setting-pppoe-get-service"/>
@@ -1508,51 +1508,51 @@
     <keyword type="property" name="The “parity” property" link="NMSettingSerial.html#NMSettingSerial--parity"/>
     <keyword type="property" name="The “send-delay” property" link="NMSettingSerial.html#NMSettingSerial--send-delay"/>
     <keyword type="property" name="The “stopbits” property" link="NMSettingSerial.html#NMSettingSerial--stopbits"/>
-    <keyword type="function" name="nm_tc_qdisc_new ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-new" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_ref ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-ref" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_unref ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-unref" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_equal ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-equal" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_dup ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-dup" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_get_kind ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-get-kind" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_get_handle ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-get-handle" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_set_handle ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-set-handle" since="1.12"/>
-    <keyword type="function" name="nm_tc_qdisc_get_parent ()" link="libnm-nm-setting-tc-config.html#nm-tc-qdisc-get-parent" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_new ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-new" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_ref ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-ref" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_unref ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-unref" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_equal ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-equal" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_dup ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-dup" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_get_kind ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-get-kind" since="1.12"/>
-    <keyword type="function" name="nm_tc_action_get_attribute_names ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-get-attribute-names"/>
-    <keyword type="function" name="nm_tc_action_get_attribute ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-get-attribute"/>
-    <keyword type="function" name="nm_tc_action_set_attribute ()" link="libnm-nm-setting-tc-config.html#nm-tc-action-set-attribute"/>
-    <keyword type="function" name="nm_tc_tfilter_new ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-new" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_ref ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-ref" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_unref ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-unref" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_equal ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-equal" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_dup ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-dup" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_get_kind ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-get-kind" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_get_handle ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-get-handle" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_set_handle ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-set-handle" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_get_parent ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-get-parent" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_get_action ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-get-action" since="1.12"/>
-    <keyword type="function" name="nm_tc_tfilter_set_action ()" link="libnm-nm-setting-tc-config.html#nm-tc-tfilter-set-action" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_new ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-new" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_get_num_qdiscs ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-get-num-qdiscs" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_get_qdisc ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-get-qdisc" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_add_qdisc ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-add-qdisc" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_remove_qdisc ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-remove-qdisc" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_remove_qdisc_by_value ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-remove-qdisc-by-value" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_clear_qdiscs ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-clear-qdiscs" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_get_num_tfilters ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-get-num-tfilters" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_get_tfilter ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-get-tfilter" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_add_tfilter ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-add-tfilter" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_remove_tfilter ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-remove-tfilter" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_remove_tfilter_by_value ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-remove-tfilter-by-value" since="1.12"/>
-    <keyword type="function" name="nm_setting_tc_config_clear_tfilters ()" link="libnm-nm-setting-tc-config.html#nm-setting-tc-config-clear-tfilters" since="1.12"/>
-    <keyword type="macro" name="NM_SETTING_TC_CONFIG_SETTING_NAME" link="libnm-nm-setting-tc-config.html#NM-SETTING-TC-CONFIG-SETTING-NAME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_TC_CONFIG_QDISCS" link="libnm-nm-setting-tc-config.html#NM-SETTING-TC-CONFIG-QDISCS:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_TC_CONFIG_TFILTERS" link="libnm-nm-setting-tc-config.html#NM-SETTING-TC-CONFIG-TFILTERS:CAPS"/>
+    <keyword type="function" name="nm_tc_qdisc_new ()" link="NMSettingTCConfig.html#nm-tc-qdisc-new" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_ref ()" link="NMSettingTCConfig.html#nm-tc-qdisc-ref" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_unref ()" link="NMSettingTCConfig.html#nm-tc-qdisc-unref" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_equal ()" link="NMSettingTCConfig.html#nm-tc-qdisc-equal" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_dup ()" link="NMSettingTCConfig.html#nm-tc-qdisc-dup" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_get_kind ()" link="NMSettingTCConfig.html#nm-tc-qdisc-get-kind" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_get_handle ()" link="NMSettingTCConfig.html#nm-tc-qdisc-get-handle" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_set_handle ()" link="NMSettingTCConfig.html#nm-tc-qdisc-set-handle" since="1.12"/>
+    <keyword type="function" name="nm_tc_qdisc_get_parent ()" link="NMSettingTCConfig.html#nm-tc-qdisc-get-parent" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_new ()" link="NMSettingTCConfig.html#nm-tc-action-new" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_ref ()" link="NMSettingTCConfig.html#nm-tc-action-ref" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_unref ()" link="NMSettingTCConfig.html#nm-tc-action-unref" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_equal ()" link="NMSettingTCConfig.html#nm-tc-action-equal" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_dup ()" link="NMSettingTCConfig.html#nm-tc-action-dup" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_get_kind ()" link="NMSettingTCConfig.html#nm-tc-action-get-kind" since="1.12"/>
+    <keyword type="function" name="nm_tc_action_get_attribute_names ()" link="NMSettingTCConfig.html#nm-tc-action-get-attribute-names"/>
+    <keyword type="function" name="nm_tc_action_get_attribute ()" link="NMSettingTCConfig.html#nm-tc-action-get-attribute"/>
+    <keyword type="function" name="nm_tc_action_set_attribute ()" link="NMSettingTCConfig.html#nm-tc-action-set-attribute"/>
+    <keyword type="function" name="nm_tc_tfilter_new ()" link="NMSettingTCConfig.html#nm-tc-tfilter-new" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_ref ()" link="NMSettingTCConfig.html#nm-tc-tfilter-ref" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_unref ()" link="NMSettingTCConfig.html#nm-tc-tfilter-unref" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_equal ()" link="NMSettingTCConfig.html#nm-tc-tfilter-equal" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_dup ()" link="NMSettingTCConfig.html#nm-tc-tfilter-dup" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_get_kind ()" link="NMSettingTCConfig.html#nm-tc-tfilter-get-kind" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_get_handle ()" link="NMSettingTCConfig.html#nm-tc-tfilter-get-handle" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_set_handle ()" link="NMSettingTCConfig.html#nm-tc-tfilter-set-handle" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_get_parent ()" link="NMSettingTCConfig.html#nm-tc-tfilter-get-parent" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_get_action ()" link="NMSettingTCConfig.html#nm-tc-tfilter-get-action" since="1.12"/>
+    <keyword type="function" name="nm_tc_tfilter_set_action ()" link="NMSettingTCConfig.html#nm-tc-tfilter-set-action" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_new ()" link="NMSettingTCConfig.html#nm-setting-tc-config-new" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_get_num_qdiscs ()" link="NMSettingTCConfig.html#nm-setting-tc-config-get-num-qdiscs" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_get_qdisc ()" link="NMSettingTCConfig.html#nm-setting-tc-config-get-qdisc" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_add_qdisc ()" link="NMSettingTCConfig.html#nm-setting-tc-config-add-qdisc" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_remove_qdisc ()" link="NMSettingTCConfig.html#nm-setting-tc-config-remove-qdisc" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_remove_qdisc_by_value ()" link="NMSettingTCConfig.html#nm-setting-tc-config-remove-qdisc-by-value" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_clear_qdiscs ()" link="NMSettingTCConfig.html#nm-setting-tc-config-clear-qdiscs" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_get_num_tfilters ()" link="NMSettingTCConfig.html#nm-setting-tc-config-get-num-tfilters" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_get_tfilter ()" link="NMSettingTCConfig.html#nm-setting-tc-config-get-tfilter" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_add_tfilter ()" link="NMSettingTCConfig.html#nm-setting-tc-config-add-tfilter" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_remove_tfilter ()" link="NMSettingTCConfig.html#nm-setting-tc-config-remove-tfilter" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_remove_tfilter_by_value ()" link="NMSettingTCConfig.html#nm-setting-tc-config-remove-tfilter-by-value" since="1.12"/>
+    <keyword type="function" name="nm_setting_tc_config_clear_tfilters ()" link="NMSettingTCConfig.html#nm-setting-tc-config-clear-tfilters" since="1.12"/>
+    <keyword type="macro" name="NM_SETTING_TC_CONFIG_SETTING_NAME" link="NMSettingTCConfig.html#NM-SETTING-TC-CONFIG-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TC_CONFIG_QDISCS" link="NMSettingTCConfig.html#NM-SETTING-TC-CONFIG-QDISCS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_TC_CONFIG_TFILTERS" link="NMSettingTCConfig.html#NM-SETTING-TC-CONFIG-TFILTERS:CAPS"/>
     <keyword type="function" name="nm_setting_team_port_new ()" link="NMSettingTeamPort.html#nm-setting-team-port-new"/>
     <keyword type="function" name="nm_setting_team_port_get_config ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-config"/>
     <keyword type="function" name="nm_setting_team_port_get_queue_id ()" link="NMSettingTeamPort.html#nm-setting-team-port-get-queue-id" since="1.12"/>
@@ -1707,14 +1707,14 @@
     <keyword type="property" name="The “owner” property" link="NMSettingTun.html#NMSettingTun--owner"/>
     <keyword type="property" name="The “pi” property" link="NMSettingTun.html#NMSettingTun--pi"/>
     <keyword type="property" name="The “vnet-hdr” property" link="NMSettingTun.html#NMSettingTun--vnet-hdr"/>
-    <keyword type="function" name="nm_setting_user_new ()" link="libnm-nm-setting-user.html#nm-setting-user-new"/>
-    <keyword type="function" name="nm_setting_user_get_keys ()" link="libnm-nm-setting-user.html#nm-setting-user-get-keys"/>
-    <keyword type="function" name="nm_setting_user_get_data ()" link="libnm-nm-setting-user.html#nm-setting-user-get-data" since="1.8"/>
-    <keyword type="function" name="nm_setting_user_set_data ()" link="libnm-nm-setting-user.html#nm-setting-user-set-data" since="1.8"/>
-    <keyword type="function" name="nm_setting_user_check_key ()" link="libnm-nm-setting-user.html#nm-setting-user-check-key" since="1.8"/>
-    <keyword type="function" name="nm_setting_user_check_val ()" link="libnm-nm-setting-user.html#nm-setting-user-check-val" since="1.8"/>
-    <keyword type="macro" name="NM_SETTING_USER_SETTING_NAME" link="libnm-nm-setting-user.html#NM-SETTING-USER-SETTING-NAME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_USER_DATA" link="libnm-nm-setting-user.html#NM-SETTING-USER-DATA:CAPS"/>
+    <keyword type="function" name="nm_setting_user_new ()" link="NMSettingUser.html#nm-setting-user-new"/>
+    <keyword type="function" name="nm_setting_user_get_keys ()" link="NMSettingUser.html#nm-setting-user-get-keys"/>
+    <keyword type="function" name="nm_setting_user_get_data ()" link="NMSettingUser.html#nm-setting-user-get-data" since="1.8"/>
+    <keyword type="function" name="nm_setting_user_set_data ()" link="NMSettingUser.html#nm-setting-user-set-data" since="1.8"/>
+    <keyword type="function" name="nm_setting_user_check_key ()" link="NMSettingUser.html#nm-setting-user-check-key" since="1.8"/>
+    <keyword type="function" name="nm_setting_user_check_val ()" link="NMSettingUser.html#nm-setting-user-check-val" since="1.8"/>
+    <keyword type="macro" name="NM_SETTING_USER_SETTING_NAME" link="NMSettingUser.html#NM-SETTING-USER-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_USER_DATA" link="NMSettingUser.html#NM-SETTING-USER-DATA:CAPS"/>
     <keyword type="function" name="nm_setting_vlan_new ()" link="NMSettingVlan.html#nm-setting-vlan-new"/>
     <keyword type="function" name="nm_setting_vlan_get_parent ()" link="NMSettingVlan.html#nm-setting-vlan-get-parent"/>
     <keyword type="function" name="nm_setting_vlan_get_id ()" link="NMSettingVlan.html#nm-setting-vlan-get-id"/>
@@ -2332,6 +2332,10 @@
     <keyword type="property" name="The “active-channel” property" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh--active-channel"/>
     <keyword type="property" name="The “companion” property" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh--companion"/>
     <keyword type="property" name="The “hw-address” property" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh--hw-address"/>
+    <keyword type="function" name="nm_device_ovs_bridge_get_slaves ()" link="NMDeviceOvsBridge.html#nm-device-ovs-bridge-get-slaves" since="1.12.2"/>
+    <keyword type="macro" name="NM_DEVICE_OVS_BRIDGE_SLAVES" link="NMDeviceOvsBridge.html#NM-DEVICE-OVS-BRIDGE-SLAVES:CAPS"/>
+    <keyword type="function" name="nm_device_ovs_port_get_slaves ()" link="NMDeviceOvsPort.html#nm-device-ovs-port-get-slaves" since="1.12.2"/>
+    <keyword type="macro" name="NM_DEVICE_OVS_PORT_SLAVES" link="NMDeviceOvsPort.html#NM-DEVICE-OVS-PORT-SLAVES:CAPS"/>
     <keyword type="function" name="nm_device_team_get_hw_address ()" link="NMDeviceTeam.html#nm-device-team-get-hw-address"/>
     <keyword type="function" name="nm_device_team_get_carrier ()" link="NMDeviceTeam.html#nm-device-team-get-carrier"/>
     <keyword type="function" name="nm_device_team_get_slaves ()" link="NMDeviceTeam.html#nm-device-team-get-slaves"/>
@@ -2635,12 +2639,12 @@
     <keyword type="macro" name="NM_DHCP_CONFIG_OPTIONS" link="NMDhcpConfig.html#NM-DHCP-CONFIG-OPTIONS:CAPS"/>
     <keyword type="property" name="The “family” property" link="NMDhcpConfig.html#NMDhcpConfig--family"/>
     <keyword type="property" name="The “options” property" link="NMDhcpConfig.html#NMDhcpConfig--options"/>
-    <keyword type="function" name="nm_checkpoint_get_devices ()" link="libnm-nm-checkpoint.html#nm-checkpoint-get-devices" since="1.12"/>
-    <keyword type="function" name="nm_checkpoint_get_created ()" link="libnm-nm-checkpoint.html#nm-checkpoint-get-created" since="1.12"/>
-    <keyword type="function" name="nm_checkpoint_get_rollback_timeout ()" link="libnm-nm-checkpoint.html#nm-checkpoint-get-rollback-timeout" since="1.12"/>
-    <keyword type="macro" name="NM_CHECKPOINT_DEVICES" link="libnm-nm-checkpoint.html#NM-CHECKPOINT-DEVICES:CAPS"/>
-    <keyword type="macro" name="NM_CHECKPOINT_CREATED" link="libnm-nm-checkpoint.html#NM-CHECKPOINT-CREATED:CAPS"/>
-    <keyword type="macro" name="NM_CHECKPOINT_ROLLBACK_TIMEOUT" link="libnm-nm-checkpoint.html#NM-CHECKPOINT-ROLLBACK-TIMEOUT:CAPS"/>
+    <keyword type="function" name="nm_checkpoint_get_devices ()" link="NMCheckpoint.html#nm-checkpoint-get-devices" since="1.12"/>
+    <keyword type="function" name="nm_checkpoint_get_created ()" link="NMCheckpoint.html#nm-checkpoint-get-created" since="1.12"/>
+    <keyword type="function" name="nm_checkpoint_get_rollback_timeout ()" link="NMCheckpoint.html#nm-checkpoint-get-rollback-timeout" since="1.12"/>
+    <keyword type="macro" name="NM_CHECKPOINT_DEVICES" link="NMCheckpoint.html#NM-CHECKPOINT-DEVICES:CAPS"/>
+    <keyword type="macro" name="NM_CHECKPOINT_CREATED" link="NMCheckpoint.html#NM-CHECKPOINT-CREATED:CAPS"/>
+    <keyword type="macro" name="NM_CHECKPOINT_ROLLBACK_TIMEOUT" link="NMCheckpoint.html#NM-CHECKPOINT-ROLLBACK-TIMEOUT:CAPS"/>
     <keyword type="function" name="nm_utils_is_empty_ssid ()" link="libnm-nm-utils.html#nm-utils-is-empty-ssid"/>
     <keyword type="function" name="nm_utils_escape_ssid ()" link="libnm-nm-utils.html#nm-utils-escape-ssid"/>
     <keyword type="function" name="nm_utils_same_ssid ()" link="libnm-nm-utils.html#nm-utils-same-ssid"/>
@@ -2745,6 +2749,7 @@
     <keyword type="macro" name="NM_AVAILABLE_IN_1_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-10:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_12" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-12:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_12" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-12:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_12_2" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-12-2:CAPS"/>
     <keyword type="macro" name="NM_VPN_SERVICE_PLUGIN_DBUS_SERVICE_NAME" link="libnm-nm-vpn-service-plugin.html#NM-VPN-SERVICE-PLUGIN-DBUS-SERVICE-NAME:CAPS"/>
     <keyword type="macro" name="NM_VPN_SERVICE_PLUGIN_DBUS_WATCH_PEER" link="libnm-nm-vpn-service-plugin.html#NM-VPN-SERVICE-PLUGIN-DBUS-WATCH-PEER:CAPS"/>
     <keyword type="macro" name="NM_VPN_SERVICE_PLUGIN_STATE" link="libnm-nm-vpn-service-plugin.html#NM-VPN-SERVICE-PLUGIN-STATE:CAPS"/>
