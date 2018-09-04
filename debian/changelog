@@ -1,3 +1,10 @@
+network-manager (1.12.2-3) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * Apply patch from upstream to fix FTBFS with GLib 2.57 (Closes: #906965)
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 04 Sep 2018 16:07:24 +0200
+
 network-manager (1.12.2-2) unstable; urgency=medium
 
   * Fix compile error due to NM_AVAILABLE_IN_1_12_2 macro (Closes: #905372)
