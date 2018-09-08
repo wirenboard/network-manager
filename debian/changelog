@@ -1,3 +1,9 @@
+network-manager (1.13.90-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.13.90 (1.14 rc1)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 08 Sep 2018 17:45:30 +0200
+
 network-manager (1.12.2-3) unstable; urgency=medium
 
   [ Simon McVittie ]
