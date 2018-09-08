@@ -7,8 +7,8 @@ dnl  - add corresponding NM_VERSION_x_y_z macros in
 dnl    "shared/nm-version-macros.h.in"
 dnl  - update number in meson.build
 m4_define([nm_major_version], [1])
-m4_define([nm_minor_version], [12])
-m4_define([nm_micro_version], [2])
+m4_define([nm_minor_version], [13])
+m4_define([nm_micro_version], [90])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -109,11 +109,6 @@ GETTEXT_PACKAGE=NetworkManager
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package])
 
-dnl
-dnl Make sha1.c happy on big endian systems
-dnl
-AC_C_BIGENDIAN
-
 # Add runstatedir if not specified manually in autoconf < 2.70
 AS_IF([test -z "$runstatedir"], runstatedir="$localstatedir/run")
 AC_SUBST(runstatedir)
@@ -134,8 +129,8 @@ AC_ARG_ENABLE(config-plugin-ibft, AS_HELP_STRING([--enable-config-plugin-ibft], 
 AC_ARG_ENABLE(ifcfg-rh, AS_HELP_STRING([--enable-ifcfg-rh], [enable ifcfg-rh configuration plugin (Fedora/RHEL)]))
 AC_ARG_ENABLE(ifupdown, AS_HELP_STRING([--enable-ifupdown], [enable ifupdown configuration plugin (Debian/Ubuntu)]))
 # Default alternative plugins by distribution
-AS_IF([test -z "$enable_ifcfg_rh"], AC_CHECK_FILE(/etc/sysconfig/network-scripts, enable_ifcfg_rh=yes))
-AS_IF([test -z "$enable_ifupdown"], AC_CHECK_FILE(/etc/debian_version, enable_ifupdown=yes))
+AS_IF([test -z "$enable_ifcfg_rh" -a -d /etc/sysconfig/network-scripts], enable_ifcfg_rh=yes)
+AS_IF([test -z "$enable_ifupdown" -a -f /etc/debian_version],            enable_ifupdown=yes)
 # Otherwise plugins default to "no"
 AS_IF([test -z "$enable_ifcfg_rh"], enable_ifcfg_rh=no)
 AS_IF([test -z "$enable_ifupdown"], enable_ifupdown=no)
@@ -444,6 +439,8 @@ fi
 if test "$have_systemd_logind" = "yes"; then
 	AC_DEFINE([SESSION_TRACKING_SYSTEMD], 1, [Define to 1 if libsystemd-login is available])
 	session_tracking="$session_tracking, systemd-logind"
+else
+	AC_DEFINE([SESSION_TRACKING_SYSTEMD], 0, [Define to 1 if libsystemd-login is available])
 fi
 
 if test "$use_elogind" = "yes" -a "$have_systemd_logind" = "yes"; then
@@ -460,12 +457,15 @@ fi
 if test "$have_elogind" = "yes"; then
 	AC_DEFINE([SESSION_TRACKING_ELOGIND], 1, [Define to 1 if libelogin is available])
 	session_tracking="$session_tracking, elogind"
+else
+	AC_DEFINE([SESSION_TRACKING_ELOGIND], 0, [Define to 1 if libelogin is available])
 fi
 
 if test "$use_consolekit" = "yes"; then
 	AC_DEFINE([SESSION_TRACKING_CONSOLEKIT], 1, [Define to 1 if ConsoleKit is available])
-	AC_DEFINE([CKDB_PATH], "/var/run/ConsoleKit/database", [Path to ConsoleKit database])
 	session_tracking="$session_tracking, consolekit"
+else
+	AC_DEFINE([SESSION_TRACKING_CONSOLEKIT], 0, [Define to 1 if ConsoleKit is available])
 fi
 session_tracking="$(printf '%s' "${session_tracking}" | sed 's/^, //')"
 
@@ -663,21 +663,41 @@ else
 fi
 AC_SUBST(NM_MODIFY_SYSTEM_POLICY)
 
+PKG_CHECK_MODULES(GNUTLS, [gnutls >= 2.12], [have_crypto_gnutls=yes], [have_crypto_gnutls=no])
+PKG_CHECK_MODULES(NSS, [nss], [have_crypto_nss=yes], [have_crypto_nss=yes])
+if test "${have_crypto_nss}" = "yes"; then
+	# Work around a pkg-config bug (fdo #29801) where exists != usable
+	FOO=`$PKG_CONFIG --cflags --libs nss`
+	if test x"$?" != "x0"; then
+		have_crypto_nss=no
+	fi
+fi
+AM_CONDITIONAL(HAVE_CRYPTO_GNUTLS, test "${have_crypto_gnutls}" = 'yes')
+AM_CONDITIONAL(HAVE_CRYPTO_NSS, test "${have_crypto_nss}" = 'yes')
+if test "${have_crypto_gnutls}" = 'yes'; then
+	AC_DEFINE(HAVE_CRYPTO_GNUTLS, 1, [Define if you have gnutls support])
+else
+	AC_DEFINE(HAVE_CRYPTO_GNUTLS, 0, [Define if you have gnutls support])
+fi
+if test "${have_crypto_nss}" = 'yes'; then
+	AC_DEFINE(HAVE_CRYPTO_NSS, 1, [Define if you have nss support])
+else
+	AC_DEFINE(HAVE_CRYPTO_NSS, 0, [Define if you have nss support])
+fi
+
 AC_ARG_WITH(crypto,
             AS_HELP_STRING([--with-crypto=nss|gnutls],
                            [Cryptography library to use for certificate and key operations]),
             with_crypto=$withval,
             with_crypto=nss)
 if test "$with_crypto" = 'nss'; then
-	PKG_CHECK_MODULES(NSS, [nss])
-
-	# Work around a pkg-config bug (fdo #29801) where exists != usable
-	FOO=`$PKG_CONFIG --cflags --libs nss`
-	if test x"$?" != "x0"; then
-		AC_MSG_ERROR([No usable NSS found])
+	if test "${have_crypto_nss}" != "yes"; then
+		AC_MSG_ERROR([No usable NSS found for --with-crypto=nss])
 	fi
 elif test "$with_crypto" = 'gnutls'; then
-	PKG_CHECK_MODULES(GNUTLS, [gnutls >= 2.12])
+	if test "${have_crypto_gnutls}" != "yes"; then
+		AC_MSG_ERROR([No usable gnutls found for --with-crypto=gnutls])
+	fi
 else
 	AC_MSG_ERROR([Please choose either 'nss' or 'gnutls' for certificate and crypto operations])
 fi
@@ -921,7 +941,7 @@ if test "$config_dns_rc_manager_default" != symlink -a \
 	config_dns_rc_manager_default=
 fi
 # Use netconfig by default on SUSE
-AS_IF([test -z "$with_netconfig"], AC_CHECK_FILE(/etc/SuSE-release, with_netconfig=yes))
+AS_IF([test -z "$with_netconfig" -a -f /etc/SuSE-release], with_netconfig=yes)
 # Otherwise default to "no"
 AS_IF([test -z "$with_resolvconf"], with_resolvconf=no)
 AS_IF([test -z "$with_netconfig"], with_netconfig=no)
@@ -1111,6 +1131,8 @@ if test "${enable_more_logging}" = ""; then
 fi
 if test "${enable_more_logging}" = "yes"; then
 	AC_DEFINE(NM_MORE_LOGGING, [1], [Define if more debug logging is enabled])
+else
+	AC_DEFINE(NM_MORE_LOGGING, [0], [Define if more debug logging is enabled])
 fi
 
 NM_LTO
@@ -1378,7 +1400,7 @@ echo "  code coverage: $enable_code_coverage"
 echo "  LTO: $enable_lto"
 echo "  linker garbage collection: $enable_ld_gc"
 echo "  JSON validation for libnm: $enable_json_validation"
-echo "  crypto: $with_crypto"
+echo "  crypto: $with_crypto (have-gnutls: $have_crypto_gnutls, have-nss: $have_crypto_nss)"
 echo "  sanitizers: $sanitizers"
 echo "  Mozilla Public Suffix List: $with_libpsl"
 echo

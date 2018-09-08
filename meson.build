@@ -4,7 +4,7 @@ project(
 #  - add corresponding NM_VERSION_x_y_z macros in
 #    "shared/nm-version-macros.h.in"
 #  - update number in configure.ac
-  version: '1.12.2',
+  version: '1.13.90',
   license: 'GPL2+',
   default_options: [
     'buildtype=debugoptimized',
@@ -53,11 +53,6 @@ nm_pkgrundir = join_paths(nm_runstatedir, nm_name)
 nm_pkgstatedir = join_paths(nm_localstatedir, nm_name)
 nm_vpndir = join_paths(nm_libdir, nm_name)
 nm_plugindir = join_paths(nm_libdir, nm_name, dist_version)
-
-nm_build_cflags = [
-  '-DNM_BUILD_SRCDIR="@0@"'.format(meson.source_root()),
-  '-DNM_BUILD_BUILDDIR="@0@"'.format(meson.build_root()),
-]
 
 libnm_name = 'libnm'
 
@@ -215,6 +210,8 @@ if jansson_dep.found()
 endif
 
 libsystemd_dep = dependency('libsystemd', version: '>= 209', required: false)
+libsystemd_login_dep = dependency('libsystemd-login', version: '>= 183', required: false)
+
 config_h.set10('HAVE_LIBSYSTEMD', libsystemd_dep.found())
 
 systemd_dep = dependency('systemd', required: false)
@@ -352,63 +349,70 @@ config_h.set_quoted('NM_CONFIG_DEFAULT_LOGGING_BACKEND', config_logging_backend_
 
 session_tracking = get_option('session_tracking')
 session_trackers = []
-enable_session_tracking = (session_tracking != 'no')
 
-enable_consolekit = get_option('consolekit')
-
-if enable_session_tracking
-  if session_tracking == 'systemd'
-    logind_dep = libsystemd_dep
-    if not logind_dep.found()
-      logind_dep = dependency('libsystemd-login', required: false)
-      assert(logind_dep.found(), 'You must have libsystemd or libsystemd-login installed to build with systemd-logind support')
-    endif
-    session_trackers += 'systemd-logind'
-    config_h.set('SESSION_TRACKING_SYSTEMD', true)
-  else
-    logind_dep = libelogind_dep
-    assert(logind_dep.found() and libelogind_dep.version().version_compare('>= 229'), 'You must have libelogind installed to build with elogind support.')
-    session_trackers += 'elogind'
-    config_h.set('SESSION_TRACKING_ELOGIND', true)
+if session_tracking == 'systemd'
+  logind_dep = libsystemd_dep
+  if not logind_dep.found()
+    logind_dep = dependency('libsystemd-login', required: false)
+    assert(logind_dep.found(), 'You must have libsystemd or libsystemd-login installed to build with systemd-logind support')
   endif
-
-  if enable_consolekit
-    session_trackers += 'consolekit'
-    config_h.set_quoted('CKDB_PATH', '/var/run/ConsoleKit/database')
-    config_h.set('SESSION_TRACKING_CONSOLEKIT', enable_consolekit)
-  endif
+  session_trackers += 'systemd-logind'
+  config_h.set10('SESSION_TRACKING_SYSTEMD', true)
+  config_h.set10('SESSION_TRACKING_ELOGIND', false)
+elif session_tracking == 'elogind'
+  logind_dep = libelogind_dep
+  assert(logind_dep.found() and libelogind_dep.version().version_compare('>= 229'), 'You must have libelogind installed to build with elogind support.')
+  session_trackers += 'elogind'
+  config_h.set10('SESSION_TRACKING_SYSTEMD', false)
+  config_h.set10('SESSION_TRACKING_ELOGIND', true)
+else
+  logind_dep = dependency('', required:false)
 endif
+
+session_tracking_consolekit = get_option('session_tracking_consolekit')
+if session_tracking_consolekit
+  session_trackers += 'consolekit'
+endif
+config_h.set10('SESSION_TRACKING_CONSOLEKIT', session_tracking_consolekit)
 
 hostname_persist = get_option('hostname_persist')
 config_h.set('HOSTNAME_PERSIST_SUSE', (hostname_persist == 'suse'))
 config_h.set('HOSTNAME_PERSIST_GENTOO', (hostname_persist == 'gentoo'))
 config_h.set('HOSTNAME_PERSIST_SLACKWARE', (hostname_persist == 'slackware'))
 
-enable_suspend_resume = get_option('suspend_resume')
-suspend_resume = ''
+suspend_resume = get_option('suspend_resume')
 
-if enable_suspend_resume
+if suspend_resume == 'auto'
+  if libsystemd_dep.found() or libsystemd_login_dep.found()
+    suspend_resume = 'systemd'
+  elif libelogind_dep.found()
+    suspend_resume = 'elogind'
+  elif session_tracking_consolekit
+    suspend_resume = 'consolekit'
+  else
+    suspend_resume = 'upower'
+  endif
+endif
+
+if suspend_resume == 'systemd'
   if libsystemd_dep.found()
     system_inhibit_dep = libsystemd_dep
-    suspend_resume = 'systemd'
-    config_h.set('SUSPEND_RESUME_SYSTEMD', true)
+  elif libsystemd_login_dep.found()
+    system_inhibit_dep = libsystemd_login_dep
   else
-    system_inhibit_dep = dependency('libsystemd-login', version: '>= 183', required: false)
-    if system_inhibit_dep.found()
-      suspend_resume = 'systemd'
-      config_h.set('SUSPEND_RESUME_SYSTEMD', true)
-    elif libelogind_dep.found()
-      system_inhibit_dep = libelogind_dep
-      suspend_resume = 'elogind'
-      config_h.set('SUSPEND_RESUME_ELOGIND', true)
-    elif enable_consolekit
-      suspend_resume = 'consolekit'
-      config_h.set('SUSPEND_RESUME_CONSOLEKIT', true)
-    else
-      suspend_resume = 'upower'
-      config_h.set('SUSPEND_RESUME_UPOWER', true)
-    endif
+    error('Need libsystemd for suspend_resume=systemd')
   endif
+  config_h.set('SUSPEND_RESUME_SYSTEMD', true)
+elif suspend_resume == 'elogind'
+  assert(libelogind_dep.found(), 'Need libelogind for suspend_resume=elogind')
+  system_inhibit_dep = libelogind_dep
+  config_h.set('SUSPEND_RESUME_ELOGIND', true)
+elif suspend_resume == 'consolekit'
+  config_h.set('SUSPEND_RESUME_CONSOLEKIT', true)
+elif suspend_resume == 'upower'
+  config_h.set('SUSPEND_RESUME_UPOWER', true)
+else
+  error('bug')
 endif
 
 # SELinux support
@@ -466,12 +470,16 @@ if enable_polkit_agent
 endif
 config_h.set10('WITH_POLKIT_AGENT', enable_polkit_agent)
 
-# crypto
+crypto_gnutls_dep = dependency('gnutls', version: '>= 2.12', required: false)
+crypto_nss_dep = dependency('nss', required: false)
+
 crypto = get_option('crypto')
 if crypto == 'nss'
-  crypto_dep = dependency('nss')
+  assert(crypto_nss_dep.found(), 'Requires gnutls crypto support')
+elif crypto == 'gnutls'
+  assert(crypto_gnutls_dep.found(), 'Requires gnutls crypto support')
 else
-  crypto_dep = dependency('gnutls', version: '>= 2.12')
+  error('bug')
 endif
 
 dbus_conf_dir = get_option('dbus_conf_dir')
@@ -811,7 +819,7 @@ intltool_xml_cmd = [intltool_merge, '-x', '-u', '-c', intltool_cache, po_dir, '@
 perl = find_program('perl')
 xsltproc = find_program('xsltproc')
 
-check_exports = join_paths(meson.source_root(), 'tools', 'check-exports.sh')
+check_exports = find_program(join_paths(meson.source_root(), 'tools', 'check-exports.sh'))
 
 content_files = []
 
@@ -872,6 +880,46 @@ configure_file(
   input: config + '.meson',
   output: config,
   configuration: config_h
+)
+
+config_extra_h = configuration_data()
+
+config_extra_h.set_quoted('BINDIR',            nm_bindir)
+config_extra_h.set_quoted('DATADIR',           nm_datadir)
+if enable_dhclient
+    config_extra_h.set_quoted('DHCLIENT_PATH',     dhclient.path())
+endif
+if enable_dhcpcanon
+    config_extra_h.set_quoted('DHCPCANON_PATH',    dhcpcanon.path())
+endif
+if enable_dhcpcd
+    config_extra_h.set_quoted('DHCPCD_PATH',       dhcpcd.path())
+endif
+config_extra_h.set_quoted('LIBEXECDIR',        nm_libexecdir)
+config_extra_h.set_quoted('LOCALSTATEDIR',     nm_localstatedir)
+config_extra_h.set_quoted('NMCONFDIR',         nm_pkgconfdir)
+config_extra_h.set_quoted('NMLIBDIR',          nm_pkglibdir)
+config_extra_h.set_quoted('NMLIBDIR',          nm_pkglibdir)
+config_extra_h.set_quoted('NMLOCALEDIR',       nm_localedir)
+config_extra_h.set_quoted('NMPLUGINDIR',       nm_plugindir)
+config_extra_h.set_quoted('NMRUNDIR',          nm_pkgrundir)
+config_extra_h.set_quoted('NMSTATEDIR',        nm_pkgstatedir)
+config_extra_h.set_quoted('NMVPNDIR',          nm_vpndir)
+config_extra_h.set_quoted('NM_BUILD_BUILDDIR', meson.build_root())
+config_extra_h.set_quoted('NM_BUILD_SRCDIR',   meson.source_root())
+if enable_ppp
+    config_extra_h.set_quoted('PPPD_PLUGIN_DIR',   pppd_plugin_dir)
+endif
+config_extra_h.set_quoted('PREFIX',            nm_prefix)
+config_extra_h.set_quoted('RUNDIR',            nm_pkgrundir)
+config_extra_h.set_quoted('RUNSTATEDIR',       nm_runstatedir)
+config_extra_h.set_quoted('SBINDIR',           nm_sbindir)
+config_extra_h.set_quoted('SYSCONFDIR',        nm_sysconfdir)
+
+configure_file(
+  input: 'config-extra.h.meson',
+  output: 'config-extra.h',
+  configuration: config_extra_h
 )
 
 meson.add_install_script(
@@ -978,7 +1026,8 @@ output += '\n'
 output += '  code coverage: ' + get_option('b_coverage').to_string() + '\n'
 output += '  LTO: ' + get_option('b_lto').to_string() + '\n'
 output += '  Linker garbage collection: ' + enable_ld_gc.to_string() + '\n'
-output += '  JSON validation for libnm: ' + enable_json_validation.to_string () + '\n'
+output += '  JSON validation for libnm: ' + enable_json_validation.to_string() + '\n'
+output += '  crypto: ' + crypto + ' (have-gnutls: ' + crypto_gnutls_dep.found().to_string() + ', have-nss: ' + crypto_nss_dep.found().to_string() + ')\n'
 output += '  sanitizers: ' + get_option('b_sanitize') + '\n'
 output += '  Mozilla Public Suffix List: ' + enable_libpsl.to_string() + '\n'
 message(output)

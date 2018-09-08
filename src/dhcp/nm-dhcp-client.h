@@ -131,7 +131,11 @@ GBytes *nm_dhcp_client_get_hw_addr (NMDhcpClient *self);
 
 guint32 nm_dhcp_client_get_route_table (NMDhcpClient *self);
 
+void nm_dhcp_client_set_route_table (NMDhcpClient *self, guint32 route_table);
+
 guint32 nm_dhcp_client_get_route_metric (NMDhcpClient *self);
+
+void nm_dhcp_client_set_route_metric (NMDhcpClient *self, guint32 route_metric);
 
 guint32 nm_dhcp_client_get_timeout (NMDhcpClient *self);
 
@@ -176,7 +180,7 @@ void nm_dhcp_client_set_state (NMDhcpClient *self,
 
 gboolean nm_dhcp_client_handle_event (gpointer unused,
                                       const char *iface,
-                                      gint pid,
+                                      int pid,
                                       GVariant *options,
                                       const char *reason,
                                       NMDhcpClient *self);

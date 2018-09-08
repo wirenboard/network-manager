@@ -56,19 +56,15 @@ typedef struct {
 } NMSKeyfilePluginPrivate;
 
 struct _NMSKeyfilePlugin {
-	GObject parent;
+	NMSettingsPlugin parent;
 	NMSKeyfilePluginPrivate _priv;
 };
 
 struct _NMSKeyfilePluginClass {
-	GObjectClass parent;
+	NMSettingsPluginClass parent;
 };
 
-static void settings_plugin_interface_init (NMSettingsPluginInterface *plugin_iface);
-
-G_DEFINE_TYPE_EXTENDED (NMSKeyfilePlugin, nms_keyfile_plugin, G_TYPE_OBJECT, 0,
-                        G_IMPLEMENT_INTERFACE (NM_TYPE_SETTINGS_PLUGIN,
-                                               settings_plugin_interface_init))
+G_DEFINE_TYPE (NMSKeyfilePlugin, nms_keyfile_plugin, NM_TYPE_SETTINGS_PLUGIN)
 
 #define NMS_KEYFILE_PLUGIN_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMSKeyfilePlugin, NMS_IS_KEYFILE_PLUGIN)
 
@@ -85,10 +81,10 @@ G_DEFINE_TYPE_EXTENDED (NMSKeyfilePlugin, nms_keyfile_plugin, G_TYPE_OBJECT, 0,
 /*****************************************************************************/
 
 static void
-connection_removed_cb (NMSettingsConnection *obj, gpointer user_data)
+connection_removed_cb (NMSettingsConnection *sett_conn, NMSKeyfilePlugin *self)
 {
-	g_hash_table_remove (NMS_KEYFILE_PLUGIN_GET_PRIVATE ((NMSKeyfilePlugin *) user_data)->connections,
-	                     nm_connection_get_uuid (NM_CONNECTION (obj)));
+	g_hash_table_remove (NMS_KEYFILE_PLUGIN_GET_PRIVATE (self)->connections,
+	                     nm_settings_connection_get_uuid (sett_conn));
 }
 
 /* Monitoring */
@@ -106,7 +102,7 @@ remove_connection (NMSKeyfilePlugin *self, NMSKeyfileConnection *connection)
 	g_object_ref (connection);
 	g_signal_handlers_disconnect_by_func (connection, connection_removed_cb, self);
 	removed = g_hash_table_remove (NMS_KEYFILE_PLUGIN_GET_PRIVATE (self)->connections,
-	                               nm_connection_get_uuid (NM_CONNECTION (connection)));
+	                               nm_settings_connection_get_uuid (NM_SETTINGS_CONNECTION (connection)));
 	nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection));
 	g_object_unref (connection);
 
@@ -197,7 +193,7 @@ update_connection (NMSKeyfilePlugin *self,
 		return NULL;
 	}
 
-	uuid = nm_connection_get_uuid (NM_CONNECTION (connection_new));
+	uuid = nm_settings_connection_get_uuid (NM_SETTINGS_CONNECTION (connection_new));
 	connection_by_uuid = g_hash_table_lookup (priv->connections, uuid);
 
 	if (   connection
@@ -240,8 +236,8 @@ update_connection (NMSKeyfilePlugin *self,
 
 		old_path = nm_settings_connection_get_filename (NM_SETTINGS_CONNECTION (connection_by_uuid));
 
-		if (nm_connection_compare (NM_CONNECTION (connection_by_uuid),
-		                           NM_CONNECTION (connection_new),
+		if (nm_connection_compare (nm_settings_connection_get_connection (NM_SETTINGS_CONNECTION (connection_by_uuid)),
+		                           nm_settings_connection_get_connection (NM_SETTINGS_CONNECTION (connection_new)),
 		                           NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS |
 		                           NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS)) {
 			/* Nothing to do... except updating the path. */
@@ -259,7 +255,7 @@ update_connection (NMSKeyfilePlugin *self,
 				_LOGI ("update and persist "NMS_KEYFILE_CONNECTION_LOG_FMT, NMS_KEYFILE_CONNECTION_LOG_ARG (connection_new));
 
 			if (!nm_settings_connection_update (NM_SETTINGS_CONNECTION (connection_by_uuid),
-			                                    NM_CONNECTION (connection_new),
+			                                    nm_settings_connection_get_connection (NM_SETTINGS_CONNECTION (connection_new)),
 			                                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP_SAVED,
 			                                    NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE,
 			                                    "keyfile-update",
@@ -287,8 +283,10 @@ update_connection (NMSKeyfilePlugin *self,
 		if (!source) {
 			/* Only raise the signal if we were called without source, i.e. if we read the connection from file.
 			 * Otherwise, we were called by add_connection() which does not expect the signal. */
-			g_signal_emit_by_name (self, NM_SETTINGS_PLUGIN_CONNECTION_ADDED, connection_new);
+			_nm_settings_plugin_emit_signal_connection_added (NM_SETTINGS_PLUGIN (self),
+			                                                  NM_SETTINGS_CONNECTION (connection_new));
 		}
+
 		return connection_new;
 	}
 }
@@ -341,13 +339,14 @@ config_changed_cb (NMConfig *config,
                    NMConfigData *old_data,
                    NMSKeyfilePlugin *self)
 {
-	gs_free char *old_value = NULL, *new_value = NULL;
+	gs_free char *old_value = NULL;
+	gs_free char *new_value = NULL;
 
 	old_value = nm_config_data_get_value (old_data, NM_CONFIG_KEYFILE_GROUP_KEYFILE, NM_CONFIG_KEYFILE_KEY_KEYFILE_UNMANAGED_DEVICES, NM_CONFIG_GET_VALUE_TYPE_SPEC);
 	new_value = nm_config_data_get_value (config_data, NM_CONFIG_KEYFILE_GROUP_KEYFILE, NM_CONFIG_KEYFILE_KEY_KEYFILE_UNMANAGED_DEVICES, NM_CONFIG_GET_VALUE_TYPE_SPEC);
 
-	if (g_strcmp0 (old_value, new_value) != 0)
-		g_signal_emit_by_name (self, NM_SETTINGS_PLUGIN_UNMANAGED_SPECS_CHANGED);
+	if (!nm_streq0 (old_value, new_value))
+		_nm_settings_plugin_emit_signal_unmanaged_specs_changed (NM_SETTINGS_PLUGIN (self));
 }
 
 static void
@@ -616,20 +615,17 @@ dispose (GObject *object)
 }
 
 static void
-nms_keyfile_plugin_class_init (NMSKeyfilePluginClass *req_class)
+nms_keyfile_plugin_class_init (NMSKeyfilePluginClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (req_class);
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	NMSettingsPluginClass *plugin_class = NM_SETTINGS_PLUGIN_CLASS (klass);
 
 	object_class->constructed = constructed;
-	object_class->dispose = dispose;
-}
+	object_class->dispose     = dispose;
 
-static void
-settings_plugin_interface_init (NMSettingsPluginInterface *plugin_iface)
-{
-	plugin_iface->get_connections = get_connections;
-	plugin_iface->load_connection = load_connection;
-	plugin_iface->reload_connections = reload_connections;
-	plugin_iface->add_connection = add_connection;
-	plugin_iface->get_unmanaged_specs = get_unmanaged_specs;
+	plugin_class->get_connections     = get_connections;
+	plugin_class->load_connection     = load_connection;
+	plugin_class->reload_connections  = reload_connections;
+	plugin_class->add_connection      = add_connection;
+	plugin_class->get_unmanaged_specs = get_unmanaged_specs;
 }
