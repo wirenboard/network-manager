@@ -47,6 +47,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingCdma, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingConnection, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingDcb, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingDummy, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingEthtool, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingGeneric, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingGsm, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingInfiniband, g_object_unref)
@@ -78,7 +79,10 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingWired, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingWireless, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMSettingWirelessSecurity, g_object_unref)
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMVpnEditor, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMVpnEditorPlugin, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMVpnPluginInfo, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (NMVpnServicePlugin, g_object_unref)
 
 #endif
 

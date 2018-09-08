@@ -2,12 +2,12 @@
 .\"     Title: nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 07/25/2018
+.\"      Date: 09/08/2018
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.12.2
+.\"    Source: NetworkManager 1.13.90
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.12\&.2" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.13\&.90" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -2294,7 +2294,65 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&23.\ \&IPv4 options
+.B Table\ \&23.\ \&WPAN options
+.TS
+allbox tab(:);
+lB lB.
+T{
+Alias
+T}:T{
+Property
+T}
+.T&
+l l
+l l
+l l.
+T{
+mac
+T}:T{
+wpan\&.mac
+T}
+T{
+short\-addr
+T}:T{
+wpan\&.short\-addr
+T}
+T{
+pan\-id
+T}:T{
+wpan\&.pan\-id
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&24.\ \&6LoWPAN options
+.TS
+allbox tab(:);
+lB lB.
+T{
+Alias
+T}:T{
+Property
+T}
+.T&
+l l.
+T{
+dev
+T}:T{
+6lowpan\&.parent
+T}
+.TE
+.sp 1
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&25.\ \&IPv4 options
 .TS
 allbox tab(:);
 lB lB lB.
@@ -2329,7 +2387,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&24.\ \&IPv6 options
+.B Table\ \&26.\ \&IPv6 options
 .TS
 allbox tab(:);
 lB lB lB.
@@ -2364,7 +2422,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&25.\ \&Proxy options
+.B Table\ \&27.\ \&Proxy options
 .TS
 allbox tab(:);
 lB lB lB.

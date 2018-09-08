@@ -1,13 +1,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define if building universal (internal helper macro) */
-#undef AC_APPLE_UNIVERSAL_BUILD
-
 /* Whether NM is built with address sanitizer */
 #undef ASAN_BUILD
-
-/* Path to ConsoleKit database */
-#undef CKDB_PATH
 
 /* Define if dhcpcd supports IPv6 (6.x+) */
 #undef DHCPCD_SUPPORTS_IPV6
@@ -32,6 +26,12 @@
 /* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
    the CoreFoundation framework. */
 #undef HAVE_CFPREFERENCESCOPYAPPVALUE
+
+/* Define if you have gnutls support */
+#undef HAVE_CRYPTO_GNUTLS
+
+/* Define if you have nss support */
+#undef HAVE_CRYPTO_NSS
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
@@ -332,18 +332,6 @@
 
 /* Define if you have Wi-Fi support */
 #undef WITH_WIFI
-
-/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
-   significant byte first (like Motorola and SPARC, unlike Intel). */
-#if defined AC_APPLE_UNIVERSAL_BUILD
-# if defined __BIG_ENDIAN__
-#  define WORDS_BIGENDIAN 1
-# endif
-#else
-# ifndef WORDS_BIGENDIAN
-#  undef WORDS_BIGENDIAN
-# endif
-#endif
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX
