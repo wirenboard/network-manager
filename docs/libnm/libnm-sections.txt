@@ -281,7 +281,6 @@ nm_connection_get_id
 nm_connection_get_connection_type
 nm_connection_is_virtual
 nm_connection_get_virtual_device_description
-nm_connection_get_setting_6lowpan
 nm_connection_get_setting_802_1x
 nm_connection_get_setting_bluetooth
 nm_connection_get_setting_bond
@@ -310,7 +309,6 @@ nm_connection_get_setting_ppp
 nm_connection_get_setting_pppoe
 nm_connection_get_setting_proxy
 nm_connection_get_setting_serial
-nm_connection_get_setting_sriov
 nm_connection_get_setting_tc_config
 nm_connection_get_setting_tun
 nm_connection_get_setting_vpn
@@ -321,7 +319,6 @@ nm_connection_get_setting_wireless
 nm_connection_get_setting_wireless_security
 nm_connection_get_setting_vlan
 nm_connection_get_setting_vxlan
-nm_connection_get_setting_wpan
 <SUBSECTION Standard>
 NM_CONNECTION
 NM_CONNECTION_GET_INTERFACE

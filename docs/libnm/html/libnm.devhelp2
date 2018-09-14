@@ -451,7 +451,6 @@
     <keyword type="function" name="nm_connection_get_connection_type ()" link="NMConnection.html#nm-connection-get-connection-type"/>
     <keyword type="function" name="nm_connection_is_virtual ()" link="NMConnection.html#nm-connection-is-virtual"/>
     <keyword type="function" name="nm_connection_get_virtual_device_description ()" link="NMConnection.html#nm-connection-get-virtual-device-description"/>
-    <keyword type="function" name="nm_connection_get_setting_6lowpan ()" link="NMConnection.html#nm-connection-get-setting-6lowpan" since="1.14"/>
     <keyword type="function" name="nm_connection_get_setting_802_1x ()" link="NMConnection.html#nm-connection-get-setting-802-1x"/>
     <keyword type="function" name="nm_connection_get_setting_bluetooth ()" link="NMConnection.html#nm-connection-get-setting-bluetooth"/>
     <keyword type="function" name="nm_connection_get_setting_bond ()" link="NMConnection.html#nm-connection-get-setting-bond"/>
@@ -480,7 +479,6 @@
     <keyword type="function" name="nm_connection_get_setting_pppoe ()" link="NMConnection.html#nm-connection-get-setting-pppoe"/>
     <keyword type="function" name="nm_connection_get_setting_proxy ()" link="NMConnection.html#nm-connection-get-setting-proxy" since="1.6"/>
     <keyword type="function" name="nm_connection_get_setting_serial ()" link="NMConnection.html#nm-connection-get-setting-serial"/>
-    <keyword type="function" name="nm_connection_get_setting_sriov ()" link="NMConnection.html#nm-connection-get-setting-sriov" since="1.14"/>
     <keyword type="function" name="nm_connection_get_setting_tc_config ()" link="NMConnection.html#nm-connection-get-setting-tc-config" since="1.12"/>
     <keyword type="function" name="nm_connection_get_setting_tun ()" link="NMConnection.html#nm-connection-get-setting-tun" since="1.2"/>
     <keyword type="function" name="nm_connection_get_setting_vpn ()" link="NMConnection.html#nm-connection-get-setting-vpn"/>
@@ -491,7 +489,6 @@
     <keyword type="function" name="nm_connection_get_setting_wireless_security ()" link="NMConnection.html#nm-connection-get-setting-wireless-security"/>
     <keyword type="function" name="nm_connection_get_setting_vlan ()" link="NMConnection.html#nm-connection-get-setting-vlan"/>
     <keyword type="function" name="nm_connection_get_setting_vxlan ()" link="NMConnection.html#nm-connection-get-setting-vxlan" since="1.2"/>
-    <keyword type="function" name="nm_connection_get_setting_wpan ()" link="NMConnection.html#nm-connection-get-setting-wpan" since="1.14"/>
     <keyword type="macro" name="NM_CONNECTION_SECRETS_UPDATED" link="NMConnection.html#NM-CONNECTION-SECRETS-UPDATED:CAPS"/>
     <keyword type="macro" name="NM_CONNECTION_SECRETS_CLEARED" link="NMConnection.html#NM-CONNECTION-SECRETS-CLEARED:CAPS"/>
     <keyword type="macro" name="NM_CONNECTION_CHANGED" link="NMConnection.html#NM-CONNECTION-CHANGED:CAPS"/>

@@ -438,11 +438,12 @@ impl_ppp_manager_set_ifindex (NMDBusObject *obj,
 
 	g_variant_get (parameters, "(i)", &ifindex);
 
-	_LOGD ("set-ifindex %d", (int) ifindex);
-
 	if (priv->ifindex >= 0) {
-		_LOGW ("can't change the ifindex from %d to %d", priv->ifindex, (int) ifindex);
-		return;
+		if (priv->ifindex == ifindex)
+			_LOGD ("set-ifindex: ignore repeated calls setting ifindex to %d", (int) ifindex);
+		else
+			_LOGW ("set-ifindex: can't change the ifindex from %d to %d", priv->ifindex, (int) ifindex);
+		goto out;
 	}
 
 	if (ifindex > 0) {
@@ -454,15 +455,22 @@ impl_ppp_manager_set_ifindex (NMDBusObject *obj,
 	}
 
 	if (!plink) {
-		_LOGW ("unknown interface with ifindex %d", ifindex);
+		_LOGW ("set-ifindex: unknown interface with ifindex %d", ifindex);
 		ifindex = 0;
+	} else {
+		obj_keep_alive = nmp_object_ref (NMP_OBJECT_UP_CAST (plink));
+		_LOGD ("set-ifindex: %d, name \"%s\"", (int) ifindex, plink->name);
 	}
 
 	priv->ifindex = ifindex;
 
-	obj_keep_alive = nmp_object_ref (NMP_OBJECT_UP_CAST (plink));
+	g_signal_emit (self,
+	               signals[IFINDEX_SET],
+	               0,
+	               ifindex,
+	               plink ? plink->name : NULL);
 
-	g_signal_emit (self, signals[IFINDEX_SET], 0, ifindex, plink->name);
+out:
 	g_dbus_method_invocation_return_value (invocation, NULL);
 }
 

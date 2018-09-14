@@ -431,7 +431,7 @@ nm_utils_escape_ssid (const guint8 *ssid, gsize len)
 char *
 _nm_utils_ssid_to_string_arr (const guint8 *ssid, gsize len)
 {
-	char *s_copy;
+	gs_free char *s_copy = NULL;
 	const char *s_cnst;
 
 	if (len == 0)
@@ -2141,10 +2141,10 @@ _tc_read_common_opts (const char *str,
 	gs_unref_hashtable GHashTable *ht = NULL;
 	GVariant *variant;
 
-        ht = nm_utils_parse_variant_attributes (str,
-                                                ' ', ' ', FALSE,
-                                                tc_object_attribute_spec,
-                                                error);
+	ht = nm_utils_parse_variant_attributes (str,
+	                                        ' ', ' ', FALSE,
+	                                        tc_object_attribute_spec,
+	                                        error);
 	if (!ht)
 		return FALSE;
 
@@ -2504,10 +2504,10 @@ nm_utils_tc_tfilter_from_str (const char *str, GError **error)
 		return NULL;
 
 	if (rest) {
-	        ht = nm_utils_parse_variant_attributes (rest,
-	                                                ' ', ' ', FALSE,
-	                                                tc_tfilter_attribute_spec,
-	                                                error);
+		ht = nm_utils_parse_variant_attributes (rest,
+		                                        ' ', ' ', FALSE,
+		                                        tc_tfilter_attribute_spec,
+		                                        error);
 		if (!ht)
 			return NULL;
 
@@ -6035,7 +6035,9 @@ attribute_unescape (const char *start, const char *end)
  * Parse attributes from a string.
  *
  * Returns: (transfer full) (element-type utf8 GVariant): a #GHashTable mapping
- * attribute names to #GVariant values.
+ * attribute names to #GVariant values. Warning: the variant are still floating
+ * references, owned by the hash table. If you take a reference, ensure to sink
+ * the one of the hash table first.
  *
  * Since: 1.8
  */
