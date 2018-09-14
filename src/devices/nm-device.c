@@ -80,7 +80,10 @@
 #include "nm-audit-manager.h"
 #include "nm-connectivity.h"
 #include "nm-dbus-interface.h"
+
+#include "nm-device-generic.h"
 #include "nm-device-vlan.h"
+#include "nm-device-wireguard.h"
 
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF (NMDevice);
@@ -822,6 +825,13 @@ _ethtool_state_set (NMDevice *self)
 }
 
 /*****************************************************************************/
+
+static gboolean
+is_loopback (NMDevice *self)
+{
+	return    NM_IS_DEVICE_GENERIC (self)
+	       && NM_DEVICE_GET_PRIVATE (self)->ifindex == 1;
+}
 
 NMSettings *
 nm_device_get_settings (NMDevice *self)
@@ -2460,7 +2470,7 @@ concheck_is_possible (NMDevice *self)
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 
 	if (   !nm_device_is_real (self)
-	    || NM_FLAGS_HAS (priv->unmanaged_flags, NM_UNMANAGED_LOOPBACK))
+	    || is_loopback (self))
 		return FALSE;
 
 	/* we enable periodic checks for every device state (except UNKNOWN). Especially with
@@ -4289,10 +4299,13 @@ realize_start_setup (NMDevice *self,
 	                               NM_UNMANAGED_EXTERNAL_DOWN,
 	                               is_unmanaged_external_down (self, TRUE));
 
-	/* Unmanaged the loopback device with an explicit NM_UNMANAGED_LOOPBACK flag.
+	/* Unmanaged the loopback device with an explicit NM_UNMANAGED_BY_TYPE flag.
 	 * Later we might want to manage 'lo' too. Currently that doesn't work because
 	 * NetworkManager might down the interface or remove the 127.0.0.1 address. */
-	nm_device_set_unmanaged_flags (self, NM_UNMANAGED_LOOPBACK, priv->ifindex == 1);
+	nm_device_set_unmanaged_flags (self,
+	                               NM_UNMANAGED_BY_TYPE,
+	                                  is_loopback (self)
+	                               || NM_IS_DEVICE_WIREGUARD (self));
 
 	nm_device_set_unmanaged_by_user_udev (self);
 	nm_device_set_unmanaged_by_user_conf (self);
@@ -4488,7 +4501,7 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
 
 	nm_device_set_unmanaged_flags (self,
 	                               NM_UNMANAGED_PARENT |
-	                               NM_UNMANAGED_LOOPBACK |
+	                               NM_UNMANAGED_BY_TYPE |
 	                               NM_UNMANAGED_USER_UDEV |
 	                               NM_UNMANAGED_USER_EXPLICIT |
 	                               NM_UNMANAGED_EXTERNAL_DOWN |
@@ -5596,6 +5609,14 @@ check_connection_compatible (NMDevice *self, NMConnection *connection, GError **
 		                                        klass->connection_type_check_compatible,
 		                                        error))
 			return FALSE;
+	} else if (klass->check_connection_compatible == check_connection_compatible) {
+		/* the device class does not implement check_connection_compatible nor set
+		 * connection_type_check_compatible. That means, it is by default not compatible
+		 * with any connection type. */
+		nm_utils_error_set_literal (error,
+		                            NM_UTILS_ERROR_CONNECTION_AVAILABLE_INCOMPATIBLE,
+		                            "device does not support any connections");
+		return FALSE;
 	}
 
 	conn_iface = nm_manager_get_connection_iface (nm_manager_get (),
@@ -7540,6 +7561,7 @@ dhcp4_start (NMDevice *self)
 	gs_unref_bytes GBytes *hwaddr = NULL;
 	gs_unref_bytes GBytes *client_id = NULL;
 	NMConnection *connection;
+	GError *error = NULL;
 
 	connection = nm_device_get_applied_connection (self);
 	g_return_val_if_fail (connection, FALSE);
@@ -7570,10 +7592,14 @@ dhcp4_start (NMDevice *self)
 	                                                client_id,
 	                                                get_dhcp_timeout (self, AF_INET),
 	                                                priv->dhcp_anycast_address,
-	                                                NULL);
+	                                                NULL,
+	                                                &error);
 
-	if (!priv->dhcp4.client)
+	if (!priv->dhcp4.client) {
+		_LOGW (LOGD_DHCP4, "failure to start DHCP: %s", error->message);
+		g_clear_error (&error);
 		return NM_ACT_STAGE_RETURN_FAILURE;
+	}
 
 	priv->dhcp4.state_sigid = g_signal_connect (priv->dhcp4.client,
 	                                            NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED,
@@ -8375,6 +8401,7 @@ dhcp6_start_with_link_ready (NMDevice *self, NMConnection *connection)
 	gs_unref_bytes GBytes *hwaddr = NULL;
 	gs_unref_bytes GBytes *duid = NULL;
 	gboolean enforce_duid = FALSE;
+	GError *error = NULL;
 
 	const NMPlatformIP6Address *ll_addr = NULL;
 
@@ -8414,23 +8441,29 @@ dhcp6_start_with_link_ready (NMDevice *self, NMConnection *connection)
 	                                                priv->dhcp_anycast_address,
 	                                                (priv->dhcp6.mode == NM_NDISC_DHCP_LEVEL_OTHERCONF) ? TRUE : FALSE,
 	                                                nm_setting_ip6_config_get_ip6_privacy (NM_SETTING_IP6_CONFIG (s_ip6)),
-	                                                priv->dhcp6.needed_prefixes);
-
-	if (priv->dhcp6.client) {
-		priv->dhcp6.state_sigid = g_signal_connect (priv->dhcp6.client,
-		                                            NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED,
-		                                            G_CALLBACK (dhcp6_state_changed),
-		                                            self);
-		priv->dhcp6.prefix_sigid = g_signal_connect (priv->dhcp6.client,
-		                                             NM_DHCP_CLIENT_SIGNAL_PREFIX_DELEGATED,
-		                                             G_CALLBACK (dhcp6_prefix_delegated),
-		                                             self);
+	                                                priv->dhcp6.needed_prefixes,
+	                                                &error);
+	if (!priv->dhcp6.client) {
+		_LOGW (LOGD_DHCP6, "failure to start DHCPv6: %s", error->message);
+		g_clear_error (&error);
+		if (nm_device_sys_iface_state_is_external_or_assume (self))
+			priv->dhcp6.was_active = TRUE;
+		return FALSE;
 	}
+
+	priv->dhcp6.state_sigid = g_signal_connect (priv->dhcp6.client,
+	                                            NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED,
+	                                            G_CALLBACK (dhcp6_state_changed),
+	                                            self);
+	priv->dhcp6.prefix_sigid = g_signal_connect (priv->dhcp6.client,
+	                                             NM_DHCP_CLIENT_SIGNAL_PREFIX_DELEGATED,
+	                                             G_CALLBACK (dhcp6_prefix_delegated),
+	                                             self);
 
 	if (nm_device_sys_iface_state_is_external_or_assume (self))
 		priv->dhcp6.was_active = TRUE;
 
-	return !!priv->dhcp6.client;
+	return TRUE;
 }
 
 static gboolean
@@ -12859,7 +12892,7 @@ NM_UTILS_FLAGS2STR_DEFINE (nm_unmanaged_flags2str, NMUnmanagedFlags,
 	NM_UTILS_FLAGS2STR (NM_UNMANAGED_SLEEPING, "sleeping"),
 	NM_UTILS_FLAGS2STR (NM_UNMANAGED_QUITTING, "quitting"),
 	NM_UTILS_FLAGS2STR (NM_UNMANAGED_PARENT, "parent"),
-	NM_UTILS_FLAGS2STR (NM_UNMANAGED_LOOPBACK, "loopback"),
+	NM_UTILS_FLAGS2STR (NM_UNMANAGED_BY_TYPE, "by-type"),
 	NM_UTILS_FLAGS2STR (NM_UNMANAGED_PLATFORM_INIT, "platform-init"),
 	NM_UTILS_FLAGS2STR (NM_UNMANAGED_USER_EXPLICIT, "user-explicit"),
 	NM_UTILS_FLAGS2STR (NM_UNMANAGED_BY_DEFAULT, "by-default"),
