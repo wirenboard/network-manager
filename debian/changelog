@@ -1,8 +1,13 @@
-network-manager (1.14.0-1) UNRELEASED; urgency=medium
+network-manager (1.14.0-1) experimental; urgency=medium
 
   * New upstream version 1.14.0
+  * Rebase patches
+  * Update symbols file for libnm0.
+    The nm_connection_get_setting_{6lowpan,sriov,wpan} API had been
+    introduced during the 1.14 development cycle but as it was duplicating
+    existing functionality it was removed again.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 15 Sep 2018 01:06:50 +0200
+ -- Michael Biebl <biebl@debian.org>  Sat, 15 Sep 2018 10:57:07 +0200
 
 network-manager (1.13.90-1) experimental; urgency=medium
 
