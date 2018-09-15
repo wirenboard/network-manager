@@ -148,7 +148,6 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_interface_name@libnm_1_0_0 1.0.0
  nm_connection_get_path@libnm_1_0_0 1.0.0
  nm_connection_get_setting@libnm_1_0_0 1.0.0
- nm_connection_get_setting_6lowpan@libnm_1_14_0 1.13.90
  nm_connection_get_setting_802_1x@libnm_1_0_0 1.0.0
  nm_connection_get_setting_adsl@libnm_1_0_0 1.0.0
  nm_connection_get_setting_bluetooth@libnm_1_0_0 1.0.0
@@ -177,7 +176,6 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_setting_pppoe@libnm_1_0_0 1.0.0
  nm_connection_get_setting_proxy@libnm_1_6_0 1.5.90
  nm_connection_get_setting_serial@libnm_1_0_0 1.0.0
- nm_connection_get_setting_sriov@libnm_1_14_0 1.13.90
  nm_connection_get_setting_tc_config@libnm_1_12_0 1.11.4
  nm_connection_get_setting_team@libnm_1_0_0 1.0.0
  nm_connection_get_setting_team_port@libnm_1_0_0 1.0.0
@@ -189,7 +187,6 @@ libnm.so.0 libnm0 #MINVER#
  nm_connection_get_setting_wired@libnm_1_0_0 1.0.0
  nm_connection_get_setting_wireless@libnm_1_0_0 1.0.0
  nm_connection_get_setting_wireless_security@libnm_1_0_0 1.0.0
- nm_connection_get_setting_wpan@libnm_1_14_0 1.13.90
  nm_connection_get_settings@libnm_1_10_0 1.9.90
  nm_connection_get_type@libnm_1_0_0 1.0.0
  nm_connection_get_uuid@libnm_1_0_0 1.0.0
