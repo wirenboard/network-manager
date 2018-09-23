@@ -37,7 +37,8 @@ foreach test_unit: test_units
     c_args: [
         '-DNETWORKMANAGER_COMPILATION_TEST',
         '-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIBNM_CORE',
-      ],
+      ] +
+      nm_build_cflags,
     link_with: libnm_core
   )
   test(

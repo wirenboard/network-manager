@@ -172,39 +172,22 @@ client_start (NMDhcpManager *self,
               gboolean info_only,
               NMSettingIP6ConfigPrivacy privacy,
               const char *last_ip4_address,
-              guint needed_prefixes,
-              GError **error)
+              guint needed_prefixes)
 {
 	NMDhcpManagerPrivate *priv;
 	NMDhcpClient *client;
 	gboolean success = FALSE;
-	gsize hwaddr_len;
 
+	g_return_val_if_fail (self, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_MANAGER (self), NULL);
 	g_return_val_if_fail (ifindex > 0, NULL);
 	g_return_val_if_fail (uuid != NULL, NULL);
 	g_return_val_if_fail (!dhcp_client_id || g_bytes_get_size (dhcp_client_id) >= 2, NULL);
-	g_return_val_if_fail (!error || !*error, NULL);
-
-	if (!hwaddr) {
-		nm_utils_error_set (error,
-		                    NM_UTILS_ERROR_UNKNOWN,
-		                    "missing MAC address");
-		return NULL;
-	}
-
-	hwaddr_len = g_bytes_get_size (hwaddr);
-	if (   hwaddr_len == 0
-	    || hwaddr_len > NM_UTILS_HWADDR_LEN_MAX) {
-		nm_utils_error_set (error,
-		                    NM_UTILS_ERROR_UNKNOWN,
-		                    "invalid MAC address");
-		g_return_val_if_reached (NULL) ;
-	}
 
 	priv = NM_DHCP_MANAGER_GET_PRIVATE (self);
 
-	nm_assert (priv->client_factory);
+	if (!priv->client_factory)
+		return NULL;
 
 	/* Kill any old client instance */
 	client = get_client_for_ifindex (self, addr_family, ifindex);
@@ -233,24 +216,10 @@ client_start (NMDhcpManager *self,
 	c_list_link_tail (&priv->dhcp_client_lst_head, &client->dhcp_client_lst);
 	g_signal_connect (client, NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED, G_CALLBACK (client_state_changed), self);
 
-	if (addr_family == AF_INET) {
-		success = nm_dhcp_client_start_ip4 (client,
-		                                    dhcp_client_id,
-		                                    dhcp_anycast_addr,
-		                                    hostname,
-		                                    last_ip4_address,
-		                                    error);
-	} else {
-		success = nm_dhcp_client_start_ip6 (client,
-		                                    dhcp_client_id,
-		                                    enforce_duid,
-		                                    dhcp_anycast_addr,
-		                                    ipv6_ll_addr,
-		                                    hostname,
-		                                    privacy,
-		                                    needed_prefixes,
-		                                    error);
-	}
+	if (addr_family == AF_INET)
+		success = nm_dhcp_client_start_ip4 (client, dhcp_client_id, dhcp_anycast_addr, hostname, last_ip4_address);
+	else
+		success = nm_dhcp_client_start_ip6 (client, dhcp_client_id, enforce_duid, dhcp_anycast_addr, ipv6_ll_addr, hostname, privacy, needed_prefixes);
 
 	if (!success) {
 		remove_client_unref (self, client);
@@ -276,8 +245,7 @@ nm_dhcp_manager_start_ip4 (NMDhcpManager *self,
                            GBytes *dhcp_client_id,
                            guint32 timeout,
                            const char *dhcp_anycast_addr,
-                           const char *last_ip_address,
-                           GError **error)
+                           const char *last_ip_address)
 {
 	NMDhcpManagerPrivate *priv;
 	const char *hostname = NULL;
@@ -314,7 +282,7 @@ nm_dhcp_manager_start_ip4 (NMDhcpManager *self,
 	return client_start (self, AF_INET, multi_idx, iface, ifindex, hwaddr, uuid,
 	                     route_table, route_metric, NULL,
 	                     dhcp_client_id, 0, timeout, dhcp_anycast_addr, hostname,
-	                     use_fqdn, FALSE, 0, last_ip_address, 0, error);
+	                     use_fqdn, FALSE, 0, last_ip_address, 0);
 }
 
 /* Caller owns a reference to the NMDhcpClient on return */
@@ -336,8 +304,7 @@ nm_dhcp_manager_start_ip6 (NMDhcpManager *self,
                            const char *dhcp_anycast_addr,
                            gboolean info_only,
                            NMSettingIP6ConfigPrivacy privacy,
-                           guint needed_prefixes,
-                           GError **error)
+                           guint needed_prefixes)
 {
 	NMDhcpManagerPrivate *priv;
 	const char *hostname = NULL;
@@ -352,7 +319,7 @@ nm_dhcp_manager_start_ip6 (NMDhcpManager *self,
 	return client_start (self, AF_INET6, multi_idx, iface, ifindex, hwaddr, uuid,
 	                     route_table, route_metric, ll_addr, duid, enforce_duid,
 	                     timeout, dhcp_anycast_addr, hostname, TRUE, info_only,
-	                     privacy, NULL, needed_prefixes, error);
+	                     privacy, NULL, needed_prefixes);
 }
 
 void
@@ -442,7 +409,7 @@ nm_dhcp_manager_init (NMDhcpManager *self)
 		}
 	}
 
-	g_return_if_fail (client_factory);
+	nm_assert (client_factory);
 
 	nm_log_info (LOGD_DHCP, "dhcp-init: Using DHCP client '%s'", client_factory->name);
 

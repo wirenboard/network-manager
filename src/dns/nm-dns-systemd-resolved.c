@@ -65,6 +65,7 @@ typedef struct {
 	GDBusProxy *resolve;
 	GCancellable *init_cancellable;
 	GCancellable *update_cancellable;
+	GCancellable *mdns_cancellable;
 	CList request_queue_lst_head;
 } NMDnsSystemdResolvedPrivate;
 
@@ -191,8 +192,7 @@ prepare_one_interface (NMDnsSystemdResolved *self, InterfaceConfig *ic)
 	GVariantBuilder dns, domains;
 	NMCListElem *elem;
 	NMSettingConnectionMdns mdns = NM_SETTING_CONNECTION_MDNS_DEFAULT;
-	NMSettingConnectionLlmnr llmnr = NM_SETTING_CONNECTION_LLMNR_DEFAULT;
-	const char *mdns_arg = NULL, *llmnr_arg = NULL;
+	const char *mdns_arg = NULL;
 
 	g_variant_builder_init (&dns, G_VARIANT_TYPE ("(ia(iay))"));
 	g_variant_builder_add (&dns, "i", ic->ifindex);
@@ -208,10 +208,8 @@ prepare_one_interface (NMDnsSystemdResolved *self, InterfaceConfig *ic)
 
 		update_add_ip_config (self, &dns, &domains, data);
 
-		if (NM_IS_IP4_CONFIG (ip_config)) {
+		if (NM_IS_IP4_CONFIG (ip_config))
 			mdns = NM_MAX (mdns, nm_ip4_config_mdns_get (NM_IP4_CONFIG (ip_config)));
-			llmnr = NM_MAX (llmnr, nm_ip4_config_llmnr_get (NM_IP4_CONFIG (ip_config)));
-		}
 	}
 
 	g_variant_builder_close (&dns);
@@ -233,22 +231,6 @@ prepare_one_interface (NMDnsSystemdResolved *self, InterfaceConfig *ic)
 	}
 	nm_assert (mdns_arg);
 
-	switch (llmnr) {
-	case NM_SETTING_CONNECTION_LLMNR_NO:
-		llmnr_arg = "no";
-		break;
-	case NM_SETTING_CONNECTION_LLMNR_RESOLVE:
-		llmnr_arg = "resolve";
-		break;
-	case NM_SETTING_CONNECTION_LLMNR_YES:
-		llmnr_arg = "yes";
-		break;
-	case NM_SETTING_CONNECTION_LLMNR_DEFAULT:
-		llmnr_arg = "";
-		break;
-	}
-	nm_assert (llmnr_arg);
-
 	_request_item_append (&priv->request_queue_lst_head,
 	                      "SetLinkDNS",
 	                      g_variant_builder_end (&dns));
@@ -258,9 +240,6 @@ prepare_one_interface (NMDnsSystemdResolved *self, InterfaceConfig *ic)
 	_request_item_append (&priv->request_queue_lst_head,
 	                      "SetLinkMulticastDNS",
 	                      g_variant_new ("(is)", ic->ifindex, mdns_arg ?: ""));
-	_request_item_append (&priv->request_queue_lst_head,
-	                      "SetLinkLLMNR",
-	                      g_variant_new ("(is)", ic->ifindex, llmnr_arg ?: ""));
 }
 
 static void
@@ -431,6 +410,7 @@ dispose (GObject *object)
 	g_clear_object (&priv->resolve);
 	nm_clear_g_cancellable (&priv->init_cancellable);
 	nm_clear_g_cancellable (&priv->update_cancellable);
+	nm_clear_g_cancellable (&priv->mdns_cancellable);
 
 	G_OBJECT_CLASS (nm_dns_systemd_resolved_parent_class)->dispose (object);
 }

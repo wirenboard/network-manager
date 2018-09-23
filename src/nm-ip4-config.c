@@ -278,12 +278,10 @@ NM_GOBJECT_PROPERTIES_DEFINE (NMIP4Config,
 	PROP_ROUTE_DATA,
 	PROP_ROUTES,
 	PROP_GATEWAY,
-	PROP_NAMESERVER_DATA,
 	PROP_NAMESERVERS,
 	PROP_DOMAINS,
 	PROP_SEARCHES,
 	PROP_DNS_OPTIONS,
-	PROP_WINS_SERVER_DATA,
 	PROP_WINS_SERVERS,
 	PROP_DNS_PRIORITY,
 );
@@ -293,9 +291,8 @@ typedef struct {
 	guint32 mtu;
 	int ifindex;
 	NMIPConfigSource mtu_source;
-	int dns_priority;
+	gint dns_priority;
 	NMSettingConnectionMdns mdns;
-	NMSettingConnectionLlmnr llmnr;
 	GArray *nameservers;
 	GPtrArray *domains;
 	GPtrArray *searches;
@@ -512,8 +509,8 @@ _notify_addresses (NMIP4Config *self)
 
 	nm_clear_g_variant (&priv->address_data_variant);
 	nm_clear_g_variant (&priv->addresses_variant);
-	nm_gobject_notify_together (self, PROP_ADDRESS_DATA,
-	                                  PROP_ADDRESSES);
+	_notify (self, PROP_ADDRESS_DATA);
+	_notify (self, PROP_ADDRESSES);
 }
 
 static void
@@ -524,13 +521,13 @@ _notify_routes (NMIP4Config *self)
 	nm_assert (priv->best_default_route == _nm_ip4_config_best_default_route_find (self));
 	nm_clear_g_variant (&priv->route_data_variant);
 	nm_clear_g_variant (&priv->routes_variant);
-	nm_gobject_notify_together (self, PROP_ROUTE_DATA,
-	                                  PROP_ROUTES);
+	_notify (self, PROP_ROUTE_DATA);
+	_notify (self, PROP_ROUTES);
 }
 
 /*****************************************************************************/
 
-static int
+static gint
 _addresses_sort_cmp_get_prio (in_addr_t addr)
 {
 	if (nm_utils_ip4_address_is_link_local (addr))
@@ -541,7 +538,7 @@ _addresses_sort_cmp_get_prio (in_addr_t addr)
 static int
 _addresses_sort_cmp (gconstpointer a, gconstpointer b, gpointer user_data)
 {
-	int p1, p2;
+	gint p1, p2;
 	const NMPlatformIP4Address *a1 = NMP_OBJECT_CAST_IP4_ADDRESS (*((const NMPObject **) a));
 	const NMPlatformIP4Address *a2 = NMP_OBJECT_CAST_IP4_ADDRESS (*((const NMPObject **) b));
 	guint32 n1, n2;
@@ -917,7 +914,6 @@ void
 nm_ip4_config_merge_setting (NMIP4Config *self,
                              NMSettingIPConfig *setting,
                              NMSettingConnectionMdns mdns,
-                             NMSettingConnectionLlmnr llmnr,
                              guint32 route_table,
                              guint32 route_metric)
 {
@@ -1035,7 +1031,6 @@ nm_ip4_config_merge_setting (NMIP4Config *self,
 		nm_ip4_config_set_dns_priority (self, priority);
 
 	nm_ip4_config_mdns_set (self, mdns);
-	nm_ip4_config_llmnr_set (self, llmnr);
 
 	g_object_thaw_notify (G_OBJECT (self));
 }
@@ -1256,10 +1251,6 @@ nm_ip4_config_merge (NMIP4Config *dst,
 	nm_ip4_config_mdns_set (dst,
 	                        NM_MAX (nm_ip4_config_mdns_get (src),
 	                                nm_ip4_config_mdns_get (dst)));
-	/* LLMNR */
-	nm_ip4_config_llmnr_set (dst,
-	                         NM_MAX (nm_ip4_config_llmnr_get (src),
-	                                 nm_ip4_config_llmnr_get (dst)));
 
 	g_object_thaw_notify (G_OBJECT (dst));
 }
@@ -1376,7 +1367,7 @@ nm_ip4_config_subtract (NMIP4Config *dst,
 {
 	NMIP4ConfigPrivate *dst_priv;
 	guint i;
-	int idx;
+	gint idx;
 	const NMPlatformIP4Address *a;
 	const NMPlatformIP4Route *r;
 	NMDedupMultiIter ipconf_iter;
@@ -1501,10 +1492,6 @@ nm_ip4_config_subtract (NMIP4Config *dst,
 	if (nm_ip4_config_mdns_get (src) == nm_ip4_config_mdns_get (dst))
 		nm_ip4_config_mdns_set (dst, NM_SETTING_CONNECTION_MDNS_DEFAULT);
 
-	/* LLMNR */
-	if (nm_ip4_config_llmnr_get (src) == nm_ip4_config_llmnr_get (dst))
-		nm_ip4_config_llmnr_set (dst, NM_SETTING_CONNECTION_LLMNR_DEFAULT);
-
 	g_object_thaw_notify (G_OBJECT (dst));
 }
 
@@ -1606,7 +1593,6 @@ _nm_ip4_config_intersect_helper (NMIP4Config *dst,
 	/* ignore NIS */
 	/* ignore WINS */
 	/* ignore mdns */
-	/* ignore LLMNR */
 
 	if (update_dst)
 		g_object_thaw_notify (G_OBJECT (dst));
@@ -1885,15 +1871,7 @@ nm_ip4_config_replace (NMIP4Config *dst, const NMIP4Config *src, gboolean *relev
 		has_relevant_changes = TRUE;
 	}
 
-	if (src_priv->mdns != dst_priv->mdns) {
-		dst_priv->mdns = src_priv->mdns;
-		has_relevant_changes = TRUE;
-	}
-
-	if (src_priv->llmnr != dst_priv->llmnr) {
-		dst_priv->llmnr = src_priv->llmnr;
-		has_relevant_changes = TRUE;
-	}
+	dst_priv->mdns = src_priv->mdns;
 
 	/* DNS priority */
 	if (src_priv->dns_priority != dst_priv->dns_priority) {
@@ -2329,8 +2307,7 @@ nm_ip4_config_reset_nameservers (NMIP4Config *self)
 
 	if (priv->nameservers->len != 0) {
 		g_array_set_size (priv->nameservers, 0);
-		nm_gobject_notify_together (self, PROP_NAMESERVER_DATA,
-		                                  PROP_NAMESERVERS);
+		_notify (self, PROP_NAMESERVERS);
 	}
 }
 
@@ -2347,8 +2324,7 @@ nm_ip4_config_add_nameserver (NMIP4Config *self, guint32 new)
 			return;
 
 	g_array_append_val (priv->nameservers, new);
-	nm_gobject_notify_together (self, PROP_NAMESERVER_DATA,
-	                                  PROP_NAMESERVERS);
+	_notify (self, PROP_NAMESERVERS);
 }
 
 void
@@ -2359,8 +2335,7 @@ nm_ip4_config_del_nameserver (NMIP4Config *self, guint i)
 	g_return_if_fail (i < priv->nameservers->len);
 
 	g_array_remove_index (priv->nameservers, i);
-	nm_gobject_notify_together (self, PROP_NAMESERVER_DATA,
-	                                  PROP_NAMESERVERS);
+	_notify (self, PROP_NAMESERVERS);
 }
 
 guint
@@ -2582,23 +2557,10 @@ nm_ip4_config_mdns_set (NMIP4Config *self,
 	NM_IP4_CONFIG_GET_PRIVATE (self)->mdns = mdns;
 }
 
-NMSettingConnectionLlmnr
-nm_ip4_config_llmnr_get (const NMIP4Config *self)
-{
-	return NM_IP4_CONFIG_GET_PRIVATE (self)->llmnr;
-}
-
-void
-nm_ip4_config_llmnr_set (NMIP4Config *self,
-                         NMSettingConnectionLlmnr llmnr)
-{
-	NM_IP4_CONFIG_GET_PRIVATE (self)->llmnr = llmnr;
-}
-
 /*****************************************************************************/
 
 void
-nm_ip4_config_set_dns_priority (NMIP4Config *self, int priority)
+nm_ip4_config_set_dns_priority (NMIP4Config *self, gint priority)
 {
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 
@@ -2608,7 +2570,7 @@ nm_ip4_config_set_dns_priority (NMIP4Config *self, int priority)
 	}
 }
 
-int
+gint
 nm_ip4_config_get_dns_priority (const NMIP4Config *self)
 {
 	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
@@ -2691,8 +2653,7 @@ nm_ip4_config_reset_wins (NMIP4Config *self)
 
 	if (priv->wins->len != 0) {
 		g_array_set_size (priv->wins, 0);
-		nm_gobject_notify_together (self, PROP_WINS_SERVER_DATA,
-		                                  PROP_WINS_SERVERS);
+		_notify (self, PROP_WINS_SERVERS);
 	}
 }
 
@@ -2709,8 +2670,7 @@ nm_ip4_config_add_wins (NMIP4Config *self, guint32 wins)
 			return;
 
 	g_array_append_val (priv->wins, wins);
-	nm_gobject_notify_together (self, PROP_WINS_SERVER_DATA,
-	                                  PROP_WINS_SERVERS);
+	_notify (self, PROP_WINS_SERVERS);
 }
 
 void
@@ -2721,8 +2681,7 @@ nm_ip4_config_del_wins (NMIP4Config *self, guint i)
 	g_return_if_fail (i < priv->wins->len);
 
 	g_array_remove_index (priv->wins, i);
-	nm_gobject_notify_together (self, PROP_WINS_SERVER_DATA,
-	                                  PROP_WINS_SERVERS);
+	_notify (self, PROP_WINS_SERVERS);
 }
 
 guint
@@ -2884,7 +2843,6 @@ nm_ip4_config_hash (const NMIP4Config *self, GChecksum *sum, gboolean dns_only)
 	NMDedupMultiIter ipconf_iter;
 	const NMPlatformIP4Address *address;
 	const NMPlatformIP4Route *route;
-	int val;
 
 	g_return_if_fail (self);
 	g_return_if_fail (sum);
@@ -2931,25 +2889,6 @@ nm_ip4_config_hash (const NMIP4Config *self, GChecksum *sum, gboolean dns_only)
 		s = nm_ip4_config_get_dns_option (self, i);
 		g_checksum_update (sum, (const guint8 *) s, strlen (s));
 	}
-
-	val = nm_ip4_config_mdns_get (self);
-	if (val != NM_SETTING_CONNECTION_MDNS_DEFAULT)
-		g_checksum_update (sum, (const guint8 *) &val, sizeof (val));
-
-	val = nm_ip4_config_llmnr_get (self);
-	if (val != NM_SETTING_CONNECTION_LLMNR_DEFAULT)
-		g_checksum_update (sum, (const guint8 *) &val, sizeof (val));
-
-	/* FIXME(ip-config-checksum): the DNS priority should be considered relevant
-	 * and added into the checksum as well, but this can't be done right now
-	 * because in the DNS manager we rely on the fact that an empty
-	 * configuration (i.e. just created) has a zero checksum. This is needed to
-	 * avoid rewriting resolv.conf when there is no change.
-	 *
-	 * The DNS priority initial value depends on the connection type (VPN or
-	 * not), so it's a bit difficult to add it to checksum maintaining the
-	 * assumption of checksum(empty)=0
-	 */
 }
 
 /**
@@ -3005,7 +2944,6 @@ get_property (GObject *object, guint prop_id,
 	NMDedupMultiIter ipconf_iter;
 	const NMPlatformIP4Route *route;
 	GVariantBuilder builder_data, builder_legacy;
-	guint i;
 
 	switch (prop_id) {
 	case PROP_IFINDEX:
@@ -3024,7 +2962,7 @@ get_property (GObject *object, guint prop_id,
 		head_entry = nm_ip4_config_lookup_addresses (self);
 		if (head_entry) {
 			gs_free const NMPObject **addresses = NULL;
-			guint naddr;
+			guint naddr, i;
 
 			addresses = (const NMPObject **) nm_dedup_multi_objs_to_array_head (head_entry, NULL, NULL, &naddr);
 			nm_assert (addresses && naddr);
@@ -3160,26 +3098,6 @@ out_routes_cached:
 		} else
 			g_value_set_string (value, NULL);
 		break;
-	case PROP_NAMESERVER_DATA:
-		g_variant_builder_init (&builder_data, G_VARIANT_TYPE ("aa{sv}"));
-
-		for (i = 0; i < priv->nameservers->len; i++) {
-			GVariantBuilder nested_builder;
-			char addr_str[NM_UTILS_INET_ADDRSTRLEN];
-
-			nm_utils_inet4_ntop (g_array_index (priv->nameservers, in_addr_t, i),
-			                     addr_str);
-
-			g_variant_builder_init (&nested_builder, G_VARIANT_TYPE ("a{sv}"));
-			g_variant_builder_add (&nested_builder, "{sv}",
-			                       "address",
-			                       g_variant_new_string (addr_str));
-			g_variant_builder_add (&builder_data, "a{sv}", &nested_builder);
-		}
-
-		g_value_take_variant (value,
-		                      g_variant_builder_end (&builder_data));
-		break;
 	case PROP_NAMESERVERS:
 		g_value_take_variant (value,
 		                      g_variant_new_fixed_array (G_VARIANT_TYPE_UINT32,
@@ -3198,19 +3116,6 @@ out_routes_cached:
 		break;
 	case PROP_DNS_PRIORITY:
 		g_value_set_int (value, priv->dns_priority);
-		break;
-	case PROP_WINS_SERVER_DATA:
-		g_variant_builder_init (&builder_data, G_VARIANT_TYPE ("as"));
-		for (i = 0; i < priv->wins->len; i++) {
-			char addr_str[NM_UTILS_INET_ADDRSTRLEN];
-
-			g_variant_builder_add (&builder_data,
-			                       "s",
-			                       nm_utils_inet4_ntop (g_array_index (priv->wins, in_addr_t, i),
-			                                            addr_str));
-		}
-		g_value_take_variant (value,
-		                      g_variant_builder_end (&builder_data));
 		break;
 	case PROP_WINS_SERVERS:
 		g_value_take_variant (value,
@@ -3265,7 +3170,6 @@ nm_ip4_config_init (NMIP4Config *self)
 	                                        NMP_OBJECT_TYPE_IP4_ROUTE);
 
 	priv->mdns = NM_SETTING_CONNECTION_MDNS_DEFAULT;
-	priv->llmnr = NM_SETTING_CONNECTION_LLMNR_DEFAULT;
 	priv->nameservers = g_array_new (FALSE, FALSE, sizeof (guint32));
 	priv->domains = g_ptr_array_new_with_free_func (g_free);
 	priv->searches = g_ptr_array_new_with_free_func (g_free);
@@ -3320,19 +3224,17 @@ static const NMDBusInterfaceInfoExtended interface_info_ip4_config = {
 			&nm_signal_info_property_changed_legacy,
 		),
 		.properties = NM_DEFINE_GDBUS_PROPERTY_INFOS (
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Addresses",      "aau",    NM_IP4_CONFIG_ADDRESSES),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("AddressData",    "aa{sv}", NM_IP4_CONFIG_ADDRESS_DATA),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Gateway",        "s",      NM_IP4_CONFIG_GATEWAY),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Routes",         "aau",    NM_IP4_CONFIG_ROUTES),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("RouteData",      "aa{sv}", NM_IP4_CONFIG_ROUTE_DATA),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE   ("NameserverData", "aa{sv}", NM_IP4_CONFIG_NAMESERVER_DATA),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Nameservers",    "au",     NM_IP4_CONFIG_NAMESERVERS),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Domains",        "as",     NM_IP4_CONFIG_DOMAINS),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Searches",       "as",     NM_IP4_CONFIG_SEARCHES),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("DnsOptions",     "as",     NM_IP4_CONFIG_DNS_OPTIONS),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("DnsPriority",    "i",      NM_IP4_CONFIG_DNS_PRIORITY),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE   ("WinsServerData", "as",     NM_IP4_CONFIG_WINS_SERVER_DATA),
-			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("WinsServers",    "au",     NM_IP4_CONFIG_WINS_SERVERS),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Addresses",   "aau",    NM_IP4_CONFIG_ADDRESSES),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("AddressData", "aa{sv}", NM_IP4_CONFIG_ADDRESS_DATA),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Gateway",     "s",      NM_IP4_CONFIG_GATEWAY),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Routes",      "aau",    NM_IP4_CONFIG_ROUTES),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("RouteData",   "aa{sv}", NM_IP4_CONFIG_ROUTE_DATA),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Nameservers", "au",     NM_IP4_CONFIG_NAMESERVERS),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Domains",     "as",     NM_IP4_CONFIG_DOMAINS),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("Searches",    "as",     NM_IP4_CONFIG_SEARCHES),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("DnsOptions",  "as",     NM_IP4_CONFIG_DNS_OPTIONS),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("DnsPriority", "i",      NM_IP4_CONFIG_DNS_PRIORITY),
+			NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L ("WinsServers", "au",     NM_IP4_CONFIG_WINS_SERVERS),
 		),
 	),
 	.legacy_property_changed = TRUE,
@@ -3391,12 +3293,6 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	                         NULL,
 	                         G_PARAM_READABLE |
 	                         G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_NAMESERVER_DATA] =
-	    g_param_spec_variant (NM_IP4_CONFIG_NAMESERVER_DATA, "", "",
-	                          G_VARIANT_TYPE ("aa{sv}"),
-	                          NULL,
-	                          G_PARAM_READABLE |
-	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_NAMESERVERS] =
 	    g_param_spec_variant (NM_IP4_CONFIG_NAMESERVERS, "", "",
 	                          G_VARIANT_TYPE ("au"),
@@ -3423,12 +3319,6 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	                       G_MININT32, G_MAXINT32, 0,
 	                       G_PARAM_READABLE |
 	                       G_PARAM_STATIC_STRINGS);
-	obj_properties[PROP_WINS_SERVER_DATA] =
-	    g_param_spec_variant (NM_IP4_CONFIG_WINS_SERVER_DATA, "", "",
-	                          G_VARIANT_TYPE ("as"),
-	                          NULL,
-	                          G_PARAM_READABLE |
-	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_WINS_SERVERS] =
 	    g_param_spec_variant (NM_IP4_CONFIG_WINS_SERVERS, "", "",
 	                          G_VARIANT_TYPE ("au"),

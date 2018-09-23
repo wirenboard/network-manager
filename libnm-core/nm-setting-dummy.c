@@ -34,7 +34,9 @@
  * necessary for connection to dummy devices
  **/
 
-G_DEFINE_TYPE (NMSettingDummy, nm_setting_dummy, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingDummy, nm_setting_dummy, NM_TYPE_SETTING,
+                         _nm_register_setting (DUMMY, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_DUMMY)
 
 /**
  * nm_setting_dummy_new:
@@ -66,11 +68,9 @@ nm_setting_dummy_init (NMSettingDummy *setting)
 }
 
 static void
-nm_setting_dummy_class_init (NMSettingDummyClass *klass)
+nm_setting_dummy_class_init (NMSettingDummyClass *setting_class)
 {
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	setting_class->verify = verify;
-
-	_nm_setting_class_commit (setting_class, NM_META_SETTING_TYPE_DUMMY);
+	parent_class->verify           = verify;
 }

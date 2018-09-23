@@ -174,7 +174,7 @@ static PriorityMap *
 priority_map_new_from_str (NMVlanPriorityMap map, const char *str)
 {
 	PriorityMap *p = NULL;
-	char **t = NULL;
+	gchar **t = NULL;
 	guint32 len;
 	guint64 from, to;
 

@@ -84,7 +84,7 @@ struct _NMSleepMonitor {
 	/* used both during construction of proxy and during Inhibit call. */
 	GCancellable *cancellable;
 
-	int inhibit_fd;
+	gint inhibit_fd;
 	GSList *handles_active;
 	GSList *handles_stale;
 

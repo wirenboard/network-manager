@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: LGPL-2.1+ */
+/***
+  Copyright © 2014 Michal Schmidt
+***/
 
 #include "nm-sd-adapt.h"
 

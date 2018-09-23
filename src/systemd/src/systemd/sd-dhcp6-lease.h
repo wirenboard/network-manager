@@ -3,6 +3,7 @@
 #define foosddhcp6leasehfoo
 
 /***
+  Copyright © 2014 Tom Gundersen
   Copyright © 2014-2015 Intel Corporation. All rights reserved.
 
   systemd is free software; you can redistribute it and/or modify it

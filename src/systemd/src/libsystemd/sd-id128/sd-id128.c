@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: LGPL-2.1+ */
+/***
+***/
 
 #include "nm-sd-adapt.h"
 

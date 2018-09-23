@@ -8,6 +8,7 @@ foreach test_unit: test_units
     test_unit,
     test_unit + '.c',
     dependencies: test_nm_dep,
+    c_args: nm_build_cflags,
   )
 
   test(

@@ -113,7 +113,10 @@ int path_make_absolute_cwd(const char *p, char **ret) {
                 if (r < 0)
                         return r;
 
-                c = path_join(NULL, cwd, p);
+                if (endswith(cwd, "/"))
+                        c = strjoin(cwd, p);
+                else
+                        c = strjoin(cwd, "/", p);
         }
         if (!c)
                 return -ENOMEM;
@@ -423,7 +426,6 @@ char* path_startswith(const char *path, const char *prefix) {
                 prefix += b;
         }
 }
-#endif /* NM_IGNORED */
 
 int path_compare(const char *a, const char *b) {
         int d;
@@ -475,7 +477,6 @@ bool path_equal(const char *a, const char *b) {
         return path_compare(a, b) == 0;
 }
 
-#if 0 /* NM_IGNORED */
 bool path_equal_or_files_same(const char *a, const char *b, int flags) {
         return path_equal(a, b) || files_same(a, b, flags) > 0;
 }

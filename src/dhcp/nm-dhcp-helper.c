@@ -31,7 +31,7 @@
 
 /*****************************************************************************/
 
-#if NM_MORE_LOGGING
+#ifdef NM_MORE_LOGGING
 #define _NMLOG_ENABLED(level) TRUE
 #else
 #define _NMLOG_ENABLED(level) ((level) <= LOG_ERR)

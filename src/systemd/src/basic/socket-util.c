@@ -53,8 +53,7 @@ static const char* const socket_address_type_table[] = {
 DEFINE_STRING_TABLE_LOOKUP(socket_address_type, int);
 
 int socket_address_parse(SocketAddress *a, const char *s) {
-        _cleanup_free_ char *n = NULL;
-        char *e;
+        char *e, *n;
         int r;
 
         assert(a);
@@ -72,9 +71,7 @@ int socket_address_parse(SocketAddress *a, const char *s) {
                 if (!e)
                         return -EINVAL;
 
-                n = strndup(s+1, e-s-1);
-                if (!n)
-                        return -ENOMEM;
+                n = strndupa(s+1, e-s-1);
 
                 errno = 0;
                 if (inet_pton(AF_INET6, n, &a->sockaddr.in6.sin6_addr) <= 0)
@@ -131,10 +128,7 @@ int socket_address_parse(SocketAddress *a, const char *s) {
                 if (r < 0)
                         return r;
 
-                n = strndup(cid_start, e - cid_start);
-                if (!n)
-                        return -ENOMEM;
-
+                n = strndupa(cid_start, e - cid_start);
                 if (!isempty(n)) {
                         r = safe_atou(n, &a->sockaddr.vm.svm_cid);
                         if (r < 0)
@@ -155,9 +149,7 @@ int socket_address_parse(SocketAddress *a, const char *s) {
                         if (r < 0)
                                 return r;
 
-                        n = strndup(s, e-s);
-                        if (!n)
-                                return -ENOMEM;
+                        n = strndupa(s, e-s);
 
                         /* IPv4 in w.x.y.z:p notation? */
                         r = inet_pton(AF_INET, n, &a->sockaddr.in.sin_addr);
@@ -1014,10 +1006,9 @@ int getpeergroups(int fd, gid_t **ret) {
         return (int) n;
 }
 
-ssize_t send_one_fd_iov_sa(
+int send_one_fd_sa(
                 int transport_fd,
                 int fd,
-                struct iovec *iov, size_t iovlen,
                 const struct sockaddr *sa, socklen_t len,
                 int flags) {
 
@@ -1028,58 +1019,28 @@ ssize_t send_one_fd_iov_sa(
         struct msghdr mh = {
                 .msg_name = (struct sockaddr*) sa,
                 .msg_namelen = len,
-                .msg_iov = iov,
-                .msg_iovlen = iovlen,
+                .msg_control = &control,
+                .msg_controllen = sizeof(control),
         };
-        ssize_t k;
+        struct cmsghdr *cmsg;
 
         assert(transport_fd >= 0);
-
-        /*
-         * We need either an FD or data to send.
-         * If there's nothing, return an error.
-         */
-        if (fd < 0 && !iov)
-                return -EINVAL;
-
-        if (fd >= 0) {
-                struct cmsghdr *cmsg;
-
-                mh.msg_control = &control;
-                mh.msg_controllen = sizeof(control);
-
-                cmsg = CMSG_FIRSTHDR(&mh);
-                cmsg->cmsg_level = SOL_SOCKET;
-                cmsg->cmsg_type = SCM_RIGHTS;
-                cmsg->cmsg_len = CMSG_LEN(sizeof(int));
-                memcpy(CMSG_DATA(cmsg), &fd, sizeof(int));
-
-                mh.msg_controllen = CMSG_SPACE(sizeof(int));
-        }
-        k = sendmsg(transport_fd, &mh, MSG_NOSIGNAL | flags);
-        if (k < 0)
-                return (ssize_t) -errno;
-
-        return k;
-}
-
-int send_one_fd_sa(
-                int transport_fd,
-                int fd,
-                const struct sockaddr *sa, socklen_t len,
-                int flags) {
-
         assert(fd >= 0);
 
-        return (int) send_one_fd_iov_sa(transport_fd, fd, NULL, 0, sa, len, flags);
+        cmsg = CMSG_FIRSTHDR(&mh);
+        cmsg->cmsg_level = SOL_SOCKET;
+        cmsg->cmsg_type = SCM_RIGHTS;
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+        memcpy(CMSG_DATA(cmsg), &fd, sizeof(int));
+
+        mh.msg_controllen = CMSG_SPACE(sizeof(int));
+        if (sendmsg(transport_fd, &mh, MSG_NOSIGNAL | flags) < 0)
+                return -errno;
+
+        return 0;
 }
 
-ssize_t receive_one_fd_iov(
-                int transport_fd,
-                struct iovec *iov, size_t iovlen,
-                int flags,
-                int *ret_fd) {
-
+int receive_one_fd(int transport_fd, int flags) {
         union {
                 struct cmsghdr cmsghdr;
                 uint8_t buf[CMSG_SPACE(sizeof(int))];
@@ -1087,14 +1048,10 @@ ssize_t receive_one_fd_iov(
         struct msghdr mh = {
                 .msg_control = &control,
                 .msg_controllen = sizeof(control),
-                .msg_iov = iov,
-                .msg_iovlen = iovlen,
         };
         struct cmsghdr *cmsg, *found = NULL;
-        ssize_t k;
 
         assert(transport_fd >= 0);
-        assert(ret_fd);
 
         /*
          * Receive a single FD via @transport_fd. We don't care for
@@ -1104,9 +1061,8 @@ ssize_t receive_one_fd_iov(
          * combination with send_one_fd().
          */
 
-        k = recvmsg(transport_fd, &mh, MSG_CMSG_CLOEXEC | flags);
-        if (k < 0)
-                return (ssize_t) -errno;
+        if (recvmsg(transport_fd, &mh, MSG_NOSIGNAL | MSG_CMSG_CLOEXEC | flags) < 0)
+                return -errno;
 
         CMSG_FOREACH(cmsg, &mh) {
                 if (cmsg->cmsg_level == SOL_SOCKET &&
@@ -1118,33 +1074,12 @@ ssize_t receive_one_fd_iov(
                 }
         }
 
-        if (!found)
+        if (!found) {
                 cmsg_close_all(&mh);
-
-        /* If didn't receive an FD or any data, return an error. */
-        if (k == 0 && !found)
                 return -EIO;
+        }
 
-        if (found)
-                *ret_fd = *(int*) CMSG_DATA(found);
-        else
-                *ret_fd = -1;
-
-        return k;
-}
-
-int receive_one_fd(int transport_fd, int flags) {
-        int fd;
-        ssize_t k;
-
-        k = receive_one_fd_iov(transport_fd, NULL, 0, flags, &fd);
-        if (k == 0)
-                return fd;
-
-        /* k must be negative, since receive_one_fd_iov() only returns
-         * a positive value if data was received through the iov. */
-        assert(k < 0);
-        return (int) k;
+        return *(int*) CMSG_DATA(found);
 }
 #endif /* NM_IGNORED */
 

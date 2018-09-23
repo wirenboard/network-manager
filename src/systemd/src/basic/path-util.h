@@ -60,10 +60,10 @@ static inline bool path_equal_ptr(const char *a, const char *b) {
 /* Note: the search terminates on the first NULL item. */
 #define PATH_IN_SET(p, ...)                                     \
         ({                                                      \
-                char **_s;                                      \
+                char **s;                                       \
                 bool _found = false;                            \
-                STRV_FOREACH(_s, STRV_MAKE(__VA_ARGS__))        \
-                        if (path_equal(p, *_s)) {               \
+                STRV_FOREACH(s, STRV_MAKE(__VA_ARGS__))         \
+                        if (path_equal(p, *s)) {                \
                                _found = true;                   \
                                break;                           \
                         }                                       \

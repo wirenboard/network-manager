@@ -37,7 +37,9 @@
  * networks, including those using CDMA2000/EVDO technology.
  */
 
-G_DEFINE_TYPE (NMSettingCdma, nm_setting_cdma, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingCdma, nm_setting_cdma, NM_TYPE_SETTING,
+                         _nm_register_setting (CDMA, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_CDMA)
 
 #define NM_SETTING_CDMA_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_CDMA, NMSettingCdmaPrivate))
 
@@ -283,20 +285,22 @@ get_property (GObject *object, guint prop_id,
 }
 
 static void
-nm_setting_cdma_class_init (NMSettingCdmaClass *klass)
+nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	g_type_class_add_private (klass, sizeof (NMSettingCdmaPrivate));
+	g_type_class_add_private (setting_class, sizeof (NMSettingCdmaPrivate));
 
+	/* virtual methods */
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
 	object_class->finalize     = finalize;
+	parent_class->verify       = verify;
+	parent_class->verify_secrets = verify_secrets;
+	parent_class->need_secrets = need_secrets;
 
-	setting_class->verify         = verify;
-	setting_class->verify_secrets = verify_secrets;
-	setting_class->need_secrets   = need_secrets;
+	/* Properties */
 
 	/**
 	 * NMSettingCdma:number:
@@ -371,5 +375,4 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *klass)
 		                    NM_SETTING_PARAM_FUZZY_IGNORE |
 		                    G_PARAM_STATIC_STRINGS));
 
-	_nm_setting_class_commit (setting_class, NM_META_SETTING_TYPE_CDMA);
 }

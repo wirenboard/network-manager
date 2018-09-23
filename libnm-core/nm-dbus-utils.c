@@ -117,7 +117,7 @@ dbus_signal_meta_marshal (GClosure     *closure,
  *
  * The argument types in @c_handler correspond to the types output by
  * g_dbus_gvariant_to_gvalue(), except for 'ay' and 'aay'. In particular:
- * - both 16-bit and 32-bit integers are passed as #int/#guint
+ * - both 16-bit and 32-bit integers are passed as #gint/#guint
  * - 'as' values are passed as #GStrv (char **)
  * - all other array, tuple, and dict types are passed as #GVariant
  *
@@ -245,11 +245,11 @@ _nm_dbus_proxy_call_finish (GDBusProxy          *proxy,
  */
 GVariant *
 _nm_dbus_proxy_call_sync (GDBusProxy          *proxy,
-                          const char          *method_name,
+                          const gchar         *method_name,
                           GVariant            *parameters,
                           const GVariantType  *reply_type,
                           GDBusCallFlags       flags,
-                          int                  timeout_msec,
+                          gint                 timeout_msec,
                           GCancellable        *cancellable,
                           GError             **error)
 {

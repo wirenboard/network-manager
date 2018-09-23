@@ -11,6 +11,7 @@ exe = executable(
   test_unit,
   sources,
   dependencies: test_nm_dep,
+  c_args: nm_build_cflags,
 )
 
 test(

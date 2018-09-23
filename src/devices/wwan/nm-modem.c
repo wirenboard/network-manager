@@ -291,7 +291,7 @@ nm_modem_get_supported_ip_types (NMModem *self)
 	return NM_MODEM_GET_PRIVATE (self)->ip_types;
 }
 
-const char *
+const gchar *
 nm_modem_ip_type_to_string (NMModemIPType ip_type)
 {
 	switch (ip_type) {
@@ -1027,29 +1027,35 @@ nm_modem_act_stage2_config (NMModem *self,
 /*****************************************************************************/
 
 gboolean
-nm_modem_check_connection_compatible (NMModem *self, NMConnection *connection, GError **error)
+nm_modem_check_connection_compatible (NMModem *self, NMConnection *connection)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
+	NMSettingConnection *s_con;
 
-	if (nm_streq0 (nm_connection_get_connection_type (connection),
-	               NM_SETTING_GSM_SETTING_NAME)) {
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+
+	if (g_str_equal (nm_setting_connection_get_connection_type (s_con),
+	                 NM_SETTING_GSM_SETTING_NAME)) {
 		NMSettingGsm *s_gsm;
 		const char *str;
 
-		s_gsm = _nm_connection_check_main_setting (connection, NM_SETTING_GSM_SETTING_NAME, error);
+		s_gsm = nm_connection_get_setting_gsm (connection);
 		if (!s_gsm)
 			return FALSE;
 
 		str = nm_setting_gsm_get_device_id (s_gsm);
 		if (str) {
 			if (!priv->device_id) {
-				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-				                            "GSM profile has device-id, device does not");
+				_LOGD ("%s/%s has device-id, device does not",
+				       nm_connection_get_uuid (connection),
+				       nm_connection_get_id (connection));
 				return FALSE;
 			}
-			if (!nm_streq (str, priv->device_id)) {
-				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-				                            "device has differing device-id than GSM profile");
+			if (strcmp (str, priv->device_id)) {
+				_LOGD ("%s/%s device-id mismatch",
+				       nm_connection_get_uuid (connection),
+				       nm_connection_get_id (connection));
 				return FALSE;
 			}
 		}
@@ -1059,26 +1065,30 @@ nm_modem_check_connection_compatible (NMModem *self, NMConnection *connection, G
 		 * are only compared if present on the device.
 		 */
 
-		if (   priv->sim_id
-		    && (str = nm_setting_gsm_get_sim_id (s_gsm))) {
-			if (!nm_streq (str, priv->sim_id)) {
-				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-				                            "device has differing sim-id than GSM profile");
+		str = nm_setting_gsm_get_sim_id (s_gsm);
+		if (str && priv->sim_id) {
+			if (strcmp (str, priv->sim_id)) {
+				_LOGD ("%s/%s sim-id mismatch",
+				       nm_connection_get_uuid (connection),
+				       nm_connection_get_id (connection));
 				return FALSE;
 			}
 		}
 
-		if (   priv->sim_operator_id
-		    && (str = nm_setting_gsm_get_sim_operator_id (s_gsm))) {
-			if (!nm_streq (str, priv->sim_operator_id)) {
-				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-				                            "device has differing sim-operator-id than GSM profile");
+		str = nm_setting_gsm_get_sim_operator_id (s_gsm);
+		if (str && priv->sim_operator_id) {
+			if (strcmp (str, priv->sim_operator_id)) {
+				_LOGD ("%s/%s sim-operator-id mismatch",
+				       nm_connection_get_uuid (connection),
+				       nm_connection_get_id (connection));
 				return FALSE;
 			}
 		}
 	}
 
-	return NM_MODEM_GET_CLASS (self)->check_connection_compatible_with_modem (self, connection, error);
+	if (NM_MODEM_GET_CLASS (self)->check_connection_compatible)
+		return NM_MODEM_GET_CLASS (self)->check_connection_compatible (self, connection);
+	return FALSE;
 }
 
 /*****************************************************************************/

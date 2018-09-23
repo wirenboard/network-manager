@@ -35,10 +35,10 @@ libnm_wwan_dep = declare_dependency(
 
 core_plugins += libnm_wwan
 
-test(
+run_target(
   'check-wwan',
-  check_exports,
-  args: [libnm_wwan.full_path(), linker_script],
+  command: [check_exports, libnm_wwan.full_path(), linker_script],
+  depends: libnm_wwan
 )
 
 sources = files(

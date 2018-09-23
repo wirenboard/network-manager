@@ -124,7 +124,7 @@ parse_device (GKeyFile *kf, GVariant **out_device_props, GError **error)
 {
 	GVariantBuilder props;
 	char *tmp;
-	int i;
+	gint i;
 
 	g_variant_builder_init (&props, G_VARIANT_TYPE ("a{sv}"));
 

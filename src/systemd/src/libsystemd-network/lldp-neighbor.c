@@ -28,15 +28,22 @@ static int lldp_neighbor_id_compare_func(const void *a, const void *b) {
         if (r != 0)
                 return r;
 
-        r = CMP(x->chassis_id_size, y->chassis_id_size);
-        if (r != 0)
-                return r;
+        if (x->chassis_id_size < y->chassis_id_size)
+                return -1;
+
+        if (x->chassis_id_size > y->chassis_id_size)
+                return 1;
 
         r = memcmp(x->port_id, y->port_id, MIN(x->port_id_size, y->port_id_size));
         if (r != 0)
                 return r;
 
-        return CMP(x->port_id_size, y->port_id_size);
+        if (x->port_id_size < y->port_id_size)
+                return -1;
+        if (x->port_id_size > y->port_id_size)
+                return 1;
+
+        return 0;
 }
 
 const struct hash_ops lldp_neighbor_id_hash_ops = {
@@ -47,7 +54,13 @@ const struct hash_ops lldp_neighbor_id_hash_ops = {
 int lldp_neighbor_prioq_compare_func(const void *a, const void *b) {
         const sd_lldp_neighbor *x = a, *y = b;
 
-        return CMP(x->until, y->until);
+        if (x->until < y->until)
+                return -1;
+
+        if (x->until > y->until)
+                return 1;
+
+        return 0;
 }
 
 _public_ sd_lldp_neighbor *sd_lldp_neighbor_ref(sd_lldp_neighbor *n) {

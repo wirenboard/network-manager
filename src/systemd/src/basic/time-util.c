@@ -2,7 +2,6 @@
 
 #include "nm-sd-adapt.h"
 
-#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -1002,10 +1001,10 @@ int parse_time(const char *t, usec_t *usec, usec_t default_unit) {
         }
 
         for (;;) {
-                usec_t multiplier = default_unit, k;
                 long long l, z = 0;
-                unsigned n = 0;
                 char *e;
+                unsigned n = 0;
+                usec_t multiplier = default_unit, k;
 
                 p += strspn(p, WHITESPACE);
 
@@ -1015,9 +1014,6 @@ int parse_time(const char *t, usec_t *usec, usec_t default_unit) {
 
                         break;
                 }
-
-                if (*p == '-') /* Don't allow "-0" */
-                        return -ERANGE;
 
                 errno = 0;
                 l = strtoll(p, &e, 10);
@@ -1029,16 +1025,14 @@ int parse_time(const char *t, usec_t *usec, usec_t default_unit) {
                 if (*e == '.') {
                         char *b = e + 1;
 
-                        /* Don't allow "0.-0", "3.+1" or "3. 1" */
-                        if (*b == '-' || *b == '+' || isspace(*b))
-                                return -EINVAL;
-
                         errno = 0;
                         z = strtoll(b, &e, 10);
                         if (errno > 0)
                                 return -errno;
+
                         if (z < 0)
                                 return -ERANGE;
+
                         if (e == b)
                                 return -EINVAL;
 
@@ -1155,28 +1149,26 @@ int parse_nsec(const char *t, nsec_t *nsec) {
                         break;
                 }
 
-                if (*p == '-')
-                        return -ERANGE;
-
                 errno = 0;
                 l = strtoll(p, &e, 10);
+
                 if (errno > 0)
                         return -errno;
+
                 if (l < 0)
                         return -ERANGE;
 
                 if (*e == '.') {
                         char *b = e + 1;
 
-                        if (*b == '-' || *b == '+' || isspace(*b))
-                                return -EINVAL;
-
                         errno = 0;
                         z = strtoll(b, &e, 10);
                         if (errno > 0)
                                 return -errno;
+
                         if (z < 0)
                                 return -ERANGE;
+
                         if (e == b)
                                 return -EINVAL;
 

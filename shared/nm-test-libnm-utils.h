@@ -48,11 +48,9 @@ static inline void _nmtstc_auto_service_cleanup (NMTstcServiceInfo **info)
 {
 	nmtstc_service_cleanup (g_steal_pointer (info));
 }
-#define nmtstc_auto_service_cleanup nm_auto(_nmtstc_auto_service_cleanup)
-
 #define NMTSTC_SERVICE_INFO_SETUP(sinfo) \
 	NM_PRAGMA_WARNING_DISABLE ("-Wunused-variable") \
-	nmtstc_auto_service_cleanup NMTstcServiceInfo *sinfo = ({ \
+	__attribute__ ((cleanup(_nmtstc_auto_service_cleanup))) NMTstcServiceInfo *sinfo = ({ \
 		NMTstcServiceInfo *_sinfo; \
 		\
 		_sinfo = nmtstc_service_init (); \

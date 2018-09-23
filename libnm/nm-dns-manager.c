@@ -277,7 +277,7 @@ demarshal_dns_configuration (NMObject *object, GParamSpec *pspec, GVariant *valu
 		char **nameservers = NULL, **domains = NULL;
 		gboolean vpn = FALSE;
 		char *interface = NULL, *str;
-		int priority;
+		gint priority;
 
 		if (   !g_variant_lookup (entry_var, "nameservers", "as", &iterp)
 		    || !g_variant_lookup (entry_var, "priority", "i", &priority)) {

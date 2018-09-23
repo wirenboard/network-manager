@@ -2,6 +2,7 @@
 #pragma once
 
 /***
+  Copyright © 2014 Tom Gundersen
   Copyright © 2014-2015 Intel Corporation. All rights reserved.
 ***/
 

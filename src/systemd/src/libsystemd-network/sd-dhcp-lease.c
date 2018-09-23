@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: LGPL-2.1+ */
 /***
   Copyright © 2013 Intel Corporation. All rights reserved.
+  Copyright © 2014 Tom Gundersen
 ***/
 
 #include "nm-sd-adapt.h"
@@ -27,7 +28,6 @@
 #include "parse-util.h"
 #include "stdio-util.h"
 #include "string-util.h"
-#include "strv.h"
 #include "unaligned.h"
 
 int sd_dhcp_lease_get_address(sd_dhcp_lease *lease, struct in_addr *addr) {

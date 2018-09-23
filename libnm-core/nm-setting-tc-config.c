@@ -820,21 +820,23 @@ enum {
 /**
  * NMSettingTCConfig:
  *
- * Linux Traffic Control Settings.
+ * Linux Traffic Contril Settings.
  *
  * Since: 1.12
  */
 struct _NMSettingTCConfig {
-	NMSetting parent;
+        NMSetting parent;
 	GPtrArray *qdiscs;
 	GPtrArray *tfilters;
 };
 
 struct _NMSettingTCConfigClass {
-	NMSettingClass parent;
+        NMSettingClass parent;
 };
 
-G_DEFINE_TYPE (NMSettingTCConfig, nm_setting_tc_config, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingTCConfig, nm_setting_tc_config, NM_TYPE_SETTING,
+                         _nm_register_setting (TC_CONFIG, NM_SETTING_PRIORITY_IP))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_TC_CONFIG)
 
 /**
  * nm_setting_tc_config_new:
@@ -981,10 +983,8 @@ nm_setting_tc_config_clear_qdiscs (NMSettingTCConfig *self)
 {
 	g_return_if_fail (NM_IS_SETTING_TC_CONFIG (self));
 
-	if (self->qdiscs->len != 0) {
-		g_ptr_array_set_size (self->qdiscs, 0);
-		g_object_notify (G_OBJECT (self), NM_SETTING_TC_CONFIG_QDISCS);
-	}
+	g_ptr_array_set_size (self->qdiscs, 0);
+	g_object_notify (G_OBJECT (self), NM_SETTING_TC_CONFIG_QDISCS);
 }
 
 /*****************************************************************************/
@@ -1117,10 +1117,8 @@ nm_setting_tc_config_clear_tfilters (NMSettingTCConfig *self)
 {
 	g_return_if_fail (NM_IS_SETTING_TC_CONFIG (self));
 
-	if (self->tfilters->len != 0) {
-		g_ptr_array_set_size (self->tfilters, 0);
-		g_object_notify (G_OBJECT (self), NM_SETTING_TC_CONFIG_TFILTERS);
-	}
+	g_ptr_array_set_size (self->tfilters, 0);
+	g_object_notify (G_OBJECT (self), NM_SETTING_TC_CONFIG_TFILTERS);
 }
 
 /*****************************************************************************/
@@ -1241,7 +1239,7 @@ compare_property (NMSetting *setting,
 {
 	NMSettingTCConfig *a_tc_config = NM_SETTING_TC_CONFIG (setting);
 	NMSettingTCConfig *b_tc_config = NM_SETTING_TC_CONFIG (other);
-	NMSettingClass *setting_class;
+	NMSettingClass *parent_class;
 	guint i;
 
 	if (nm_streq (prop_spec->name, NM_SETTING_TC_CONFIG_QDISCS)) {
@@ -1264,8 +1262,9 @@ compare_property (NMSetting *setting,
 		return TRUE;
 	}
 
-	setting_class = NM_SETTING_CLASS (nm_setting_tc_config_parent_class);
-	return setting_class->compare_property (setting, other, prop_spec, flags);
+	/* Otherwise chain up to parent to handle generic compare */
+	parent_class = NM_SETTING_CLASS (nm_setting_tc_config_parent_class);
+	return parent_class->compare_property (setting, other, prop_spec, flags);
 }
 
 static void
@@ -1587,27 +1586,28 @@ tc_tfilters_set (NMSetting *setting,
 }
 
 static void
-nm_setting_tc_config_class_init (NMSettingTCConfigClass *klass)
+nm_setting_tc_config_class_init (NMSettingTCConfigClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
-	GArray *properties_override = _nm_sett_info_property_override_create_array ();
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
+	/* virtual methods */
 	object_class->set_property     = set_property;
 	object_class->get_property     = get_property;
 	object_class->finalize         = finalize;
+	parent_class->compare_property = compare_property;
+	parent_class->verify           = verify;
 
-	setting_class->compare_property = compare_property;
-	setting_class->verify           = verify;
+	/* Properties */
 
 	/**
 	 * NMSettingTCConfig:qdiscs: (type GPtrArray(NMTCQdisc))
 	 *
-	 * Array of TC queueing disciplines.
+	 * Array of TC queuening disciplines.
 	 **/
 	/* ---ifcfg-rh---
 	 * property: qdiscs
-	 * variable: QDISC1(+), QDISC2(+), ...
+	 * variable: QDISC1, QDISC2, ...
 	 * description: Queueing disciplines
 	 * example: QDISC1=ingress, QDISC2="root handle 1234: fq_codel"
 	 * ---end---
@@ -1620,13 +1620,12 @@ nm_setting_tc_config_class_init (NMSettingTCConfigClass *klass)
 		                     NM_SETTING_PARAM_INFERRABLE |
 		                     G_PARAM_STATIC_STRINGS));
 
-	_properties_override_add_override (properties_override,
-	                                   g_object_class_find_property (G_OBJECT_CLASS (setting_class),
-	                                                                 NM_SETTING_TC_CONFIG_QDISCS),
-	                                   G_VARIANT_TYPE ("aa{sv}"),
-	                                   tc_qdiscs_get,
-	                                   tc_qdiscs_set,
-	                                   NULL);
+	_nm_setting_class_override_property (parent_class,
+	                                     NM_SETTING_TC_CONFIG_QDISCS,
+	                                     G_VARIANT_TYPE ("aa{sv}"),
+	                                     tc_qdiscs_get,
+	                                     tc_qdiscs_set,
+	                                     NULL);
 
 	/**
 	 * NMSettingTCConfig:tfilters: (type GPtrArray(NMTCTfilter))
@@ -1635,7 +1634,7 @@ nm_setting_tc_config_class_init (NMSettingTCConfigClass *klass)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: qdiscs
-	 * variable: FILTER1(+), FILTER2(+), ...
+	 * variable: FILTER1, FILTER2, ...
 	 * description: Traffic filters
 	 * example: FILTER1="parent ffff: matchall action simple sdata Input", ...
 	 * ---end---
@@ -1648,14 +1647,10 @@ nm_setting_tc_config_class_init (NMSettingTCConfigClass *klass)
 		                     NM_SETTING_PARAM_INFERRABLE |
 		                     G_PARAM_STATIC_STRINGS));
 
-	_properties_override_add_override (properties_override,
-	                                   g_object_class_find_property (G_OBJECT_CLASS (setting_class),
-	                                                                 NM_SETTING_TC_CONFIG_TFILTERS),
-	                                   G_VARIANT_TYPE ("aa{sv}"),
-	                                   tc_tfilters_get,
-	                                   tc_tfilters_set,
-	                                   NULL);
-
-	_nm_setting_class_commit_full (setting_class, NM_META_SETTING_TYPE_TC_CONFIG,
-	                               NULL, properties_override);
+	_nm_setting_class_override_property (parent_class,
+	                                     NM_SETTING_TC_CONFIG_TFILTERS,
+	                                     G_VARIANT_TYPE ("aa{sv}"),
+	                                     tc_tfilters_get,
+	                                     tc_tfilters_set,
+	                                     NULL);
 }

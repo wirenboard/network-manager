@@ -32,7 +32,6 @@ libnm_headers = files(
   'nm-autoptr.h',
   'nm-checkpoint.h',
   'nm-client.h',
-  'nm-device-6lowpan.h',
   'nm-device-adsl.h',
   'nm-device-bond.h',
   'nm-device-bridge.h',
@@ -57,8 +56,6 @@ libnm_headers = files(
   'nm-device-vxlan.h',
   'nm-device-wifi.h',
   'nm-device-wimax.h',
-  'nm-device-wireguard.h',
-  'nm-device-wpan.h',
   'nm-dhcp-config.h',
   'nm-ip-config.h',
   'nm-object.h',
@@ -96,7 +93,6 @@ libnm_sources = files(
   'nm-checkpoint.c',
   'nm-client.c',
   'nm-dbus-helpers.c',
-  'nm-device-6lowpan.c',
   'nm-device-adsl.c',
   'nm-device-bond.c',
   'nm-device-bridge.c',
@@ -121,8 +117,6 @@ libnm_sources = files(
   'nm-device-vxlan.c',
   'nm-device-wifi.c',
   'nm-device-wimax.c',
-  'nm-device-wireguard.c',
-  'nm-device-wpan.c',
   'nm-dhcp-config.c',
   'nm-dhcp4-config.c',
   'nm-dhcp6-config.c',
@@ -188,10 +182,10 @@ pkg.generate(
   ]
 )
 
-test(
+run_target(
   'check-local-exports-' + libnm_name,
-  check_exports,
-  args: [libnm.full_path(), linker_script],
+  command: [check_exports, libnm.full_path(), linker_script],
+  depends: libnm
 )
 
 if enable_introspection

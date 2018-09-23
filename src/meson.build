@@ -17,7 +17,35 @@ nm_dep = declare_dependency(
   compile_args: nm_cflags
 )
 
-cflags = nm_cflags
+cflags = nm_cflags + [
+  '-DPREFIX="@0@"'.format(nm_prefix),
+  '-DBINDIR="@0@"'.format(nm_bindir),
+  '-DDATADIR="@0@"'.format(nm_datadir),
+  '-DLIBEXECDIR="@0@"'.format(nm_libexecdir),
+  '-DLOCALSTATEDIR="@0@"'.format(nm_localstatedir),
+  '-DRUNSTATEDIR="@0@"'.format(nm_runstatedir),
+  '-DSBINDIR="@0@"'.format(nm_sbindir),
+  '-DSYSCONFDIR="@0@"'.format(nm_sysconfdir),
+  '-DRUNDIR="@0@"'.format(nm_pkgrundir),
+  '-DNMCONFDIR="@0@"'.format(nm_pkgconfdir),
+  '-DNMLOCALEDIR="@0@"'.format(nm_localedir),
+  '-DNMPLUGINDIR="@0@"'.format(nm_plugindir),
+  '-DNMRUNDIR="@0@"'.format(nm_pkgrundir),
+  '-DNMSTATEDIR="@0@"'.format(nm_pkgstatedir),
+  '-DNMLIBDIR="@0@"'.format(nm_pkglibdir)
+]
+
+if enable_dhcpcanon
+  cflags += '-DDHCPCANON_PATH="@0@"'.format(dhcpcanon.path())
+endif
+
+if enable_dhclient
+  cflags += '-DDHCLIENT_PATH="@0@"'.format(dhclient.path())
+endif
+
+if enable_dhcpcd
+  cflags += '-DDHCPCD_PATH="@0@"'.format(dhcpcd.path())
+endif
 
 sources = files(
   'dhcp/nm-dhcp-client.c',
@@ -27,9 +55,8 @@ sources = files(
   'ndisc/nm-lndp-ndisc.c',
   'ndisc/nm-ndisc.c',
   'platform/nm-netlink.c',
-  'platform/wifi/nm-wifi-utils-nl80211.c',
-  'platform/wifi/nm-wifi-utils.c',
-  'platform/wpan/nm-wpan-utils.c',
+  'platform/wifi/wifi-utils-nl80211.c',
+  'platform/wifi/wifi-utils.c',
   'platform/nm-linux-platform.c',
   'platform/nm-platform.c',
   'platform/nm-platform-utils.c',
@@ -52,7 +79,7 @@ deps = [
 ]
 
 if enable_wext
-  sources += files('platform/wifi/nm-wifi-utils-wext.c')
+  sources += files('platform/wifi/wifi-utils-wext.c')
 endif
 
 libnetwork_manager_base = static_library(
@@ -65,7 +92,6 @@ libnetwork_manager_base = static_library(
 
 sources = files(
   'devices/nm-acd-manager.c',
-  'devices/nm-device-6lowpan.c',
   'devices/nm-device-bond.c',
   'devices/nm-device-bridge.c',
   'devices/nm-device.c',
@@ -83,8 +109,6 @@ sources = files(
   'devices/nm-device-veth.c',
   'devices/nm-device-vlan.c',
   'devices/nm-device-vxlan.c',
-  'devices/nm-device-wireguard.c',
-  'devices/nm-device-wpan.c',
   'devices/nm-lldp-listener.c',
   'dhcp/nm-dhcp-dhclient.c',
   'dhcp/nm-dhcp-dhclient-utils.c',
@@ -143,37 +167,84 @@ sources = files(
   'nm-sleep-monitor.c'
 )
 
-nm_deps = [
+deps = [
   dl_dep,
   libndp_dep,
+  # FIXME: Some files use introspection/dbus* headers, so
+  #        this dependency might be needed
+  #libnmdbus_dep,
   libudev_dep,
   nm_core_dep,
-  shared_n_acd_dep,
-  logind_dep,
+  shared_n_acd_dep
 ]
 
 if enable_concheck
-  nm_deps += libcurl_dep
+  deps += libcurl_dep
 endif
 
 if enable_libaudit
-  nm_deps += libaudit_dep
+  deps += libaudit_dep
 endif
 
 if enable_libpsl
-  nm_deps += libpsl_dep
+  deps += libpsl_dep
 endif
 
 if enable_selinux
-  nm_deps += selinux_dep
+  deps += selinux_dep
+endif
+
+if enable_session_tracking
+  deps += logind_dep
 endif
 
 libnetwork_manager = static_library(
   nm_name,
   sources: sources,
-  dependencies: nm_deps,
+  dependencies: deps,
   c_args: cflags,
   link_with: [libnetwork_manager_base, libsystemd_nm]
+)
+
+ldflags = ['-rdynamic']
+
+# FIXME: this doesn't work and it depends on libtool
+'''
+src/NetworkManager.ver: src/libNetworkManager.la $(core_plugins)
+  $(AM_V_GEN) NM="$(NM)" "$(srcdir)/tools/create-exports-NetworkManager.sh" --called-from-make "$(srcdir)"
+
+src_NetworkManager_LDFLAGS = \
+  -rdynamic \
+  -Wl,--version-script="src/NetworkManager.ver"
+
+nm = find_program('gcc-nm', 'nm')
+create_exports_networkmanager = join_paths(meson.source_root(), 'tools', 'create-exports-NetworkManager.sh')
+
+symbol_map_name = 'NetworkManager.ver'
+
+linker_script = custom_target(
+  symbol_map_name,
+  input: meson.source_root(),
+  output: symbol_map_name,
+  capture: true,
+  #command: ['NM=' + nm.path(), create_exports_networkmanager, '--called-from-make', '@INPUT@']
+  command: [create_exports_networkmanager, '--called-from-make', '@INPUT@']
+)
+
+ldflags += '-Wl,--version-script,@0@'.format(linker_script)
+'''
+
+network_manager = executable(
+  nm_name,
+  'main.c',
+  dependencies: deps,
+  c_args: cflags,
+  link_with: libnetwork_manager,
+  link_args: ldflags,
+  #FIXME
+  #link_depends: linker_script,
+  install: true,
+  install_dir: nm_sbindir
 )
 
 deps = [
@@ -246,30 +317,3 @@ endif
 
 subdir('devices')
 subdir('settings/plugins')
-
-# NetworkManager binary
-
-create_exports_networkmanager = join_paths(meson.source_root(), 'tools', 'create-exports-NetworkManager.sh')
-symbol_map_name = 'NetworkManager.ver'
-
-ver_script = custom_target(
-  symbol_map_name,
-  input: meson.source_root(),
-  output: symbol_map_name,
-  depends: [ libnetwork_manager, core_plugins ],
-  command: [create_exports_networkmanager, '--called-from-build', '@INPUT@']
-)
-
-ldflags = ['-rdynamic', '-Wl,--version-script,@0@'.format(ver_script.full_path())]
-
-network_manager = executable(
-  nm_name,
-  'main.c',
-  dependencies: nm_deps,
-  c_args: nm_cflags,
-  link_with: libnetwork_manager,
-  link_args: ldflags,
-  link_depends: ver_script,
-  install: true,
-  install_dir: nm_sbindir
-)

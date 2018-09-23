@@ -38,7 +38,9 @@
  * necessary for connection to TUN/TAP interfaces.
  **/
 
-G_DEFINE_TYPE (NMSettingTun, nm_setting_tun, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingTun, nm_setting_tun, NM_TYPE_SETTING,
+                         _nm_register_setting (TUN, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_TUN)
 
 #define NM_SETTING_TUN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_TUN, NMSettingTunPrivate))
 
@@ -290,19 +292,20 @@ finalize (GObject *object)
 }
 
 static void
-nm_setting_tun_class_init (NMSettingTunClass *klass)
+nm_setting_tun_class_init (NMSettingTunClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	g_type_class_add_private (klass, sizeof (NMSettingTunPrivate));
+	g_type_class_add_private (setting_class, sizeof (NMSettingTunPrivate));
 
+	/* virtual methods */
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
 	object_class->finalize     = finalize;
+	parent_class->verify       = verify;
 
-	setting_class->verify = verify;
-
+	/* Properties */
 	/**
 	 * NMSettingTun:mode:
 	 *
@@ -403,6 +406,4 @@ nm_setting_tun_class_init (NMSettingTunClass *klass)
 		                       G_PARAM_READWRITE |
 		                       NM_SETTING_PARAM_INFERRABLE |
 		                       G_PARAM_STATIC_STRINGS));
-
-	_nm_setting_class_commit (setting_class, NM_META_SETTING_TYPE_TUN);
 }

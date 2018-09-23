@@ -74,7 +74,8 @@ complete_connection (const char *ssid,
                      NMConnection *src,
                      GError **error)
 {
-	gs_unref_bytes GBytes *ssid_b = NULL;
+	GByteArray *tmp;
+	gboolean success;
 	NMSettingWireless *s_wifi;
 
 	/* Add a wifi setting if one doesn't exist */
@@ -84,17 +85,20 @@ complete_connection (const char *ssid,
 		nm_connection_add_setting (src, NM_SETTING (s_wifi));
 	}
 
-	ssid_b = g_bytes_new (ssid, strlen (ssid));
+	tmp = g_byte_array_sized_new (strlen (ssid));
+	g_byte_array_append (tmp, (const guint8 *) ssid, strlen (ssid));
 
-	return nm_wifi_utils_complete_connection (ssid_b,
-	                                          bssid,
-	                                          mode,
-	                                          flags,
-	                                          wpa_flags,
-	                                          rsn_flags,
-	                                          src,
-	                                          lock_bssid,
-	                                          error);
+	success = nm_wifi_utils_complete_connection (tmp,
+	                                             bssid,
+	                                             mode,
+	                                             flags,
+	                                             wpa_flags,
+	                                             rsn_flags,
+	                                             src,
+	                                             lock_bssid,
+	                                             error);
+	g_byte_array_free (tmp, TRUE);
+	return success;
 }
 
 typedef struct {
@@ -123,7 +127,7 @@ set_items (NMSetting *setting, const KeyData *items)
 			g_assert (item->str == NULL);
 			g_object_set (G_OBJECT (setting), item->key, item->uint, NULL);
 		} else if (pspec->value_type == G_TYPE_INT) {
-			int foo = (int) item->uint;
+			gint foo = (gint) item->uint;
 
 			g_assert (item->str == NULL);
 			g_object_set (G_OBJECT (setting), item->key, foo, NULL);
@@ -1458,7 +1462,7 @@ main (int argc, char **argv)
 	                      test_ap_wpa_eap_connection_5);
 
 #define ADD_FUNC(func) do { \
-		char *name_idx = g_strdup_printf ("/wifi/wpa_psk/" G_STRINGIFY (func) "/%zd", i); \
+		gchar *name_idx = g_strdup_printf ("/wifi/wpa_psk/" G_STRINGIFY (func) "/%zd", i); \
 		g_test_add_data_func (name_idx, (gconstpointer) i, func); \
 		g_free (name_idx); \
 	} while (0)
@@ -1483,7 +1487,7 @@ main (int argc, char **argv)
 
 #undef ADD_FUNC
 #define ADD_FUNC(func) do { \
-		char *name_idx = g_strdup_printf ("/wifi/rsn_psk/" G_STRINGIFY (func) "/%zd", i); \
+		gchar *name_idx = g_strdup_printf ("/wifi/rsn_psk/" G_STRINGIFY (func) "/%zd", i); \
 		g_test_add_data_func (name_idx, (gconstpointer) i, func); \
 		g_free (name_idx); \
 	} while (0)

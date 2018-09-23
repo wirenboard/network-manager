@@ -76,18 +76,18 @@ typedef enum {
 typedef struct {
 	GObjectClass parent;
 
+	/* Methods */
+
 	gboolean (*ip4_start)     (NMDhcpClient *self,
 	                           const char *anycast_addr,
-	                           const char *last_ip4_address,
-	                           GError **error);
+	                           const char *last_ip4_address);
 
 	gboolean (*ip6_start)     (NMDhcpClient *self,
 	                           const char *anycast_addr,
 	                           const struct in6_addr *ll_addr,
 	                           NMSettingIP6ConfigPrivacy privacy,
 	                           GBytes *duid,
-	                           guint needed_prefixes,
-	                           GError **error);
+	                           guint needed_prefixes);
 
 	void (*stop)              (NMDhcpClient *self,
 	                           gboolean release,
@@ -151,8 +151,7 @@ gboolean nm_dhcp_client_start_ip4 (NMDhcpClient *self,
                                    GBytes *client_id,
                                    const char *dhcp_anycast_addr,
                                    const char *hostname,
-                                   const char *last_ip4_address,
-                                   GError **error);
+                                   const char *last_ip4_address);
 
 gboolean nm_dhcp_client_start_ip6 (NMDhcpClient *self,
                                    GBytes *client_id,
@@ -161,8 +160,7 @@ gboolean nm_dhcp_client_start_ip6 (NMDhcpClient *self,
                                    const struct in6_addr *ll_addr,
                                    const char *hostname,
                                    NMSettingIP6ConfigPrivacy privacy,
-                                   guint needed_prefixes,
-                                   GError **error);
+                                   guint needed_prefixes);
 
 void nm_dhcp_client_stop (NMDhcpClient *self, gboolean release);
 
@@ -182,7 +180,7 @@ void nm_dhcp_client_set_state (NMDhcpClient *self,
 
 gboolean nm_dhcp_client_handle_event (gpointer unused,
                                       const char *iface,
-                                      int pid,
+                                      gint pid,
                                       GVariant *options,
                                       const char *reason,
                                       NMDhcpClient *self);

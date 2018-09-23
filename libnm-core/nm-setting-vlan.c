@@ -41,7 +41,9 @@
  * necessary for connection to VLAN interfaces.
  **/
 
-G_DEFINE_TYPE (NMSettingVlan, nm_setting_vlan, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingVlan, nm_setting_vlan, NM_TYPE_SETTING,
+                         _nm_register_setting (VLAN, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_VLAN)
 
 #define NM_SETTING_VLAN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_VLAN, NMSettingVlanPrivate))
 
@@ -132,7 +134,7 @@ static NMVlanQosMapping *
 priority_map_new_from_str (NMVlanPriorityMap map, const char *str)
 {
 	NMVlanQosMapping *p = NULL;
-	char **t = NULL;
+	gchar **t = NULL;
 	guint32 len;
 	guint64 from, to;
 
@@ -174,7 +176,7 @@ get_map (NMSettingVlan *self, NMVlanPriorityMap map)
 	return NULL;
 }
 
-static int
+static gint
 prio_map_compare (gconstpointer p_a, gconstpointer p_b)
 {
 	const NMVlanQosMapping *a = p_a;
@@ -829,19 +831,20 @@ finalize (GObject *object)
 }
 
 static void
-nm_setting_vlan_class_init (NMSettingVlanClass *klass)
+nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
-	GArray *properties_override = _nm_sett_info_property_override_create_array ();
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	g_type_class_add_private (klass, sizeof (NMSettingVlanPrivate));
+	g_type_class_add_private (setting_class, sizeof (NMSettingVlanPrivate));
 
+	/* virtual methods */
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
 	object_class->finalize     = finalize;
+	parent_class->verify       = verify;
 
-	setting_class->verify = verify;
+	/* Properties */
 
 	/**
 	 * NMSettingVlan:parent:
@@ -918,14 +921,11 @@ nm_setting_vlan_class_init (NMSettingVlanClass *klass)
 		                     G_PARAM_CONSTRUCT |
 		                     NM_SETTING_PARAM_INFERRABLE |
 		                     G_PARAM_STATIC_STRINGS));
-
-	_properties_override_add_override (properties_override,
-	                                   g_object_class_find_property (G_OBJECT_CLASS (setting_class),
-	                                                                 NM_SETTING_VLAN_FLAGS),
-	                                   NULL,
-	                                   _override_flags_get,
-	                                   NULL,
-	                                   _override_flags_not_set);
+	_nm_setting_class_override_property (parent_class, NM_SETTING_VLAN_FLAGS,
+	                                     NULL,
+	                                     _override_flags_get,
+	                                     NULL,
+	                                     _override_flags_not_set);
 
 	/**
 	 * NMSettingVlan:ingress-priority-map:
@@ -987,12 +987,8 @@ nm_setting_vlan_class_init (NMSettingVlanClass *klass)
 	 *   vlan's interface name.
 	 * ---end---
 	 */
-	_properties_override_add_dbus_only (properties_override,
-	                                    "interface-name",
-	                                    G_VARIANT_TYPE_STRING,
-	                                    _nm_setting_get_deprecated_virtual_interface_name,
-	                                    NULL);
-
-	_nm_setting_class_commit_full (setting_class, NM_META_SETTING_TYPE_VLAN,
-	                               NULL, properties_override);
+	_nm_setting_class_add_dbus_only_property (parent_class, "interface-name",
+	                                          G_VARIANT_TYPE_STRING,
+	                                          _nm_setting_get_deprecated_virtual_interface_name,
+	                                          NULL);
 }

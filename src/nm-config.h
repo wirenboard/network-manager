@@ -159,13 +159,13 @@ void _nm_config_state_set (NMConfig *config,
 #define nm_config_state_set(config, allow_persist, force_persist, ...) \
     _nm_config_state_set (config, allow_persist, force_persist, ##__VA_ARGS__, 0)
 
-int nm_config_parse_boolean (const char *str, int default_value);
+gint nm_config_parse_boolean (const char *str, gint default_value);
 
 GKeyFile *nm_config_create_keyfile (void);
-int nm_config_keyfile_get_boolean (const GKeyFile *keyfile,
+gint nm_config_keyfile_get_boolean (const GKeyFile *keyfile,
                                     const char *section,
                                     const char *key,
-                                    int default_value);
+                                    gint default_value);
 gint64 nm_config_keyfile_get_int64 (const GKeyFile *keyfile,
                                     const char *section,
                                     const char *key,
@@ -234,7 +234,7 @@ gboolean nm_config_device_state_write (int ifindex,
                                        NMConfigDeviceStateManagedType managed,
                                        const char *perm_hw_addr_fake,
                                        const char *connection_uuid,
-                                       int nm_owned,
+                                       gint nm_owned,
                                        guint32 route_metric_default_aspired,
                                        guint32 route_metric_default_effective);
 

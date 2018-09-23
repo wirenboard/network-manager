@@ -189,11 +189,14 @@ DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCPCANON_PATH = @DHCPCANON_PATH@
+DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
-DNSSEC_TRIGGER_PATH = @DNSSEC_TRIGGER_PATH@
+DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -505,7 +508,6 @@ content_files = $(GENERATED_FILES) \
 	dbus-org.freedesktop.NetworkManager.Device.Veth.xml \
 	dbus-org.freedesktop.NetworkManager.Settings.xml \
 	dbus-org.freedesktop.NetworkManager.Device.Wired.xml \
-	dbus-org.freedesktop.NetworkManager.Device.WireGuard.xml \
 	dbus-org.freedesktop.NetworkManager.IP4Config.xml \
 	dbus-org.freedesktop.NetworkManager.Device.Statistics.xml \
 	dbus-org.freedesktop.NetworkManager.DnsManager.xml \

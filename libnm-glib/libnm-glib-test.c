@@ -68,7 +68,7 @@ test_get_state (NMClient *client)
 	return TRUE;
 }
 
-static char *
+static gchar *
 ip4_address_as_string (guint32 ip)
 {
 	char buf[INET_ADDRSTRLEN+1];

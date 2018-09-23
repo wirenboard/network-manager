@@ -55,19 +55,9 @@
     <!--
         Nameservers:
 
-        The nameservers in use. Deprecated: use NameserverData
+        The nameservers in use.
     -->
     <property name="Nameservers" type="au" access="read"/>
-
-    <!--
-        NameserverData:
-
-        The nameservers in use. Currently only the value "address"
-        is recognized (with an IP address string).
-
-        Since: 1.14
-    -->
-    <property name="NameserverData" type="aa{sv}" access="read"/>
 
     <!--
         Domains:
@@ -102,18 +92,9 @@
         WinsServers:
 
         The Windows Internet Name Service servers associated with the connection.
-        Each address is in network byte order. Deprecated: use WinsServerData
+        Each address is in network byte order.
     -->
     <property name="WinsServers" type="au" access="read"/>
-
-    <!--
-        WinsServerData:
-
-        The Windows Internet Name Service servers associated with the connection.
-
-        Since: 1.14
-    -->
-    <property name="WinsServerData" type="as" access="read"/>
 
     <!--
         PropertiesChanged:

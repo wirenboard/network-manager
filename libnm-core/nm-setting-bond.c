@@ -57,7 +57,9 @@ typedef struct {
 	NMUtilsNamedValue *options_idx_cache;
 } NMSettingBondPrivate;
 
-G_DEFINE_TYPE (NMSettingBond, nm_setting_bond, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingBond, nm_setting_bond, NM_TYPE_SETTING,
+                         _nm_register_setting (BOND, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_BOND)
 
 #define NM_SETTING_BOND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_BOND, NMSettingBondPrivate))
 
@@ -178,7 +180,7 @@ nm_setting_bond_get_option (NMSettingBond *setting,
 static gboolean
 validate_int (const char *name, const char *value, const BondDefault *def)
 {
-	long num;
+	glong num;
 	guint i;
 
 	for (i = 0; i < strlen (value); i++) {
@@ -871,7 +873,7 @@ compare_property (NMSetting *setting,
                   const GParamSpec *prop_spec,
                   NMSettingCompareFlags flags)
 {
-	NMSettingClass *setting_class;
+	NMSettingClass *parent_class;
 
 	if (nm_streq0 (prop_spec->name, NM_SETTING_BOND_OPTIONS)) {
 		return options_equal (NM_SETTING_BOND (setting),
@@ -880,8 +882,9 @@ compare_property (NMSetting *setting,
 		                      flags);
 	}
 
-	setting_class = NM_SETTING_CLASS (nm_setting_bond_parent_class);
-	return setting_class->compare_property (setting, other, prop_spec, flags);
+	/* Otherwise chain up to parent to handle generic compare */
+	parent_class = NM_SETTING_CLASS (nm_setting_bond_parent_class);
+	return parent_class->compare_property (setting, other, prop_spec, flags);
 }
 
 /*****************************************************************************/
@@ -958,21 +961,21 @@ finalize (GObject *object)
 }
 
 static void
-nm_setting_bond_class_init (NMSettingBondClass *klass)
+nm_setting_bond_class_init (NMSettingBondClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
-	GArray *properties_override = _nm_sett_info_property_override_create_array ();
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	g_type_class_add_private (klass, sizeof (NMSettingBondPrivate));
+	g_type_class_add_private (setting_class, sizeof (NMSettingBondPrivate));
 
+	/* virtual methods */
 	object_class->set_property     = set_property;
 	object_class->get_property     = get_property;
 	object_class->finalize         = finalize;
+	parent_class->verify           = verify;
+	parent_class->compare_property = compare_property;
 
-	setting_class->verify           = verify;
-	setting_class->compare_property = compare_property;
-
+	/* Properties */
 	/**
 	 * NMSettingBond:options: (type GHashTable(utf8,utf8)):
 	 *
@@ -994,13 +997,10 @@ nm_setting_bond_class_init (NMSettingBondClass *klass)
 		                     G_PARAM_READWRITE |
 		                     NM_SETTING_PARAM_INFERRABLE |
 		                     G_PARAM_STATIC_STRINGS));
-
-	_properties_override_add_transform (properties_override,
-	                                    g_object_class_find_property (G_OBJECT_CLASS (setting_class),
-	                                                                  NM_SETTING_BOND_OPTIONS),
-	                                    G_VARIANT_TYPE ("a{ss}"),
-	                                    _nm_utils_strdict_to_dbus,
-	                                    _nm_utils_strdict_from_dbus);
+	 _nm_setting_class_transform_property (parent_class, NM_SETTING_BOND_OPTIONS,
+	                                       G_VARIANT_TYPE ("a{ss}"),
+	                                       _nm_utils_strdict_to_dbus,
+	                                       _nm_utils_strdict_from_dbus);
 
 	 /* ---dbus---
 	  * property: interface-name
@@ -1010,12 +1010,8 @@ nm_setting_bond_class_init (NMSettingBondClass *klass)
 	  *   bond's interface name.
 	  * ---end---
 	  */
-	_properties_override_add_dbus_only (properties_override,
-	                                    "interface-name",
-	                                    G_VARIANT_TYPE_STRING,
-	                                    _nm_setting_get_deprecated_virtual_interface_name,
-	                                    NULL);
-
-	_nm_setting_class_commit_full (setting_class, NM_META_SETTING_TYPE_BOND,
-	                               NULL, properties_override);
+	 _nm_setting_class_add_dbus_only_property (parent_class, "interface-name",
+	                                           G_VARIANT_TYPE_STRING,
+	                                           _nm_setting_get_deprecated_virtual_interface_name,
+	                                           NULL);
 }

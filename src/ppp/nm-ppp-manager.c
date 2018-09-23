@@ -438,11 +438,10 @@ impl_ppp_manager_set_ifindex (NMDBusObject *obj,
 
 	g_variant_get (parameters, "(i)", &ifindex);
 
+	_LOGD ("set-ifindex %d", (int) ifindex);
+
 	if (priv->ifindex >= 0) {
-		if (priv->ifindex == ifindex)
-			_LOGD ("set-ifindex: ignore repeated calls setting ifindex to %d", (int) ifindex);
-		else
-			_LOGW ("set-ifindex: can't change the ifindex from %d to %d", priv->ifindex, (int) ifindex);
+		_LOGW ("can't change the ifindex from %d to %d", priv->ifindex, (int) ifindex);
 		goto out;
 	}
 
@@ -455,14 +454,13 @@ impl_ppp_manager_set_ifindex (NMDBusObject *obj,
 	}
 
 	if (!plink) {
-		_LOGW ("set-ifindex: unknown interface with ifindex %d", ifindex);
+		_LOGW ("unknown interface with ifindex %d", ifindex);
 		ifindex = 0;
-	} else {
-		obj_keep_alive = nmp_object_ref (NMP_OBJECT_UP_CAST (plink));
-		_LOGD ("set-ifindex: %d, name \"%s\"", (int) ifindex, plink->name);
 	}
 
 	priv->ifindex = ifindex;
+
+	obj_keep_alive = nmp_object_ref (NMP_OBJECT_UP_CAST (plink));
 
 	g_signal_emit (self,
 	               signals[IFINDEX_SET],
@@ -703,7 +701,7 @@ nm_cmd_line_to_str (NMCmdLine *cmd)
 	char *str;
 
 	g_ptr_array_add (cmd->array, NULL);
-	str = g_strjoinv (" ", (char **) cmd->array->pdata);
+	str = g_strjoinv (" ", (gchar **) cmd->array->pdata);
 	g_ptr_array_remove_index (cmd->array, cmd->array->len - 1);
 
 	return str;
@@ -882,13 +880,13 @@ create_pppd_cmd_line (NMPPPManager *self,
 			nm_cmd_line_add_string (cmd, pppoe_service);
 		}
 	} else if (adsl) {
-		const char *protocol = nm_setting_adsl_get_protocol (adsl);
+		const gchar *protocol = nm_setting_adsl_get_protocol (adsl);
 
 		if (!strcmp (protocol, NM_SETTING_ADSL_PROTOCOL_PPPOA)) {
 			guint32 vpi = nm_setting_adsl_get_vpi (adsl);
 			guint32 vci = nm_setting_adsl_get_vci (adsl);
 			const char *encaps = nm_setting_adsl_get_encapsulation (adsl);
-			char *vpivci;
+			gchar *vpivci;
 
 			nm_cmd_line_add_string (cmd, "plugin");
 			nm_cmd_line_add_string (cmd, "pppoatm.so");

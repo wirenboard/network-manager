@@ -111,7 +111,7 @@ def init_constants(girxml, settings):
             setting_name = constants[setting_name_symbol]
             setting_names[setting_type_name] = setting_name
 
-def get_prop_type(setting, pspec):
+def get_prop_type(setting, pspec, propxml):
     dbus_type = setting.get_dbus_property_type(pspec.name).dup_string()
     prop_type = dbus_type_name_map[dbus_type]
 
@@ -156,9 +156,11 @@ def get_default_value(setting, pspec, propxml):
     if default_value is None:
         return default_value
 
-    value_type = get_prop_type(setting, pspec)
+    value_type = get_prop_type(setting, pspec, propxml)
     if value_type == 'string' and default_value != '' and pspec.name != 'name':
         default_value = '"%s"' % default_value
+    elif value_type == 'gchar' and default_value != '':
+        default_value = "'%s'" % default_value
     elif value_type == 'boolean':
         default_value = str(default_value).upper()
     elif value_type == 'byte array':
@@ -228,7 +230,7 @@ for settingxml in settings:
         raise Exception("%s needs a gtk-doc block with one-line description" % setting.props.name)
     outfile.write("  <setting name=\"%s\" description=\"%s\" name_upper=\"%s\" >\n" % (setting.props.name, class_desc, get_setting_name_define (settingxml)))
 
-    setting_properties = { prop.name: prop for prop in GObject.list_properties(setting) if prop.name != 'name' }
+    setting_properties = { prop.name: prop for prop in GObject.list_properties(setting) }
     if args.overrides is None:
         setting_overrides = {}
     else:
@@ -249,7 +251,7 @@ for settingxml in settings:
             if propxml is None:
                 propxml = ipxml.find('./gi:property[@name="%s"]' % pspec.name, ns_map)
 
-            value_type = get_prop_type(setting, pspec)
+            value_type = get_prop_type(setting, pspec, propxml)
             value_desc = get_docs(propxml)
             default_value = get_default_value(setting, pspec, propxml)
 

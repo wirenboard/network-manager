@@ -220,7 +220,7 @@ validate_type_keyword (const struct Opt * opt,
                        const guint32 len)
 {
 	char **allowed;
-	char **candidates = NULL;
+	gchar **candidates = NULL;
 	char **candidate;
 	gboolean found = FALSE;
 

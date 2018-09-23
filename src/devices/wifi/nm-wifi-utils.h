@@ -27,14 +27,7 @@
 #include "nm-setting-wireless-security.h"
 #include "nm-setting-8021x.h"
 
-typedef enum {
-	NM_IWD_NETWORK_SECURITY_NONE,
-	NM_IWD_NETWORK_SECURITY_WEP,
-	NM_IWD_NETWORK_SECURITY_PSK,
-	NM_IWD_NETWORK_SECURITY_8021X,
-} NMIwdNetworkSecurity;
-
-gboolean nm_wifi_utils_complete_connection (GBytes *ssid,
+gboolean nm_wifi_utils_complete_connection (const GByteArray *ssid,
                                             const char *bssid,
                                             NM80211Mode mode,
                                             guint32 flags,
@@ -44,11 +37,8 @@ gboolean nm_wifi_utils_complete_connection (GBytes *ssid,
                                             gboolean lock_bssid,
                                             GError **error);
 
-guint32 nm_wifi_utils_level_to_quality (int val);
+guint32 nm_wifi_utils_level_to_quality (gint val);
 
-gboolean nm_wifi_utils_is_manf_default_ssid (GBytes *ssid);
-
-NMIwdNetworkSecurity nm_wifi_connection_get_iwd_security (NMConnection *connection,
-                                                          gboolean *mapped);
+gboolean nm_wifi_utils_is_manf_default_ssid (const GByteArray *ssid);
 
 #endif  /* __NM_WIFI_UTILS_H__ */

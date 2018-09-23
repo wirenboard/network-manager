@@ -104,7 +104,7 @@ G_STMT_START { \
 
 #define SET_APP(f, s, tag) \
 G_STMT_START { \
-	int prio = nm_setting_dcb_get_app_##tag##_priority (s); \
+	gint prio = nm_setting_dcb_get_app_##tag##_priority (s); \
  \
 	SET_FLAGS (f, "app:" #tag); \
 	if ((f & NM_SETTING_DCB_FLAG_ENABLE) && (prio >= 0)) { \

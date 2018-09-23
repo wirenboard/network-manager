@@ -33,10 +33,10 @@ libnm_device_plugin_wifi = shared_module(
 
 core_plugins += libnm_device_plugin_wifi
 
-test(
+run_target(
   'check-local-devices-wifi',
-  check_exports,
-  args: [libnm_device_plugin_wifi.full_path(), linker_script_devices],
+  command: [check_exports, libnm_device_plugin_wifi.full_path(), linker_script_devices],
+  depends: libnm_device_plugin_wifi
 )
 
 # FIXME: check_so_symbols replacement

@@ -13,7 +13,8 @@ exe = executable(
   c_args: [
       '-DNETWORKMANAGER_COMPILATION_TEST',
       '-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_CLIENT',
-    ],
+    ] +
+    nm_build_cflags,
   link_with: libnm_dispatcher_core
 )
 

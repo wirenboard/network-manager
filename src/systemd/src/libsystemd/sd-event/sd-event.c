@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: LGPL-2.1+ */
+/***
+***/
 
 #include "nm-sd-adapt.h"
 
@@ -92,7 +94,7 @@ struct sd_event_source {
         char *description;
 
         EventSourceType type:5;
-        signed int enabled:3;
+        int enabled:3;
         bool pending:1;
         bool dispatching:1;
         bool floating:1;

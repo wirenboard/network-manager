@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <sys/socket.h>
 
-#include "hash-funcs.h"
 #include "macro.h"
 #include "util.h"
 
@@ -54,7 +53,3 @@ static inline size_t FAMILY_ADDRESS_SIZE(int family) {
 }
 
 #define IN_ADDR_NULL ((union in_addr_union) {})
-
-void in_addr_data_hash_func(const void *p, struct siphash *state);
-int in_addr_data_compare_func(const void *a, const void *b);
-extern const struct hash_ops in_addr_data_hash_ops;

@@ -208,8 +208,8 @@ _notify_addresses (NMIP6Config *self)
 
 	nm_clear_g_variant (&priv->address_data_variant);
 	nm_clear_g_variant (&priv->addresses_variant);
-	nm_gobject_notify_together (self, PROP_ADDRESS_DATA,
-	                                  PROP_ADDRESSES);
+	_notify (self, PROP_ADDRESS_DATA);
+	_notify (self, PROP_ADDRESSES);
 }
 
 static void
@@ -220,13 +220,13 @@ _notify_routes (NMIP6Config *self)
 	nm_assert (priv->best_default_route == _nm_ip6_config_best_default_route_find (self));
 	nm_clear_g_variant (&priv->route_data_variant);
 	nm_clear_g_variant (&priv->routes_variant);
-	nm_gobject_notify_together (self, PROP_ROUTE_DATA,
-	                                  PROP_ROUTES);
+	_notify (self, PROP_ROUTE_DATA);
+	_notify (self, PROP_ROUTES);
 }
 
 /*****************************************************************************/
 
-static int
+static gint
 _addresses_sort_cmp_get_prio (const struct in6_addr *addr)
 {
 	if (IN6_IS_ADDR_V4MAPPED (addr))
@@ -249,7 +249,7 @@ _addresses_sort_cmp (const NMPlatformIP6Address *a1,
                      const NMPlatformIP6Address *a2,
                      gboolean prefer_temp)
 {
-	int p1, p2, c;
+	gint p1, p2, c;
 	gboolean perm1, perm2, tent1, tent2;
 	gboolean ipv6_privacy1, ipv6_privacy2;
 
@@ -979,7 +979,7 @@ nm_ip6_config_subtract (NMIP6Config *dst,
 {
 	NMIP6ConfigPrivate *dst_priv;
 	guint i;
-	int idx;
+	gint idx;
 	const NMPlatformIP6Address *a;
 	const NMPlatformIP6Route *r;
 	NMDedupMultiIter ipconf_iter;
@@ -2289,7 +2289,7 @@ nm_ip6_config_get_dns_option (const NMIP6Config *self, guint i)
 /*****************************************************************************/
 
 void
-nm_ip6_config_set_dns_priority (NMIP6Config *self, int priority)
+nm_ip6_config_set_dns_priority (NMIP6Config *self, gint priority)
 {
 	NMIP6ConfigPrivate *priv = NM_IP6_CONFIG_GET_PRIVATE (self);
 
@@ -2299,7 +2299,7 @@ nm_ip6_config_set_dns_priority (NMIP6Config *self, int priority)
 	}
 }
 
-int
+gint
 nm_ip6_config_get_dns_priority (const NMIP6Config *self)
 {
 	const NMIP6ConfigPrivate *priv = NM_IP6_CONFIG_GET_PRIVATE (self);

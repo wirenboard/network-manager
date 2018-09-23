@@ -397,67 +397,34 @@ get_type_description (NMDevice *device)
 }
 
 static gboolean
-check_connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
+check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
-	GError *local = NULL;
-
-	if (!NM_DEVICE_CLASS (nm_device_modem_parent_class)->check_connection_compatible (device, connection, error))
+	if (!NM_DEVICE_CLASS (nm_device_modem_parent_class)->check_connection_compatible (device, connection))
 		return FALSE;
 
-	if (!nm_modem_check_connection_compatible (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem,
-	                                           connection,
-	                                           error ? &local : NULL)) {
-		if (error) {
-			g_set_error (error,
-			             NM_UTILS_ERROR,
-			             g_error_matches (local, NM_UTILS_ERROR, NM_UTILS_ERROR_CONNECTION_AVAILABLE_INCOMPATIBLE)
-			              ? NM_UTILS_ERROR_CONNECTION_AVAILABLE_INCOMPATIBLE
-			              : NM_UTILS_ERROR_UNKNOWN,
-			             "modem is incompatible with connection: %s",
-			             local->message);
-			g_error_free (local);
-		}
-		return FALSE;
-	}
-	return TRUE;
+	return nm_modem_check_connection_compatible (NM_DEVICE_MODEM_GET_PRIVATE ((NMDeviceModem *) device)->modem, connection);
 }
 
 static gboolean
 check_connection_available (NMDevice *device,
                             NMConnection *connection,
                             NMDeviceCheckConAvailableFlags flags,
-                            const char *specific_object,
-                            GError **error)
+                            const char *specific_object)
 {
 	NMDeviceModem *self = NM_DEVICE_MODEM (device);
 	NMDeviceModemPrivate *priv = NM_DEVICE_MODEM_GET_PRIVATE (self);
 	NMModemState state;
 
-	if (!priv->rf_enabled) {
-		nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-		                            "RFKILL for modem enabled");
+	if (!priv->rf_enabled || !priv->modem)
 		return FALSE;
-	}
-
-	if (!priv->modem) {
-		nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-		                            "modem not available");
-		return FALSE;
-	}
 
 	state = nm_modem_get_state (priv->modem);
-	if (state <= NM_MODEM_STATE_INITIALIZING) {
-		nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-		                            "modem not initalized");
+	if (state <= NM_MODEM_STATE_INITIALIZING)
 		return FALSE;
-	}
 
 	if (state == NM_MODEM_STATE_LOCKED) {
-		if (!nm_connection_get_setting_gsm (connection)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "modem is locked without pin available");
+		if (!nm_connection_get_setting_gsm (connection))
 			return FALSE;
-		}
 	}
 
 	return TRUE;

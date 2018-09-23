@@ -118,8 +118,8 @@ struct NMTeamLinkWatcher {
  * Since: 1.12
  **/
 NMTeamLinkWatcher *
-nm_team_link_watcher_new_ethtool (int delay_up,
-                                  int delay_down,
+nm_team_link_watcher_new_ethtool (gint delay_up,
+                                  gint delay_down,
                                   GError **error)
 {
 	NMTeamLinkWatcher *watcher;
@@ -161,9 +161,9 @@ nm_team_link_watcher_new_ethtool (int delay_up,
  * Since: 1.12
  **/
 NMTeamLinkWatcher *
-nm_team_link_watcher_new_nsna_ping (int init_wait,
-                                    int interval,
-                                    int missed_max,
+nm_team_link_watcher_new_nsna_ping (gint init_wait,
+                                    gint interval,
+                                    gint missed_max,
                                     const char *target_host,
                                     GError **error)
 {
@@ -225,9 +225,9 @@ nm_team_link_watcher_new_nsna_ping (int init_wait,
  * Since: 1.12
  **/
 NMTeamLinkWatcher *
-nm_team_link_watcher_new_arp_ping (int init_wait,
-                                   int interval,
-                                   int missed_max,
+nm_team_link_watcher_new_arp_ping (gint init_wait,
+                                   gint interval,
+                                   gint missed_max,
                                    const char *target_host,
                                    const char *source_host,
                                    NMTeamLinkWatcherArpPingFlags flags,
@@ -557,25 +557,27 @@ nm_team_link_watcher_get_flags (NMTeamLinkWatcher *watcher)
 
 /*****************************************************************************/
 
-G_DEFINE_TYPE (NMSettingTeam, nm_setting_team, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingTeam, nm_setting_team, NM_TYPE_SETTING,
+                         _nm_register_setting (TEAM, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_TEAM)
 
 #define NM_SETTING_TEAM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_TEAM, NMSettingTeamPrivate))
 
 typedef struct {
 	char *config;
-	int notify_peers_count;
-	int notify_peers_interval;
-	int mcast_rejoin_count;
-	int mcast_rejoin_interval;
+	gint notify_peers_count;
+	gint notify_peers_interval;
+	gint mcast_rejoin_count;
+	gint mcast_rejoin_interval;
 	char *runner;
 	char *runner_hwaddr_policy;
 	GPtrArray *runner_tx_hash;
 	char *runner_tx_balancer;
-	int runner_tx_balancer_interval;
+	gint runner_tx_balancer_interval;
 	gboolean runner_active;
 	gboolean runner_fast_rate;
-	int runner_sys_prio;
-	int runner_min_ports;
+	gint runner_sys_prio;
+	gint runner_min_ports;
 	char *runner_agg_select_policy;
 	GPtrArray *link_watchers; /* Array of NMTeamLinkWatcher */
 } NMSettingTeamPrivate;
@@ -659,7 +661,7 @@ nm_setting_team_get_config (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_notify_peers_count (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -675,7 +677,7 @@ nm_setting_team_get_notify_peers_count (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_notify_peers_interval (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -691,7 +693,7 @@ nm_setting_team_get_notify_peers_interval (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_mcast_rejoin_count (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -707,7 +709,7 @@ nm_setting_team_get_mcast_rejoin_count (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_mcast_rejoin_interval (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -771,7 +773,7 @@ nm_setting_team_get_runner_tx_balancer (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_runner_tx_balancer_interval (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -819,7 +821,7 @@ nm_setting_team_get_runner_fast_rate (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_runner_sys_prio (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -835,7 +837,7 @@ nm_setting_team_get_runner_sys_prio (NMSettingTeam *setting)
  *
  * Since: 1.12
  **/
-int
+gint
 nm_setting_team_get_runner_min_ports (NMSettingTeam *setting)
 {
 	g_return_val_if_fail (NM_IS_SETTING_TEAM (setting), 0);
@@ -1119,10 +1121,8 @@ nm_setting_team_clear_link_watchers (NMSettingTeam *setting) {
 
 	g_return_if_fail (NM_IS_SETTING_TEAM (setting));
 
-	if (priv->link_watchers->len != 0) {
-		g_ptr_array_set_size (priv->link_watchers, 0);
-		g_object_notify (G_OBJECT (setting), NM_SETTING_TEAM_LINK_WATCHERS);
-	}
+	g_ptr_array_set_size (priv->link_watchers, 0);
+	g_object_notify (G_OBJECT (setting), NM_SETTING_TEAM_LINK_WATCHERS);
 }
 
 static GVariant *
@@ -1237,7 +1237,7 @@ compare_property (NMSetting *setting,
                   NMSettingCompareFlags flags)
 {
 	NMSettingTeamPrivate *a_priv, *b_priv;
-	NMSettingClass *setting_class;
+	NMSettingClass *parent_class;
 	guint i, j;
 
 	/* If we are trying to match a connection in order to assume it (and thus
@@ -1270,8 +1270,9 @@ compare_property (NMSetting *setting,
 		return TRUE;
 	}
 
-	setting_class = NM_SETTING_CLASS (nm_setting_team_parent_class);
-	return setting_class->compare_property (setting, other, prop_spec, flags);
+	/* Otherwise chain up to parent to handle generic compare */
+	parent_class = NM_SETTING_CLASS (nm_setting_team_parent_class);
+	return parent_class->compare_property (setting, other, prop_spec, flags);
 }
 
 static void
@@ -1556,21 +1557,21 @@ get_property (GObject *object, guint prop_id,
 }
 
 static void
-nm_setting_team_class_init (NMSettingTeamClass *klass)
+nm_setting_team_class_init (NMSettingTeamClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
-	GArray *properties_override = _nm_sett_info_property_override_create_array ();
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	g_type_class_add_private (klass, sizeof (NMSettingTeamPrivate));
+	g_type_class_add_private (setting_class, sizeof (NMSettingTeamPrivate));
 
+	/* virtual methods */
 	object_class->set_property     = set_property;
 	object_class->get_property     = get_property;
 	object_class->finalize         = finalize;
+	parent_class->compare_property = compare_property;
+	parent_class->verify           = verify;
 
-	setting_class->compare_property = compare_property;
-	setting_class->verify           = verify;
-
+	/* Properties */
 	/**
 	 * NMSettingTeam:config:
 	 *
@@ -1816,13 +1817,11 @@ nm_setting_team_class_init (NMSettingTeamClass *klass)
 		                     G_TYPE_PTR_ARRAY,
 		                     G_PARAM_READWRITE |
 		                     G_PARAM_STATIC_STRINGS));
-
-	_properties_override_add_transform (properties_override,
-	                                    g_object_class_find_property (G_OBJECT_CLASS (setting_class),
-	                                                                  NM_SETTING_TEAM_LINK_WATCHERS),
-	                                    G_VARIANT_TYPE ("aa{sv}"),
-	                                    team_link_watchers_to_dbus,
-	                                    team_link_watchers_from_dbus);
+	_nm_setting_class_transform_property (parent_class,
+	                                     NM_SETTING_TEAM_LINK_WATCHERS,
+	                                     G_VARIANT_TYPE ("aa{sv}"),
+	                                     team_link_watchers_to_dbus,
+	                                     team_link_watchers_from_dbus);
 
 	/* ---dbus---
 	 * property: interface-name
@@ -1832,12 +1831,8 @@ nm_setting_team_class_init (NMSettingTeamClass *klass)
 	 *   team's interface name.
 	 * ---end---
 	 */
-	_properties_override_add_dbus_only (properties_override,
-	                                    "interface-name",
-	                                    G_VARIANT_TYPE_STRING,
-	                                    _nm_setting_get_deprecated_virtual_interface_name,
-	                                    NULL);
-
-	_nm_setting_class_commit_full (setting_class, NM_META_SETTING_TYPE_TEAM,
-	                               NULL, properties_override);
+	_nm_setting_class_add_dbus_only_property (parent_class, "interface-name",
+	                                          G_VARIANT_TYPE_STRING,
+	                                          _nm_setting_get_deprecated_virtual_interface_name,
+	                                          NULL);
 }

@@ -21,10 +21,10 @@ libnm_device_plugin_team = shared_module(
 
 core_plugins += libnm_device_plugin_team
 
-test(
+run_target(
   'check-local-devices-team',
-  check_exports,
-  args: [libnm_device_plugin_team.full_path(), linker_script_devices],
+  command: [check_exports, libnm_device_plugin_team.full_path(), linker_script_devices],
+  depends: libnm_device_plugin_team
 )
 
 # FIXME: check_so_symbols replacement

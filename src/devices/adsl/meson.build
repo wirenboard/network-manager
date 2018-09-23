@@ -20,10 +20,10 @@ libnm_device_plugin_adsl = shared_module(
 
 core_plugins += libnm_device_plugin_adsl
 
-test(
+run_target(
   'check-local-devices-adsl',
-  check_exports,
-  args: [libnm_device_plugin_adsl.full_path(), linker_script_devices],
+  command: [check_exports, libnm_device_plugin_adsl.full_path(), linker_script_devices],
+  depends: libnm_device_plugin_adsl
 )
 
 # FIXME: check_so_symbols replacement

@@ -36,9 +36,7 @@ version_header = configure_file(
     configuration: version_conf,
 )
 
-shared_nm_ethtool_utils_c = files('nm-ethtool-utils.c')
-
-shared_nm_meta_setting_c = files('nm-meta-setting.c')
+shared_nm_utils_nm_meta_setting_c = files('nm-meta-setting.c')
 
 shared_nm_test_utils_impl_c = files('nm-test-utils-impl.c')
 
@@ -50,9 +48,7 @@ shared_files_libnm_core = files('''
     nm-utils/nm-dedup-multi.c
     nm-utils/nm-enum-utils.c
     nm-utils/nm-hash-utils.c
-    nm-utils/nm-io-utils.c
     nm-utils/nm-random-utils.c
-    nm-utils/nm-secret-utils.c
     nm-utils/nm-shared-utils.c
     nm-utils/nm-udev-utils.c
 '''.split())

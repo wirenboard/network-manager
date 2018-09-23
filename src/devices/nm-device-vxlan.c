@@ -246,108 +246,65 @@ address_matches (const char *str, in_addr_t addr4, struct in6_addr *addr6)
 }
 
 static gboolean
-check_connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
+check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
 	NMDeviceVxlanPrivate *priv = NM_DEVICE_VXLAN_GET_PRIVATE ((NMDeviceVxlan *) device);
 	NMSettingVxlan *s_vxlan;
 	const char *parent;
 
-	if (!NM_DEVICE_CLASS (nm_device_vxlan_parent_class)->check_connection_compatible (device, connection, error))
+	if (!NM_DEVICE_CLASS (nm_device_vxlan_parent_class)->check_connection_compatible (device, connection))
+		return FALSE;
+
+	s_vxlan = nm_connection_get_setting_vxlan (connection);
+	if (!s_vxlan)
 		return FALSE;
 
 	if (nm_device_is_real (device)) {
-		s_vxlan = nm_connection_get_setting_vxlan (connection);
-
 		parent = nm_setting_vxlan_get_parent (s_vxlan);
-		if (parent && !nm_device_match_parent (device, parent)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan parent mismatches");
+		if (parent && !nm_device_match_parent (device, parent))
 			return FALSE;
-		}
 
-		if (priv->props.id != nm_setting_vxlan_get_id (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan id mismatches");
+		if (priv->props.id != nm_setting_vxlan_get_id (s_vxlan))
 			return FALSE;
-		}
 
-		if (!address_matches (nm_setting_vxlan_get_local (s_vxlan), priv->props.local, &priv->props.local6)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan local address mismatches");
+		if (!address_matches (nm_setting_vxlan_get_local (s_vxlan), priv->props.local, &priv->props.local6))
 			return FALSE;
-		}
 
-		if (!address_matches (nm_setting_vxlan_get_remote (s_vxlan), priv->props.group, &priv->props.group6)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan remote address mismatches");
+		if (!address_matches (nm_setting_vxlan_get_remote (s_vxlan), priv->props.group, &priv->props.group6))
 			return FALSE;
-		}
 
-		if (priv->props.src_port_min != nm_setting_vxlan_get_source_port_min (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan source port min mismatches");
+		if (priv->props.src_port_min != nm_setting_vxlan_get_source_port_min (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.src_port_max != nm_setting_vxlan_get_source_port_max (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan source port max mismatches");
+		if (priv->props.src_port_max != nm_setting_vxlan_get_source_port_max (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.dst_port != nm_setting_vxlan_get_destination_port (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan destination port mismatches");
+		if (priv->props.dst_port != nm_setting_vxlan_get_destination_port (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.tos != nm_setting_vxlan_get_tos (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan TOS mismatches");
+		if (priv->props.tos != nm_setting_vxlan_get_tos (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.ttl != nm_setting_vxlan_get_ttl (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan TTL mismatches");
+		if (priv->props.ttl != nm_setting_vxlan_get_ttl (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.learning != nm_setting_vxlan_get_learning (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan learning mismatches");
+		if (priv->props.learning != nm_setting_vxlan_get_learning (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.ageing != nm_setting_vxlan_get_ageing (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan ageing mismatches");
+		if (priv->props.ageing != nm_setting_vxlan_get_ageing (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.proxy != nm_setting_vxlan_get_proxy (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan proxy mismatches");
+		if (priv->props.proxy != nm_setting_vxlan_get_proxy (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.rsc != nm_setting_vxlan_get_rsc (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan rsc mismatches");
+		if (priv->props.rsc != nm_setting_vxlan_get_rsc (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.l2miss != nm_setting_vxlan_get_l2_miss (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan l2miss mismatches");
+		if (priv->props.l2miss != nm_setting_vxlan_get_l2_miss (s_vxlan))
 			return FALSE;
-		}
 
-		if (priv->props.l3miss != nm_setting_vxlan_get_l3_miss (s_vxlan)) {
-			nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-			                            "vxlan l3miss mismatches");
+		if (priv->props.l3miss != nm_setting_vxlan_get_l3_miss (s_vxlan))
 			return FALSE;
-		}
 	}
 
 	return TRUE;
@@ -386,6 +343,9 @@ update_connection (NMDevice *device, NMConnection *connection)
 {
 	NMDeviceVxlanPrivate *priv = NM_DEVICE_VXLAN_GET_PRIVATE ((NMDeviceVxlan *) device);
 	NMSettingVxlan *s_vxlan = nm_connection_get_setting_vxlan (connection);
+	NMDevice *parent_device;
+	const char *setting_parent;
+	const char *new_parent = NULL;
 
 	if (!s_vxlan) {
 		s_vxlan = (NMSettingVxlan *) nm_setting_vxlan_new ();
@@ -395,11 +355,23 @@ update_connection (NMDevice *device, NMConnection *connection)
 	if (priv->props.id != nm_setting_vxlan_get_id (s_vxlan))
 		g_object_set (G_OBJECT (s_vxlan), NM_SETTING_VXLAN_ID, priv->props.id, NULL);
 
-	g_object_set (s_vxlan,
-	              NM_SETTING_VXLAN_PARENT,
-	              nm_device_parent_find_for_connection (device,
-	                                                    nm_setting_vxlan_get_parent (s_vxlan)),
-	              NULL);
+	parent_device = nm_device_parent_get_device (device);
+
+	/* Update parent in the connection; default to parent's interface name */
+	if (parent_device) {
+		new_parent = nm_device_get_iface (parent_device);
+		setting_parent = nm_setting_vxlan_get_parent (s_vxlan);
+		if (setting_parent && nm_utils_is_uuid (setting_parent)) {
+			NMConnection *parent_connection;
+
+			/* Don't change a parent specified by UUID if it's still valid */
+			parent_connection = (NMConnection *) nm_settings_get_connection_by_uuid (nm_device_get_settings (device),
+			                                                                         setting_parent);
+			if (parent_connection && nm_device_check_connection_compatible (parent_device, parent_connection))
+				new_parent = NULL;
+		}
+	}
+	g_object_set (s_vxlan, NM_SETTING_VXLAN_PARENT, new_parent, NULL);
 
 	if (!address_matches (nm_setting_vxlan_get_remote (s_vxlan), priv->props.group, &priv->props.group6)) {
 		if (priv->props.group) {
@@ -605,16 +577,15 @@ nm_device_vxlan_class_init (NMDeviceVxlanClass *klass)
 	NMDBusObjectClass *dbus_object_class = NM_DBUS_OBJECT_CLASS (klass);
 	NMDeviceClass *device_class = NM_DEVICE_CLASS (klass);
 
+	NM_DEVICE_CLASS_DECLARE_TYPES (klass, NULL, NM_LINK_TYPE_VXLAN)
+
 	object_class->get_property = get_property;
 
 	dbus_object_class->interface_infos = NM_DBUS_INTERFACE_INFOS (&interface_info_device_vxlan);
 
-	device_class->connection_type_supported = NM_SETTING_VXLAN_SETTING_NAME;
-	device_class->connection_type_check_compatible = NM_SETTING_VXLAN_SETTING_NAME;
-	device_class->link_types = NM_DEVICE_DEFINE_LINK_TYPES (NM_LINK_TYPE_VXLAN);
-
 	device_class->link_changed = link_changed;
 	device_class->unrealize_notify = unrealize_notify;
+	device_class->connection_type = NM_SETTING_VXLAN_SETTING_NAME;
 	device_class->create_and_realize = create_and_realize;
 	device_class->check_connection_compatible = check_connection_compatible;
 	device_class->complete_connection = complete_connection;

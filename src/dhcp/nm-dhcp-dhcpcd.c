@@ -81,21 +81,15 @@ nm_dhcp_dhcpcd_get_path (void)
 }
 
 static gboolean
-ip4_start (NMDhcpClient *client,
-           const char *dhcp_anycast_addr,
-           const char *last_ip4_address,
-           GError **error)
+ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last_ip4_address)
 {
 	NMDhcpDhcpcd *self = NM_DHCP_DHCPCD (client);
 	NMDhcpDhcpcdPrivate *priv = NM_DHCP_DHCPCD_GET_PRIVATE (self);
-	gs_unref_ptrarray GPtrArray *argv = NULL;
+	GPtrArray *argv = NULL;
 	pid_t pid = -1;
-	GError *local = NULL;
-	gs_free char *cmd_str = NULL;
-	gs_free char *binary_name = NULL;
-	const char *iface;
-	const char *dhcpcd_path;
-	const char *hostname;
+	GError *error = NULL;
+	char *pid_contents = NULL, *binary_name, *cmd_str;
+	const char *iface, *dhcpcd_path, *hostname;
 
 	g_return_val_if_fail (priv->pid_file == NULL, FALSE);
 
@@ -108,13 +102,14 @@ ip4_start (NMDhcpClient *client,
 
 	dhcpcd_path = nm_dhcp_dhcpcd_get_path ();
 	if (!dhcpcd_path) {
-		nm_utils_error_set_literal (error, NM_UTILS_ERROR_UNKNOWN, "dhcpcd binary not found");
+		_LOGW ("dhcpcd could not be found");
 		return FALSE;
 	}
 
 	/* Kill any existing dhcpcd from the pidfile */
 	binary_name = g_path_get_basename (dhcpcd_path);
 	nm_dhcp_client_stop_existing (priv->pid_file, binary_name);
+	g_free (binary_name);
 
 	argv = g_ptr_array_new ();
 	g_ptr_array_add (argv, (gpointer) dhcpcd_path);
@@ -133,11 +128,13 @@ ip4_start (NMDhcpClient *client,
 	g_ptr_array_add (argv, (gpointer) "-c");    /* Set script file */
 	g_ptr_array_add (argv, (gpointer) nm_dhcp_helper_path);
 
+#ifdef DHCPCD_SUPPORTS_IPV6
 	/* IPv4-only for now.  NetworkManager knows better than dhcpcd when to
 	 * run IPv6, and dhcpcd's automatic Router Solicitations cause problems
 	 * with devices that don't expect them.
 	 */
 	g_ptr_array_add (argv, (gpointer) "-4");
+#endif
 
 	hostname = nm_dhcp_client_get_hostname (client);
 
@@ -156,30 +153,24 @@ ip4_start (NMDhcpClient *client,
 	g_ptr_array_add (argv, (gpointer) iface);
 	g_ptr_array_add (argv, NULL);
 
-	_LOGD ("running: %s",
-	       (cmd_str = g_strjoinv (" ", (char **) argv->pdata)));
+	cmd_str = g_strjoinv (" ", (gchar **) argv->pdata);
+	_LOGD ("running: %s", cmd_str);
+	g_free (cmd_str);
 
-	if (!g_spawn_async (NULL,
-	                    (char **) argv->pdata, NULL,
-	                      G_SPAWN_DO_NOT_REAP_CHILD
-	                    | G_SPAWN_STDOUT_TO_DEV_NULL
-	                    | G_SPAWN_STDERR_TO_DEV_NULL,
-	                    nm_utils_setpgid,
-	                    NULL,
-	                    &pid,
-	                    &local)) {
-		nm_utils_error_set (error,
-		                    NM_UTILS_ERROR_UNKNOWN,
-		                    "dhcpcd failed to start: %s",
-		                    local->message);
-		g_error_free (local);
-		return FALSE;
+	if (g_spawn_async (NULL, (char **) argv->pdata, NULL,
+	                   G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
+	                   nm_utils_setpgid, NULL, &pid, &error)) {
+		g_assert (pid > 0);
+		_LOGI ("dhcpcd started with pid %d", pid);
+		nm_dhcp_client_watch_child (client, pid);
+	} else {
+		_LOGW ("dhcpcd failed to start, error: '%s'", error->message);
+		g_error_free (error);
 	}
 
-	nm_assert (pid > 0);
-	_LOGI ("dhcpcd started with pid %d", pid);
-	nm_dhcp_client_watch_child (client, pid);
-	return TRUE;
+	g_free (pid_contents);
+	g_ptr_array_free (argv, TRUE);
+	return pid > 0 ? TRUE : FALSE;
 }
 
 static gboolean
@@ -188,10 +179,11 @@ ip6_start (NMDhcpClient *client,
            const struct in6_addr *ll_addr,
            NMSettingIP6ConfigPrivacy privacy,
            GBytes *duid,
-           guint needed_prefixes,
-           GError **error)
+           guint needed_prefixes)
 {
-	nm_utils_error_set_literal (error, NM_UTILS_ERROR_UNKNOWN, "dhcpcd plugin does not support IPv6");
+	NMDhcpDhcpcd *self = NM_DHCP_DHCPCD (client);
+
+	_LOGW ("the dhcpcd backend does not support IPv6");
 	return FALSE;
 }
 

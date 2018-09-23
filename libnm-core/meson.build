@@ -5,7 +5,6 @@ libnm_core_headers = files(
   'nm-core-types.h',
   'nm-dbus-interface.h',
   'nm-errors.h',
-  'nm-setting-6lowpan.h',
   'nm-setting-8021x.h',
   'nm-setting-adsl.h',
   'nm-setting-bluetooth.h',
@@ -16,7 +15,6 @@ libnm_core_headers = files(
   'nm-setting-connection.h',
   'nm-setting-dcb.h',
   'nm-setting-dummy.h',
-  'nm-setting-ethtool.h',
   'nm-setting-generic.h',
   'nm-setting-gsm.h',
   'nm-setting-infiniband.h',
@@ -26,7 +24,6 @@ libnm_core_headers = files(
   'nm-setting-ip6-config.h',
   'nm-setting-macsec.h',
   'nm-setting-macvlan.h',
-  'nm-setting-match.h',
   'nm-setting-olpc-mesh.h',
   'nm-setting-ovs-bridge.h',
   'nm-setting-ovs-interface.h',
@@ -36,7 +33,6 @@ libnm_core_headers = files(
   'nm-setting-pppoe.h',
   'nm-setting-proxy.h',
   'nm-setting-serial.h',
-  'nm-setting-sriov.h',
   'nm-setting-tc-config.h',
   'nm-setting-team-port.h',
   'nm-setting-team.h',
@@ -49,7 +45,6 @@ libnm_core_headers = files(
   'nm-setting-wired.h',
   'nm-setting-wireless-security.h',
   'nm-setting-wireless.h',
-  'nm-setting-wpan.h',
   'nm-setting.h',
   'nm-simple-connection.h',
   'nm-utils.h',
@@ -60,7 +55,6 @@ libnm_core_headers = files(
 )
 
 libnm_core_settings_sources = files(
-  'nm-setting-6lowpan.c',
   'nm-setting-8021x.c',
   'nm-setting-adsl.c',
   'nm-setting-bluetooth.c',
@@ -71,7 +65,6 @@ libnm_core_settings_sources = files(
   'nm-setting-connection.c',
   'nm-setting-dcb.c',
   'nm-setting-dummy.c',
-  'nm-setting-ethtool.c',
   'nm-setting-generic.c',
   'nm-setting-gsm.c',
   'nm-setting-infiniband.c',
@@ -81,7 +74,6 @@ libnm_core_settings_sources = files(
   'nm-setting-ip6-config.c',
   'nm-setting-macsec.c',
   'nm-setting-macvlan.c',
-  'nm-setting-match.c',
   'nm-setting-olpc-mesh.c',
   'nm-setting-ovs-bridge.c',
   'nm-setting-ovs-interface.c',
@@ -91,7 +83,6 @@ libnm_core_settings_sources = files(
   'nm-setting-pppoe.c',
   'nm-setting-proxy.c',
   'nm-setting-serial.c',
-  'nm-setting-sriov.c',
   'nm-setting-tc-config.c',
   'nm-setting-team-port.c',
   'nm-setting-team.c',
@@ -103,12 +94,12 @@ libnm_core_settings_sources = files(
   'nm-setting-wimax.c',
   'nm-setting-wired.c',
   'nm-setting-wireless-security.c',
-  'nm-setting-wireless.c',
-  'nm-setting-wpan.c'
+  'nm-setting-wireless.c'
 )
 
 libnm_core_sources = libnm_core_settings_sources + files(
-  'nm-crypto.c',
+  'crypto.c',
+  'crypto_' + crypto + '.c',
   'nm-connection.c',
   'nm-dbus-utils.c',
   'nm-errors.c',
@@ -136,6 +127,7 @@ libnm_core_enum = gnome.mkenums(
 )
 
 deps = [
+  crypto_dep,
   dl_dep,
   libudev_dep,
   shared_dep,
@@ -146,6 +138,12 @@ deps = [
 cflags = [
   '-DG_LOG_DOMAIN="@0@"'.format(libnm_name),
   '-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIBNM_CORE',
+  '-DLIBEXECDIR="@0@"'.format(nm_libexecdir),
+  '-DNMLOCALEDIR="@0@"'.format(nm_localedir),
+  '-DNMCONFDIR="@0@"'.format(nm_pkgconfdir),
+  '-DNMLIBDIR="@0@"'.format(nm_pkglibdir),
+  '-DNMPLUGINDIR="@0@"'.format(nm_plugindir),
+  '-DNMVPNDIR="@0@"'.format(nm_vpndir)
 ]
 
 if enable_json_validation
@@ -153,36 +151,9 @@ if enable_json_validation
   deps += jansson_dep
 endif
 
-if (crypto_gnutls_dep.found())
-  libnm_crypto_gnutls = static_library(
-    'nm-crypto-gnutls',
-    sources: [ 'nm-crypto-gnutls.c' ],
-    dependencies: deps + [ crypto_gnutls_dep ],
-    c_args: cflags
-  )
-endif
-
-if (crypto_nss_dep.found())
-  libnm_crypto_nss = static_library(
-    'nm-crypto-nss',
-    sources: [ 'nm-crypto-nss.c' ],
-    dependencies: deps + [ crypto_nss_dep ],
-    c_args: cflags
-  )
-endif
-
-if crypto == 'gnutls'
-  libnm_crypto = libnm_crypto_gnutls
-elif crypto == 'nss'
-  libnm_crypto = libnm_crypto_nss
-else
-  error('bug')
-endif
-
 libnm_core_sources_all =  libnm_core_sources
 libnm_core_sources_all += libnm_core_enum
-libnm_core_sources_all += shared_nm_meta_setting_c
-libnm_core_sources_all += shared_nm_ethtool_utils_c
+libnm_core_sources_all += shared_nm_utils_nm_meta_setting_c
 libnm_core_sources_all += shared_files_libnm_core
 libnm_core_sources_all += [version_header]
 
@@ -190,7 +161,6 @@ libnm_core = static_library(
   'nm-core',
   sources: libnm_core_sources_all,
   dependencies: deps,
-  link_with: libnm_crypto,
   c_args: cflags
 )
 

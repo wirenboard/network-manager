@@ -42,15 +42,19 @@ typedef struct {
 } NMSIbftPluginPrivate;
 
 struct _NMSIbftPlugin {
-	NMSettingsPlugin parent;
+	GObject parent;
 	NMSIbftPluginPrivate _priv;
 };
 
 struct _NMSIbftPluginClass {
-	NMSettingsPluginClass parent;
+	GObjectClass parent;
 };
 
-G_DEFINE_TYPE (NMSIbftPlugin, nms_ibft_plugin, NM_TYPE_SETTINGS_PLUGIN);
+static void settings_plugin_interface_init (NMSettingsPluginInterface *plugin_iface);
+
+G_DEFINE_TYPE_EXTENDED (NMSIbftPlugin, nms_ibft_plugin, G_TYPE_OBJECT, 0,
+                        G_IMPLEMENT_INTERFACE (NM_TYPE_SETTINGS_PLUGIN,
+                                               settings_plugin_interface_init))
 
 #define NMS_IBFT_PLUGIN_GET_PRIVATE(self) _NM_GET_PRIVATE (self, NMSIbftPlugin, NMS_IS_IBFT_PLUGIN)
 
@@ -80,9 +84,9 @@ read_connections (NMSIbftPlugin *self)
 		connection = nms_ibft_connection_new (iter->data, &error);
 		if (connection) {
 			nm_log_info (LOGD_SETTINGS, "ibft: read connection '%s'",
-			             nm_settings_connection_get_id (NM_SETTINGS_CONNECTION (connection)));
+			             nm_connection_get_id (NM_CONNECTION (connection)));
 			g_hash_table_insert (priv->connections,
-			                     g_strdup (nm_settings_connection_get_uuid (NM_SETTINGS_CONNECTION (connection))),
+			                     g_strdup (nm_connection_get_uuid (NM_CONNECTION (connection))),
 			                     connection);
 		} else {
 			nm_log_warn (LOGD_SETTINGS, "ibft: failed to read iscsiadm record: %s", error->message);
@@ -117,6 +121,11 @@ get_connections (NMSettingsPlugin *config)
 /*****************************************************************************/
 
 static void
+init (NMSettingsPlugin *config)
+{
+}
+
+static void
 nms_ibft_plugin_init (NMSIbftPlugin *self)
 {
 	NMSIbftPluginPrivate *priv = NMS_IBFT_PLUGIN_GET_PRIVATE (self);
@@ -139,20 +148,24 @@ dispose (GObject *object)
 }
 
 static void
-nms_ibft_plugin_class_init (NMSIbftPluginClass *klass)
+nms_ibft_plugin_class_init (NMSIbftPluginClass *req_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingsPluginClass *plugin_class = NM_SETTINGS_PLUGIN_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS (req_class);
 
 	object_class->dispose = dispose;
+}
 
-	plugin_class->get_connections = get_connections;
+static void
+settings_plugin_interface_init (NMSettingsPluginInterface *plugin_iface)
+{
+	plugin_iface->get_connections = get_connections;
+	plugin_iface->init = init;
 }
 
 /*****************************************************************************/
 
-G_MODULE_EXPORT NMSettingsPlugin *
+G_MODULE_EXPORT GObject *
 nm_settings_plugin_factory (void)
 {
-	return NM_SETTINGS_PLUGIN (g_object_ref (nms_ibft_plugin_get ()));
+	return G_OBJECT (g_object_ref (nms_ibft_plugin_get ()));
 }

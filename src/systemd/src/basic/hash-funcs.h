@@ -1,6 +1,10 @@
 /* SPDX-License-Identifier: LGPL-2.1+ */
 #pragma once
 
+/***
+  Copyright © 2014 Michal Schmidt
+***/
+
 #include "macro.h"
 #include "siphash24.h"
 

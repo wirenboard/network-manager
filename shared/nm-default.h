@@ -112,8 +112,6 @@
 #include <config.h>
 #endif
 
-#include "config-extra.h"
-
 /* for internal compilation we don't want the deprecation macros
  * to be in effect. Define the widest range of versions to effectively
  * disable deprecation checks */

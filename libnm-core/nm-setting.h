@@ -168,13 +168,11 @@ typedef gboolean (*NMSettingClearSecretsWithFlagsFn) (NMSetting *setting,
                                                       NMSettingSecretFlags flags,
                                                       gpointer user_data);
 
-struct _NMMetaSettingInfo;
-
 typedef struct {
 	GObjectClass parent;
 
 	/* Virtual functions */
-	int         (*verify)            (NMSetting     *setting,
+	gint        (*verify)            (NMSetting     *setting,
 	                                  NMConnection  *connection,
 	                                  GError       **error);
 
@@ -213,10 +211,7 @@ typedef struct {
 	                                  NMSettingCompareFlags flags);
 
 	/*< private >*/
-	const struct _NMMetaSettingInfo *setting_info;
-
-	/*< private >*/
-	gpointer padding[6];
+	gpointer padding[7];
 } NMSettingClass;
 
 /**
@@ -287,8 +282,7 @@ void        nm_setting_enumerate_values (NMSetting *setting,
 
 char       *nm_setting_to_string      (NMSetting *setting);
 
-/*****************************************************************************/
-
+/* Secrets */
 gboolean    nm_setting_get_secret_flags (NMSetting *setting,
                                          const char *secret_name,
                                          NMSettingSecretFlags *out_flags,
@@ -299,12 +293,9 @@ gboolean    nm_setting_set_secret_flags (NMSetting *setting,
                                          NMSettingSecretFlags flags,
                                          GError **error);
 
-/*****************************************************************************/
-
+/* Properties */
 const GVariantType *nm_setting_get_dbus_property_type (NMSetting *setting,
                                                        const char *property_name);
-
-/*****************************************************************************/
 
 G_END_DECLS
 

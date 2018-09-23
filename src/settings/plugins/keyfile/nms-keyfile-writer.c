@@ -34,8 +34,6 @@
 #include "nms-keyfile-utils.h"
 #include "nms-keyfile-reader.h"
 
-#include "nm-utils/nm-io-utils.h"
-
 /*****************************************************************************/
 
 typedef struct {
@@ -129,7 +127,7 @@ cert_writer (NMConnection *connection,
 		new_path = g_strdup_printf ("%s/%s-%s.%s", info->keyfile_dir, nm_connection_get_uuid (connection),
 		                            cert_data->vtable->file_suffix, ext);
 
-		success = nm_utils_file_set_contents (new_path, (const char *) blob_data,
+		success = nm_utils_file_set_contents (new_path, (const gchar *) blob_data,
 		                                      blob_len, 0600, &local);
 		if (success) {
 			/* Write the path value to the keyfile.
@@ -299,6 +297,11 @@ _internal_write_connection (NMConnection *connection,
 		return FALSE;
 	}
 
+	if (out_path && g_strcmp0 (existing_path, path)) {
+		*out_path = path;  /* pass path out to caller */
+		path = NULL;
+	}
+
 	if (out_reread || out_reread_same)
 	{
 		gs_unref_object NMConnection *reread = NULL;
@@ -329,8 +332,6 @@ _internal_write_connection (NMConnection *connection,
 		NM_SET_OUT (out_reread, g_steal_pointer (&reread));
 		NM_SET_OUT (out_reread_same, reread_same);
 	}
-
-	NM_SET_OUT (out_path, g_steal_pointer (&path));
 
 	return TRUE;
 }

@@ -177,7 +177,7 @@ nm_main_utils_ensure_not_running_pidfile (const char *pidfile)
 	gs_free char *contents = NULL;
 	gs_free char *proc_cmdline = NULL;
 	gsize len = 0;
-	long pid;
+	glong pid;
 	const char *process_name;
 	const char *prgname = g_get_prgname ();
 

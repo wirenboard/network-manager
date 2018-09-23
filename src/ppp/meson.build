@@ -31,6 +31,7 @@ core_plugins += shared_module(
   name,
   sources: 'nm-ppp-manager.c',
   dependencies: deps,
+  c_args: '-DPPPD_PLUGIN_DIR="@0@"'.format(pppd_plugin_dir),
   link_args: [
     '-Wl,--version-script,@0@'.format(linker_script),
   ],

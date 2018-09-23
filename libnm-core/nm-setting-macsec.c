@@ -40,7 +40,9 @@
  * necessary for connection to MACsec (IEEE 802.1AE) interfaces.
  **/
 
-G_DEFINE_TYPE (NMSettingMacsec, nm_setting_macsec, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingMacsec, nm_setting_macsec, NM_TYPE_SETTING,
+                         _nm_register_setting (MACSEC, NM_SETTING_PRIORITY_HW_BASE))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_MACSEC)
 
 #define NM_SETTING_MACSEC_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_MACSEC, NMSettingMacsecPrivate))
 
@@ -472,19 +474,18 @@ finalize (GObject *object)
 }
 
 static void
-nm_setting_macsec_class_init (NMSettingMacsecClass *klass)
+nm_setting_macsec_class_init (NMSettingMacsecClass *setting_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	NMSettingClass *setting_class = NM_SETTING_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS (setting_class);
+	NMSettingClass *parent_class = NM_SETTING_CLASS (setting_class);
 
-	g_type_class_add_private (klass, sizeof (NMSettingMacsecPrivate));
+	g_type_class_add_private (setting_class, sizeof (NMSettingMacsecPrivate));
 
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
 	object_class->finalize     = finalize;
-
-	setting_class->verify       = verify;
-	setting_class->need_secrets = need_secrets;
+	parent_class->verify       = verify;
+	parent_class->need_secrets = need_secrets;
 
 	/**
 	 * NMSettingMacsec:parent:
@@ -626,6 +627,4 @@ nm_setting_macsec_class_init (NMSettingMacsecClass *klass)
 	                          G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
-
-	_nm_setting_class_commit (setting_class, NM_META_SETTING_TYPE_MACSEC);
 }

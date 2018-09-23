@@ -441,7 +441,10 @@ crypto_verify_pkcs12 (const GByteArray *data,
 	PK11SlotInfo *slot = NULL;
 	SECStatus s;
 	char *ucs2_password;
-	long ucs2_chars = 0;
+	glong ucs2_chars = 0;
+#ifndef WORDS_BIGENDIAN
+	guint16 *p;
+#endif /* WORDS_BIGENDIAN */
 
 	if (error)
 		g_return_val_if_fail (*error == NULL, FALSE);
@@ -467,14 +470,10 @@ crypto_verify_pkcs12 (const GByteArray *data,
 		memset (ucs2_password, 0, ucs2_chars);
 		g_free (ucs2_password);
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-		{
-			guint16 *p;
-
-			for (p = (guint16 *) pw.data; p < (guint16 *) (pw.data + pw.len); p++)
-				*p = GUINT16_SWAP_LE_BE (*p);
-		}
-#endif
+#ifndef WORDS_BIGENDIAN
+		for (p = (guint16 *) pw.data; p < (guint16 *) (pw.data + pw.len); p++)
+			*p = GUINT16_SWAP_LE_BE (*p);
+#endif /* WORDS_BIGENDIAN */
 	} else {
 		/* NULL password */
 		pw.data = NULL;
