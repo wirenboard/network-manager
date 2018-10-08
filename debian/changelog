@@ -1,3 +1,11 @@
+network-manager (1.14.0-2) experimental; urgency=medium
+
+  * Tighten inter-package dependencies.
+    Make sure network-manager and libnm0 are always upgraded in lockstep.
+    (Closes: #818165)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 08 Oct 2018 16:55:10 +0200
+
 network-manager (1.14.0-1) experimental; urgency=medium
 
   * New upstream version 1.14.0
