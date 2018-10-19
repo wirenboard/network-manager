@@ -229,7 +229,7 @@ vardict_from_network_type (const char *type)
 }
 
 static void
-insert_ap_from_network (GHashTable *aps, GDBusProxy *proxy, const char *path, int16_t signal, uint32_t ap_id)
+insert_ap_from_network (GHashTable *aps, const char *path, int16_t signal, uint32_t ap_id)
 {
 	gs_unref_object GDBusProxy *network_proxy = NULL;
 	gs_unref_variant GVariant *name_value = NULL, *type_value = NULL;
@@ -239,19 +239,12 @@ insert_ap_from_network (GHashTable *aps, GDBusProxy *proxy, const char *path, in
 	GVariant *rsn;
 	uint8_t bssid[6];
 	NMWifiAP *ap;
-	GError *error;
 
-	network_proxy = g_dbus_proxy_new_sync (g_dbus_proxy_get_connection (proxy),
-	                                       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-	                                       NULL,
-	                                       NM_IWD_SERVICE,
-	                                       path,
-	                                       NM_IWD_NETWORK_INTERFACE,
-	                                       NULL, &error);
-	if (!network_proxy) {
-		g_clear_error (&error);
+	network_proxy = nm_iwd_manager_get_dbus_interface (nm_iwd_manager_get (),
+	                                                   path,
+	                                                   NM_IWD_NETWORK_INTERFACE);
+	if (!network_proxy)
 		return;
-	}
 
 	name_value = g_dbus_proxy_get_cached_property (network_proxy, "Name");
 	type_value = g_dbus_proxy_get_cached_property (network_proxy, "Type");
@@ -344,10 +337,10 @@ get_ordered_networks_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 
 	if (compat) {
 		while (g_variant_iter_next (networks, "(&o&sn&s)", &path, &name, &signal, &type))
-			insert_ap_from_network (new_aps, priv->dbus_station_proxy, path, signal, ap_id++);
+			insert_ap_from_network (new_aps, path, signal, ap_id++);
 	} else {
 		while (g_variant_iter_next (networks, "(&on)", &path, &signal))
-			insert_ap_from_network (new_aps, priv->dbus_station_proxy, path, signal, ap_id++);
+			insert_ap_from_network (new_aps, path, signal, ap_id++);
 	}
 
 	g_variant_iter_free (networks);
@@ -433,7 +426,7 @@ cleanup_association_attempt (NMDeviceIwd *self, gboolean disconnect)
 
 	set_current_ap (self, NULL, TRUE);
 
-	if (disconnect && priv->dbus_obj)
+	if (disconnect && priv->dbus_station_proxy)
 		send_disconnect (self);
 }
 
@@ -827,13 +820,8 @@ is_available (NMDevice *device, NMDeviceCheckDevAvailableFlags flags)
 {
 	NMDeviceIwd *self = NM_DEVICE_IWD (device);
 	NMDeviceIwdPrivate *priv = NM_DEVICE_IWD_GET_PRIVATE (self);
-	gs_unref_variant GVariant *value = NULL;
 
-	if (!priv->enabled || !priv->dbus_obj)
-		return FALSE;
-
-	value = g_dbus_proxy_get_cached_property (priv->dbus_device_proxy, "Powered");
-	return get_variant_boolean (value, "Powered");
+	return priv->enabled && priv->dbus_station_proxy;
 }
 
 static gboolean
@@ -970,8 +958,7 @@ dbus_request_scan_cb (NMDevice *device,
 
 	priv = NM_DEVICE_IWD_GET_PRIVATE (self);
 
-	if (   !priv->enabled
-	    || !priv->dbus_obj
+	if (   !priv->can_scan
 	    || nm_device_get_state (device) < NM_DEVICE_STATE_DISCONNECTED
 	    || nm_device_is_activating (device)) {
 		g_dbus_method_invocation_return_error_literal (context,
@@ -1012,8 +999,7 @@ _nm_device_iwd_request_scan (NMDeviceIwd *self,
 	NMDeviceIwdPrivate *priv = NM_DEVICE_IWD_GET_PRIVATE (self);
 	NMDevice *device = NM_DEVICE (self);
 
-	if (   !priv->enabled
-	    || !priv->dbus_obj
+	if (   !priv->can_scan
 	    || nm_device_get_state (device) < NM_DEVICE_STATE_DISCONNECTED
 	    || nm_device_is_activating (device)) {
 		g_dbus_method_invocation_return_error_literal (invocation,
@@ -1255,12 +1241,7 @@ secrets_error:
 	g_dbus_method_invocation_return_error_literal (invocation, NM_DEVICE_ERROR,
 	                                               NM_DEVICE_ERROR_INVALID_CONNECTION,
 	                                               "NM secrets request failed");
-
-	nm_device_state_changed (device,
-	                         NM_DEVICE_STATE_FAILED,
-	                         NM_DEVICE_STATE_REASON_NO_SECRETS);
-
-	cleanup_association_attempt (self, TRUE);
+	/* Now wait for the Connect callback to update device state */
 }
 
 static void
@@ -1292,11 +1273,14 @@ network_connect_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 {
 	NMDeviceIwd *self = user_data;
 	NMDevice *device = NM_DEVICE (self);
+	NMDeviceIwdPrivate *priv = NM_DEVICE_IWD_GET_PRIVATE (self);
 	gs_free_error GError *error = NULL;
 	NMConnection *connection;
 	NMSettingWireless *s_wifi;
 	GBytes *ssid;
 	gs_free char *ssid_utf8 = NULL;
+	NMDeviceStateReason reason = NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED;
+	GVariant *value;
 
 	if (!_nm_dbus_proxy_call_finish (G_DBUS_PROXY (source), res,
 	                                 G_VARIANT_TYPE ("()"),
@@ -1311,6 +1295,12 @@ network_connect_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 		       "Activation: (wifi) Network.Connect failed: %s",
 		       error->message);
 
+		if (nm_utils_error_is_cancelled (error, TRUE))
+			return;
+
+		if (!NM_IN_SET (nm_device_get_state (device), NM_DEVICE_STATE_CONFIG, NM_DEVICE_STATE_NEED_AUTH))
+			return;
+
 		connection = nm_device_get_applied_connection (device);
 		if (!connection)
 			goto failed;
@@ -1318,20 +1308,17 @@ network_connect_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 		if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_DBUS_ERROR))
 			dbus_error = g_dbus_error_get_remote_error (error);
 
-		/* If secrets were wrong, we'd be getting a net.connman.iwd.Failed */
 		if (nm_streq0 (dbus_error, "net.connman.iwd.Failed")) {
 			nm_connection_clear_secrets (connection);
 
-			nm_device_state_changed (device, NM_DEVICE_STATE_FAILED,
-			                         NM_DEVICE_STATE_REASON_NO_SECRETS);
-		} else if (   !nm_utils_error_is_cancelled (error, TRUE)
-		           && nm_device_is_activating (device))
-			goto failed;
+			/* If secrets were wrong, we'd be getting a net.connman.iwd.Failed */
+			reason = NM_DEVICE_STATE_REASON_NO_SECRETS;
+		} else if (nm_streq0 (dbus_error, "net.connman.iwd.Aborted")) {
+			/* If agent call was cancelled we'd be getting a net.connman.iwd.Aborted */
+			reason = NM_DEVICE_STATE_REASON_NO_SECRETS;
+		}
 
-		/* Call Disconnect to make sure IWD's autoconnect is disabled */
-		cleanup_association_attempt (self, TRUE);
-
-		return;
+		goto failed;
 	}
 
 	nm_assert (nm_device_get_state (device) == NM_DEVICE_STATE_CONFIG);
@@ -1358,9 +1345,17 @@ network_connect_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 	return;
 
 failed:
-	cleanup_association_attempt (self, FALSE);
-	nm_device_queue_state (device, NM_DEVICE_STATE_FAILED,
-	                       NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
+	/* Call Disconnect to make sure IWD's autoconnect is disabled */
+	cleanup_association_attempt (self, TRUE);
+
+	nm_device_queue_state (device, NM_DEVICE_STATE_FAILED, reason);
+
+	value = g_dbus_proxy_get_cached_property (priv->dbus_station_proxy, "State");
+	if (!priv->can_connect && nm_streq0 (get_variant_state (value), "disconnected")) {
+		priv->can_connect = true;
+		nm_device_emit_recheck_auto_activate (device);
+	}
+	g_variant_unref (value);
 }
 
 static void
@@ -1430,7 +1425,6 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 	NMActRequest *req;
 	NMWifiAP *ap;
 	NMConnection *connection;
-	GError *error = NULL;
 	GDBusProxy *network_proxy;
 
 	req = nm_device_get_act_request (device);
@@ -1460,21 +1454,13 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 		goto out;
 	}
 
-	/* Locate the IWD Network object */
-	network_proxy = g_dbus_proxy_new_for_bus_sync (NM_IWD_BUS_TYPE,
-	                                               G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-	                                               G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-	                                               NULL,
-	                                               NM_IWD_SERVICE,
-	                                               nm_wifi_ap_get_supplicant_path (ap),
-	                                               NM_IWD_NETWORK_INTERFACE,
-	                                               NULL, &error);
+	network_proxy = nm_iwd_manager_get_dbus_interface (nm_iwd_manager_get (),
+	                                                   nm_wifi_ap_get_supplicant_path (ap),
+	                                                   NM_IWD_NETWORK_INTERFACE);
 	if (!network_proxy) {
 		_LOGE (LOGD_DEVICE | LOGD_WIFI,
-		       "Activation: (wifi) could not get Network interface proxy for %s: %s",
-		       nm_wifi_ap_get_supplicant_path (ap),
-		       error->message);
-		g_clear_error (&error);
+		       "Activation: (wifi) could not get Network interface proxy for %s",
+		       nm_wifi_ap_get_supplicant_path (ap));
 		NM_SET_OUT (out_failure_reason, NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
 		goto out;
 	}
@@ -1575,7 +1561,7 @@ device_state_changed (NMDevice *device,
 		 * transition to DISCONNECTED because the device is now
 		 * ready to use.
 		 */
-		if (priv->enabled && priv->dbus_obj) {
+		if (priv->enabled && priv->dbus_station_proxy) {
 			nm_device_queue_recheck_available (device,
 			                                   NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE,
 			                                   NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
@@ -1632,10 +1618,11 @@ set_enabled (NMDevice *device, gboolean enabled)
 		if (state != NM_DEVICE_STATE_UNAVAILABLE)
 			_LOGW (LOGD_CORE, "not in expected unavailable state!");
 
-		if (priv->dbus_obj)
+		if (priv->dbus_station_proxy) {
 			nm_device_queue_recheck_available (device,
 			                                   NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE,
 			                                   NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
+		}
 	} else {
 		nm_device_state_changed (device,
 		                         NM_DEVICE_STATE_UNAVAILABLE,
@@ -1753,13 +1740,6 @@ state_changed (NMDeviceIwd *self, const char *new_state)
 	/* Don't allow scanning while connecting, disconnecting or roaming */
 	priv->can_scan = NM_IN_STRSET (new_state, "connected", "disconnected");
 
-	/* Don't allow new connection until iwd exits disconnecting */
-	can_connect = NM_IN_STRSET (new_state, "disconnected");
-	if (can_connect != priv->can_connect) {
-		priv->can_connect = can_connect;
-		nm_device_emit_recheck_auto_activate (device);
-	}
-
 	if (NM_IN_STRSET (new_state, "connecting", "connected", "roaming")) {
 		/* If we were connecting, do nothing, the confirmation of
 		 * a connection success is handled in the Device.Connect
@@ -1773,40 +1753,39 @@ state_changed (NMDeviceIwd *self, const char *new_state)
 		_LOGW (LOGD_DEVICE | LOGD_WIFI,
 		       "Unsolicited connection success, asking IWD to disconnect");
 		send_disconnect (self);
-
-		return;
 	} else if (NM_IN_STRSET (new_state, "disconnecting", "disconnected")) {
-		if (!iwd_connection)
-			return;
-
 		/* Call Disconnect on the IWD device object to make sure it
 		 * disables its own autoconnect.
-		 *
-		 * Note we could instead call net.connman.iwd.KnownNetworks.ForgetNetwork
-		 * and leave the device in autoconnect.  This way if NetworkManager
-		 * changes any settings for this connection, they'd be taken into
-		 * account on the next connection attempt.  But both methods are
-		 * a hack, we'll perhaps need an IWD API to "connect once" without
-		 * storing anything.
 		 */
 		send_disconnect (self);
 
 		/*
-		 * If IWD is still handling the Connect call, let our callback
-		 * for the dbus method handle the failure.
+		 * If IWD is still handling the Connect call, let our Connect
+		 * callback for the dbus method handle the failure.  The main
+		 * reason we can't handle the failure here is because the method
+		 * callback will have more information on the specific failure
+		 * reason.
 		 */
 		if (dev_state == NM_DEVICE_STATE_CONFIG)
 			return;
 
-		nm_device_state_changed (device,
-		                         NM_DEVICE_STATE_FAILED,
-	                                 NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT);
-
+		if (iwd_connection)
+			nm_device_state_changed (device,
+			                         NM_DEVICE_STATE_FAILED,
+			                         NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT);
+	} else if (!nm_streq (new_state, "unknown")) {
+		_LOGE (LOGD_WIFI, "State %s unknown", new_state);
 		return;
-	} else if (nm_streq (new_state, "unknown"))
-		return;
+	}
 
-	_LOGE (LOGD_WIFI, "State %s unknown", new_state);
+	/* Don't allow new connection until iwd exits disconnecting and no
+	 * Connect callback is pending.
+	 */
+	can_connect = NM_IN_STRSET (new_state, "disconnected");
+	if (can_connect != priv->can_connect) {
+		priv->can_connect = can_connect;
+		nm_device_emit_recheck_auto_activate (device);
+	}
 }
 
 static void
@@ -1856,9 +1835,72 @@ station_properties_changed (GDBusProxy *proxy, GVariant *changed_properties,
 static void
 powered_changed (NMDeviceIwd *self, gboolean new_powered)
 {
+	NMDeviceIwdPrivate *priv = NM_DEVICE_IWD_GET_PRIVATE (self);
+
 	nm_device_queue_recheck_available (NM_DEVICE (self),
 	                                   NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE,
 	                                   NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
+
+	if (new_powered) {
+		GDBusInterface *interface;
+		GVariant *value;
+
+		if (priv->dbus_station_proxy)
+			return;
+
+		interface = g_dbus_object_get_interface (priv->dbus_obj, NM_IWD_STATION_INTERFACE);
+		if (!interface) {
+			/* No Station interface on the device object.  Check if the
+			 * "State" property is present on the Device interface, that
+			 * would mean we're dealing with an IWD version from before the
+			 * Device/Station split (0.7 or earlier) and we can easily
+			 * handle that by making priv->dbus_device_proxy and
+			 * priv->dbus_station_proxy both point at the Device interface.
+			 */
+			value = g_dbus_proxy_get_cached_property (priv->dbus_device_proxy, "State");
+			if (!value) {
+				_LOGE (LOGD_WIFI, "Interface %s not found on obj %s",
+				       NM_IWD_STATION_INTERFACE,
+				       g_dbus_object_get_object_path (priv->dbus_obj));
+				return;
+			}
+
+			g_variant_unref (value);
+			interface = g_object_ref (priv->dbus_device_proxy);
+		}
+
+		priv->dbus_station_proxy = G_DBUS_PROXY (interface);
+
+		value = g_dbus_proxy_get_cached_property (priv->dbus_station_proxy, "Scanning");
+		priv->scanning = get_variant_boolean (value, "Scanning");
+		g_variant_unref (value);
+
+		value = g_dbus_proxy_get_cached_property (priv->dbus_station_proxy, "State");
+		state_changed (self, get_variant_state (value));
+		g_variant_unref (value);
+
+		g_signal_connect (priv->dbus_station_proxy, "g-properties-changed",
+		                  G_CALLBACK (station_properties_changed), self);
+
+		/* Call Disconnect to make sure IWD's autoconnect is disabled.
+		 * Autoconnect is the default state after device is brought UP.
+		 */
+		if (priv->enabled)
+			send_disconnect (self);
+	} else {
+		if (!priv->dbus_station_proxy)
+			return;
+
+		g_signal_handlers_disconnect_by_func (priv->dbus_station_proxy,
+		                                      station_properties_changed, self);
+		g_clear_object (&priv->dbus_station_proxy);
+
+		priv->can_scan = FALSE;
+		priv->scanning = FALSE;
+		priv->scan_requested = FALSE;
+		priv->can_connect = FALSE;
+		cleanup_association_attempt (self, FALSE);
+	}
 }
 
 static void
@@ -1887,37 +1929,35 @@ nm_device_iwd_set_dbus_object (NMDeviceIwd *self, GDBusObject *object)
 	NMDeviceIwdPrivate *priv = NM_DEVICE_IWD_GET_PRIVATE (self);
 	GDBusInterface *interface;
 	GVariant *value;
+	gboolean powered;
 
 	if (!nm_g_object_ref_set ((GObject **) &priv->dbus_obj, (GObject *) object))
 		return;
+
+	if (priv->enabled && priv->dbus_station_proxy) {
+		nm_device_queue_recheck_available (NM_DEVICE (self),
+		                                   NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE,
+		                                   NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
+	}
 
 	if (priv->dbus_device_proxy) {
 		g_signal_handlers_disconnect_by_func (priv->dbus_device_proxy,
 		                                      device_properties_changed, self);
 		g_clear_object (&priv->dbus_device_proxy);
-		g_signal_handlers_disconnect_by_func (priv->dbus_station_proxy,
-		                                      station_properties_changed, self);
-		g_clear_object (&priv->dbus_station_proxy);
+
+		powered_changed (self, FALSE);
 	}
 
-	if (priv->enabled)
-		nm_device_queue_recheck_available (NM_DEVICE (self),
-		                                   NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE,
-		                                   NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED);
-
-	if (!object) {
-		priv->can_scan = FALSE;
-
-		cleanup_association_attempt (self, FALSE);
+	if (!object)
 		return;
-	}
 
 	interface = g_dbus_object_get_interface (object, NM_IWD_DEVICE_INTERFACE);
 	if (!interface) {
 		_LOGE (LOGD_WIFI, "Interface %s not found on obj %s",
 		       NM_IWD_DEVICE_INTERFACE,
 		       g_dbus_object_get_object_path (object));
-		goto error;
+		g_clear_object (&priv->dbus_obj);
+		return;
 	}
 
 	priv->dbus_device_proxy = G_DBUS_PROXY (interface);
@@ -1925,60 +1965,14 @@ nm_device_iwd_set_dbus_object (NMDeviceIwd *self, GDBusObject *object)
 	g_signal_connect (priv->dbus_device_proxy, "g-properties-changed",
 	                  G_CALLBACK (device_properties_changed), self);
 
-	interface = g_dbus_object_get_interface (object, NM_IWD_STATION_INTERFACE);
-	if (!interface) {
-		/* No Station interface on the device object.  Check if the
-		 * "State" property is present on the Device interface, that
-		 * would mean we're dealing with an IWD version from before the
-		 * Device/Station split (0.7 or earlier) and we can easily
-		 * handle that by making priv->dbus_device_proxy and
-		 * priv->dbus_station_proxy both point at the Device interface.
-		 *
-		 * TODO: handle device in a mode initially other than station
-		 * -- also means the Station interface won't be there.
-		 */
-		value = g_dbus_proxy_get_cached_property (priv->dbus_device_proxy, "State");
-		g_variant_unref (value);
-		if (!value) {
-			_LOGE (LOGD_WIFI, "Interface %s not found on obj %s",
-			       NM_IWD_STATION_INTERFACE,
-			       g_dbus_object_get_object_path (object));
-			goto error;
-		}
-
-		interface = g_object_ref (priv->dbus_device_proxy);
-	}
-
-	priv->dbus_station_proxy = G_DBUS_PROXY (interface);
-
-	value = g_dbus_proxy_get_cached_property (priv->dbus_station_proxy, "Scanning");
-	priv->scanning = get_variant_boolean (value, "Scanning");
-	g_variant_unref (value);
-	priv->scan_requested = FALSE;
-
-	value = g_dbus_proxy_get_cached_property (priv->dbus_station_proxy, "State");
-	state_changed (self, get_variant_state (value));
+	value = g_dbus_proxy_get_cached_property (priv->dbus_device_proxy, "Powered");
+	powered = get_variant_boolean (value, "Powered");
 	g_variant_unref (value);
 
-	g_signal_connect (priv->dbus_station_proxy, "g-properties-changed",
-	                  G_CALLBACK (station_properties_changed), self);
-
-	set_powered (self, priv->enabled);
-
-	/* Call Disconnect to make sure IWD's autoconnect is disabled.
-	 * Autoconnect is the default state after device is brought UP.
-	 */
-	if (priv->enabled)
-		send_disconnect (self);
-
-	return;
-error:
-	g_clear_object (&priv->dbus_obj);
-	if (priv->dbus_device_proxy) {
-		g_signal_handlers_disconnect_by_func (priv->dbus_device_proxy,
-		                                      device_properties_changed, self);
-		g_clear_object (&priv->dbus_device_proxy);
-	}
+	if (powered != priv->enabled)
+		set_powered (self, priv->enabled);
+	else if (powered)
+		powered_changed (self, TRUE);
 }
 
 gboolean

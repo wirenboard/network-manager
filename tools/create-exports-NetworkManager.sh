@@ -35,7 +35,12 @@ call_nm() {
 }
 
 get_symbols_nm () {
-    call_nm ./src/${libs}libNetworkManager.a |
+    if [ -z "$from_meson" ]; then
+        base=./src/.libs/libNetworkManager.a
+    else
+        base=./src/nm-full-symbols
+    fi
+    call_nm "$base" |
         sed -n 's/^[tTDGRBS] //p' |
         _sort
 }
@@ -48,8 +53,8 @@ EOF
 
 get_symbols_missing() {
     (for f in $(find ./src/settings/plugins/*/${libs} \
-              ./src/devices/*/${libs} \
-              ./src/ppp/${libs} -name '*.so'); do
+                     ./src/devices/*/${libs} \
+                     ./src/ppp/${libs} -name '*.so' 2>/dev/null); do
         call_nm "$f" |
             sed -n 's/^\([U]\) \(\(nm_\|nmp_\|_nm\|NM\|_NM\|c_siphash_\).*\)$/\2/p'
     done) |

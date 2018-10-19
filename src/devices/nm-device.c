@@ -464,6 +464,7 @@ typedef struct _NMDevicePrivate {
 		gulong          state_sigid;
 		NMDhcp4Config * config;
 		char *          pac_url;
+		char *          root_path;
 		bool            was_active;
 		guint           grace_id;
 	} dhcp4;
@@ -2813,7 +2814,6 @@ static void
 concheck_cb (NMConnectivity *connectivity,
              NMConnectivityCheckHandle *c_handle,
              NMConnectivityState state,
-             GError *error,
              gpointer user_data)
 {
 	_nm_unused gs_unref_object NMDevice *self_keep_alive = NULL;
@@ -2834,7 +2834,7 @@ concheck_cb (NMConnectivity *connectivity,
 	handle->c_handle = NULL;
 	self = handle->self;
 
-	if (nm_utils_error_is_cancelled (error, FALSE)) {
+	if (state == NM_CONNECTIVITY_CANCELLED) {
 		/* the only place where we nm_connectivity_check_cancel(@c_handle), is
 		 * from inside concheck_handle_complete(). This is a recursive call,
 		 * nothing to do. */
@@ -2843,15 +2843,14 @@ concheck_cb (NMConnectivity *connectivity,
 		return;
 	}
 
+	/* we keep NMConnectivity instance alive. It cannot be disposing. */
+	nm_assert (state != NM_CONNECTIVITY_DISPOSING);
+
 	self_keep_alive = g_object_ref (self);
 
-	_LOGT (LOGD_CONCHECK, "connectivity: complete check (seq:%llu, state:%s%s%s%s)",
+	_LOGT (LOGD_CONCHECK, "connectivity: complete check (seq:%llu, state:%s)",
 	       (long long unsigned) handle->seq,
-	       nm_connectivity_state_to_string (state),
-	       NM_PRINT_FMT_QUOTED (error, ", error: ", error->message, "", ""));
-
-	/* we keep NMConnectivity instance alive. It cannot be disposing. */
-	nm_assert (!nm_utils_error_is_cancelled (error, TRUE));
+	       nm_connectivity_state_to_string (state));
 
 	/* keep @self alive, while we invoke callbacks. */
 	priv = NM_DEVICE_GET_PRIVATE (self);
@@ -3506,7 +3505,8 @@ ndisc_set_router_config (NMNDisc *ndisc, NMDevice *self)
 		guint32 lifetime, preferred;
 		gint32 base;
 
-		if (IN6_IS_ADDR_LINKLOCAL (&addr->address))
+		if (   IN6_IS_ADDR_UNSPECIFIED (&addr->address)
+		    || IN6_IS_ADDR_LINKLOCAL (&addr->address))
 			continue;
 
 		if (   addr->n_ifa_flags & IFA_F_TENTATIVE
@@ -3580,6 +3580,7 @@ device_link_changed (NMDevice *self)
 	gboolean ip_ifname_changed = FALSE;
 	nm_auto_nmpobj const NMPObject *pllink_keep_alive = NULL;
 	const NMPlatformLink *pllink;
+	const char *str;
 	int ifindex;
 	gboolean was_up;
 	gboolean update_unmanaged_specs = FALSE;
@@ -3594,7 +3595,23 @@ device_link_changed (NMDevice *self)
 
 	pllink_keep_alive = nmp_object_ref (NMP_OBJECT_UP_CAST (pllink));
 
-	nm_device_update_from_platform_link (self, pllink);
+	str = nm_platform_link_get_udi (nm_device_get_platform (self), pllink->ifindex);
+	if (!nm_streq0 (str, priv->udi)) {
+		g_free (priv->udi);
+		priv->udi = g_strdup (str);
+		_notify (self, PROP_UDI);
+	}
+
+	if (!nm_streq0 (pllink->driver, priv->driver)) {
+		g_free (priv->driver);
+		priv->driver = g_strdup (pllink->driver);
+		_notify (self, PROP_DRIVER);
+	}
+
+	_set_mtu (self, pllink->mtu);
+
+	if (ifindex == nm_device_get_ip_ifindex (self))
+		_stats_update_counters_from_pllink (self, pllink);
 
 	had_hw_addr = (priv->hw_addr != NULL);
 	nm_device_update_hw_address (self);
@@ -4582,9 +4599,23 @@ nm_device_owns_iface (NMDevice *self, const char *iface)
 NMConnection *
 nm_device_new_default_connection (NMDevice *self)
 {
-	if (NM_DEVICE_GET_CLASS (self)->new_default_connection)
-		return NM_DEVICE_GET_CLASS (self)->new_default_connection (self);
-	return NULL;
+	NMConnection *connection;
+	GError *error = NULL;
+
+	if (!NM_DEVICE_GET_CLASS (self)->new_default_connection)
+		return NULL;
+
+	connection = NM_DEVICE_GET_CLASS (self)->new_default_connection (self);
+	if (!connection)
+		return NULL;
+
+	if (!nm_connection_normalize (connection, NULL, NULL, &error)) {
+		_LOGD (LOGD_DEVICE, "device generated an invalid default connection: %s", error->message);
+		g_error_free (error);
+		g_return_val_if_reached (NULL);
+	}
+
+	return connection;
 }
 
 static void
@@ -5043,11 +5074,15 @@ nm_device_removed (NMDevice *self, gboolean unconfigure_ip_config)
 		nm_device_master_release_one_slave (priv->master, self, FALSE, NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED);
 	}
 
-	if (!unconfigure_ip_config)
-		return;
-
-	nm_device_set_ip_config (self, AF_INET, NULL, FALSE, NULL);
-	nm_device_set_ip_config (self, AF_INET6, NULL, FALSE, NULL);
+	if (unconfigure_ip_config) {
+		nm_device_set_ip_config (self, AF_INET, NULL, FALSE, NULL);
+		nm_device_set_ip_config (self, AF_INET6, NULL, FALSE, NULL);
+	} else {
+		if (priv->dhcp4.client)
+			nm_dhcp_client_stop (priv->dhcp4.client, FALSE);
+		if (priv->dhcp6.client)
+			nm_dhcp_client_stop (priv->dhcp6.client, FALSE);
+	}
 }
 
 static gboolean
@@ -5451,7 +5486,7 @@ nm_device_generate_connection (NMDevice *self,
 
 	klass->update_connection (self, connection);
 
-	if (!nm_connection_verify (connection, &local)) {
+	if (!nm_connection_normalize (connection, NULL, NULL, error)) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_FAILED,
 		             "generated connection does not verify: %s",
 		             local->message);
@@ -6955,6 +6990,7 @@ dhcp4_cleanup (NMDevice *self, CleanupType cleanup_type, gboolean release)
 
 	nm_clear_g_source (&priv->dhcp4.grace_id);
 	g_clear_pointer (&priv->dhcp4.pac_url, g_free);
+	g_clear_pointer (&priv->dhcp4.root_path, g_free);
 
 	if (priv->dhcp4.client) {
 		/* Stop any ongoing DHCP transaction on this device */
@@ -7327,6 +7363,9 @@ dhcp4_state_changed (NMDhcpClient *client,
 		g_free (priv->dhcp4.pac_url);
 		priv->dhcp4.pac_url = g_strdup (g_hash_table_lookup (options, "wpad"));
 		nm_device_set_proxy_config (self, priv->dhcp4.pac_url);
+
+		g_free (priv->dhcp4.root_path);
+		priv->dhcp4.root_path = g_strdup (g_hash_table_lookup (options, "root_path"));
 
 		nm_dhcp4_config_set_options (priv->dhcp4.config, options);
 		_notify (self, PROP_DHCP4_CONFIG);
@@ -10780,8 +10819,10 @@ nm_device_reactivate_ip4_config (NMDevice *self,
 					nm_ip4_config_update_routes_metric ((NMIP4Config *) priv->wwan_ip_config_4.orig,
 					                                    nm_device_get_route_metric (self, AF_INET));
 				}
-				if (priv->dhcp4.client)
-					nm_dhcp_client_set_route_metric (priv->dhcp4.client, metric_new);
+				if (priv->dhcp4.client) {
+					nm_dhcp_client_set_route_metric (priv->dhcp4.client,
+					                                 nm_device_get_route_metric (self, AF_INET));
+				}
 			}
 		}
 
@@ -10851,8 +10892,10 @@ nm_device_reactivate_ip6_config (NMDevice *self,
 					nm_ip6_config_update_routes_metric ((NMIP6Config *) priv->wwan_ip_config_6.orig,
 					                                    nm_device_get_route_metric (self, AF_INET6));
 				}
-				if (priv->dhcp6.client)
-					nm_dhcp_client_set_route_metric (priv->dhcp6.client, metric_new);
+				if (priv->dhcp6.client) {
+					nm_dhcp_client_set_route_metric (priv->dhcp6.client,
+					                                 nm_device_get_route_metric (self, AF_INET6));
+				}
 			}
 		}
 
@@ -12521,7 +12564,9 @@ nm_device_get_firmware_missing (NMDevice *self)
 }
 
 static void
-intersect_ext_config (NMDevice *self, AppliedConfig *config)
+intersect_ext_config (NMDevice *self,
+                      AppliedConfig *config,
+                      gboolean intersect_routes)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	NMIPConfig *ext;
@@ -12538,10 +12583,11 @@ intersect_ext_config (NMDevice *self, AppliedConfig *config)
 	      : (NMIPConfig *) priv->ext_ip_config_6;
 
 	if (config->current)
-		nm_ip_config_intersect (config->current, ext, penalty);
+		nm_ip_config_intersect (config->current, ext, intersect_routes, penalty);
 	else {
 		config->current = nm_ip_config_intersect_alloc (config->orig,
 		                                                ext,
+		                                                intersect_routes,
 		                                                penalty);
 	}
 }
@@ -12552,12 +12598,15 @@ update_ext_ip_config (NMDevice *self, int addr_family, gboolean intersect_config
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	int ifindex;
 	GSList *iter;
+	gboolean is_up;
 
 	nm_assert_addr_family (addr_family);
 
 	ifindex = nm_device_get_ip_ifindex (self);
 	if (!ifindex)
 		return FALSE;
+
+	is_up = nm_platform_link_is_up (nm_device_get_platform (self), ifindex);
 
 	if (addr_family == AF_INET) {
 
@@ -12573,14 +12622,15 @@ update_ext_ip_config (NMDevice *self, int addr_family, gboolean intersect_config
 				 * by the user. */
 				if (priv->con_ip_config_4) {
 					nm_ip4_config_intersect (priv->con_ip_config_4, priv->ext_ip_config_4,
+					                         is_up,
 					                         default_route_metric_penalty_get (self, AF_INET));
 				}
 
-				intersect_ext_config (self, &priv->dev_ip4_config);
-				intersect_ext_config (self, &priv->wwan_ip_config_4);
+				intersect_ext_config (self, &priv->dev_ip4_config, is_up);
+				intersect_ext_config (self, &priv->wwan_ip_config_4, is_up);
 
 				for (iter = priv->vpn_configs_4; iter; iter = iter->next)
-					nm_ip4_config_intersect (iter->data, priv->ext_ip_config_4, 0);
+					nm_ip4_config_intersect (iter->data, priv->ext_ip_config_4, is_up, 0);
 			}
 
 			/* Remove parts from ext_ip_config_4 to only contain the information that
@@ -12624,15 +12674,16 @@ update_ext_ip_config (NMDevice *self, int addr_family, gboolean intersect_config
 				 * by the user. */
 				if (priv->con_ip_config_6) {
 					nm_ip6_config_intersect (priv->con_ip_config_6, priv->ext_ip_config_6,
+					                         is_up,
 					                         default_route_metric_penalty_get (self, AF_INET6));
 				}
 
-				intersect_ext_config (self, &priv->ac_ip6_config);
-				intersect_ext_config (self, &priv->dhcp6.ip6_config);
-				intersect_ext_config (self, &priv->wwan_ip_config_6);
+				intersect_ext_config (self, &priv->ac_ip6_config, is_up);
+				intersect_ext_config (self, &priv->dhcp6.ip6_config, is_up);
+				intersect_ext_config (self, &priv->wwan_ip_config_6, is_up);
 
 				for (iter = priv->vpn_configs_6; iter; iter = iter->next)
-					nm_ip6_config_intersect (iter->data, priv->ext_ip_config_6, 0);
+					nm_ip6_config_intersect (iter->data, priv->ext_ip_config_6, is_up, 0);
 
 				if (   priv->ipv6ll_has
 				    && !nm_ip6_config_lookup_address (priv->ext_ip_config_6, &priv->ipv6ll_addr))
@@ -13516,6 +13567,19 @@ nm_device_update_metered (NMDevice *self)
 	}
 }
 
+static NMDeviceCheckDevAvailableFlags
+_device_check_dev_available_flags_from_con (NMDeviceCheckConAvailableFlags con_flags)
+{
+	NMDeviceCheckDevAvailableFlags dev_flags;
+
+	dev_flags = NM_DEVICE_CHECK_DEV_AVAILABLE_NONE;
+
+	if (NM_FLAGS_HAS (con_flags, _NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST_WAITING_CARRIER))
+		dev_flags |= _NM_DEVICE_CHECK_DEV_AVAILABLE_IGNORE_CARRIER;
+
+	return dev_flags;
+}
+
 static gboolean
 _nm_device_check_connection_available (NMDevice *self,
                                        NMConnection *connection,
@@ -13557,34 +13621,30 @@ _nm_device_check_connection_available (NMDevice *self,
 		return FALSE;
 	}
 	if (state < NM_DEVICE_STATE_UNAVAILABLE) {
-		if (NM_FLAGS_ANY (flags, NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST)) {
-			if (!nm_device_get_managed (self, TRUE)) {
-				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_UNMANAGED_DEVICE,
-				                            "device is unmanaged");
-				return FALSE;
-			}
-		} else {
+		if (!nm_device_get_managed (self, TRUE)) {
 			if (!nm_device_get_managed (self, FALSE)) {
 				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_UNMANAGED_DEVICE,
-				                            "device is unmanaged for interal request");
+				                            "device is strictly unmanaged");
+				return FALSE;
+			}
+			if (!NM_FLAGS_HAS (flags, _NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST_OVERRULE_UNMANAGED)) {
+				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_UNMANAGED_DEVICE,
+				                            "device is currently unmanaged");
 				return FALSE;
 			}
 		}
 	}
 	if (   state < NM_DEVICE_STATE_DISCONNECTED
 	    && !nm_device_is_software (self)) {
-		if (NM_FLAGS_ANY (flags, NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST)) {
-			if (!nm_device_is_available (self, NM_DEVICE_CHECK_DEV_AVAILABLE_FOR_USER_REQUEST)) {
+		if (!nm_device_is_available (self, _device_check_dev_available_flags_from_con (flags))) {
+			if (NM_FLAGS_HAS (flags, _NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST)) {
 				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
 				                            "device is not available");
-				return FALSE;
-			}
-		} else {
-			if (!nm_device_is_available (self, NM_DEVICE_CHECK_DEV_AVAILABLE_NONE)) {
+			} else {
 				nm_utils_error_set_literal (error, NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
 				                            "device is not available for internal request");
-				return FALSE;
 			}
+			return FALSE;
 		}
 	}
 

@@ -83,15 +83,20 @@ content_files = \
 	$(top_builddir)/man/nmcli.xml \
 	$(top_builddir)/man/nmtui.xml \
 	$(top_builddir)/man/nm-online.xml \
+	$(top_builddir)/man/nm-initrd-generator.xml \
 	$(top_builddir)/man/NetworkManager.xml \
 	$(top_builddir)/man/NetworkManager.conf.xml \
 	$(top_builddir)/man/nmcli-examples.xml \
 	$(top_builddir)/man/nm-settings.xml \
 	$(top_builddir)/man/nm-settings-keyfile.xml \
-	$(top_builddir)/man/nm-openvswitch.xml \
 	version.xml \
 	../../COPYING \
 	$(NULL)
+
+
+if WITH_OPENVSWITCH
+content_files += $(top_builddir)/man/nm-openvswitch.xml
+endif
 
 if CONFIG_PLUGIN_IFCFG_RH
 content_files += $(top_builddir)/man/nm-settings-ifcfg-rh.xml

@@ -34,7 +34,7 @@ _NM_INT_NOT_NEGATIVE (gssize val)
 	 *
 	 * When using such an enum for accessing an array, one naturally wants to check
 	 * that the enum is not negative. However, the compiler doesn't like a plain
-	 * comparisong "enum_val >= 0", because (if the enum is unsigned), it will warn
+	 * comparison "enum_val >= 0", because (if the enum is unsigned), it will warn
 	 * that the expression is always true *duh*. Not even a cast to a signed
 	 * type helps to avoid the compiler warning in any case.
 	 *
@@ -42,6 +42,33 @@ _NM_INT_NOT_NEGATIVE (gssize val)
 	 * that an enum is not negative. */
 	return val >= 0;
 }
+
+/* check whether the integer value is smaller than G_MAXINT32. This macro exists
+ * for the sole purpose, that a plain "((int) value <= G_MAXINT32)" comparison
+ * may cause the compiler or coverity that this check is always TRUE. But the
+ * check depends on compile time and the size of C type "int".  Of course, most
+ * of the time in is gint32 and an int value is always <= G_MAXINT32.  The check
+ * exists to catch cases where that is not true.
+ *
+ * Together with the G_STATIC_ASSERT(), we make sure that this is always satisfied. */
+G_STATIC_ASSERT (sizeof (int) == sizeof (gint32));
+#if _NM_CC_SUPPORT_GENERIC
+#define _NM_INT_LE_MAXINT32(value) \
+	({ \
+		_nm_unused typeof (value) _value = (value); \
+		\
+		_Generic((value), \
+		         int: TRUE \
+		); \
+	})
+#else
+#define _NM_INT_LE_MAXINT32(value) ({ \
+		_nm_unused typeof (value) _value = (value); \
+		_nm_unused const int *_p_value = &_value; \
+		\
+		TRUE; \
+	})
+#endif
 
 /*****************************************************************************/
 
@@ -235,6 +262,37 @@ nm_memdup (gconstpointer data, gsize size)
 	return p;
 }
 
+/* Similar to g_strndup(), however, if the string (including the terminating
+ * NUL char) fits into alloca_maxlen, this will alloca() the memory.
+ *
+ * It's a mix of strndup() and strndupa(), but deciding based on @alloca_maxlen
+ * which one to use.
+ *
+ * In case malloc() is necessary, @out_str_free will be set (this string
+ * must be freed afterwards). It is permissible to pass %NULL as @out_str_free,
+ * if you ensure that len < alloca_maxlen. */
+#define nm_strndup_a(alloca_maxlen, str, len, out_str_free) \
+	({ \
+		const gsize _alloca_maxlen = (alloca_maxlen); \
+		const char *const _str = (str); \
+		const gsize _len = (len); \
+		char **const _out_str_free = (out_str_free); \
+		char *_s; \
+		\
+		if (   _out_str_free \
+		    && _len >= _alloca_maxlen) { \
+			_s = g_malloc (_len + 1); \
+			*_out_str_free = _s; \
+		} else { \
+			g_assert (_len < _alloca_maxlen); \
+			_s = g_alloca (_len + 1); \
+		} \
+		if (_len > 0) \
+			strncpy (_s, _str, _len); \
+		_s[_len] = '\0'; \
+		_s; \
+	})
+
 /*****************************************************************************/
 
 extern const void *const _NM_PTRARRAY_EMPTY[1];
@@ -347,7 +405,8 @@ gboolean nm_utils_parse_inaddr_prefix (int addr_family,
                                        char **out_addr,
                                        int *out_prefix);
 
-gint64 _nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback);
+gint64  _nm_utils_ascii_str_to_int64  (const char *str, guint base, gint64  min, gint64  max, gint64  fallback);
+guint64 _nm_utils_ascii_str_to_uint64 (const char *str, guint base, guint64 min, guint64 max, guint64 fallback);
 
 int _nm_utils_ascii_str_to_bool (const char *str,
                                   int default_value);

@@ -172,6 +172,8 @@ _handler_write (NMConnection *connection,
 static gboolean
 _internal_write_connection (NMConnection *connection,
                             const char *keyfile_dir,
+                            const char *profile_dir,
+                            gboolean with_extension,
                             uid_t owner_uid,
                             pid_t owner_grp,
                             const char *existing_path,
@@ -189,9 +191,13 @@ _internal_write_connection (NMConnection *connection,
 	WriteInfo info = { 0 };
 	GError *local_err = NULL;
 	int errsv;
+	gboolean rename = force_rename;
 
 	g_return_val_if_fail (!out_path || !*out_path, FALSE);
 	g_return_val_if_fail (keyfile_dir && keyfile_dir[0] == '/', FALSE);
+
+	if (existing_path && !g_str_has_prefix (existing_path, keyfile_dir))
+		rename = TRUE;
 
 	switch (_nm_connection_verify (connection, error)) {
 	case NM_SETTING_VERIFY_NORMALIZABLE:
@@ -221,10 +227,10 @@ _internal_write_connection (NMConnection *connection,
 	/* If we have existing file path, use it. Else generate one from
 	 * connection's ID.
 	 */
-	if (existing_path != NULL && !force_rename) {
+	if (existing_path != NULL && !rename) {
 		path = g_strdup (existing_path);
 	} else {
-		char *filename_escaped = nms_keyfile_utils_escape_filename (id);
+		char *filename_escaped = nms_keyfile_utils_escape_filename (id, with_extension);
 
 		path = g_build_filename (keyfile_dir, filename_escaped, NULL);
 		g_free (filename_escaped);
@@ -250,7 +256,7 @@ _internal_write_connection (NMConnection *connection,
 			else
 				filename = g_strdup_printf ("%s-%s-%u", id, nm_connection_get_uuid (connection), i);
 
-			filename_escaped = nms_keyfile_utils_escape_filename (filename);
+			filename_escaped = nms_keyfile_utils_escape_filename (filename, with_extension);
 
 			g_free (path);
 			path = g_strdup_printf ("%s/%s", keyfile_dir, filename_escaped);
@@ -304,7 +310,7 @@ _internal_write_connection (NMConnection *connection,
 		gs_unref_object NMConnection *reread = NULL;
 		gboolean reread_same = FALSE;
 
-		reread = nms_keyfile_reader_from_keyfile (key_file, path, FALSE, NULL);
+		reread = nms_keyfile_reader_from_keyfile (key_file, path, NULL, profile_dir, FALSE, NULL);
 
 		nm_assert (NM_IS_CONNECTION (reread));
 
@@ -337,6 +343,7 @@ _internal_write_connection (NMConnection *connection,
 
 gboolean
 nms_keyfile_writer_connection (NMConnection *connection,
+                               gboolean save_to_disk,
                                const char *existing_path,
                                gboolean force_rename,
                                char **out_path,
@@ -344,9 +351,19 @@ nms_keyfile_writer_connection (NMConnection *connection,
                                gboolean *out_reread_same,
                                GError **error)
 {
+	const char *keyfile_dir;
+
+	if (save_to_disk)
+		keyfile_dir = nms_keyfile_utils_get_path ();
+	else
+		keyfile_dir = NM_CONFIG_KEYFILE_PATH_IN_MEMORY;
+
 	return _internal_write_connection (connection,
+	                                   keyfile_dir,
 	                                   nms_keyfile_utils_get_path (),
-	                                   0, 0,
+	                                   TRUE,
+	                                   0,
+	                                   0,
 	                                   existing_path,
 	                                   force_rename,
 	                                   out_path,
@@ -367,7 +384,10 @@ nms_keyfile_writer_test_connection (NMConnection *connection,
 {
 	return _internal_write_connection (connection,
 	                                   keyfile_dir,
-	                                   owner_uid, owner_grp,
+	                                   keyfile_dir,
+	                                   FALSE,
+	                                   owner_uid,
+	                                   owner_grp,
 	                                   NULL,
 	                                   FALSE,
 	                                   out_path,

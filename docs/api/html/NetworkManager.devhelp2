@@ -11,6 +11,7 @@
       <sub name="nm-settings-keyfile" link="nm-settings-keyfile.html"/>
       <sub name="nm-settings-ifcfg-rh" link="nm-settings-ifcfg-rh.html"/>
       <sub name="nm-online" link="nm-online.html"/>
+      <sub name="nm-initrd-generator" link="nm-initrd-generator.html"/>
       <sub name="nm-openvswitch" link="nm-openvswitch.html"/>
     </sub>
     <sub name="Network Configuration Setting Specification" link="ref-settings.html">

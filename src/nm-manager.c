@@ -1632,7 +1632,7 @@ remove_device (NMManager *self,
 				nm_device_sys_iface_state_set (device, NM_DEVICE_SYS_IFACE_STATE_REMOVED);
 				nm_device_set_unmanaged_by_flags (device, NM_UNMANAGED_PLATFORM_INIT, TRUE, NM_DEVICE_STATE_REASON_REMOVED);
 			}
-		} else if (quitting && nm_config_get_configure_and_quit (priv->config)) {
+		} else if (quitting && nm_config_get_configure_and_quit (priv->config) == NM_CONFIG_CONFIGURE_AND_QUIT_ENABLED) {
 			nm_device_spawn_iface_helper (device);
 		}
 	}
@@ -3319,6 +3319,49 @@ nm_manager_get_devices (NMManager *manager)
 	return &NM_MANAGER_GET_PRIVATE (manager)->devices_lst_head;
 }
 
+typedef enum {
+	DEVICE_ACTIVATION_PRIO_NONE,
+	DEVICE_ACTIVATION_PRIO_UNMANAGED,
+	DEVICE_ACTIVATION_PRIO_UNAVAILABLE,
+	DEVICE_ACTIVATION_PRIO_DEACTIVATING,
+	DEVICE_ACTIVATION_PRIO_ACTIVATING,
+	DEVICE_ACTIVATION_PRIO_ACTIVATED,
+	DEVICE_ACTIVATION_PRIO_DISCONNECTED,
+
+	_DEVICE_ACTIVATION_PRIO_BEST = DEVICE_ACTIVATION_PRIO_DISCONNECTED,
+} DeviceActivationPrio;
+
+static DeviceActivationPrio
+_device_get_activation_prio (NMDevice *device)
+{
+	if (!nm_device_get_managed (device, TRUE))
+		return DEVICE_ACTIVATION_PRIO_NONE;
+
+	switch (nm_device_get_state (device)) {
+	case NM_DEVICE_STATE_DISCONNECTED:
+		return DEVICE_ACTIVATION_PRIO_DISCONNECTED;
+	case NM_DEVICE_STATE_ACTIVATED:
+		return DEVICE_ACTIVATION_PRIO_ACTIVATED;
+	case NM_DEVICE_STATE_PREPARE:
+	case NM_DEVICE_STATE_CONFIG:
+	case NM_DEVICE_STATE_NEED_AUTH:
+	case NM_DEVICE_STATE_IP_CONFIG:
+	case NM_DEVICE_STATE_IP_CHECK:
+	case NM_DEVICE_STATE_SECONDARIES:
+		return DEVICE_ACTIVATION_PRIO_ACTIVATING;
+	case NM_DEVICE_STATE_DEACTIVATING:
+	case NM_DEVICE_STATE_FAILED:
+		return DEVICE_ACTIVATION_PRIO_DEACTIVATING;
+	case NM_DEVICE_STATE_UNAVAILABLE:
+		return DEVICE_ACTIVATION_PRIO_UNAVAILABLE;
+	case NM_DEVICE_STATE_UNKNOWN:
+	case NM_DEVICE_STATE_UNMANAGED:
+		return DEVICE_ACTIVATION_PRIO_UNMANAGED;
+	}
+
+	g_return_val_if_reached (DEVICE_ACTIVATION_PRIO_UNAVAILABLE);
+}
+
 static NMDevice *
 nm_manager_get_best_device_for_connection (NMManager *self,
                                            NMSettingsConnection *sett_conn,
@@ -3332,9 +3375,17 @@ nm_manager_get_best_device_for_connection (NMManager *self,
 	NMActiveConnection *ac;
 	NMDevice *ac_device;
 	NMDevice *device;
+	struct {
+		NMDevice *device;
+		DeviceActivationPrio prio;
+	} best = {
+		.device = NULL,
+		.prio = DEVICE_ACTIVATION_PRIO_NONE,
+	};
 	NMDeviceCheckConAvailableFlags flags;
 	gs_unref_ptrarray GPtrArray *all_ac_arr = NULL;
 	gs_free_error GError *local_best = NULL;
+	NMConnectionMultiConnect multi_connect;
 
 	nm_assert (!sett_conn || NM_IS_SETTINGS_CONNECTION (sett_conn));
 	nm_assert (!connection || NM_IS_CONNECTION (connection));
@@ -3344,10 +3395,52 @@ nm_manager_get_best_device_for_connection (NMManager *self,
 	if (!connection)
 		connection = nm_settings_connection_get_connection (sett_conn);
 
-	flags = for_user_request ? NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST : NM_DEVICE_CHECK_CON_AVAILABLE_NONE;
+	multi_connect =  _nm_connection_get_multi_connect (connection);
 
-	ac = active_connection_find_by_connection (self, sett_conn, connection, NM_ACTIVE_CONNECTION_STATE_DEACTIVATING, &all_ac_arr);
-	if (ac) {
+	if (!for_user_request)
+		flags = NM_DEVICE_CHECK_CON_AVAILABLE_NONE;
+	else {
+		/* if the profile is multi-connect=single, we also consider devices which
+		 * are marked as unmanaged. And explicit user-request shows sufficent user
+		 * intent to make the device managed.
+		 * That is also, because we expect that such profile is suitably tied
+		 * to the intended device. So when an unmanaged device matches, the user's
+		 * intent is clear.
+		 *
+		 * For multi-connect != single devices that is different. The profile
+		 * is not restricted to a particular device.
+		 * For that reason, plain `nmcli connection up "$MULIT_PROFILE"` seems
+		 * less suitable for multi-connect profiles, because the target device is
+		 * left unspecified. Anyway, if a user issues
+		 *
+		 *   $ nmcli device set "$DEVICE" managed no
+		 *   $ nmcli connection up "$MULIT_PROFILE"
+		 *
+		 * then it is reasonable for multi-connect profiles to not consider
+		 * the device a suitable candidate.
+		 *
+		 * This may be seen inconsistent, but I think that it makes a lot of
+		 * sense. Also note that "connection.multi-connect" work quite differently
+		 * in aspects like activation. E.g. `nmcli connection up` of multi-connect
+		 * "single" profile, will deactivate the profile if it is active already.
+		 * That is different from multi-connect profiles, where it will aim to
+		 * activate the profile one more time on an hitherto disconnected device.
+		 */
+		if (multi_connect == NM_CONNECTION_MULTI_CONNECT_SINGLE)
+			flags = NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST;
+		else
+			flags = NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST & ~_NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST_OVERRULE_UNMANAGED;
+	}
+
+	if (   multi_connect == NM_CONNECTION_MULTI_CONNECT_SINGLE
+	    && (ac = active_connection_find_by_connection (self, sett_conn, connection, NM_ACTIVE_CONNECTION_STATE_DEACTIVATING, &all_ac_arr))) {
+		/* if we have a profile which may activate on only one device (multi-connect single), then
+		 * we prefer the device on which the profile is already active. It means to reactivate
+		 * the profile on the same device.
+		 *
+		 * If the profile can be activated on multiple devices, we don't do this. In fact, the
+		 * check below for the DeviceActivationPrio will prefer devices which are not already
+		 * activated (with this or another) profile. */
 
 		ac_device = nm_active_connection_get_device (ac);
 		if (   ac_device
@@ -3418,17 +3511,48 @@ found_better:
 	/* Pick the first device that's compatible with the connection. */
 	c_list_for_each_entry (device, &priv->devices_lst_head, devices_lst) {
 		GError *local = NULL;
+		DeviceActivationPrio prio;
 
 		if (   unavailable_devices
 		    && g_hash_table_contains (unavailable_devices, device))
 			continue;
 
+		/* determine the priority of this device. Currently this priority is independent
+		 * of the profile (connection) and the device's details (aside the state).
+		 *
+		 * Maybe nm_device_check_connection_available() should instead return a priority,
+		 * as it has more information available.
+		 *
+		 * For example, if you have multiple Wi-Fi devices, currently a user-request would
+		 * also select the device if the AP is not visible. Optimally, if one of the two
+		 * devices sees the AP and the other one doesn't, the former would be preferred.
+		 * For that, the priority would need to be determined by nm_device_check_connection_available(). */
+		prio = _device_get_activation_prio (device);
+		if (   prio <= best.prio
+		    && best.device) {
+			/* we already have a matching device with a better priority. This candidate
+			 * cannot be better. Skip the check.
+			 *
+			 * Also note, that below we collect the best error message @local_best.
+			 * Since we already have best.device, the error message does not matter
+			 * either, and we can skip nm_device_check_connection_available() altogether. */
+			continue;
+		}
+
 		if (nm_device_check_connection_available (device,
 		                                          connection,
 		                                          flags,
 		                                          NULL,
-		                                          error ? &local : NULL))
-			return device;
+		                                          error ? &local : NULL)) {
+			if (prio == _DEVICE_ACTIVATION_PRIO_BEST) {
+				/* this device already has the best priority. It cannot get better
+				 * and finish the search. */
+				return device;
+			}
+			best.prio = prio;
+			best.device = device;
+			continue;
+		}
 
 		if (error) {
 			gboolean reset_error;
@@ -3454,6 +3578,9 @@ found_better:
 			g_error_free (local);
 		}
 	}
+
+	if (best.device)
+		return best.device;
 
 	if (error) {
 		if (local_best)
@@ -6101,6 +6228,8 @@ nm_manager_write_device_state (NMManager *self, NMDevice *device)
 	guint32 route_metric_default_aspired;
 	guint32 route_metric_default_effective;
 	int nm_owned;
+	NMDhcp4Config *dhcp4_config;
+	const char *root_path = NULL;
 
 	ifindex = nm_device_get_ip_ifindex (device);
 	if (ifindex <= 0)
@@ -6115,9 +6244,10 @@ nm_manager_write_device_state (NMManager *self, NMDevice *device)
 
 	managed = nm_device_get_managed (device, FALSE);
 	if (managed) {
-		NMSettingsConnection *sett_conn;
+		NMSettingsConnection *sett_conn = NULL;
 
-		sett_conn = nm_device_get_settings_connection (device);
+		if (nm_device_get_state (device) <= NM_DEVICE_STATE_ACTIVATED)
+			sett_conn = nm_device_get_settings_connection (device);
 		if (sett_conn)
 			uuid = nm_settings_connection_get_uuid (sett_conn);
 		managed_type = NM_CONFIG_DEVICE_STATE_MANAGED_TYPE_MANAGED;
@@ -6135,13 +6265,18 @@ nm_manager_write_device_state (NMManager *self, NMDevice *device)
 	route_metric_default_effective = _device_route_metric_get (self, ifindex, NM_DEVICE_TYPE_UNKNOWN,
 	                                                           TRUE, &route_metric_default_aspired);
 
+	dhcp4_config = nm_device_get_dhcp4_config (device);
+	if (dhcp4_config)
+		root_path = nm_dhcp4_config_get_option (dhcp4_config, "root_path");
+
 	return nm_config_device_state_write (ifindex,
 	                                     managed_type,
 	                                     perm_hw_addr_fake,
 	                                     uuid,
 	                                     nm_owned,
 	                                     route_metric_default_aspired,
-	                                     route_metric_default_effective);
+	                                     route_metric_default_effective,
+	                                     root_path);
 }
 
 void
