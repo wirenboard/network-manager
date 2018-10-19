@@ -151,6 +151,7 @@ static const struct Opt opt_table[] = {
 	{ "mka_ckn",            TYPE_BYTES,   0, 65536, FALSE, NULL },
 	{ "macsec_port",        TYPE_INT,     1, 65534, FALSE, NULL },
 	{ "ieee80211w",         TYPE_INT,     0, 2, FALSE, NULL },
+	{ "ignore_broadcast_ssid", TYPE_INT,  0, 2, FALSE, NULL },
 };
 
 static gboolean
@@ -220,7 +221,7 @@ validate_type_keyword (const struct Opt * opt,
                        const guint32 len)
 {
 	char **allowed;
-	gchar **candidates = NULL;
+	char **candidates = NULL;
 	char **candidate;
 	gboolean found = FALSE;
 
