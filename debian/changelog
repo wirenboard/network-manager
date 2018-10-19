@@ -1,3 +1,9 @@
+network-manager (1.14.2-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.14.2
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 20 Oct 2018 01:31:37 +0200
+
 network-manager (1.14.0-2) experimental; urgency=medium
 
   * Tighten inter-package dependencies.
