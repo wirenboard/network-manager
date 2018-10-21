@@ -43,7 +43,6 @@ override_dh_auto_configure:
 		--enable-polkit-agent \
 		--enable-ppp \
 		--enable-ifupdown \
-		--enable-config-plugin-ibft \
 		--enable-introspection \
 		--enable-gtk-doc \
 		--enable-concheck \
@@ -51,6 +50,7 @@ override_dh_auto_configure:
 		--enable-json-validation \
 		--enable-bluez5-dun \
 		--enable-vala \
+		--disable-config-plugin-ibft \
 		--disable-more-warnings \
 		--disable-modify-system \
 		--disable-ovs
