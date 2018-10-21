@@ -1,3 +1,43 @@
+network-manager (1.14.2-1) experimental; urgency=medium
+
+  * New upstream version 1.14.2
+  * Rebase patches
+  * Disable obsolete ibft settings plugin.
+    It has been replaced by an iBFT reader which parses /sys/firmware/ibft
+    directly instead of iscsiadm output.
+  * Drop debian/patches/Fix-iscsiadm-path.patch.
+    No longer needed.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 21 Oct 2018 02:56:25 +0200
+
+network-manager (1.14.0-2) experimental; urgency=medium
+
+  * Tighten inter-package dependencies.
+    Make sure network-manager and libnm0 are always upgraded in lockstep.
+    (Closes: #818165)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 08 Oct 2018 16:55:10 +0200
+
+network-manager (1.14.0-1) experimental; urgency=medium
+
+  * New upstream version 1.14.0
+  * Rebase patches
+  * Update symbols file for libnm0.
+    The nm_connection_get_setting_{6lowpan,sriov,wpan} API had been
+    introduced during the 1.14 development cycle but as it was duplicating
+    existing functionality it was removed again.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 15 Sep 2018 10:57:07 +0200
+
+network-manager (1.13.90-1) experimental; urgency=medium
+
+  * New upstream version 1.13.90 (1.14 rc1)
+  * Refresh patches
+  * Update symbols file for libnm0
+  * Bump Standards-Version to 4.2.1
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 08 Sep 2018 18:23:20 +0200
+
 network-manager (1.12.4-1) unstable; urgency=medium
 
   * New upstream version 1.12.4

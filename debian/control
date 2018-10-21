@@ -40,7 +40,7 @@ Build-Depends: debhelper (>= 10.3),
                valac (>= 0.17.1.24),
                dbus <!nocheck>,
                python-dbus <!nocheck>
-Standards-Version: 4.1.5
+Standards-Version: 4.2.1
 Rules-Requires-Root: no
 Vcs-Git: https://salsa.debian.org/utopia-team/network-manager.git
 Vcs-Browser: https://salsa.debian.org/utopia-team/network-manager
@@ -51,6 +51,7 @@ Architecture: linux-any
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         libnm0 (= ${binary:Version}),
          lsb-base,
          wpasupplicant,
          dbus,
