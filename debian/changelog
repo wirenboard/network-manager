@@ -1,8 +1,14 @@
-network-manager (1.14.2-1) UNRELEASED; urgency=medium
+network-manager (1.14.2-1) experimental; urgency=medium
 
   * New upstream version 1.14.2
+  * Rebase patches
+  * Disable obsolete ibft settings plugin.
+    It has been replaced by an iBFT reader which parses /sys/firmware/ibft
+    directly instead of iscsiadm output.
+  * Drop debian/patches/Fix-iscsiadm-path.patch.
+    No longer needed.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 20 Oct 2018 01:31:37 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 21 Oct 2018 02:56:25 +0200
 
 network-manager (1.14.0-2) experimental; urgency=medium
 
