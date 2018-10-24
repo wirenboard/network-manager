@@ -3,6 +3,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_0_4@libnm_1_0_4 1.0.4
  libnm_1_0_6@libnm_1_0_6 1.0.6
  libnm_1_10_0@libnm_1_10_0 1.9.90
+ libnm_1_10_14@libnm_1_10_14 1.14.4
  libnm_1_10_2@libnm_1_10_2 1.10.2
  libnm_1_12_0@libnm_1_12_0 1.11.3
  libnm_1_12_2@libnm_1_12_2 1.12.2
@@ -677,6 +678,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_connection_get_lldp@libnm_1_2_0 1.1.90
  nm_setting_connection_get_llmnr@libnm_1_14_0 1.13.90
  nm_setting_connection_get_master@libnm_1_0_0 1.0.0
+ nm_setting_connection_get_mdns@libnm_1_10_14 1.14.4
  nm_setting_connection_get_mdns@libnm_1_12_0 1.11.3
  nm_setting_connection_get_metered@libnm_1_0_6 1.0.6
  nm_setting_connection_get_metered@libnm_1_2_0 1.1.90
@@ -695,6 +697,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_connection_is_slave_type@libnm_1_0_0 1.0.0
  nm_setting_connection_lldp_get_type@libnm_1_2_0 1.1.90
  nm_setting_connection_llmnr_get_type@libnm_1_14_0 1.13.90
+ nm_setting_connection_mdns_get_type@libnm_1_10_14 1.14.4
  nm_setting_connection_mdns_get_type@libnm_1_12_0 1.11.3
  nm_setting_connection_new@libnm_1_0_0 1.0.0
  nm_setting_connection_permissions_user_allowed@libnm_1_0_0 1.0.0
