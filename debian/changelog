@@ -1,3 +1,11 @@
+network-manager (1.14.4-3) unstable; urgency=medium
+
+  * cli: wait for all wifi scans to finish before displaying the result.
+    Otherwise devices are displayed in an inconsistent order.
+    Replaces debian/patches/Ignore-client-tests-failures.patch.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 05 Nov 2018 16:05:51 +0100
+
 network-manager (1.14.4-2) unstable; urgency=high
 
   * dhcp6: Make sure we have enough space for the DHCP6 option header.
