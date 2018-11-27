@@ -1,3 +1,10 @@
+network-manager (1.14.4-4) unstable; urgency=medium
+
+  * Move D-Bus policy files to /usr/share/dbus-1/system.d/
+  * Remove obsolete D-Bus policy conffiles on upgrades
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 27 Nov 2018 01:35:50 +0100
+
 network-manager (1.14.4-3) unstable; urgency=medium
 
   * cli: wait for all wifi scans to finish before displaying the result.
