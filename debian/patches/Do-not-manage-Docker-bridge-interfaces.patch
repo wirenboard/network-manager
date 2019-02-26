@@ -1,0 +1,24 @@
+From: Andrei Dziahel <develop7@develop7.info>
+Date: Mon, 17 Sep 2018 10:03:15 +0000
+Subject: Do not manage Docker bridge interfaces
+
+https://gitlab.freedesktop.org/NetworkManager/NetworkManager/merge_requests/15
+(cherry picked from commit 0ce73275506e8d3156b8d3cd9ca7a1105c5dc4fb)
+---
+ data/85-nm-unmanaged.rules | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/data/85-nm-unmanaged.rules b/data/85-nm-unmanaged.rules
+index edc4ddb..20f4d29 100644
+--- a/data/85-nm-unmanaged.rules
++++ b/data/85-nm-unmanaged.rules
+@@ -26,6 +26,9 @@ ATTR{address}=="00:1c:42:*", ENV{INTERFACE}=="vnic[0-9]*", ENV{NM_UNMANAGED}="1"
+ # in another net namespace and managed by libvirt, Docker or the like.
+ ENV{ID_NET_DRIVER}=="veth", ENV{NM_UNMANAGED}="1"
+ 
++# Docker bridge. Managed by docker daemon.
++ATTR{address}=="02:42:*", ENV{INTERFACE}=="docker[0-9]*", ENV{NM_UNMANAGED}="1"
++
+ # USB gadget device. Unmanage by default, since whatever created it
+ # might want to set it up itself (e.g. activate an ipv4.method=shared
+ # connection).
