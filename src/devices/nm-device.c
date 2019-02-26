@@ -37,7 +37,6 @@
 #include <linux/if_arp.h>
 #include <linux/rtnetlink.h>
 #include <linux/pkt_sched.h>
-#include <uuid/uuid.h>
 
 #include "nm-utils/nm-dedup-multi.h"
 #include "nm-utils/nm-random-utils.h"
@@ -386,13 +385,14 @@ typedef struct _NMDevicePrivate {
 	bool            v4_route_table_initialized:1;
 	bool            v6_route_table_initialized:1;
 
-	NMDeviceAutoconnectBlockedFlags autoconnect_blocked_flags:4;
+	NMDeviceAutoconnectBlockedFlags autoconnect_blocked_flags:5;
 
 	bool            is_enslaved:1;
 	bool            master_ready_handled:1;
 
 	bool            ipv6ll_handle:1; /* TRUE if NM handles the device's IPv6LL address */
 	bool            ipv6ll_has:1;
+	bool            device_link_changed_down:1;
 
 	/* Generic DHCP stuff */
 	char *          dhcp_anycast_address;
@@ -1264,6 +1264,8 @@ _get_stable_id (NMDevice *self,
 		gs_free char *generated = NULL;
 		NMUtilsStableType stable_type;
 		NMSettingConnection *s_con;
+		gboolean hwaddr_is_fake;
+		const char *hwaddr;
 		const char *stable_id;
 		const char *uuid;
 
@@ -1280,9 +1282,15 @@ _get_stable_id (NMDevice *self,
 
 		uuid = nm_connection_get_uuid (connection);
 
+		/* the cloned-mac-address may be generated based on the stable-id.
+		 * Thus, at this point, we can only use the permanant MAC address
+		 * as seed. */
+		hwaddr = nm_device_get_permanent_hw_address_full (self, TRUE, &hwaddr_is_fake);
+
 		stable_type = nm_utils_stable_id_parse (stable_id,
 		                                        nm_device_get_ip_iface (self),
-		                                        NULL,
+		                                        !hwaddr_is_fake ? hwaddr : NULL,
+		                                        nm_utils_boot_id_str (),
 		                                        uuid,
 		                                        &generated);
 
@@ -3585,8 +3593,10 @@ device_link_changed (NMDevice *self)
 	gboolean was_up;
 	gboolean update_unmanaged_specs = FALSE;
 	gboolean got_hw_addr = FALSE, had_hw_addr;
+	gboolean seen_down = priv->device_link_changed_down;
 
 	priv->device_link_changed_id = 0;
+	priv->device_link_changed_down = FALSE;
 
 	ifindex = nm_device_get_ifindex (self);
 	pllink = nm_platform_link_get (nm_device_get_platform (self), ifindex);
@@ -3696,7 +3706,7 @@ device_link_changed (NMDevice *self)
 
 	device_recheck_slave_status (self, pllink);
 
-	if (priv->up && !was_up) {
+	if (priv->up && (!was_up || seen_down)) {
 		/* the link was down and just came up. That happens for example, while changing MTU.
 		 * We must restore IP configuration. */
 		if (priv->ip4_state == IP_DONE) {
@@ -3772,6 +3782,8 @@ link_changed_cb (NMPlatform *platform,
 	priv = NM_DEVICE_GET_PRIVATE (self);
 
 	if (ifindex == nm_device_get_ifindex (self)) {
+		if (!(info->n_ifi_flags & IFF_UP))
+			priv->device_link_changed_down = TRUE;
 		if (!priv->device_link_changed_id) {
 			priv->device_link_changed_id = g_idle_add ((GSourceFunc) device_link_changed, self);
 			_LOGD (LOGD_DEVICE, "queued link change for ifindex %d", ifindex);
@@ -4133,7 +4145,7 @@ device_init_static_sriov_num_vfs (NMDevice *self)
 		num_vfs = _nm_utils_ascii_str_to_int64 (value, 10, 0, G_MAXINT32, -1);
 		if (num_vfs >= 0) {
 			nm_platform_link_set_sriov_params (nm_device_get_platform (self),
-			                                   priv->ifindex, num_vfs, -1);
+			                                   priv->ifindex, num_vfs, NM_TERNARY_DEFAULT);
 		}
 	}
 }
@@ -4295,8 +4307,6 @@ realize_start_setup (NMDevice *self,
 	}
 
 	nm_device_set_carrier_from_platform (self);
-
-	device_init_static_sriov_num_vfs (self);
 
 	nm_assert (!priv->stats.timeout_id);
 	real_rate = _stats_refresh_rate_real (priv->stats.refresh_rate_ms);
@@ -6201,7 +6211,7 @@ act_stage1_prepare (NMDevice *self, NMDeviceStateReason *out_failure_reason)
 		nm_auto_freev NMPlatformVF **plat_vfs = NULL;
 		gs_free_error GError *error = NULL;
 		NMSriovVF *vf;
-		int autoprobe;
+		NMTernary autoprobe;
 
 		autoprobe = nm_setting_sriov_get_autoprobe_drivers (s_sriov);
 		if (autoprobe == NM_TERNARY_DEFAULT) {
@@ -7450,18 +7460,6 @@ get_dhcp_timeout (NMDevice *self, int addr_family)
 }
 
 static GBytes *
-dhcp4_get_client_id_mac (const guint8 *hwaddr /* ETH_ALEN bytes */)
-{
-	guint8 *client_id_buf;
-	guint8 hwaddr_type = ARPHRD_ETHER;
-
-	client_id_buf = g_malloc (ETH_ALEN + 1);
-	client_id_buf[0] = hwaddr_type;
-	memcpy (&client_id_buf[1], hwaddr, ETH_ALEN);
-	return g_bytes_new_take (client_id_buf, ETH_ALEN + 1);
-}
-
-static GBytes *
 dhcp4_get_client_id (NMDevice *self,
                      NMConnection *connection,
                      GBytes *hwaddr)
@@ -7473,6 +7471,7 @@ dhcp4_get_client_id (NMDevice *self,
 	const char *fail_reason;
 	guint8 hwaddr_bin_buf[NM_UTILS_HWADDR_LEN_MAX];
 	const guint8 *hwaddr_bin;
+	int arp_type;
 	gsize hwaddr_len;
 	GBytes *result;
 	gs_free char *logstr1 = NULL;
@@ -7497,17 +7496,18 @@ dhcp4_get_client_id (NMDevice *self,
 
 	if (nm_streq (client_id, "mac")) {
 		if (!hwaddr) {
-			fail_reason = "failed to get current MAC address";
+			fail_reason = "missing link-layer address";
 			goto out_fail;
 		}
 
 		hwaddr_bin = g_bytes_get_data (hwaddr, &hwaddr_len);
-		if (hwaddr_len != ETH_ALEN) {
-			fail_reason = "MAC address is not ethernet";
+		arp_type = nm_utils_arp_type_detect_from_hwaddrlen (hwaddr_len);
+		if (arp_type < 0) {
+			fail_reason = "unsupported link-layer address";
 			goto out_fail;
 		}
 
-		result = dhcp4_get_client_id_mac (hwaddr_bin);
+		result = nm_utils_dhcp_client_id_mac (arp_type, hwaddr_bin, hwaddr_len);
 		goto out_good;
 	}
 
@@ -7516,32 +7516,37 @@ dhcp4_get_client_id (NMDevice *self,
 
 		hwaddr_str = nm_device_get_permanent_hw_address (self);
 		if (!hwaddr_str) {
-			fail_reason = "failed to get permanent MAC address";
+			fail_reason = "missing permanent link-layer address";
 			goto out_fail;
 		}
 
 		if (!_nm_utils_hwaddr_aton (hwaddr_str, hwaddr_bin_buf, sizeof (hwaddr_bin_buf), &hwaddr_len))
 			g_return_val_if_reached (NULL);
 
-		if (hwaddr_len != ETH_ALEN) {
-			/* unsupported type. */
-			fail_reason = "MAC address is not ethernet";
+		arp_type = nm_utils_arp_type_detect_from_hwaddrlen (hwaddr_len);
+		if (arp_type < 0) {
+			fail_reason = "unsupported permanent link-layer address";
 			goto out_fail;
 		}
 
-		result = dhcp4_get_client_id_mac (hwaddr_bin_buf);
+		result = nm_utils_dhcp_client_id_mac (arp_type, hwaddr_bin_buf, hwaddr_len);
+		goto out_good;
+	}
+
+	if (nm_streq (client_id, "duid")) {
+		result = nm_utils_dhcp_client_id_systemd_node_specific (TRUE,
+		                                                        nm_device_get_ip_iface (self));
 		goto out_good;
 	}
 
 	if (nm_streq (client_id, "stable")) {
+		nm_auto_free_checksum GChecksum *sum = NULL;
+		guint8 digest[NM_UTILS_CHECKSUM_LENGTH_SHA1];
 		NMUtilsStableType stable_type;
 		const char *stable_id;
-		GChecksum *sum;
-		guint8 buf[20];
-		gsize buf_size;
 		guint32 salted_header;
-		const guint8 *secret_key;
-		gsize secret_key_len;
+		const guint8 *host_id;
+		gsize host_id_len;
 
 		stable_id = _get_stable_id (self, connection, &stable_type);
 		if (!stable_id)
@@ -7549,23 +7554,17 @@ dhcp4_get_client_id (NMDevice *self,
 
 		salted_header = htonl (2011610591 + stable_type);
 
-		nm_utils_secret_key_get (&secret_key, &secret_key_len);
+		nm_utils_host_id_get (&host_id, &host_id_len);
 
 		sum = g_checksum_new (G_CHECKSUM_SHA1);
-
 		g_checksum_update (sum, (const guchar *) &salted_header, sizeof (salted_header));
 		g_checksum_update (sum, (const guchar *) stable_id, strlen (stable_id) + 1);
-		g_checksum_update (sum, (const guchar *) secret_key, secret_key_len);
-
-		buf_size = sizeof (buf);
-		g_checksum_get_digest (sum, buf, &buf_size);
-		nm_assert (buf_size == sizeof (buf));
-
-		g_checksum_free (sum);
+		g_checksum_update (sum, (const guchar *) host_id, host_id_len);
+		nm_utils_checksum_get_digest (sum, digest);
 
 		client_id_buf = g_malloc (1 + 15);
 		client_id_buf[0] = 0;
-		memcpy (&client_id_buf[1], buf, 15);
+		memcpy (&client_id_buf[1], digest, 15);
 		result = g_bytes_new_take (client_id_buf, 1 + 15);
 		goto out_good;
 	}
@@ -8187,53 +8186,63 @@ dhcp6_prefix_delegated (NMDhcpClient *client,
 	g_signal_emit (self, signals[IP6_PREFIX_DELEGATED], 0, prefix);
 }
 
+/*****************************************************************************/
+
 /* RFC 3315 defines the epoch for the DUID-LLT time field on Jan 1st 2000. */
 #define EPOCH_DATETIME_200001010000  946684800
 
 static GBytes *
-generate_duid_llt (const guint8 *hwaddr /* ETH_ALEN bytes */,
+generate_duid_llt (int arp_type,
+                   const guint8 *hwaddr,
+                   gsize hwaddr_len,
                    gint64 time)
 {
 	guint8 *arr;
 	const guint16 duid_type = htons (1);
-	const guint16 hw_type = htons (ARPHRD_ETHER);
+	const guint16 hw_type = htons (arp_type);
 	const guint32 duid_time = htonl (NM_MAX (0, time - EPOCH_DATETIME_200001010000));
 
-	arr = g_new (guint8, 2 + 2 + 4 + ETH_ALEN);
+	if (!nm_utils_arp_type_get_hwaddr_relevant_part (arp_type, &hwaddr, &hwaddr_len))
+		nm_assert_not_reached ();
+
+	arr = g_new (guint8, 2 + 2 + 4 + hwaddr_len);
 
 	memcpy (&arr[0], &duid_type, 2);
 	memcpy (&arr[2], &hw_type, 2);
 	memcpy (&arr[4], &duid_time, 4);
-	memcpy (&arr[8], hwaddr, ETH_ALEN);
+	memcpy (&arr[8], hwaddr, hwaddr_len);
 
-	return g_bytes_new_take (arr, 2 + 2 + 4 + ETH_ALEN);
+	return g_bytes_new_take (arr, 2 + 2 + 4 + hwaddr_len);
 }
 
 static GBytes *
-generate_duid_ll (const guint8 *hwaddr /* ETH_ALEN bytes */)
+generate_duid_ll (int arp_type,
+                  const guint8 *hwaddr,
+                  gsize hwaddr_len)
 {
 	guint8 *arr;
 	const guint16 duid_type = htons (3);
-	const guint16 hw_type = htons (ARPHRD_ETHER);
+	const guint16 hw_type = htons (arp_type);
 
-	arr = g_new (guint8, 2 + 2 + ETH_ALEN);
+	if (!nm_utils_arp_type_get_hwaddr_relevant_part (arp_type, &hwaddr, &hwaddr_len))
+		nm_assert_not_reached ();
+
+	arr = g_new (guint8, 2 + 2 + hwaddr_len);
 
 	memcpy (&arr[0], &duid_type, 2);
 	memcpy (&arr[2], &hw_type, 2);
-	memcpy (&arr[4], hwaddr, ETH_ALEN);
+	memcpy (&arr[4], hwaddr, hwaddr_len);
 
-	return g_bytes_new_take (arr, 2 + 2 + ETH_ALEN);
+	return g_bytes_new_take (arr, 2 + 2 + hwaddr_len);
 }
 
 static GBytes *
-generate_duid_uuid (guint8 *data, gsize data_len)
+generate_duid_uuid (const NMUuid *uuid)
 {
-	const guint16 duid_type = g_htons (4);
-	const int DUID_SIZE = 18;
+	const guint16 duid_type = htons (4);
 	guint8 *duid_buffer;
 
-	nm_assert (data);
-	nm_assert (data_len >= 16);
+	nm_assert (uuid);
 
 	/* Generate a DHCP Unique Identifier for DHCPv6 using the
 	 * DUID-UUID method (see RFC 6355 section 4).  Format is:
@@ -8241,44 +8250,47 @@ generate_duid_uuid (guint8 *data, gsize data_len)
 	 * u16: type (DUID-UUID = 4)
 	 * u8[16]: UUID bytes
 	 */
-	duid_buffer = g_malloc (DUID_SIZE);
-
 	G_STATIC_ASSERT_EXPR (sizeof (duid_type) == 2);
+	G_STATIC_ASSERT_EXPR (sizeof (*uuid) == 16);
+	duid_buffer = g_malloc (18);
 	memcpy (&duid_buffer[0], &duid_type, 2);
-
-	/* UUID is 128 bits, we just take the first 128 bits
-	 * (regardless of data size) as the DUID-UUID.
-	 */
-	memcpy (&duid_buffer[2], data, 16);
-
-	return g_bytes_new_take (duid_buffer, DUID_SIZE);
+	memcpy (&duid_buffer[2], uuid, 16);
+	return g_bytes_new_take (duid_buffer, 18);
 }
 
 static GBytes *
 generate_duid_from_machine_id (void)
 {
-	gs_free const char *machine_id_s = NULL;
-	uuid_t uuid;
-	GChecksum *sum;
-	guint8 sha256_digest[32];
-	gsize len = sizeof (sha256_digest);
-	static GBytes *global_duid = NULL;
+	static GBytes *volatile global_duid = NULL;
+	GBytes *p;
 
-	if (global_duid)
-		return g_bytes_ref (global_duid);
+again:
+	p = g_atomic_pointer_get (&global_duid);
+	if (G_UNLIKELY (!p)) {
+		nm_auto_free_checksum GChecksum *sum = NULL;
+		const NMUuid *machine_id;
+		union {
+			guint8 sha256[NM_UTILS_CHECKSUM_LENGTH_SHA256];
+			NMUuid uuid;
+		} digest;
 
-	machine_id_s = nm_utils_machine_id_read ();
-	if (!nm_utils_machine_id_parse (machine_id_s, uuid))
-		return NULL;
+		machine_id = nm_utils_machine_id_bin ();
 
-	/* Hash the machine ID so it's not leaked to the network */
-	sum = g_checksum_new (G_CHECKSUM_SHA256);
-	g_checksum_update (sum, (const guchar *) &uuid, sizeof (uuid));
-	g_checksum_get_digest (sum, sha256_digest, &len);
-	g_checksum_free (sum);
+		/* Hash the machine ID so it's not leaked to the network */
+		sum = g_checksum_new (G_CHECKSUM_SHA256);
+		g_checksum_update (sum, (const guchar *) machine_id, sizeof (*machine_id));
+		nm_utils_checksum_get_digest (sum, digest.sha256);
 
-	global_duid = generate_duid_uuid (sha256_digest, len);
-	return g_bytes_ref (global_duid);
+		G_STATIC_ASSERT_EXPR (sizeof (digest.sha256) > sizeof (digest.uuid));
+		p = generate_duid_uuid (&digest.uuid);
+
+		if (!g_atomic_pointer_compare_and_exchange (&global_duid, NULL, p)) {
+			g_bytes_unref (p);
+			goto again;
+		}
+	}
+
+	return g_bytes_ref (p);
 }
 
 static GBytes *
@@ -8289,10 +8301,11 @@ dhcp6_get_duid (NMDevice *self, NMConnection *connection, GBytes *hwaddr, gboole
 	gs_free char *duid_default = NULL;
 	const char *duid_error;
 	GBytes *duid_out;
-	guint8 sha256_digest[32];
-	gsize len = sizeof (sha256_digest);
 	gboolean duid_enforce = TRUE;
 	gs_free char *logstr1 = NULL;
+	const guint8 *hwaddr_bin;
+	gsize hwaddr_len;
+	int arp_type;
 
 	s_ip6 = nm_connection_get_setting_ip6_config (connection);
 	duid = nm_setting_ip6_config_get_dhcp_duid (NM_SETTING_IP6_CONFIG (s_ip6));
@@ -8308,10 +8321,6 @@ dhcp6_get_duid (NMDevice *self, NMConnection *connection, GBytes *hwaddr, gboole
 	if (nm_streq (duid, "lease")) {
 		duid_enforce = FALSE;
 		duid_out = generate_duid_from_machine_id ();
-		if (!duid_out) {
-			duid_error = "failure to read machine-id";
-			goto out_fail;
-		}
 		goto out_good;
 	}
 
@@ -8328,78 +8337,138 @@ dhcp6_get_duid (NMDevice *self, NMConnection *connection, GBytes *hwaddr, gboole
 			duid_error = "missing link-layer address";
 			goto out_fail;
 		}
-		if (g_bytes_get_size (hwaddr) != ETH_ALEN) {
+
+		hwaddr_bin = g_bytes_get_data (hwaddr, &hwaddr_len);
+		arp_type = nm_utils_arp_type_detect_from_hwaddrlen (hwaddr_len);
+		if (arp_type < 0) {
 			duid_error = "unsupported link-layer address";
 			goto out_fail;
 		}
 
-		if (nm_streq (duid, "ll")) {
-			duid_out = generate_duid_ll (g_bytes_get_data (hwaddr, NULL));
-		} else {
-			gint64 time;
-
-			time = nm_utils_secret_key_get_timestamp ();
-			if (!time) {
-				duid_error = "cannot retrieve the secret key timestamp";
-				goto out_fail;
-			}
-
-			duid_out = generate_duid_llt (g_bytes_get_data (hwaddr, NULL), time);
+		if (nm_streq (duid, "ll"))
+			duid_out = generate_duid_ll (arp_type, hwaddr_bin, hwaddr_len);
+		else {
+			duid_out = generate_duid_llt (arp_type, hwaddr_bin, hwaddr_len,
+			                              nm_utils_host_id_get_timestamp_ns () / NM_UTILS_NS_PER_SECOND);
 		}
 
 		goto out_good;
 	}
 
 	if (NM_IN_STRSET (duid, "stable-ll", "stable-llt", "stable-uuid")) {
+		/* preferably, we would salt the checksum differently for each @duid type. We missed
+		 * to do that initially, so most types use the DEFAULT_SALT.
+		 *
+		 * Implemenations that are added later, should use a distinct salt instead,
+		 * like "stable-ll"/"stable-llt" with ARPHRD_INFINIBAND below. */
+		const guint32 DEFAULT_SALT = 670531087u;
+		nm_auto_free_checksum GChecksum *sum = NULL;
 		NMUtilsStableType stable_type;
 		const char *stable_id = NULL;
 		guint32 salted_header;
-		GChecksum *sum;
-		const guint8 *secret_key;
-		gsize secret_key_len;
+		const guint8 *host_id;
+		gsize host_id_len;
+		union {
+			guint8 sha256[NM_UTILS_CHECKSUM_LENGTH_SHA256];
+			guint8 hwaddr_eth[ETH_ALEN];
+			guint8 hwaddr_infiniband[INFINIBAND_ALEN];
+			NMUuid uuid;
+			struct _nm_packed {
+				guint8 hwaddr[ETH_ALEN];
+				guint32 timestamp;
+			} llt_eth;
+			struct _nm_packed {
+				guint8 hwaddr[INFINIBAND_ALEN];
+				guint32 timestamp;
+			} llt_infiniband;
+		} digest;
 
 		stable_id = _get_stable_id (self, connection, &stable_type);
 		if (!stable_id)
 			g_return_val_if_reached (NULL);
 
-		salted_header = htonl (670531087 + stable_type);
+		if (NM_IN_STRSET (duid, "stable-ll", "stable-llt")) {
+			/* for stable LL/LLT DUIDs, we still need a hardware address to detect
+			 * the arp-type. Alternatively, we would be able to detect it based on
+			 * other means (e.g. NMDevice type), but instead require the hardware
+			 * address to be present. This is at least consistent with the "ll"/"llt"
+			 * modes above. */
+			if (!hwaddr) {
+				duid_error = "missing link-layer address";
+				goto out_fail;
+			}
+			if ((arp_type = nm_utils_arp_type_detect_from_hwaddrlen (g_bytes_get_size (hwaddr))) < 0) {
+				duid_error = "unsupported link-layer address";
+				goto out_fail;
+			}
 
-		nm_utils_secret_key_get (&secret_key, &secret_key_len);
+			if (arp_type == ARPHRD_ETHER)
+				salted_header = DEFAULT_SALT;
+			else {
+				nm_assert (arp_type == ARPHRD_INFINIBAND);
+				salted_header = 0x42492CEFu + ((guint32) arp_type);
+			}
+		} else {
+			salted_header = DEFAULT_SALT;
+			arp_type = -1;
+		}
+
+		salted_header = htonl (salted_header + ((guint32) stable_type));
+
+		nm_utils_host_id_get (&host_id, &host_id_len);
 
 		sum = g_checksum_new (G_CHECKSUM_SHA256);
-
 		g_checksum_update (sum, (const guchar *) &salted_header, sizeof (salted_header));
 		g_checksum_update (sum, (const guchar *) stable_id, -1);
-		g_checksum_update (sum, (const guchar *) secret_key, secret_key_len);
+		g_checksum_update (sum, (const guchar *) host_id, host_id_len);
+		nm_utils_checksum_get_digest (sum, digest.sha256);
 
-		g_checksum_get_digest (sum, sha256_digest, &len);
-		g_checksum_free (sum);
+		G_STATIC_ASSERT_EXPR (sizeof (digest) == sizeof (digest.sha256));
 
 		if (nm_streq (duid, "stable-ll")) {
-			duid_out = generate_duid_ll (sha256_digest);
+			switch (arp_type) {
+			case ARPHRD_ETHER:
+				duid_out = generate_duid_ll (arp_type, digest.hwaddr_eth, sizeof (digest.hwaddr_eth));
+				break;
+			case ARPHRD_INFINIBAND:
+				duid_out = generate_duid_ll (arp_type, digest.hwaddr_infiniband, sizeof (digest.hwaddr_infiniband));
+				break;
+			default:
+				g_return_val_if_reached (NULL);
+			}
 		} else if (nm_streq (duid, "stable-llt")) {
 			gint64 time;
+			guint32 timestamp;
 
 #define EPOCH_DATETIME_THREE_YEARS  (356 * 24 * 3600 * 3)
 
-			/* We want a variable time between the secret_key timestamp and three years
+			/* We want a variable time between the host_id timestamp and three years
 			 * before. Let's compute the time (in seconds) from 0 to 3 years; then we'll
-			 * subtract it from the secret_key timestamp.
+			 * subtract it from the host_id timestamp.
 			 */
-			time = nm_utils_secret_key_get_timestamp ();
-			if (!time) {
-				duid_error = "cannot retrieve the secret key timestamp";
-				goto out_fail;
-			}
+			time = nm_utils_host_id_get_timestamp_ns () / NM_UTILS_NS_PER_SECOND;
+
 			/* don't use too old timestamps. They cannot be expressed in DUID-LLT and
 			 * would all be truncated to zero. */
 			time = NM_MAX (time, EPOCH_DATETIME_200001010000 + EPOCH_DATETIME_THREE_YEARS);
-			time -= (unaligned_read_be32 (&sha256_digest[ETH_ALEN]) % EPOCH_DATETIME_THREE_YEARS);
 
-			duid_out = generate_duid_llt (sha256_digest, time);
+			switch (arp_type) {
+			case ARPHRD_ETHER:
+				timestamp = unaligned_read_be32 (&digest.llt_eth.timestamp);
+				time -= timestamp % EPOCH_DATETIME_THREE_YEARS;
+				duid_out = generate_duid_llt (arp_type, digest.llt_eth.hwaddr, sizeof (digest.llt_eth.hwaddr), time);
+				break;
+			case ARPHRD_INFINIBAND:
+				timestamp = unaligned_read_be32 (&digest.llt_infiniband.timestamp);
+				time -= timestamp % EPOCH_DATETIME_THREE_YEARS;
+				duid_out = generate_duid_llt (arp_type, digest.llt_infiniband.hwaddr, sizeof (digest.llt_infiniband.hwaddr), time);
+				break;
+			default:
+				g_return_val_if_reached (NULL);
+			}
 		} else {
 			nm_assert (nm_streq (duid, "stable-uuid"));
-			duid_out = generate_duid_uuid (sha256_digest, len);
+			duid_out = generate_duid_uuid (&digest.uuid);
 		}
 
 		goto out_good;
@@ -8410,14 +8479,14 @@ dhcp6_get_duid (NMDevice *self, NMConnection *connection, GBytes *hwaddr, gboole
 out_fail:
 	nm_assert (!duid_out && duid_error);
 	{
-		guint8 uuid[16];
+		NMUuid uuid;
 
 		_LOGW (LOGD_IP6 | LOGD_DHCP6,
 		       "ipv6.dhcp-duid: failure to generate %s DUID: %s. Fallback to random DUID-UUID.",
 		       duid, duid_error);
 
-		nm_utils_random_bytes (uuid, sizeof (uuid));
-		duid_out = generate_duid_uuid (uuid, sizeof (uuid));
+		nm_utils_random_bytes (&uuid, sizeof (uuid));
+		duid_out = generate_duid_uuid (&uuid);
 	}
 
 out_good:
@@ -8431,6 +8500,8 @@ out_good:
 	NM_SET_OUT (out_enforce, duid_enforce);
 	return duid_out;
 }
+
+/*****************************************************************************/
 
 static gboolean
 dhcp6_start_with_link_ready (NMDevice *self, NMConnection *connection)
@@ -11961,7 +12032,7 @@ nm_device_set_ip_config (NMDevice *self,
 			priv->needs_ip6_subnet = FALSE;
 	}
 
-	if (IS_IPv4) {
+	if (IS_IPv4 && FALSE /* rp_filter handling is disabled */) {
 		if (!nm_device_sys_iface_state_is_external_or_assume (self))
 			ip4_rp_filter_update (self);
 	}
@@ -12859,7 +12930,7 @@ queued_ip_config_change (NMDevice *self, int addr_family)
 
 	set_unmanaged_external_down (self, TRUE);
 
-	if (IS_IPv4) {
+	if (IS_IPv4 && FALSE /* rp_filter handling is disabled */) {
 		if (!nm_device_sys_iface_state_is_external_or_assume (self)) {
 			priv->v4_has_shadowed_routes = _v4_has_shadowed_routes_detect (self);;
 			ip4_rp_filter_update (self);
@@ -14384,9 +14455,11 @@ nm_device_spawn_iface_helper (NMDevice *self)
 			if (client_id) {
 				g_ptr_array_add (argv, g_strdup ("--dhcp4-clientid"));
 				g_ptr_array_add (argv,
-				                 _nm_utils_bin2str (g_bytes_get_data (client_id, NULL),
-				                                    g_bytes_get_size (client_id),
-				                                    FALSE));
+				                 _nm_utils_bin2hexstr_full (g_bytes_get_data (client_id, NULL),
+				                                            g_bytes_get_size (client_id),
+				                                            ':',
+				                                            FALSE,
+				                                            NULL));
 			}
 
 			hostname = nm_dhcp_client_get_hostname (priv->dhcp4.client);
@@ -14424,9 +14497,11 @@ nm_device_spawn_iface_helper (NMDevice *self)
 		if (nm_device_get_ip_iface_identifier (self, &iid, FALSE)) {
 			g_ptr_array_add (argv, g_strdup ("--iid"));
 			g_ptr_array_add (argv,
-			                 _nm_utils_bin2str (iid.id_u8,
-			                                    sizeof (NMUtilsIPv6IfaceId),
-			                                    FALSE));
+			                 _nm_utils_bin2hexstr_full (iid.id_u8,
+			                                            sizeof (NMUtilsIPv6IfaceId),
+			                                            ':',
+			                                            FALSE,
+			                                            NULL));
 		}
 
 		g_ptr_array_add (argv, g_strdup ("--addr-gen-mode"));
@@ -14561,6 +14636,7 @@ _set_state_full (NMDevice *self,
 	NMActRequest *req;
 	gboolean no_firmware = FALSE;
 	NMSettingsConnection *sett_conn;
+	NMSettingSriov *s_sriov;
 
 	g_return_if_fail (NM_IS_DEVICE (self));
 
@@ -14668,6 +14744,7 @@ _set_state_full (NMDevice *self,
 			save_ip6_properties (self);
 			if (priv->sys_iface_state == NM_DEVICE_SYS_IFACE_STATE_MANAGED)
 				ip6_managed_setup (self);
+			device_init_static_sriov_num_vfs (self);
 		}
 
 		if (priv->sys_iface_state == NM_DEVICE_SYS_IFACE_STATE_MANAGED) {
@@ -14756,6 +14833,12 @@ _set_state_full (NMDevice *self,
 		}
 		break;
 	case NM_DEVICE_STATE_DEACTIVATING:
+		if (   (s_sriov = (NMSettingSriov *) nm_device_get_applied_setting (self, NM_TYPE_SETTING_SRIOV))
+		    && priv->ifindex > 0) {
+			nm_platform_link_set_sriov_params (nm_device_get_platform (self),
+			                                   priv->ifindex, 0, NM_TERNARY_TRUE);
+		}
+
 		_cancel_activation (self);
 
 		/* We cache the ignore_carrier state to not react on config-reloads while the connection
@@ -15273,7 +15356,7 @@ _get_generate_mac_address_mask_setting (NMDevice *self, NMConnection *connection
 	}
 
 	a = nm_config_data_get_connection_default (NM_CONFIG_GET_DATA,
-	                                           is_wifi ? "wifi.generate-mac-address-mask" : "ethernet.generate-mac-mac-address-mask",
+	                                           is_wifi ? "wifi.generate-mac-address-mask" : "ethernet.generate-mac-address-mask",
 	                                           self);
 	if (!a)
 		return NULL;
@@ -15314,7 +15397,8 @@ _hw_addr_set (NMDevice *self,
 	NMPlatformError plerr;
 	guint8 addr_bytes[NM_UTILS_HWADDR_LEN_MAX];
 	gsize addr_len;
-	gboolean was_up;
+	gboolean was_taken_down = FALSE;
+	gboolean retry_down;
 
 	nm_assert (NM_IS_DEVICE (self));
 	nm_assert (addr);
@@ -15337,21 +15421,37 @@ _hw_addr_set (NMDevice *self,
 
 	_LOGT (LOGD_DEVICE, "set-hw-addr: setting MAC address to '%s' (%s, %s)...", addr, operation, detail);
 
-	was_up = nm_device_is_up (self);
-	if (was_up) {
-		/* Can't change MAC address while device is up */
+	if (nm_device_get_device_type (self) == NM_DEVICE_TYPE_WIFI) {
+		/* Always take the device down for Wi-Fi because
+		 * wpa_supplicant needs it to properly detect the MAC
+		 * change. */
+		retry_down = FALSE;
+		was_taken_down = TRUE;
 		nm_device_take_down (self, FALSE);
 	}
 
+again:
 	plerr = nm_platform_link_set_address (nm_device_get_platform (self), nm_device_get_ip_ifindex (self), addr_bytes, addr_len);
 	success = (plerr == NM_PLATFORM_ERROR_SUCCESS);
-	if (success) {
-		/* MAC address succesfully changed; update the current MAC to match */
+	if (!success) {
+		retry_down =    !was_taken_down
+		             && plerr != NM_PLATFORM_ERROR_NOT_FOUND
+		             && nm_platform_link_is_up (nm_device_get_platform (self),
+		                                        nm_device_get_ip_ifindex (self));
+		_NMLOG (     retry_down
+		          || plerr == NM_PLATFORM_ERROR_NOT_FOUND
+		        ? LOGL_DEBUG
+		        : LOGL_WARN,
+		        LOGD_DEVICE,
+		        "set-hw-addr: failed to %s MAC address to %s (%s) (%s)%s",
+		        operation, addr, detail,
+		        nm_platform_error_to_string_a (plerr),
+		        retry_down ? " (retry with taking down)" : "");
+	} else {
+		/* MAC address successfully changed; update the current MAC to match */
 		nm_device_update_hw_address (self);
-		if (_hw_addr_matches (self, addr_bytes, addr_len)) {
-			_LOGI (LOGD_DEVICE, "set-hw-addr: %s MAC address to %s (%s)",
-			       operation, addr, detail);
-		} else {
+
+		if (!_hw_addr_matches (self, addr_bytes, addr_len)) {
 			gint64 poll_end, now;
 
 			_LOGD (LOGD_DEVICE,
@@ -15392,24 +15492,40 @@ handle_fail:
 				success = FALSE;
 				break;
 			}
-
-			if (success) {
-				_LOGI (LOGD_DEVICE, "set-hw-addr: %s MAC address to %s (%s)",
-				       operation, addr, detail);
-			} else {
-				_LOGW (LOGD_DEVICE,
-				       "set-hw-addr: new MAC address %s not successfully %s (%s)",
-				       addr, operation, detail);
-			}
 		}
-	} else {
-		_NMLOG (plerr == NM_PLATFORM_ERROR_NOT_FOUND ? LOGL_DEBUG : LOGL_WARN,
-		        LOGD_DEVICE, "set-hw-addr: failed to %s MAC address to %s (%s) (%s)",
-		        operation, addr, detail,
-		        nm_platform_error_to_string_a (plerr));
+
+		if (success) {
+			retry_down = FALSE;
+			_LOGI (LOGD_DEVICE, "set-hw-addr: %s MAC address to %s (%s)",
+			       operation, addr, detail);
+		} else {
+			retry_down =    !was_taken_down
+			             && nm_platform_link_is_up (nm_device_get_platform (self),
+			                                        nm_device_get_ip_ifindex (self));
+
+			_NMLOG (  retry_down
+			        ? LOGL_DEBUG
+			        : LOGL_WARN,
+			        LOGD_DEVICE,
+			        "set-hw-addr: new MAC address %s not successfully %s (%s)%s",
+			        addr,
+			        operation,
+			        detail,
+			        retry_down ? " (retry with taking down)" : "");
+		}
 	}
 
-	if (was_up) {
+	if (retry_down) {
+		/* changing the MAC address failed, but also the device was up (and we did not yet try to take
+		 * it down). Optimally, we change the MAC address without taking the device down, but some
+		 * devices don't like that. So, retry with taking the device down. */
+		retry_down = FALSE;
+		was_taken_down = TRUE;
+		nm_device_take_down (self, FALSE);
+		goto again;
+	}
+
+	if (was_taken_down) {
 		if (!nm_device_bring_up (self, TRUE, NULL))
 			return FALSE;
 	}
@@ -15728,7 +15844,8 @@ nm_device_spec_match_list_full (NMDevice *self, const GSList *specs, int no_matc
 	                          nm_device_get_driver (self),
 	                          nm_device_get_driver_version (self),
 	                          nm_device_get_permanent_hw_address (self),
-	                          klass->get_s390_subchannels ? klass->get_s390_subchannels (self) : NULL);
+	                          klass->get_s390_subchannels ? klass->get_s390_subchannels (self) : NULL,
+	                          nm_dhcp_manager_get_config (nm_dhcp_manager_get ()));
 
 	switch (m) {
 	case NM_MATCH_SPEC_MATCH:

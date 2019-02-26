@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 10/24/2018
+.\"      Date: 02/23/2019
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.14.4
+.\"    Source: NetworkManager 1.14.6
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.14\&.4" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.14\&.6" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -584,6 +584,14 @@ Not all properties can be overwritten, only the following properties are support
 \fBnm-settings\fR(5)
 for details)\&. A default value is only consulted if the corresponding per\-connection value explicitly allows for that\&.
 .PP
+\fI802\-1x\&.auth\-timeout\fR
+.RS 4
+.RE
+.PP
+\fIcdma\&.mtu\fR
+.RS 4
+.RE
+.PP
 \fIconnection\&.auth\-retries\fR
 .RS 4
 If left unspecified, the default value is 3 tries before failing the connection\&.
@@ -624,6 +632,10 @@ If configured explicitly to 0, the MTU is not reconfigured during device activat
 .RE
 .PP
 \fIethernet\&.wake\-on\-lan\fR
+.RS 4
+.RE
+.PP
+\fIgsm\&.mtu\fR
 .RS 4
 .RE
 .PP
@@ -728,6 +740,10 @@ If left unspecified, the default value "optional" will be used\&.
 \fIwifi\-sec\&.fils\fR
 .RS 4
 If left unspecified, the default value "optional" will be used\&.
+.RE
+.PP
+\fIwifi\&.wake\-on\-wlan\fR
+.RS 4
 .RE
 .SS "Sections"
 .PP
@@ -1004,7 +1020,7 @@ enable=env:TAG1
 .RE
 .\}
 .sp
-More then one match can be specified\&. The configuration will be enabled if one of the predicates matches ("or")\&. The special prefix "except:" can be used to negate the match\&. Note that if one except\-predicate matches, the entire configuration will be disabled\&. In other words, a except predicate always wins over other predicates\&.
+More then one match can be specified\&. The configuration will be enabled if one of the predicates matches ("or")\&. The special prefix "except:" can be used to negate the match\&. Note that if one except\-predicate matches, the entire configuration will be disabled\&. In other words, a except predicate always wins over other predicates\&. If the setting only consists of "except:" matches and none of the negative conditions are satisfied, the configuration is still enabled\&.
 .sp
 .if n \{\
 .RS 4
@@ -1161,12 +1177,22 @@ driver:DRIVER
 Match the device driver as reported by "nmcli \-f GENERAL\&.DRIVER,GENERAL\&.DRIVER\-VERSION device show"\&. "DRIVER" must match the driver name exactly and does not support globbing\&. Optionally, a driver version may be specified separated by \*(Aq/\*(Aq\&. Globbing is supported for the version\&.
 .RE
 .PP
+dhcp\-plugin:DHCP
+.RS 4
+Match the configured DHCP plugin "main\&.dhcp"\&.
+.RE
+.PP
 except:SPEC
 .RS 4
 Negative match of a device\&.
 SPEC
 must be explicitly qualified with a prefix such as
 interface\-name:\&. A negative match has higher priority then the positive matches above\&.
+.sp
+If there is a list consisting only of negative matches, the behavior is the same as if there is also match\-all\&. That means, if none of all the negative matches is satisfied, the overall result is still a positive match\&. That means,
+"except:interface\-name:eth0"
+is the same as
+"*,except:interface\-name:eth0"\&.
 .RE
 .PP
 SPEC[,;]SPEC

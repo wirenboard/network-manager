@@ -2737,11 +2737,14 @@ nm_utils_sriov_vf_from_str (const char *str, GError **error)
 		detail++;
 	}
 
-	return _nm_utils_sriov_vf_from_strparts (str, detail, error);
+	return _nm_utils_sriov_vf_from_strparts (str, detail, FALSE, error);
 }
 
 NMSriovVF *
-_nm_utils_sriov_vf_from_strparts (const char *index, const char *detail, GError **error)
+_nm_utils_sriov_vf_from_strparts (const char *index,
+                                  const char *detail,
+                                  gboolean ignore_unknown,
+                                  GError **error)
 {
 	NMSriovVF *vf;
 	guint32 n_index;
@@ -2761,7 +2764,12 @@ _nm_utils_sriov_vf_from_strparts (const char *index, const char *detail, GError 
 
 	vf = nm_sriov_vf_new (n_index);
 	if (detail) {
-		ht = nm_utils_parse_variant_attributes (detail, ' ', '=', TRUE, _nm_sriov_vf_attribute_spec, error);
+		ht = nm_utils_parse_variant_attributes (detail,
+		                                        ' ',
+		                                        '=',
+		                                        ignore_unknown,
+		                                        _nm_sriov_vf_attribute_spec,
+		                                        error);
 		if (!ht) {
 			nm_sriov_vf_unref (vf);
 			return NULL;
@@ -2785,6 +2793,57 @@ _nm_utils_sriov_vf_from_strparts (const char *index, const char *detail, GError 
 
 /*****************************************************************************/
 
+NMUuid *
+_nm_utils_uuid_parse (const char *str,
+                      NMUuid *out_uuid)
+{
+	nm_assert (str);
+	nm_assert (out_uuid);
+
+	if (uuid_parse (str, out_uuid->uuid) != 0)
+		return NULL;
+	return out_uuid;
+}
+
+char *
+_nm_utils_uuid_unparse (const NMUuid *uuid,
+                        char *out_str /*[37]*/)
+{
+	nm_assert (uuid);
+
+	if (!out_str) {
+		/* for convenience, allow %NULL to indicate that a new
+		 * string should be allocated. */
+		out_str = g_malloc (37);
+	}
+	uuid_unparse_lower (uuid->uuid, out_str);
+	return out_str;
+}
+
+NMUuid *
+_nm_utils_uuid_generate_random (NMUuid *out_uuid)
+{
+	nm_assert (out_uuid);
+
+	uuid_generate_random (out_uuid->uuid);
+	return out_uuid;
+}
+
+gboolean
+nm_utils_uuid_is_null (const NMUuid *uuid)
+{
+	int i;
+
+	if (!uuid)
+		return TRUE;
+
+	for (i = 0; i < G_N_ELEMENTS (uuid->uuid); i++) {
+		if (uuid->uuid[i])
+			return FALSE;
+	}
+	return TRUE;
+}
+
 /**
  * nm_utils_uuid_generate_buf_:
  * @buf: input buffer, must contain at least 37 bytes
@@ -2794,11 +2853,12 @@ _nm_utils_sriov_vf_from_strparts (const char *index, const char *detail, GError 
 char *
 nm_utils_uuid_generate_buf_ (char *buf)
 {
-	uuid_t uuid;
+	NMUuid uuid;
 
-	uuid_generate_random (uuid);
-	uuid_unparse_lower (uuid, buf);
-	return buf;
+	nm_assert (buf);
+
+	_nm_utils_uuid_generate_random (&uuid);
+	return _nm_utils_uuid_unparse (&uuid, buf);
 }
 
 /**
@@ -2811,6 +2871,84 @@ char *
 nm_utils_uuid_generate (void)
 {
 	return nm_utils_uuid_generate_buf_ (g_malloc (37));
+}
+
+/**
+ * nm_utils_uuid_generate_from_string_bin:
+ * @uuid: the UUID to update inplace. This function cannot
+ *   fail to succeed.
+ * @s: a string to use as the seed for the UUID
+ * @slen: if negative, treat @s as zero terminated C string.
+ *   Otherwise, assume the length as given (and allow @s to be
+ *   non-null terminated or contain '\0').
+ * @uuid_type: a type identifier which UUID format to generate.
+ * @type_args: additional arguments, depending on the uuid_type
+ *
+ * For a given @s, this function will always return the same UUID.
+ *
+ * Returns: the input @uuid. This function cannot fail.
+ **/
+NMUuid *
+nm_utils_uuid_generate_from_string_bin (NMUuid *uuid, const char *s, gssize slen, int uuid_type, gpointer type_args)
+{
+	g_return_val_if_fail (uuid, FALSE);
+	g_return_val_if_fail (slen == 0 || s, FALSE);
+
+	if (slen < 0)
+		slen = s ? strlen (s) : 0;
+
+	switch (uuid_type) {
+	case NM_UTILS_UUID_TYPE_LEGACY:
+		g_return_val_if_fail (!type_args, NULL);
+		nm_crypto_md5_hash (NULL,
+		                    0,
+		                    (guint8 *) s,
+		                    slen,
+		                    (guint8 *) uuid,
+		                    sizeof (*uuid));
+		break;
+	case NM_UTILS_UUID_TYPE_VERSION3:
+	case NM_UTILS_UUID_TYPE_VERSION5: {
+		NMUuid ns_uuid = { 0 };
+
+		if (type_args) {
+			/* type_args can be a name space UUID. Interpret it as (char *) */
+			if (!_nm_utils_uuid_parse (type_args, &ns_uuid))
+				g_return_val_if_reached (NULL);
+		}
+
+		if (uuid_type == NM_UTILS_UUID_TYPE_VERSION3) {
+			nm_crypto_md5_hash ((guint8 *) s,
+			                    slen,
+			                    (guint8 *) &ns_uuid,
+			                    sizeof (ns_uuid),
+			                    (guint8 *) uuid,
+			                    sizeof (*uuid));
+		} else {
+			nm_auto_free_checksum GChecksum *sum = NULL;
+			union {
+				guint8 sha1[NM_UTILS_CHECKSUM_LENGTH_SHA1];
+				NMUuid uuid;
+			} digest;
+
+			sum = g_checksum_new (G_CHECKSUM_SHA1);
+			g_checksum_update (sum, (guchar *) &ns_uuid, sizeof (ns_uuid));
+			g_checksum_update (sum, (guchar *) s, slen);
+			nm_utils_checksum_get_digest (sum, digest.sha1);
+
+			G_STATIC_ASSERT_EXPR (sizeof (digest.sha1) > sizeof (digest.uuid));
+			*uuid = digest.uuid;
+		}
+
+		uuid->uuid[6] = (uuid->uuid[6] & 0x0F) | (uuid_type << 4);
+		uuid->uuid[8] = (uuid->uuid[8] & 0x3F) | 0x80;
+		break;
+	}
+	default:
+		g_return_val_if_reached (NULL);
+	}
+
+	return uuid;
 }
 
 /**
@@ -2830,54 +2968,10 @@ nm_utils_uuid_generate (void)
 char *
 nm_utils_uuid_generate_from_string (const char *s, gssize slen, int uuid_type, gpointer type_args)
 {
-	uuid_t uuid;
-	char *buf;
+	NMUuid uuid;
 
-	g_return_val_if_fail (slen == 0 || s, FALSE);
-
-	g_return_val_if_fail (uuid_type == NM_UTILS_UUID_TYPE_LEGACY || uuid_type == NM_UTILS_UUID_TYPE_VARIANT3, NULL);
-	g_return_val_if_fail (!type_args || uuid_type == NM_UTILS_UUID_TYPE_VARIANT3, NULL);
-
-	if (slen < 0)
-		slen = s ? strlen (s) : 0;
-
-	switch (uuid_type) {
-	case NM_UTILS_UUID_TYPE_LEGACY:
-		nm_crypto_md5_hash (NULL,
-		                    0,
-		                    (guint8 *) s,
-		                    slen,
-		                    (guint8 *) uuid,
-		                    sizeof (uuid));
-		break;
-	case NM_UTILS_UUID_TYPE_VARIANT3: {
-		uuid_t ns_uuid = { 0 };
-
-		if (type_args) {
-			/* type_args can be a name space UUID. Interpret it as (char *) */
-			if (uuid_parse ((char *) type_args, ns_uuid) != 0)
-				g_return_val_if_reached (NULL);
-		}
-
-		nm_crypto_md5_hash ((guint8 *) s,
-		                    slen,
-		                    (guint8 *) ns_uuid,
-		                    sizeof (ns_uuid),
-		                    (guint8 *) uuid,
-		                    sizeof (uuid));
-
-		uuid[6] = (uuid[6] & 0x0F) | 0x30;
-		uuid[8] = (uuid[8] & 0x3F) | 0x80;
-		break;
-	}
-	default:
-		g_return_val_if_reached (NULL);
-	}
-
-	buf = g_malloc (37);
-	uuid_unparse_lower (uuid, &buf[0]);
-
-	return buf;
+	nm_utils_uuid_generate_from_string_bin (&uuid, s, slen, uuid_type, type_args);
+	return _nm_utils_uuid_unparse (&uuid, NULL);
 }
 
 /**
@@ -2902,7 +2996,7 @@ _nm_utils_uuid_generate_from_strings (const char *string1, ...)
 	char *uuid;
 
 	if (!string1)
-		return nm_utils_uuid_generate_from_string (NULL, 0, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
+		return nm_utils_uuid_generate_from_string (NULL, 0, NM_UTILS_UUID_TYPE_VERSION3, NM_UTILS_UUID_NS);
 
 	str = g_string_sized_new (120); /* effectively allocates power of 2 (128)*/
 
@@ -2916,7 +3010,7 @@ _nm_utils_uuid_generate_from_strings (const char *string1, ...)
 	}
 	va_end (args);
 
-	uuid = nm_utils_uuid_generate_from_string (str->str, str->len, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
+	uuid = nm_utils_uuid_generate_from_string (str->str, str->len, NM_UTILS_UUID_TYPE_VERSION3, NM_UTILS_UUID_NS);
 
 	g_string_free (str, TRUE);
 	return uuid;
@@ -3527,60 +3621,68 @@ nm_utils_hwaddr_len (int type)
 }
 
 guint8 *
-_nm_utils_str2bin_full (const char *asc,
-                        gboolean delimiter_required,
-                        const char *delimiter_candidates,
-                        guint8 *buffer,
-                        gsize buffer_length,
-                        gsize *out_len)
+_nm_utils_hexstr2bin_full (const char *hexstr,
+                           gboolean allow_0x_prefix,
+                           gboolean delimiter_required,
+                           const char *delimiter_candidates,
+                           gsize required_len,
+                           guint8 *buffer,
+                           gsize buffer_len,
+                           gsize *out_len)
 {
-	const char *in = asc;
+	const char *in = hexstr;
 	guint8 *out = buffer;
 	gboolean delimiter_has = TRUE;
 	guint8 delimiter = '\0';
+	gsize len;
 
-	nm_assert (asc);
+	nm_assert (hexstr);
 	nm_assert (buffer);
-	nm_assert (buffer_length);
-	nm_assert (out_len);
+	nm_assert (required_len > 0 || out_len);
+
+	if (   allow_0x_prefix
+	    && in[0] == '0'
+	    && in[1] == 'x')
+		in += 2;
 
 	while (TRUE) {
 		const guint8 d1 = in[0];
 		guint8 d2;
+		int i1, i2;
 
-		if (!g_ascii_isxdigit (d1))
-			return NULL;
-
-#define HEXVAL(c) ((c) <= '9' ? (c) - '0' : ((c) & 0x4F) - ('A' - 10))
+		i1 = nm_utils_hexchar_to_int (d1);
+		if (i1 < 0)
+			goto fail;
 
 		/* If there's no leading zero (ie "aa:b:cc") then fake it */
 		d2 = in[1];
-		if (d2 && g_ascii_isxdigit (d2)) {
-			*out++ = (HEXVAL (d1) << 4) + HEXVAL (d2);
+		if (   d2
+		    && (i2 = nm_utils_hexchar_to_int (d2)) >= 0) {
+			*out++ = (i1 << 4) + i2;
 			d2 = in[2];
 			if (!d2)
 				break;
 			in += 2;
 		} else {
 			/* Fake leading zero */
-			*out++ = HEXVAL (d1);
+			*out++ = i1;
 			if (!d2) {
 				if (!delimiter_has) {
 					/* when using no delimiter, there must be pairs of hex chars */
-					return NULL;
+					goto fail;
 				}
 				break;
 			}
 			in += 1;
 		}
 
-		if (--buffer_length == 0)
-			return NULL;
+		if (--buffer_len == 0)
+			goto fail;
 
 		if (delimiter_has) {
 			if (d2 != delimiter) {
 				if (delimiter)
-					return NULL;
+					goto fail;
 				if (delimiter_candidates) {
 					while (delimiter_candidates[0]) {
 						if (delimiter_candidates++[0] == d2)
@@ -3589,7 +3691,7 @@ _nm_utils_str2bin_full (const char *asc,
 				}
 				if (!delimiter) {
 					if (delimiter_required)
-						return NULL;
+						goto fail;
 					delimiter_has = FALSE;
 					continue;
 				}
@@ -3598,11 +3700,66 @@ _nm_utils_str2bin_full (const char *asc,
 		}
 	}
 
-	*out_len = out - buffer;
-	return buffer;
+	len = out - buffer;
+	if (   required_len == 0
+	    || len == required_len) {
+		NM_SET_OUT (out_len, len);
+		return buffer;
+	}
+
+fail:
+	NM_SET_OUT (out_len, 0);
+	return NULL;
 }
 
-#define hwaddr_aton(asc, buffer, buffer_length, out_len) _nm_utils_str2bin_full ((asc), TRUE, ":-", (buffer), (buffer_length), (out_len))
+guint8 *
+_nm_utils_hexstr2bin_alloc (const char *hexstr,
+                            gboolean allow_0x_prefix,
+                            gboolean delimiter_required,
+                            const char *delimiter_candidates,
+                            gsize required_len,
+                            gsize *out_len)
+{
+	guint8 *buffer;
+	gsize buffer_len, len;
+
+	g_return_val_if_fail (hexstr, NULL);
+
+	nm_assert (required_len > 0 || out_len);
+
+	if (   allow_0x_prefix
+	    && hexstr[0] == '0'
+	    && hexstr[1] == 'x')
+		hexstr += 2;
+
+	if (!hexstr[0])
+		goto fail;
+
+	if (required_len > 0)
+		buffer_len = required_len;
+	else
+		buffer_len = strlen (hexstr) / 2 + 3;
+
+	buffer = g_malloc (buffer_len);
+
+	if (_nm_utils_hexstr2bin_full (hexstr,
+	                               FALSE,
+	                               delimiter_required,
+	                               delimiter_candidates,
+	                               required_len,
+	                               buffer,
+	                               buffer_len,
+	                               &len)) {
+		NM_SET_OUT (out_len, len);
+		return buffer;
+	}
+
+	g_free (buffer);
+
+fail:
+	NM_SET_OUT (out_len, 0);
+	return NULL;
+}
 
 /**
  * nm_utils_hexstr2bin:
@@ -3619,22 +3776,16 @@ GBytes *
 nm_utils_hexstr2bin (const char *hex)
 {
 	guint8 *buffer;
-	gsize buffer_length, len;
+	gsize len;
 
-	g_return_val_if_fail (hex != NULL, NULL);
-
-	if (hex[0] == '0' && hex[1] == 'x')
-		hex += 2;
-
-	buffer_length = strlen (hex) / 2 + 3;
-	buffer = g_malloc (buffer_length);
-	if (!_nm_utils_str2bin_full (hex, FALSE, ":", buffer, buffer_length, &len)) {
-		g_free (buffer);
+	buffer = _nm_utils_hexstr2bin_alloc (hex, TRUE, FALSE, ":", 0, &len);
+	if (!buffer)
 		return NULL;
-	}
 	buffer = g_realloc (buffer, len);
 	return g_bytes_new_take (buffer, len);
 }
+
+#define hwaddr_aton(asc, buffer, buffer_len, out_len) _nm_utils_hexstr2bin_full ((asc), FALSE, TRUE, ":-", 0, (buffer), (buffer_len), (out_len))
 
 /**
  * nm_utils_hwaddr_atoba:
@@ -3728,15 +3879,45 @@ nm_utils_hwaddr_aton (const char *asc, gpointer buffer, gsize length)
 	return buffer;
 }
 
-void
-_nm_utils_bin2str_full (gconstpointer addr, gsize length, const char delimiter, gboolean upper_case, char *out)
+/**
+ * _nm_utils_bin2hexstr_full:
+ * @addr: pointer of @length bytes.
+ * @length: number of bytes in @addr
+ * @delimiter: either '\0', otherwise the output string will have the
+ *   given delimiter character between each two hex numbers.
+ * @upper_case: if TRUE, use upper case ASCII characters for hex.
+ * @out: if %NULL, the function will allocate a new buffer of
+ *   either (@length*2+1) or (@length*3) bytes, depending on whether
+ *   a @delimiter is specified. In that case, the allocated buffer will
+ *   be returned and must be freed by the caller.
+ *   If not %NULL, the buffer must already be preallocated and contain
+ *   at least (@length*2+1) or (@length*3) bytes, depending on the delimiter.
+ *
+ * Returns: the binary value converted to a hex string. If @out is given,
+ *   this always returns @out. If @out is %NULL, a newly allocated string
+ *   is returned.
+ */
+char *
+_nm_utils_bin2hexstr_full (gconstpointer addr,
+                           gsize length,
+                           char delimiter,
+                           gboolean upper_case,
+                           char *out)
 {
 	const guint8 *in = addr;
 	const char *LOOKUP = upper_case ? "0123456789ABCDEF" : "0123456789abcdef";
+	char *out0;
 
 	nm_assert (addr);
-	nm_assert (out);
 	nm_assert (length > 0);
+
+	if (out)
+		out0 = out;
+	else {
+		out0 = out = g_new (char, delimiter == '\0'
+		                          ? length * 2 + 1
+		                          : length * 3);
+	}
 
 	/* @out must contain at least @length*3 bytes if @delimiter is set,
 	 * otherwise, @length*2+1. */
@@ -3754,6 +3935,7 @@ _nm_utils_bin2str_full (gconstpointer addr, gsize length, const char delimiter, 
 	}
 
 	*out = 0;
+	return out0;
 }
 
 /**
@@ -3779,7 +3961,8 @@ nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len)
 	g_return_val_if_fail (final_len < 0 || (gsize) final_len < buflen, NULL);
 
 	result = g_malloc (buflen);
-	_nm_utils_bin2str_full (src, len, '\0', FALSE, result);
+
+	_nm_utils_bin2hexstr_full (src, len, '\0', FALSE, result);
 
 	/* Cut converted key off at the correct length for this cipher type */
 	if (final_len >= 0 && (gsize) final_len < buflen)
@@ -3800,14 +3983,10 @@ nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len)
 char *
 nm_utils_hwaddr_ntoa (gconstpointer addr, gsize length)
 {
-	char *result;
-
 	g_return_val_if_fail (addr, g_strdup (""));
 	g_return_val_if_fail (length > 0, g_strdup (""));
 
-	result = g_malloc (length * 3);
-	_nm_utils_bin2str_full (addr, length, ':', TRUE, result);
-	return result;
+	return _nm_utils_bin2hexstr_full (addr, length, ':', TRUE, NULL);
 }
 
 const char *
@@ -3819,31 +3998,7 @@ nm_utils_hwaddr_ntoa_buf (gconstpointer addr, gsize addr_len, gboolean upper_cas
 	if (buf_len < addr_len * 3)
 		g_return_val_if_reached (NULL);
 
-	_nm_utils_bin2str_full (addr, addr_len, ':', upper_case, buf);
-	return buf;
-}
-
-/**
- * _nm_utils_bin2str:
- * @addr: (type guint8) (array length=length): a binary hardware address
- * @length: the length of @addr
- * @upper_case: the case for the hexadecimal digits.
- *
- * Converts @addr to textual form.
- *
- * Return value: (transfer full): the textual form of @addr
- */
-char *
-_nm_utils_bin2str (gconstpointer addr, gsize length, gboolean upper_case)
-{
-	char *result;
-
-	g_return_val_if_fail (addr, g_strdup (""));
-	g_return_val_if_fail (length > 0, g_strdup (""));
-
-	result = g_malloc (length * 3);
-	_nm_utils_bin2str_full (addr, length, ':', upper_case, result);
-	return result;
+	return _nm_utils_bin2hexstr_full (addr, addr_len, ':', upper_case, buf);
 }
 
 /**
@@ -4510,7 +4665,7 @@ _nm_utils_dhcp_duid_valid (const char *duid, GBytes **out_duid_bin)
 		return TRUE;
 	}
 
-	if (_nm_utils_str2bin_full (duid, FALSE, ":", duid_arr, sizeof (duid_arr), &duid_len)) {
+	if (_nm_utils_hexstr2bin_full (duid, FALSE, FALSE, ":", 0, duid_arr, sizeof (duid_arr), &duid_len)) {
 		/* MAX DUID length is 128 octects + the type code (2 octects). */
 		if (   duid_len > 2
 		    && duid_len <= (128 + 2)) {

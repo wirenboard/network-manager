@@ -31,6 +31,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <linux/ip.h>
+#include <linux/if.h>
 #include <linux/if_tun.h>
 #include <linux/if_tunnel.h>
 #include <linux/rtnetlink.h>
@@ -1192,13 +1193,29 @@ nm_platform_link_refresh (NMPlatform *self, int ifindex)
 	return TRUE;
 }
 
-static guint
-_link_get_flags (NMPlatform *self, int ifindex)
+int
+nm_platform_link_get_ifi_flags (NMPlatform *self,
+                                int ifindex,
+                                guint requested_flags)
 {
 	const NMPlatformLink *pllink;
 
-	pllink = nm_platform_link_get (self, ifindex);
-	return pllink ? pllink->n_ifi_flags : IFF_NOARP;
+	_CHECK_SELF (self, klass, -EINVAL);
+
+	if (ifindex <= 0)
+		return -EINVAL;
+
+	/* include invisible links (only in netlink, not udev). */
+	pllink = NMP_OBJECT_CAST_LINK (nm_platform_link_get_obj (self, ifindex, FALSE));
+	if (!pllink)
+		return -ENODEV;
+
+	/* Errors are signaled as negative values. That means, you cannot request
+	 * the most significant bit (2^31) with this API. Assert against that. */
+	nm_assert ((int) requested_flags >= 0);
+	nm_assert (requested_flags < (guint) G_MAXINT);
+
+	return (int) (pllink->n_ifi_flags & requested_flags);
 }
 
 /**
@@ -1211,9 +1228,7 @@ _link_get_flags (NMPlatform *self, int ifindex)
 gboolean
 nm_platform_link_is_up (NMPlatform *self, int ifindex)
 {
-	_CHECK_SELF (self, klass, FALSE);
-
-	return NM_FLAGS_HAS (_link_get_flags (self, ifindex), IFF_UP);
+	return nm_platform_link_get_ifi_flags (self, ifindex, IFF_UP) == IFF_UP;
 }
 
 /**
@@ -1244,9 +1259,15 @@ nm_platform_link_is_connected (NMPlatform *self, int ifindex)
 gboolean
 nm_platform_link_uses_arp (NMPlatform *self, int ifindex)
 {
-	_CHECK_SELF (self, klass, FALSE);
+	int f;
 
-	return !NM_FLAGS_HAS (_link_get_flags (self, ifindex), IFF_NOARP);
+	f = nm_platform_link_get_ifi_flags (self, ifindex, IFF_NOARP);
+
+	if (f < 0)
+		return FALSE;
+	if (f == IFF_NOARP)
+		return FALSE;
+	return TRUE;
 }
 
 /**
@@ -1468,25 +1489,25 @@ nm_platform_link_supports_sriov (NMPlatform *self, int ifindex)
  * @self: platform instance
  * @ifindex: the index of the interface to change
  * @num_vfs: the number of VFs to create
- * @autoprobe: -1 to keep the current autoprobe-drivers value,
- *   or {0,1} to set a new value
+ * @autoprobe: the new autoprobe-drivers value (pass
+ *     %NM_TERNARY_DEFAULT to keep current value)
  */
 gboolean
 nm_platform_link_set_sriov_params (NMPlatform *self,
                                    int ifindex,
                                    guint num_vfs,
-                                   int autoprobe)
+                                   NMTernary autoprobe)
 {
 	_CHECK_SELF (self, klass, FALSE);
 
 	g_return_val_if_fail (ifindex > 0, FALSE);
-	g_return_val_if_fail (NM_IN_SET (autoprobe, -1, 0, 1), FALSE);
 
 	_LOGD ("link: setting %u total VFs and autoprobe %d for %s (%d)",
 	       num_vfs,
-	       autoprobe,
+	       (int) autoprobe,
 	       nm_strquote_a (25, nm_platform_link_get_name (self, ifindex)),
 	       ifindex);
+
 	return klass->link_set_sriov_params (self, ifindex, num_vfs, autoprobe);
 }
 

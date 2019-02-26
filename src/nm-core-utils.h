@@ -61,20 +61,35 @@ void _nm_singleton_instance_register_destruction (GObject *instance);
 #define NM_DEFINE_SINGLETON_GETTER(TYPE, GETTER, GTYPE, ...) \
 NM_DEFINE_SINGLETON_INSTANCE (TYPE); \
 NM_DEFINE_SINGLETON_REGISTER (TYPE); \
+static char _already_created_##GETTER = FALSE; \
 TYPE * \
 GETTER (void) \
 { \
 	if (G_UNLIKELY (!singleton_instance)) { \
-		static char _already_created = FALSE; \
-\
-		g_assert (!_already_created || (NM_DEFINE_SINGLETON_ALLOW_MULTIPLE)); \
-		_already_created = TRUE;\
+		g_assert (!(_already_created_##GETTER) || (NM_DEFINE_SINGLETON_ALLOW_MULTIPLE)); \
+		(_already_created_##GETTER) = TRUE;\
 		singleton_instance = (g_object_new (GTYPE, ##__VA_ARGS__, NULL)); \
 		g_assert (singleton_instance); \
 		nm_singleton_instance_register (); \
 		nm_log_dbg (LOGD_CORE, "create %s singleton (%p)", G_STRINGIFY (TYPE), singleton_instance); \
 	} \
 	return singleton_instance; \
+} \
+_nm_unused static void \
+_nmtst_##GETTER##_reset (TYPE *instance) \
+{ \
+	/* usually, the singleton can only be created once (and further instantiations
+	 * are guarded by an assert). For testing, we need to reset the singleton to
+	 * allow multiple instantiations. */ \
+	g_assert (G_IS_OBJECT (instance)); \
+	g_assert (instance == singleton_instance); \
+	g_assert (_already_created_##GETTER); \
+	g_object_unref (instance); \
+	\
+	/* require that the last unref also destroyed the singleton. If this fails,
+	 * somebody still keeps a reference. Fix your test! */ \
+	g_assert (!singleton_instance); \
+	_already_created_##GETTER = FALSE; \
 }
 
 /* attach @instance to the data or @owner. @owner owns a reference
@@ -208,7 +223,8 @@ NMMatchSpecMatchType nm_match_spec_device (const GSList *specs,
                                            const char *driver,
                                            const char *driver_version,
                                            const char *hwaddr,
-                                           const char *s390_subchannels);
+                                           const char *s390_subchannels,
+                                           const char *dhcp_plugin);
 NMMatchSpecMatchType nm_match_spec_config (const GSList *specs,
                                            guint nm_version,
                                            const char *env);
@@ -264,14 +280,32 @@ gboolean nm_utils_sysctl_ip_conf_is_path (int addr_family, const char *path, con
 
 gboolean nm_utils_is_specific_hostname (const char *name);
 
-char *nm_utils_machine_id_read (void);
-gboolean nm_utils_machine_id_parse (const char *id_str, /*uuid_t*/ guchar *out_uuid);
+struct _NMUuid;
 
-gboolean nm_utils_secret_key_get (const guint8 **out_secret_key,
-                                  gsize *out_key_len);
-gint64 nm_utils_secret_key_get_timestamp (void);
+const char *nm_utils_machine_id_str (void);
+const struct _NMUuid *nm_utils_machine_id_bin (void);
+gboolean nm_utils_machine_id_is_fake (void);
 
-const char *nm_utils_get_boot_id (void);
+const char *nm_utils_boot_id_str (void);
+const struct _NMUuid *nm_utils_boot_id_bin (void);
+
+gboolean nm_utils_host_id_get (const guint8 **out_host_id,
+                               gsize *out_host_id_len);
+gint64 nm_utils_host_id_get_timestamp_ns (void);
+
+/*****************************************************************************/
+
+int nm_utils_arp_type_detect_from_hwaddrlen (gsize hwaddr_len);
+
+gboolean nm_utils_arp_type_validate_hwaddr (int arp_type,
+                                            const guint8 *hwaddr,
+                                            gsize hwaddr_len);
+
+gboolean nm_utils_arp_type_get_hwaddr_relevant_part (int arp_type,
+                                                     const guint8 **hwaddr,
+                                                     gsize *hwaddr_len);
+
+/*****************************************************************************/
 
 /* IPv6 Interface Identifier helpers */
 
@@ -326,6 +360,7 @@ typedef enum {
 
 NMUtilsStableType nm_utils_stable_id_parse (const char *stable_id,
                                             const char *deviceid,
+                                            const char *hwaddr,
                                             const char *bootid,
                                             const char *uuid,
                                             char **out_generated);
@@ -338,8 +373,8 @@ gboolean nm_utils_ipv6_addr_set_stable_privacy_impl (NMUtilsStableType stable_ty
                                                      const char *ifname,
                                                      const char *network_id,
                                                      guint32 dad_counter,
-                                                     guint8 *secret_key,
-                                                     gsize key_len,
+                                                     guint8 *host_id,
+                                                     gsize host_id_len,
                                                      GError **error);
 
 gboolean nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType id_type,
@@ -353,8 +388,8 @@ char *nm_utils_hw_addr_gen_random_eth (const char *current_mac_address,
                                        const char *generate_mac_address_mask);
 char *nm_utils_hw_addr_gen_stable_eth_impl (NMUtilsStableType stable_type,
                                             const char *stable_id,
-                                            const guint8 *secret_key,
-                                            gsize key_len,
+                                            const guint8 *host_id,
+                                            gsize host_id_len,
                                             const char *ifname,
                                             const char *current_mac_address,
                                             const char *generate_mac_address_mask);
@@ -363,6 +398,23 @@ char *nm_utils_hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
                                        const char *ifname,
                                        const char *current_mac_address,
                                        const char *generate_mac_address_mask);
+
+/*****************************************************************************/
+
+GBytes *nm_utils_dhcp_client_id_mac (int arp_type,
+                                     const guint8 *hwaddr,
+                                     gsize hwaddr_len);
+
+GBytes *nm_utils_dhcp_client_id_systemd_node_specific_full (gboolean legacy_unstable_byteorder,
+                                                            const guint8 *interface_id,
+                                                            gsize interface_id_len,
+                                                            const guint8 *machine_id,
+                                                            gsize machine_id_len);
+
+GBytes *nm_utils_dhcp_client_id_systemd_node_specific (gboolean legacy_unstable_byteorder,
+                                                       const char *ifname);
+
+/*****************************************************************************/
 
 void nm_utils_array_remove_at_indexes (GArray *array, const guint *indexes_to_delete, gsize len);
 

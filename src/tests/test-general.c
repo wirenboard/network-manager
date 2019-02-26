@@ -22,12 +22,19 @@
 
 #include <string.h>
 #include <errno.h>
+#include <net/if.h>
+#include <byteswap.h>
 
 /* need math.h for isinf() and INFINITY. No need to link with -lm */
 #include <math.h>
 
 #include "NetworkManagerUtils.h"
 #include "nm-core-internal.h"
+#include "nm-core-utils.h"
+#include "systemd/nm-sd-utils.h"
+
+#include "dns/nm-dns-manager.h"
+#include "nm-connectivity.h"
 
 #include "nm-test-utils-core.h"
 
@@ -1093,7 +1100,7 @@ static NMMatchSpecMatchType
 _test_match_spec_device (const GSList *specs, const char *match_str)
 {
 	if (match_str && g_str_has_prefix (match_str, MATCH_S390))
-		return nm_match_spec_device (specs, NULL, NULL, NULL, NULL, NULL, &match_str[NM_STRLEN (MATCH_S390)]);
+		return nm_match_spec_device (specs, NULL, NULL, NULL, NULL, NULL, &match_str[NM_STRLEN (MATCH_S390)], NULL);
 	if (match_str && g_str_has_prefix (match_str, MATCH_DRIVER)) {
 		gs_free char *s = g_strdup (&match_str[NM_STRLEN (MATCH_DRIVER)]);
 		char *t;
@@ -1103,9 +1110,9 @@ _test_match_spec_device (const GSList *specs, const char *match_str)
 			t[0] = '\0';
 			t++;
 		}
-		return nm_match_spec_device (specs, NULL, NULL, s, t, NULL, NULL);
+		return nm_match_spec_device (specs, NULL, NULL, s, t, NULL, NULL, NULL);
 	}
-	return nm_match_spec_device (specs, match_str, NULL, NULL, NULL, NULL, NULL);
+	return nm_match_spec_device (specs, match_str, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 static void
@@ -1226,6 +1233,10 @@ test_match_spec_device (void)
 	                            S ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
 	                            NULL,
 	                            S ("em*"));
+	_do_test_match_spec_device ("except:interface-name:em*",
+	                            S ("", "eth", "eth1", "e1"),
+	                            S (NULL),
+	                            S ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"));
 	_do_test_match_spec_device ("aa,bb,cc\\,dd,e,,",
 	                            S ("aa", "bb", "cc,dd", "e"),
 	                            NULL,
@@ -1298,7 +1309,8 @@ _do_test_match_spec_config (const char *file, int line, const char *spec_str, gu
 	if (expected != match_result)
 		g_error ("%s:%d: faild comparing \"%s\" with %u.%u.%u. Expected %d, but got %d", file, line, spec_str, v_maj, v_min, v_mic, (int) expected, (int) match_result);
 
-	if (g_slist_length (specs) == 1 && match_result != NM_MATCH_SPEC_NEG_MATCH) {
+	if (   g_slist_length (specs) == 1
+	    && !g_str_has_prefix (specs->data, "except:")) {
 		/* there is only one spec in the list... test that we match except: */
 		char *sss = g_strdup_printf ("except:%s", (char *) specs->data);
 		GSList *specs2 = g_slist_append (NULL, sss);
@@ -1306,7 +1318,7 @@ _do_test_match_spec_config (const char *file, int line, const char *spec_str, gu
 
 		match_result2 = nm_match_spec_config (specs2, version, NULL);
 		if (match_result == NM_MATCH_SPEC_NO_MATCH)
-			g_assert_cmpint (match_result2, ==, NM_MATCH_SPEC_NO_MATCH);
+			g_assert_cmpint (match_result2, ==, NM_MATCH_SPEC_MATCH);
 		else
 			g_assert_cmpint (match_result2, ==, NM_MATCH_SPEC_NEG_MATCH);
 
@@ -1390,7 +1402,7 @@ test_match_spec_config (void)
 	do_test_match_spec_config ("nm-version-max:1", 1, 4, 30, NM_MATCH_SPEC_MATCH);
 	do_test_match_spec_config ("nm-version-max:1", 2, 4, 30, NM_MATCH_SPEC_NO_MATCH);
 
-	do_test_match_spec_config ("except:nm-version:1.4.8", 1, 6, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_config ("except:nm-version:1.4.8", 1, 6, 0, NM_MATCH_SPEC_MATCH);
 	do_test_match_spec_config ("nm-version-min:1.6,except:nm-version:1.4.8", 1, 6, 0, NM_MATCH_SPEC_MATCH);
 
 	do_test_match_spec_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 0, NM_MATCH_SPEC_NO_MATCH);
@@ -1733,7 +1745,7 @@ do_test_stable_id_parse (const char *stable_id,
 	else
 		g_assert (stable_id);
 
-	stable_type = nm_utils_stable_id_parse (stable_id, "_DEVICE", "_BOOT", "_CONNECTION", &generated);
+	stable_type = nm_utils_stable_id_parse (stable_id, "_DEVICE", "_MAC", "_BOOT", "_CONNECTION", &generated);
 
 	g_assert_cmpint (expected_stable_type, ==, stable_type);
 
@@ -1772,6 +1784,7 @@ test_stable_id_parse (void)
 	_parse_generated ("x${BOOT}", "x${BOOT}=5{_BOOT}");
 	_parse_generated ("x${BOOT}${CONNECTION}", "x${BOOT}=5{_BOOT}${CONNECTION}=11{_CONNECTION}");
 	_parse_generated ("xX${BOOT}yY${CONNECTION}zZ", "xX${BOOT}=5{_BOOT}yY${CONNECTION}=11{_CONNECTION}zZ");
+	_parse_generated ("${MAC}x", "${MAC}=4{_MAC}x");
 	_parse_random ("${RANDOM}");
 	_parse_random (" ${RANDOM}");
 	_parse_random ("${BOOT}${RANDOM}");
@@ -1845,6 +1858,223 @@ test_nm_utils_exp10 (void)
 
 /*****************************************************************************/
 
+#define _TEST_RC(searches, nameservers, options, expected) \
+	G_STMT_START { \
+		const char *const*const _searches = (searches); \
+		const char *const*const _nameservers = (nameservers); \
+		const char *const*const _options = (options); \
+		gs_free char *_content = NULL; \
+		\
+		_content = nmtst_dns_create_resolv_conf (_searches, _nameservers, _options); \
+		g_assert_cmpstr (_content, ==, expected); \
+	} G_STMT_END
+
+static void
+test_dns_create_resolv_conf (void)
+{
+	_TEST_RC (NM_MAKE_STRV ("a"),
+	          NULL,
+	          NULL,
+	          "# Generated by NetworkManager\n"
+	          "search a\n"
+	          "");
+
+	_TEST_RC (NM_MAKE_STRV ("a", "b.com"),
+	          NM_MAKE_STRV ("192.168.55.1", "192.168.56.1"),
+	          NM_MAKE_STRV ("opt1", "opt2"),
+	          "# Generated by NetworkManager\n"
+	          "search a b.com\n"
+	          "nameserver 192.168.55.1\n"
+	          "nameserver 192.168.56.1\n"
+	          "options opt1 opt2\n"
+	          "");
+
+	_TEST_RC (NM_MAKE_STRV ("a2x456789.b2x456789.c2x456789.d2x456789.e2x456789.f2x456789.g2x456789.h2x456789.i2x456789.j2x4567890",
+	                        "a2y456789.b2y456789.c2y456789.d2y456789.e2y456789.f2y456789.g2y456789.h2y456789.i2y456789.j2y4567890",
+	                        "a2z456789.b2z456789.c2z456789.d2z456789.e2z456789.f2z456789.g2z456789.h2z456789.i2z456789.j2z4567890"),
+	          NULL,
+	          NULL,
+	          "# Generated by NetworkManager\n"
+	          "search a2x456789.b2x456789.c2x456789.d2x456789.e2x456789.f2x456789.g2x456789.h2x456789.i2x456789.j2x4567890 a2y456789.b2y456789.c2y456789.d2y456789.e2y456789.f2y456789.g2y456789.h2y456789.i2y456789.j2y4567890                                                        a2z456789.b2z456789.c2z456789.d2z456789.e2z456789.f2z456789.g2z456789.h2z456789.i2z456789.j2z4567890\n"
+	          "");
+
+}
+
+/*****************************************************************************/
+
+static void
+test_machine_id_read (void)
+{
+	NMUuid machine_id_sd;
+	const NMUuid *machine_id;
+	char machine_id_str[33];
+	gpointer logstate;
+
+	logstate = nmtst_logging_disable (FALSE);
+	/* If you run this test as root, without a valid /etc/machine-id,
+	 * the code will try to get the secret-key. That is a bit ugly,
+	 * but no real problem. */
+	machine_id = nm_utils_machine_id_bin ();
+	nmtst_logging_reenable (logstate);
+
+	g_assert (machine_id);
+	g_assert (_nm_utils_bin2hexstr_full (machine_id,
+	                                     sizeof (NMUuid),
+	                                     '\0',
+	                                     FALSE,
+	                                     machine_id_str) == machine_id_str);
+	g_assert (strlen (machine_id_str) == 32);
+	g_assert_cmpstr (machine_id_str, ==, nm_utils_machine_id_str ());
+
+	/* double check with systemd's implementation... */
+	if (!nm_sd_utils_id128_get_machine (&machine_id_sd)) {
+		/* if systemd failed to read /etc/machine-id, the file likely
+		 * is invalid. Our machine-id is fake, and we have nothing to
+		 * compare against. */
+
+		/* NOTE: this test will fail, if you don't have /etc/machine-id,
+		 * but a valid "LOCALSTATEDIR/lib/dbus/machine-id" file.
+		 * Just don't do that. */
+		g_assert (nm_utils_machine_id_is_fake ());
+	} else {
+		g_assert (!nm_utils_machine_id_is_fake ());
+		g_assert_cmpmem (&machine_id_sd, sizeof (NMUuid), machine_id, 16);
+	}
+}
+
+/*****************************************************************************/
+
+static void
+test_nm_utils_dhcp_client_id_systemd_node_specific (gconstpointer test_data)
+{
+	const int TEST_IDX = GPOINTER_TO_INT (test_data);
+	const guint8 HASH_KEY[16] = { 0x80, 0x11, 0x8c, 0xc2, 0xfe, 0x4a, 0x03, 0xee, 0x3e, 0xd6, 0x0c, 0x6f, 0x36, 0x39, 0x14, 0x09 };
+	const guint16 duid_type_en = htons (2);
+	const guint32 systemd_pen = htonl (43793);
+	const struct {
+		NMUuid machine_id;
+		const char *ifname;
+		guint64 ifname_hash_1;
+		guint32 iaid_ifname;
+		guint64 duid_id;
+	} d_array[] = {
+		[0] = {
+			.machine_id = { 0xcb, 0xc2, 0x2e, 0x47, 0x41, 0x8e, 0x40, 0x2a, 0xa7, 0xb3, 0x0d, 0xea, 0x92, 0x83, 0x94, 0xef },
+			.ifname = "lo",
+			.ifname_hash_1 = 0x7297085c2b12c911llu,
+			.iaid_ifname = htobe32 (0x5985c14du),
+			.duid_id = htobe64 (0x3d769bb2c14d29e1u),
+		},
+		[1] = {
+			.machine_id = { 0x11, 0x4e, 0xb4, 0xda, 0xd3, 0x22, 0x4a, 0xff, 0x9f, 0xc3, 0x30, 0x83, 0x38, 0xa0, 0xeb, 0xb7 },
+			.ifname = "eth0",
+			.ifname_hash_1 = 0x9e1cb083b54cd7b6llu,
+			.iaid_ifname = htobe32 (0x2b506735u),
+			.duid_id = htobe64 (0x551572e0f2a2a10fu),
+		},
+	};
+	int i;
+	typeof (d_array[0]) *d = &d_array[TEST_IDX];
+	gint64 u64;
+	gint32 u32;
+
+	/* the test already hard-codes the expected values iaid_ifname and duid_id
+	 * above. Still, redo the steps to derive them from the ifname/machine-id
+	 * and double check. */
+	u64 = c_siphash_hash (HASH_KEY, (const guint8 *) d->ifname, strlen (d->ifname));
+	g_assert_cmpint (u64, ==, d->ifname_hash_1);
+	u32 = be32toh ((u64 & 0xffffffffu) ^ (u64 >> 32));
+	g_assert_cmpint (u32, ==, d->iaid_ifname);
+
+	u64 = htole64 (c_siphash_hash (HASH_KEY, (const guint8 *) &d->machine_id, sizeof (d->machine_id)));
+	g_assert_cmpint (u64, ==, d->duid_id);
+
+	for (i = 0; i < 2; i++) {
+		const gboolean legacy_unstable_byteorder = (i != 0);
+		gs_unref_bytes GBytes *client_id = NULL;
+		const guint8 *cid;
+		guint32 iaid = d->iaid_ifname;
+
+		client_id = nm_utils_dhcp_client_id_systemd_node_specific_full (legacy_unstable_byteorder,
+		                                                                (const guint8 *) d->ifname,
+		                                                                strlen (d->ifname),
+		                                                                (const guint8 *) &d->machine_id,
+		                                                                sizeof (d->machine_id));
+
+		g_assert (client_id);
+		g_assert_cmpint (g_bytes_get_size (client_id), ==, 19);
+		cid = g_bytes_get_data (client_id, NULL);
+		g_assert_cmpint (cid[0], ==, 255);
+#if __BYTE_ORDER == __BIG_ENDIAN
+		if (legacy_unstable_byteorder) {
+			/* on non-little endian, the legacy behavior is to have the bytes
+			 * swapped. */
+			iaid = bswap_32 (iaid);
+		}
+#endif
+		g_assert_cmpmem (&cid[1], 4, &iaid, sizeof (iaid));
+		g_assert_cmpmem (&cid[5], 2, &duid_type_en, sizeof (duid_type_en));
+		g_assert_cmpmem (&cid[7], 4, &systemd_pen, sizeof (systemd_pen));
+		g_assert_cmpmem (&cid[11], 8, &d->duid_id, sizeof (d->duid_id));
+	}
+}
+
+/*****************************************************************************/
+
+static void
+test_connectivity_state_cmp (void)
+{
+	NMConnectivityState a;
+
+#define _cmp(a, b, cmp) \
+	G_STMT_START { \
+		const NMConnectivityState _a = (a); \
+		const NMConnectivityState _b = (b); \
+		const int _cmp = (cmp); \
+		\
+		g_assert (NM_IN_SET (_cmp, -1, 0, 1)); \
+		g_assert_cmpint (nm_connectivity_state_cmp (_a, _b), ==, _cmp); \
+		g_assert_cmpint (nm_connectivity_state_cmp (_b, _a), ==, -_cmp); \
+	} G_STMT_END
+
+	for (a = NM_CONNECTIVITY_UNKNOWN; a <= NM_CONNECTIVITY_FULL; a++)
+		_cmp (a, a, 0);
+
+	_cmp (NM_CONNECTIVITY_UNKNOWN, NM_CONNECTIVITY_UNKNOWN,  0);
+	_cmp (NM_CONNECTIVITY_UNKNOWN, NM_CONNECTIVITY_NONE,    -1);
+	_cmp (NM_CONNECTIVITY_UNKNOWN, NM_CONNECTIVITY_LIMITED, -1);
+	_cmp (NM_CONNECTIVITY_UNKNOWN, NM_CONNECTIVITY_PORTAL,  -1);
+	_cmp (NM_CONNECTIVITY_UNKNOWN, NM_CONNECTIVITY_FULL,    -1);
+
+	_cmp (NM_CONNECTIVITY_NONE,    NM_CONNECTIVITY_UNKNOWN,  1);
+	_cmp (NM_CONNECTIVITY_NONE,    NM_CONNECTIVITY_NONE,     0);
+	_cmp (NM_CONNECTIVITY_NONE,    NM_CONNECTIVITY_LIMITED, -1);
+	_cmp (NM_CONNECTIVITY_NONE,    NM_CONNECTIVITY_PORTAL,  -1);
+	_cmp (NM_CONNECTIVITY_NONE,    NM_CONNECTIVITY_FULL,    -1);
+
+	_cmp (NM_CONNECTIVITY_LIMITED, NM_CONNECTIVITY_UNKNOWN,  1);
+	_cmp (NM_CONNECTIVITY_LIMITED, NM_CONNECTIVITY_NONE,     1);
+	_cmp (NM_CONNECTIVITY_LIMITED, NM_CONNECTIVITY_LIMITED,  0);
+	_cmp (NM_CONNECTIVITY_LIMITED, NM_CONNECTIVITY_PORTAL,  -1);
+	_cmp (NM_CONNECTIVITY_LIMITED, NM_CONNECTIVITY_FULL,    -1);
+
+	_cmp (NM_CONNECTIVITY_PORTAL,  NM_CONNECTIVITY_UNKNOWN,  1);
+	_cmp (NM_CONNECTIVITY_PORTAL,  NM_CONNECTIVITY_NONE,     1);
+	_cmp (NM_CONNECTIVITY_PORTAL,  NM_CONNECTIVITY_LIMITED,  1);
+	_cmp (NM_CONNECTIVITY_PORTAL,  NM_CONNECTIVITY_PORTAL,   0);
+	_cmp (NM_CONNECTIVITY_PORTAL,  NM_CONNECTIVITY_FULL,    -1);
+
+	_cmp (NM_CONNECTIVITY_FULL,    NM_CONNECTIVITY_UNKNOWN,  1);
+	_cmp (NM_CONNECTIVITY_FULL,    NM_CONNECTIVITY_NONE,     1);
+	_cmp (NM_CONNECTIVITY_FULL,    NM_CONNECTIVITY_LIMITED,  1);
+	_cmp (NM_CONNECTIVITY_FULL,    NM_CONNECTIVITY_PORTAL,   1);
+	_cmp (NM_CONNECTIVITY_FULL,    NM_CONNECTIVITY_FULL,     0);
+
+#undef _cmp
+}
+
+/*****************************************************************************/
+
 NMTST_DEFINE ();
 
 int
@@ -1890,6 +2120,15 @@ main (int argc, char **argv)
 
 	g_test_add_func ("/general/stable-id/parse", test_stable_id_parse);
 	g_test_add_func ("/general/stable-id/generated-complete", test_stable_id_generated_complete);
+
+	g_test_add_func ("/general/machine-id/read", test_machine_id_read);
+
+	g_test_add_func ("/general/test_dns_create_resolv_conf", test_dns_create_resolv_conf);
+
+	g_test_add_data_func ("/general/nm_utils_dhcp_client_id_systemd_node_specific/0", GINT_TO_POINTER (0), test_nm_utils_dhcp_client_id_systemd_node_specific);
+	g_test_add_data_func ("/general/nm_utils_dhcp_client_id_systemd_node_specific/1", GINT_TO_POINTER (1), test_nm_utils_dhcp_client_id_systemd_node_specific);
+
+	g_test_add_func ("/core/general/test_connectivity_state_cmp", test_connectivity_state_cmp);
 
 	return g_test_run ();
 }
