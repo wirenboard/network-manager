@@ -2031,7 +2031,7 @@ _wireguard_update_from_peers_nla (CList *peers,
 			}
 		}
 		if (tb[WGPEER_A_PERSISTENT_KEEPALIVE_INTERVAL])
-			peer_c->data.persistent_keepalive_interval = nla_get_u64 (tb[WGPEER_A_PERSISTENT_KEEPALIVE_INTERVAL]);
+			peer_c->data.persistent_keepalive_interval = nla_get_u16 (tb[WGPEER_A_PERSISTENT_KEEPALIVE_INTERVAL]);
 		if (tb[WGPEER_A_LAST_HANDSHAKE_TIME])
 			nla_memcpy (&peer_c->data.last_handshake_time, tb[WGPEER_A_LAST_HANDSHAKE_TIME], sizeof (peer_c->data.last_handshake_time));
 		if (tb[WGPEER_A_RX_BYTES])
@@ -5737,12 +5737,13 @@ static gboolean
 link_set_sriov_params (NMPlatform *platform,
                        int ifindex,
                        guint num_vfs,
-                       int autoprobe)
+                       NMTernary autoprobe)
 {
 	nm_auto_pop_netns NMPNetns *netns = NULL;
 	nm_auto_close int dirfd = -1;
-	gboolean current_autoprobe;
-	guint total, current_num;
+	int current_autoprobe;
+	guint total;
+	gint64 current_num;
 	char ifname[IFNAMSIZ];
 	char buf[64];
 
@@ -5775,14 +5776,14 @@ link_set_sriov_params (NMPlatform *platform,
 	                                                  NMP_SYSCTL_PATHID_NETDIR (dirfd,
 	                                                                            ifname,
 	                                                                            "device/sriov_numvfs"),
-	                                                  10, 0, G_MAXUINT, 0);
+	                                                  10, 0, G_MAXUINT, -1);
 	current_autoprobe = nm_platform_sysctl_get_int_checked (platform,
 	                                                        NMP_SYSCTL_PATHID_NETDIR (dirfd,
 	                                                                                  ifname,
 	                                                                                  "device/sriov_drivers_autoprobe"),
-	                                                        10, 0, G_MAXUINT, 0);
+	                                                        10, 0, 1, -1);
 	if (   current_num == num_vfs
-	    && (autoprobe == -1 || current_autoprobe == autoprobe))
+	    && (autoprobe == NM_TERNARY_DEFAULT || current_autoprobe == autoprobe))
 		return TRUE;
 
 	if (current_num != 0) {
@@ -5800,14 +5801,14 @@ link_set_sriov_params (NMPlatform *platform,
 	if (num_vfs == 0)
 		return TRUE;
 
-	if (   autoprobe >= 0
+	if (   NM_IN_SET (autoprobe, NM_TERNARY_TRUE, NM_TERNARY_FALSE)
 	    && current_autoprobe != autoprobe
 	    && !nm_platform_sysctl_set (NM_PLATFORM_GET,
 	                                NMP_SYSCTL_PATHID_NETDIR (dirfd,
 	                                                          ifname,
 	                                                          "device/sriov_drivers_autoprobe"),
-	                                nm_sprintf_buf (buf, "%d", autoprobe))) {
-		_LOGW ("link: couldn't set SR-IOV drivers-autoprobe to %d: %s", autoprobe, strerror (errno));
+	                                nm_sprintf_buf (buf, "%d", (int) autoprobe))) {
+		_LOGW ("link: couldn't set SR-IOV drivers-autoprobe to %d: %s", (int) autoprobe, strerror (errno));
 		return FALSE;
 	}
 
@@ -7044,7 +7045,7 @@ ip6_address_add (NMPlatform *platform,
 	                             ifindex,
 	                             &addr,
 	                             plen,
-	                             &peer_addr,
+	                             IN6_IS_ADDR_UNSPECIFIED (&peer_addr) ? NULL : &peer_addr,
 	                             flags,
 	                             RT_SCOPE_UNIVERSE,
 	                             lifetime,

@@ -2,12 +2,12 @@
 .\"     Title: nmcli-examples
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 10/24/2018
+.\"      Date: 02/23/2019
 .\"    Manual: Examples
-.\"    Source: NetworkManager 1.14.4
+.\"    Source: NetworkManager 1.14.6
 .\"  Language: English
 .\"
-.TH "NMCLI\-EXAMPLES" "7" "" "NetworkManager 1\&.14\&.4" "Examples"
+.TH "NMCLI\-EXAMPLES" "7" "" "NetworkManager 1\&.14\&.6" "Examples"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -352,7 +352,30 @@ This example shows retrieval of ip4 connection field values via the \-\-get\-val
 \fBnmcli\fR(1)
 manual page for more customized output\&.
 .PP
-\fBExample\ \&11.\ \&Escaping colon characters in tabular mode\fR
+\fBExample\ \&11.\ \&Adding an Ethernet connection and configuring SR\-IOV VFs\fR
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBnmcli con add type ethernet con\-name EthernetPF ifname em1\fR
+$ \fBnmcli con modify EthernetPF sriov\&.total\-vfs 3 sriov\&.autoprobe\-drivers false\fR
+$ \fBnmcli con modify EthernetPF sriov\&.vfs \*(Aq0 mac=00:11:22:33:44:55 vlans=10, 1 trust=true spoof\-check=false\*(Aq\fR
+$ \fBnmcli con modify EthernetPF +sriov\&.vfs \*(Aq2 max\-tx\-rate=20\*(Aq\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+This example demonstrates adding an Ethernet connection for physical function (PF)
+\fIens4\fR
+and configuring 3 SR\-IOV virtual functions (VFs) on it\&. The first VF is configured with MAC address 00:11:22:33:44:55 and VLAN 10, the second one has the
+\fItrust\fR
+and
+\fIspoof\-check\fR
+features respectively enabled and disabled\&. VF number 2 has a maximux transmission rate of 20Mbps\&. The kernel is instructed to not automatically instantiate a network interface for the VFs\&.
+.PP
+\fBExample\ \&12.\ \&Escaping colon characters in tabular mode\fR
 .sp
 .if n \{\
 .RS 4
@@ -371,7 +394,7 @@ nager/ActiveConnection/9
 .PP
 This example shows escaping colon characters in tabular mode\&. It may be useful for script processing, because \*(Aq:\*(Aq is used as a field separator\&.
 .PP
-\fBExample\ \&12.\ \&nmcli usage in a NetworkManager dispatcher script to make Ethernet and Wi\-Fi mutually exclusive\fR
+\fBExample\ \&13.\ \&nmcli usage in a NetworkManager dispatcher script to make Ethernet and Wi\-Fi mutually exclusive\fR
 .sp
 .if n \{\
 .RS 4
@@ -409,7 +432,7 @@ manual page for more information about NetworkManager dispatcher scripts\&.
 .PP
 \fBExample sessions of interactive connection editor\fR
 .PP
-\fBExample\ \&13.\ \&Adding an ethernet connection profile in interactive editor (a)\fR
+\fBExample\ \&14.\ \&Adding an ethernet connection profile in interactive editor (a)\fR
 .sp
 .if n \{\
 .RS 4

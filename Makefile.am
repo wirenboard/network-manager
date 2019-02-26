@@ -167,7 +167,9 @@ DISTCHECK_CONFIGURE_FLAGS = \
 	--with-wext=no \
 	--enable-ifcfg-rh \
 	--enable-ifupdown \
-	--disable-dependency-tracking
+	--enable-config-plugin-ibft \
+	--disable-dependency-tracking \
+	$(NULL)
 
 dist-configure-check:
 	@echo "*** 'make dist' requires '--enable-gtk-doc --enable-introspection --with-libnm-glib'. ***"
@@ -427,7 +429,7 @@ EXTRA_DIST += \
 	introspection/meson.build
 
 check-docs:
-	$(srcdir)/tools/check-docs.sh "$(srcdir)"
+	$(srcdir)/tools/check-docs.sh "$(srcdir)" "$(builddir)"
 
 check_local += check-docs
 
@@ -1390,6 +1392,8 @@ src_libsystemd_nm_la_libadd = \
 src_libsystemd_nm_la_SOURCES = \
 	src/systemd/nm-sd.c \
 	src/systemd/nm-sd.h \
+	src/systemd/nm-sd-utils.c \
+	src/systemd/nm-sd-utils.h \
 	src/systemd/sd-adapt/nm-sd-adapt.c \
 	src/systemd/sd-adapt/nm-sd-adapt.h \
 	src/systemd/sd-adapt/architecture.h \
@@ -1942,6 +1946,8 @@ src_initrd_tests_test_ibft_reader_LDADD = \
 	$(GLIB_LIBS)
 
 EXTRA_DIST += \
+	src/initrd/meson.build \
+	src/initrd/tests/meson.build \
 	src/initrd/tests/sysfs/class/net/eth0/address \
 	src/initrd/tests/sysfs/class/net/eth2/address \
 	src/initrd/tests/sysfs/firmware/ibft/ethernet0/prefix-len \
@@ -2392,6 +2398,13 @@ src_settings_plugins_ibft_tests_test_ibft_LDADD = \
 
 $(src_settings_plugins_ibft_tests_test_ibft_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 
+check-local-symbols-settings-ibft: src/settings/plugins/ibft/libnm-settings-plugin-ibft.la
+	$(call check_so_symbols,$(builddir)/src/settings/plugins/ibft/.libs/libnm-settings-plugin-ibft.so)
+
+check_local += check-local-symbols-settings-ibft
+
+endif
+
 EXTRA_DIST += \
 	src/settings/plugins/ibft/tests/iscsiadm-test-dhcp \
 	src/settings/plugins/ibft/tests/iscsiadm-test-static \
@@ -2401,16 +2414,7 @@ EXTRA_DIST += \
 	src/settings/plugins/ibft/tests/iscsiadm-test-bad-dns2 \
 	src/settings/plugins/ibft/tests/iscsiadm-test-bad-entry \
 	src/settings/plugins/ibft/tests/iscsiadm-test-bad-record \
-	src/settings/plugins/ibft/tests/iscsiadm-test-vlan
-
-check-local-symbols-settings-ibft: src/settings/plugins/ibft/libnm-settings-plugin-ibft.la
-	$(call check_so_symbols,$(builddir)/src/settings/plugins/ibft/.libs/libnm-settings-plugin-ibft.so)
-
-check_local += check-local-symbols-settings-ibft
-
-endif
-
-EXTRA_DIST += \
+	src/settings/plugins/ibft/tests/iscsiadm-test-vlan \
 	src/settings/plugins/ibft/meson.build \
 	src/settings/plugins/ibft/tests/meson.build
 
@@ -3697,16 +3701,7 @@ $(clients_common_settings_doc_h): clients/common/settings-docs.xsl libnm/nm-prop
 	$(AM_V_GEN) $(XSLTPROC) --output $@ $< $(word 2,$^)
 DISTCLEANFILES += $(clients_common_settings_doc_h)
 check-local-settings-docs: $(clients_common_settings_doc_h)
-	@if test -z "$$NMTST_NO_CHECK_SETTINGS_DOCS" ; then \
-		if ! cmp -s "$(srcdir)/$(clients_common_settings_doc_h).in" "$(builddir)/$(clients_common_settings_doc_h)" ; then \
-			if test "$$NM_TEST_REGENERATE" == 1 ; then \
-				cp -f "$(builddir)/$(clients_common_settings_doc_h)" "$(srcdir)/$(clients_common_settings_doc_h).in"; \
-			else \
-				echo "The generated file \"$(builddir)/$(clients_common_settings_doc_h)\" differs from the source file \"$(srcdir)/$(clients_common_settings_doc_h).in\". You probably should copy the generated file over to the source file. You can skip this test by setting \$$NMTST_NO_CHECK_SETTINGS_DOCS=yes". You can also automatically copy the file by rerunning the test with \$$NM_TEST_REGENERATE=1 ; \
-				false; \
-			fi; \
-		fi;\
-	fi
+	$(srcdir)/tools/check-settings-docs.sh "$(srcdir)" "$(builddir)" "$(clients_common_settings_doc_h)"
 check_local += check-local-settings-docs
 else
 $(clients_common_settings_doc_h): $(clients_common_settings_doc_h).in clients/common/.dirstamp
@@ -5048,6 +5043,7 @@ EXTRA_DIST += \
 	\
 	tools/check-docs.sh \
 	tools/check-exports.sh \
+	tools/check-settings-docs.sh \
 	tools/create-exports-NetworkManager.sh \
 	tools/debug-helper.py \
 	tools/meson-post-install.sh \
