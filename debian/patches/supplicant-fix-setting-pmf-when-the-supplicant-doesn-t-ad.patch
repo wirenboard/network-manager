@@ -1,0 +1,74 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Mon, 25 Feb 2019 08:38:22 +0100
+Subject: supplicant: fix setting pmf when the supplicant doesn't advertise
+ support
+
+wpa_supplicant only advertises pmf support since commit [1], which is
+after 2.6. When using a version without that commit (for example,
+plain 2.6), we would unconditionally set the global Pmf property to 1
+(optional) and then skip setting the per-network property. The result
+was that pmf was enabled without the possibility to disable it by
+user. The correct behavior is instead to disable pmf on such versions.
+
+[1] https://w1.fi/cgit/hostap/commit/?id=3cdb4ac074f76accf24a51d143db545afad2c90b
+
+https://gitlab.freedesktop.org/NetworkManager/NetworkManager/issues/129
+(cherry picked from commit 560a35dd433cd6bf2268aaf757fda798f35712fe)
+(cherry picked from commit b837561bb6fc09d4134ac8c5c6dc5ac1885ebf62)
+(cherry picked from commit 353743b99520ba481d08b52b31af16dcfc80d39f)
+---
+ src/supplicant/nm-supplicant-interface.c | 33 +++++++++++++++++---------------
+ 1 file changed, 18 insertions(+), 15 deletions(-)
+
+diff --git a/src/supplicant/nm-supplicant-interface.c b/src/supplicant/nm-supplicant-interface.c
+index 0af9ebd..b2a89ce 100644
+--- a/src/supplicant/nm-supplicant-interface.c
++++ b/src/supplicant/nm-supplicant-interface.c
+@@ -568,9 +568,8 @@ iface_set_pmf_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+ 
+ 	self = NM_SUPPLICANT_INTERFACE (user_data);
+ 
+-	/* This can fail if the supplicant doesn't support PMF */
+ 	if (error)
+-		_LOGD ("failed to set Pmf=1: %s", error->message);
++		_LOGW ("failed to set Pmf=1: %s", error->message);
+ 
+ 	iface_check_ready (self);
+ }
+@@ -1175,19 +1174,23 @@ on_iface_proxy_acquired (GDBusProxy *proxy, GAsyncResult *result, gpointer user_
+ 	                   NULL,
+ 	                   NULL);
+ 
+-	/* Initialize global PMF setting to 'optional' */
+-	priv->ready_count = 1;
+-	g_dbus_proxy_call (priv->iface_proxy,
+-	                   DBUS_INTERFACE_PROPERTIES ".Set",
+-	                   g_variant_new ("(ssv)",
+-	                                  WPAS_DBUS_IFACE_INTERFACE,
+-	                                  "Pmf",
+-	                                  g_variant_new_string ("1")),
+-	                   G_DBUS_CALL_FLAGS_NONE,
+-	                   -1,
+-	                   priv->init_cancellable,
+-	                   (GAsyncReadyCallback) iface_set_pmf_cb,
+-	                   self);
++	priv->ready_count = 0;
++
++	if (priv->pmf_support == NM_SUPPLICANT_FEATURE_YES) {
++		/* Initialize global PMF setting to 'optional' */
++		priv->ready_count++;
++		g_dbus_proxy_call (priv->iface_proxy,
++		                   DBUS_INTERFACE_PROPERTIES ".Set",
++		                   g_variant_new ("(ssv)",
++		                                  WPAS_DBUS_IFACE_INTERFACE,
++		                                  "Pmf",
++		                                  g_variant_new_string ("1")),
++		                   G_DBUS_CALL_FLAGS_NONE,
++		                   -1,
++		                   priv->init_cancellable,
++		                   (GAsyncReadyCallback) iface_set_pmf_cb,
++		                   self);
++	}
+ 
+ 	/* Check whether NetworkReply and AP mode are supported */
+ 	priv->ready_count++;
