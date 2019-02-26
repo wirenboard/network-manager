@@ -1,9 +1,12 @@
-network-manager (1.14.6-1) UNRELEASED; urgency=medium
+network-manager (1.14.6-1) unstable; urgency=medium
 
   * New upstream version 1.14.6
   * Use debhelper-compat (= 12) Build-Depends and drop debian/compat
+  * Rebase patches
+  * Do not manage Docker bridge interfaces (Closes: #875127)
+  * Bump Standards-Version to 4.3.0
 
- -- Michael Biebl <biebl@debian.org>  Tue, 26 Feb 2019 19:02:37 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 26 Feb 2019 19:33:53 +0100
 
 network-manager (1.14.4-4) unstable; urgency=medium
 
