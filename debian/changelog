@@ -1,3 +1,10 @@
+network-manager (1.14.6-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.14.6
+  * Use debhelper-compat (= 12) Build-Depends and drop debian/compat
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 26 Feb 2019 19:02:37 +0100
+
 network-manager (1.14.4-4) unstable; urgency=medium
 
   * Move D-Bus policy files to /usr/share/dbus-1/system.d/
