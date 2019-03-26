@@ -1,13 +1,15 @@
 common_sources = files(
   'nm-wifi-ap.c',
-  'nm-wifi-utils.c'
+  'nm-wifi-p2p-peer.c',
+  'nm-wifi-utils.c',
 )
 
 sources = common_sources + files(
-  'nm-wifi-factory.c',
-  'nm-wifi-common.c',
+  'nm-device-olpc-mesh.c',
+  'nm-device-wifi-p2p.c',
   'nm-device-wifi.c',
-  'nm-device-olpc-mesh.c'
+  'nm-wifi-common.c',
+  'nm-wifi-factory.c',
 )
 
 if enable_iwd
@@ -18,7 +20,7 @@ if enable_iwd
 endif
 
 deps = [
-  nm_dep
+  nm_dep,
 ]
 
 libnm_device_plugin_wifi = shared_module(
@@ -28,7 +30,7 @@ libnm_device_plugin_wifi = shared_module(
   link_args: ldflags_linker_script_devices,
   link_depends: linker_script_devices,
   install: true,
-  install_dir: nm_plugindir
+  install_dir: nm_plugindir,
 )
 
 core_plugins += libnm_device_plugin_wifi

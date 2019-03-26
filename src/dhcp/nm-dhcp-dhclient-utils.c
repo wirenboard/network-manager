@@ -21,7 +21,6 @@
 
 #include "nm-dhcp-dhclient-utils.h"
 
-#include <string.h>
 #include <ctype.h>
 #include <arpa/inet.h>
 #include <net/if.h>
@@ -427,6 +426,8 @@ nm_dhcp_dhclient_create_config (const char *interface,
 		add_hostname6 (new_contents, hostname);
 		add_request (reqs, "dhcp6.name-servers");
 		add_request (reqs, "dhcp6.domain-search");
+
+		/* FIXME: internal client does not support requesting client-id option. Does this even work? */
 		add_request (reqs, "dhcp6.client-id");
 	}
 
@@ -493,7 +494,7 @@ nm_dhcp_dhclient_escape_duid (GBytes *duid)
 	return escaped;
 }
 
-static inline gboolean
+static gboolean
 isoctal (const guint8 *p)
 {
 	return (   p[0] >= '0' && p[0] <= '3'

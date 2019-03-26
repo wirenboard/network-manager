@@ -23,7 +23,6 @@
 
 #include "nm-ip4-config.h"
 
-#include <string.h>
 #include <arpa/inet.h>
 #include <resolv.h>
 #include <linux/rtnetlink.h>
@@ -1051,6 +1050,7 @@ nm_ip4_config_create_setting (const NMIP4Config *self)
 	NMDedupMultiIter ipconf_iter;
 	const NMPlatformIP4Address *address;
 	const NMPlatformIP4Route *route;
+	char sbuf[NM_UTILS_INET_ADDRSTRLEN];
 
 	s_ip4 = NM_SETTING_IP_CONFIG (nm_setting_ip4_config_new ());
 
@@ -1095,7 +1095,7 @@ nm_ip4_config_create_setting (const NMIP4Config *self)
 		g_object_set (s_ip4,
 		              NM_SETTING_IP_CONFIG_GATEWAY,
 		              nm_utils_inet4_ntop (NMP_OBJECT_CAST_IP4_ROUTE (priv->best_default_route)->gateway,
-		                                   NULL),
+		                                   sbuf),
 		              NULL);
 	}
 
@@ -1130,7 +1130,7 @@ nm_ip4_config_create_setting (const NMIP4Config *self)
 	for (i = 0; i < nnameservers; i++) {
 		guint32 nameserver = nm_ip4_config_get_nameserver (self, i);
 
-		nm_setting_ip_config_add_dns (s_ip4, nm_utils_inet4_ntop (nameserver, NULL));
+		nm_setting_ip_config_add_dns (s_ip4, nm_utils_inet4_ntop (nameserver, sbuf));
 	}
 	for (i = 0; i < nsearches; i++) {
 		const char *search = nm_ip4_config_get_search (self, i);
@@ -1511,6 +1511,7 @@ nm_ip4_config_subtract (NMIP4Config *dst,
 static gboolean
 _nm_ip4_config_intersect_helper (NMIP4Config *dst,
                                  const NMIP4Config *src,
+                                 gboolean intersect_addresses,
                                  gboolean intersect_routes,
                                  guint32 default_route_metric_penalty,
                                  gboolean update_dst)
@@ -1533,24 +1534,26 @@ _nm_ip4_config_intersect_helper (NMIP4Config *dst,
 		g_object_freeze_notify (G_OBJECT (dst));
 
 	/* addresses */
-	changed = FALSE;
-	nm_ip_config_iter_ip4_address_for_each (&ipconf_iter, dst, &a) {
-		if (nm_dedup_multi_index_lookup_obj (src_priv->multi_idx,
-		                                     &src_priv->idx_ip4_addresses,
-		                                     NMP_OBJECT_UP_CAST (a)))
-			continue;
+	if (intersect_addresses) {
+		changed = FALSE;
+		nm_ip_config_iter_ip4_address_for_each (&ipconf_iter, dst, &a) {
+			if (nm_dedup_multi_index_lookup_obj (src_priv->multi_idx,
+			                                     &src_priv->idx_ip4_addresses,
+			                                     NMP_OBJECT_UP_CAST (a)))
+				continue;
 
-		if (!update_dst)
-			return TRUE;
+			if (!update_dst)
+				return TRUE;
 
-		if (nm_dedup_multi_index_remove_entry (dst_priv->multi_idx,
-		                                       ipconf_iter.current) != 1)
-			nm_assert_not_reached ();
-		changed = TRUE;
-	}
-	if (changed) {
-		_notify_addresses (dst);
-		result = TRUE;
+			if (nm_dedup_multi_index_remove_entry (dst_priv->multi_idx,
+			                                       ipconf_iter.current) != 1)
+				nm_assert_not_reached ();
+			changed = TRUE;
+		}
+		if (changed) {
+			_notify_addresses (dst);
+			result = TRUE;
+		}
 	}
 
 	/* ignore nameservers */
@@ -1599,12 +1602,12 @@ _nm_ip4_config_intersect_helper (NMIP4Config *dst,
 		_notify (dst, PROP_GATEWAY);
 	}
 
-skip_routes:
 	if (changed) {
 		_notify_routes (dst);
 		result = TRUE;
 	}
 
+skip_routes:
 	/* ignore domains */
 	/* ignore dns searches */
 	/* ignore dns options */
@@ -1622,6 +1625,8 @@ skip_routes:
  * nm_ip4_config_intersect:
  * @dst: a configuration to be updated
  * @src: another configuration
+ * @intersect_addresses: whether addresses should be intersected
+ * @intersect_routes: whether routes should be intersected
  * @default_route_metric_penalty: the default route metric penalty
  *
  * Computes the intersection between @src and @dst and updates @dst in place
@@ -1630,16 +1635,24 @@ skip_routes:
 void
 nm_ip4_config_intersect (NMIP4Config *dst,
                          const NMIP4Config *src,
+                         gboolean intersect_addresses,
                          gboolean intersect_routes,
                          guint32 default_route_metric_penalty)
 {
-	_nm_ip4_config_intersect_helper (dst, src, intersect_routes, default_route_metric_penalty, TRUE);
+	_nm_ip4_config_intersect_helper (dst,
+	                                 src,
+	                                 intersect_addresses,
+	                                 intersect_routes,
+	                                 default_route_metric_penalty,
+	                                 TRUE);
 }
 
 /**
  * nm_ip4_config_intersect_alloc:
  * @a: a configuration
  * @b: another configuration
+ * @intersect_addresses: whether addresses should be intersected
+ * @intersect_routes: whether routes should be intersected
  * @default_route_metric_penalty: the default route metric penalty
  *
  * Computes the intersection between @a and @b and returns the result in a newly
@@ -1654,17 +1667,24 @@ nm_ip4_config_intersect (NMIP4Config *dst,
 NMIP4Config *
 nm_ip4_config_intersect_alloc (const NMIP4Config *a,
                                const NMIP4Config *b,
+                               gboolean intersect_addresses,
                                gboolean intersect_routes,
                                guint32 default_route_metric_penalty)
 {
 	NMIP4Config *a_copy;
 
 	if (_nm_ip4_config_intersect_helper ((NMIP4Config *) a, b,
+	                                     intersect_addresses,
 	                                     intersect_routes,
-	                                     default_route_metric_penalty, FALSE)) {
+	                                     default_route_metric_penalty,
+	                                     FALSE)) {
 		a_copy = nm_ip4_config_clone (a);
-		_nm_ip4_config_intersect_helper (a_copy, b, intersect_routes,
-		                                 default_route_metric_penalty, TRUE);
+		_nm_ip4_config_intersect_helper (a_copy,
+		                                 b,
+		                                 intersect_addresses,
+		                                 intersect_routes,
+		                                 default_route_metric_penalty,
+		                                 TRUE);
 		return a_copy;
 	} else
 		return NULL;
@@ -2039,9 +2059,11 @@ nm_ip_config_dump (const NMIPConfig *self,
 	}
 
 	for (i = 0; i < nm_ip_config_get_num_nameservers (self); i++) {
+		char buf[NM_UTILS_INET_ADDRSTRLEN];
+
 		ptr = nm_ip_config_get_nameserver (self, i);
 		nm_log (level, domain, NULL, NULL, " dns      : %s",
-		        nm_utils_inet_ntop (addr_family, ptr, NULL));
+		        nm_utils_inet_ntop (addr_family, ptr, buf));
 	}
 
 	for (i = 0; i < nm_ip_config_get_num_domains (self); i++)
@@ -2110,7 +2132,7 @@ nm_ip4_config_add_address (NMIP4Config *self, const NMPlatformIP4Address *new)
 {
 	g_return_if_fail (self);
 	g_return_if_fail (new);
-	g_return_if_fail (new->plen > 0 && new->plen <= 32);
+	g_return_if_fail (new->plen <= 32);
 	g_return_if_fail (NM_IP4_CONFIG_GET_PRIVATE (self)->ifindex > 0);
 
 	_add_address (self, NULL, new);
@@ -2150,7 +2172,7 @@ nm_ip4_config_get_first_address (const NMIP4Config *self)
 const NMPlatformIP4Address *
 _nmtst_ip4_config_get_address (const NMIP4Config *self, guint i)
 {
-	NMDedupMultiIter iter;
+	NMDedupMultiIter iter = { };
 	const NMPlatformIP4Address *a = NULL;
 	guint j;
 
@@ -2258,7 +2280,7 @@ _add_route (NMIP4Config *self,
  * nm_ip4_config_add_route:
  * @self: the #NMIP4Config
  * @new: the new route to add to @self
- * @out_obj_new: (allow-none): (out): the added route object. Must be unrefed
+ * @out_obj_new: (allow-none) (out): the added route object. Must be unrefed
  *   by caller.
  *
  * Adds the new route to @self.  If a route with the same basic properties
@@ -2898,7 +2920,7 @@ nm_ip4_config_nmpobj_remove (NMIP4Config *self,
 
 /*****************************************************************************/
 
-static inline void
+static void
 hash_u32 (GChecksum *sum, guint32 n)
 {
 	g_checksum_update (sum, (const guint8 *) &n, sizeof (n));
@@ -3024,6 +3046,7 @@ get_property (GObject *object, guint prop_id,
 	const NMPlatformIP4Route *route;
 	GVariantBuilder builder_data, builder_legacy;
 	guint i;
+	char addr_str[NM_UTILS_INET_ADDRSTRLEN];
 
 	switch (prop_id) {
 	case PROP_IFINDEX:
@@ -3061,14 +3084,14 @@ get_property (GObject *object, guint prop_id,
 				g_variant_builder_init (&addr_builder, G_VARIANT_TYPE ("a{sv}"));
 				g_variant_builder_add (&addr_builder, "{sv}",
 				                       "address",
-				                       g_variant_new_string (nm_utils_inet4_ntop (address->address, NULL)));
+				                       g_variant_new_string (nm_utils_inet4_ntop (address->address, addr_str)));
 				g_variant_builder_add (&addr_builder, "{sv}",
 				                       "prefix",
 				                       g_variant_new_uint32 (address->plen));
 				if (address->peer_address != address->address) {
 					g_variant_builder_add (&addr_builder, "{sv}",
 					                       "peer",
-					                       g_variant_new_string (nm_utils_inet4_ntop (address->peer_address, NULL)));
+					                       g_variant_new_string (nm_utils_inet4_ntop (address->peer_address, addr_str)));
 				}
 
 				if (*address->label) {
@@ -3123,14 +3146,14 @@ out_addresses_cached:
 			g_variant_builder_init (&route_builder, G_VARIANT_TYPE ("a{sv}"));
 			g_variant_builder_add (&route_builder, "{sv}",
 			                       "dest",
-			                       g_variant_new_string (nm_utils_inet4_ntop (route->network, NULL)));
+			                       g_variant_new_string (nm_utils_inet4_ntop (route->network, addr_str)));
 			g_variant_builder_add (&route_builder, "{sv}",
 			                       "prefix",
 			                       g_variant_new_uint32 (route->plen));
 			if (route->gateway) {
 				g_variant_builder_add (&route_builder, "{sv}",
 				                       "next-hop",
-				                       g_variant_new_string (nm_utils_inet4_ntop (route->gateway, NULL)));
+				                       g_variant_new_string (nm_utils_inet4_ntop (route->gateway, addr_str)));
 			}
 			g_variant_builder_add (&route_builder, "{sv}",
 			                       "metric",
@@ -3172,9 +3195,8 @@ out_routes_cached:
 		break;
 	case PROP_GATEWAY:
 		if (priv->best_default_route) {
-			g_value_set_string (value,
-			                    nm_utils_inet4_ntop (NMP_OBJECT_CAST_IP4_ROUTE (priv->best_default_route)->gateway,
-			                                         NULL));
+			g_value_take_string (value,
+			                    nm_utils_inet4_ntop_dup (NMP_OBJECT_CAST_IP4_ROUTE (priv->best_default_route)->gateway));
 		} else
 			g_value_set_string (value, NULL);
 		break;
@@ -3183,7 +3205,6 @@ out_routes_cached:
 
 		for (i = 0; i < priv->nameservers->len; i++) {
 			GVariantBuilder nested_builder;
-			char addr_str[NM_UTILS_INET_ADDRSTRLEN];
 
 			nm_utils_inet4_ntop (g_array_index (priv->nameservers, in_addr_t, i),
 			                     addr_str);
@@ -3220,8 +3241,6 @@ out_routes_cached:
 	case PROP_WINS_SERVER_DATA:
 		g_variant_builder_init (&builder_data, G_VARIANT_TYPE ("as"));
 		for (i = 0; i < priv->wins->len; i++) {
-			char addr_str[NM_UTILS_INET_ADDRSTRLEN];
-
 			g_variant_builder_add (&builder_data,
 			                       "s",
 			                       nm_utils_inet4_ntop (g_array_index (priv->wins, in_addr_t, i),

@@ -29,13 +29,11 @@
 #include "nm-device-olpc-mesh.h"
 
 #include <netinet/in.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <errno.h>
 
 #include "devices/nm-device.h"
 #include "nm-device-wifi.h"
@@ -166,7 +164,7 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 		       nm_device_get_iface (priv->companion));
 	}
 
-	/* wait with continuing configuration untill the companion device is done scanning */
+	/* wait with continuing configuration until the companion device is done scanning */
 	g_object_get (priv->companion, NM_DEVICE_WIFI_SCANNING, &scanning, NULL);
 	if (scanning) {
 		priv->stage1_waiting = TRUE;
@@ -193,16 +191,13 @@ static NMActStageReturn
 act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceOlpcMesh *self = NM_DEVICE_OLPC_MESH (device);
-	NMConnection *connection;
 	NMSettingOlpcMesh *s_mesh;
 	guint32 channel;
 	GBytes *ssid;
 	const char *anycast_addr;
 
-	connection = nm_device_get_applied_connection (device);
-	g_return_val_if_fail (connection, NM_ACT_STAGE_RETURN_FAILURE);
+	s_mesh = nm_device_get_applied_setting (device, NM_TYPE_SETTING_OLPC_MESH);
 
-	s_mesh = nm_connection_get_setting_olpc_mesh (connection);
 	g_return_val_if_fail (s_mesh, NM_ACT_STAGE_RETURN_FAILURE);
 
 	channel = nm_setting_olpc_mesh_get_channel (s_mesh);
@@ -333,7 +328,7 @@ check_companion (NMDeviceOlpcMesh *self, NMDevice *other)
 	g_assert (priv->companion == NULL);
 	priv->companion = g_object_ref (other);
 
-	_LOGI (LOGD_OLPC, "found companion WiFi device %s",
+	_LOGI (LOGD_OLPC, "found companion Wi-Fi device %s",
 	       nm_device_get_iface (other));
 
 	g_signal_connect (G_OBJECT (other), NM_DEVICE_STATE_CHANGED,

@@ -26,6 +26,9 @@
 
 /*****************************************************************************/
 
+const char *nm_utils_get_ip_config_method (NMConnection *connection,
+                                           int addr_family);
+
 const char *nm_utils_get_shared_wifi_permission (NMConnection *connection);
 
 void nm_utils_complete_generic (NMPlatform *platform,
@@ -70,7 +73,7 @@ int nm_match_spec_device_by_pllink (const NMPlatformLink *pllink,
  * away. It iterates the mainloop for another NM_SHUTDOWN_TIMEOUT_MS_EXTRA. This
  * should give time to reap the child process (after SIGKILL).
  *
- * So, the maxiumum time we should wait before sending SIGKILL should be at most
+ * So, the maximum time we should wait before sending SIGKILL should be at most
  * NM_SHUTDOWN_TIMEOUT_MS.
  */
 #define NM_SHUTDOWN_TIMEOUT_MS            1500
@@ -84,6 +87,12 @@ NMShutdownWaitObjHandle *_nm_shutdown_wait_obj_register (GObject *watched_obj,
 #define nm_shutdown_wait_obj_register(watched_obj, msg_reason) _nm_shutdown_wait_obj_register((watched_obj), (""msg_reason""))
 
 void nm_shutdown_wait_obj_unregister (NMShutdownWaitObjHandle *handle);
+
+/*****************************************************************************/
+
+const char *
+nm_utils_file_is_in_path (const char *abs_filename,
+                          const char *abs_path);
 
 /*****************************************************************************/
 

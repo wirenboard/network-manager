@@ -23,10 +23,12 @@
 
 #include "nm-shared-utils.h"
 
-#include <errno.h>
 #include <arpa/inet.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <sys/syscall.h>
+
+#include "nm-errno.h"
 
 /*****************************************************************************/
 
@@ -34,7 +36,116 @@ const void *const _NM_PTRARRAY_EMPTY[1] = { NULL };
 
 /*****************************************************************************/
 
-const NMIPAddr nm_ip_addr_zero = { 0 };
+const NMIPAddr nm_ip_addr_zero = { };
+
+/* this initializes a struct in_addr/in6_addr and allows for untrusted
+ * arguments (like unsuitable @addr_family or @src_len). It's almost safe
+ * in the sense that it verifies input arguments strictly. Also, it
+ * uses memcpy() to access @src, so alignment is not an issue.
+ *
+ * Only potential pitfalls:
+ *
+ * - it allows for @addr_family to be AF_UNSPEC. If that is the case (and the
+ *   caller allows for that), the caller MUST provide @out_addr_family.
+ * - when setting @dst to an IPv4 address, the trailing bytes are not touched.
+ *   Meaning, if @dst is an NMIPAddr union, only the first bytes will be set.
+ *   If that matter to you, clear @dst before. */
+gboolean
+nm_ip_addr_set_from_untrusted (int addr_family,
+                               gpointer dst,
+                               gconstpointer src,
+                               gsize src_len,
+                               int *out_addr_family)
+{
+	nm_assert (dst);
+
+	switch (addr_family) {
+	case AF_UNSPEC:
+		if (!out_addr_family) {
+			/* when the callers allow undefined @addr_family, they must provide
+			 * an @out_addr_family argument. */
+			nm_assert_not_reached ();
+			return FALSE;
+		}
+		switch (src_len) {
+		case sizeof (struct in_addr):  addr_family = AF_INET;  break;
+		case sizeof (struct in6_addr): addr_family = AF_INET6; break;
+		default:
+			return FALSE;
+		}
+		break;
+	case AF_INET:
+		if (src_len != sizeof (struct in_addr))
+			return FALSE;
+		break;
+	case AF_INET6:
+		if (src_len != sizeof (struct in6_addr))
+			return FALSE;
+		break;
+	default:
+		/* when the callers allow undefined @addr_family, they must provide
+		 * an @out_addr_family argument. */
+		nm_assert (out_addr_family);
+		return FALSE;
+	}
+
+	nm_assert (src);
+
+	memcpy (dst, src, src_len);
+	NM_SET_OUT (out_addr_family, addr_family);
+	return TRUE;
+}
+
+/*****************************************************************************/
+
+pid_t
+nm_utils_gettid (void)
+{
+	return (pid_t) syscall (SYS_gettid);
+}
+
+/* Used for asserting that this function is called on the main-thread.
+ * The main-thread is determined by remembering the thread-id
+ * of when the function was called the first time.
+ *
+ * When forking, the thread-id is again reset upon first call. */
+gboolean
+_nm_assert_on_main_thread (void)
+{
+	G_LOCK_DEFINE_STATIC (lock);
+	static pid_t seen_tid;
+	static pid_t seen_pid;
+	pid_t tid;
+	pid_t pid;
+	gboolean success = FALSE;
+
+	tid = nm_utils_gettid ();
+	nm_assert (tid != 0);
+
+	G_LOCK (lock);
+
+	if (G_LIKELY (tid == seen_tid)) {
+		/* we don't care about false positives (when the process forked, and the thread-id
+		 * is accidentally re-used) . It's for assertions only. */
+		success = TRUE;
+	} else {
+		pid = getpid ();
+		nm_assert (pid != 0);
+
+		if (   seen_tid == 0
+			|| seen_pid != pid) {
+			/* either this is the first time we call the function, or the process
+			 * forked. In both cases, remember the thread-id. */
+			seen_tid = tid;
+			seen_pid = pid;
+			success = TRUE;
+		}
+	}
+
+	G_UNLOCK (lock);
+
+	return success;
+}
 
 /*****************************************************************************/
 
@@ -54,6 +165,41 @@ nm_utils_strbuf_append_c (char **buf, gsize *len, char c)
 		(*buf)[1] = '\0';
 		(*len)--;
 		(*buf)++;
+		return;
+	}
+}
+
+void
+nm_utils_strbuf_append_bin (char **buf, gsize *len, gconstpointer str, gsize str_len)
+{
+	switch (*len) {
+	case 0:
+		return;
+	case 1:
+		if (str_len == 0) {
+			(*buf)[0] = '\0';
+			return;
+		}
+		(*buf)[0] = '\0';
+		*len = 0;
+		(*buf)++;
+		return;
+	default:
+		if (str_len == 0) {
+			(*buf)[0] = '\0';
+			return;
+		}
+		if (str_len >= *len) {
+			memcpy (*buf, str, *len - 1);
+			(*buf)[*len - 1] = '\0';
+			*buf = &(*buf)[*len];
+			*len = 0;
+		} else {
+			memcpy (*buf, str, str_len);
+			*buf = &(*buf)[str_len];
+			(*buf)[0] = '\0';
+			*len -= str_len;
+		}
 		return;
 	}
 }
@@ -118,7 +264,7 @@ nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...)
 /**
  * nm_utils_strbuf_seek_end:
  * @buf: the input/output buffer
- * @len: the input/output lenght of the buffer.
+ * @len: the input/output length of the buffer.
  *
  * Commonly, one uses nm_utils_strbuf_append*(), to incrementally
  * append strings to the buffer. However, sometimes we need to use
@@ -459,34 +605,25 @@ nm_utils_ip_is_site_local (int addr_family,
 gboolean
 nm_utils_parse_inaddr_bin (int addr_family,
                            const char *text,
+                           int *out_addr_family,
                            gpointer out_addr)
 {
 	NMIPAddr addrbin;
 
 	g_return_val_if_fail (text, FALSE);
 
-	if (addr_family == AF_UNSPEC)
+	if (addr_family == AF_UNSPEC) {
+		g_return_val_if_fail (!out_addr || out_addr_family, FALSE);
 		addr_family = strchr (text, ':') ? AF_INET6 : AF_INET;
-	else
+	} else
 		g_return_val_if_fail (NM_IN_SET (addr_family, AF_INET, AF_INET6), FALSE);
 
-	/* use a temporary variable @addrbin, to guarantee that @out_addr
-	 * is only modified on success. */
 	if (inet_pton (addr_family, text, &addrbin) != 1)
 		return FALSE;
 
-	if (out_addr) {
-		switch (addr_family) {
-		case AF_INET:
-			*((in_addr_t *) out_addr) = addrbin.addr4;
-			break;
-		case AF_INET6:
-			*((struct in6_addr *) out_addr) = addrbin.addr6;
-			break;
-		default:
-			nm_assert_not_reached ();
-		}
-	}
+	NM_SET_OUT (out_addr_family, addr_family);
+	if (out_addr)
+		nm_ip_addr_set (addr_family, out_addr, &addrbin);
 	return TRUE;
 }
 
@@ -498,9 +635,7 @@ nm_utils_parse_inaddr (int addr_family,
 	NMIPAddr addrbin;
 	char addrstr_buf[MAX (INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
 
-	nm_assert (!out_addr || !*out_addr);
-
-	if (!nm_utils_parse_inaddr_bin (addr_family, text, &addrbin))
+	if (!nm_utils_parse_inaddr_bin (addr_family, text, &addr_family, &addrbin))
 		return FALSE;
 	NM_SET_OUT (out_addr, g_strdup (inet_ntop (addr_family, &addrbin, addrstr_buf, sizeof (addrstr_buf))));
 	return TRUE;
@@ -509,6 +644,7 @@ nm_utils_parse_inaddr (int addr_family,
 gboolean
 nm_utils_parse_inaddr_prefix_bin (int addr_family,
                                   const char *text,
+                                  int *out_addr_family,
                                   gpointer out_addr,
                                   int *out_prefix)
 {
@@ -517,19 +653,14 @@ nm_utils_parse_inaddr_prefix_bin (int addr_family,
 	const char *slash;
 	const char *addrstr;
 	NMIPAddr addrbin;
-	int addr_len;
 
 	g_return_val_if_fail (text, FALSE);
 
-	if (addr_family == AF_UNSPEC)
+	if (addr_family == AF_UNSPEC) {
+		g_return_val_if_fail (!out_addr || out_addr_family, FALSE);
 		addr_family = strchr (text, ':') ? AF_INET6 : AF_INET;
-
-	if (addr_family == AF_INET)
-		addr_len = sizeof (in_addr_t);
-	else if (addr_family == AF_INET6)
-		addr_len = sizeof (struct in6_addr);
-	else
-		g_return_val_if_reached (FALSE);
+	} else
+		g_return_val_if_fail (NM_IN_SET (addr_family, AF_INET, AF_INET6), FALSE);
 
 	slash = strchr (text, '/');
 	if (slash)
@@ -541,6 +672,8 @@ nm_utils_parse_inaddr_prefix_bin (int addr_family,
 		return FALSE;
 
 	if (slash) {
+		/* For IPv4, `ip addr add` supports the prefix-length as a netmask. We don't
+		 * do that. */
 		prefix = _nm_utils_ascii_str_to_int64 (slash + 1, 10,
 		                                       0,
 		                                       addr_family == AF_INET ? 32 : 128,
@@ -549,8 +682,9 @@ nm_utils_parse_inaddr_prefix_bin (int addr_family,
 			return FALSE;
 	}
 
+	NM_SET_OUT (out_addr_family, addr_family);
 	if (out_addr)
-		memcpy (out_addr, &addrbin, addr_len);
+		nm_ip_addr_set (addr_family, out_addr, &addrbin);
 	NM_SET_OUT (out_prefix, prefix);
 	return TRUE;
 }
@@ -564,7 +698,7 @@ nm_utils_parse_inaddr_prefix (int addr_family,
 	NMIPAddr addrbin;
 	char addrstr_buf[MAX (INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
 
-	if (!nm_utils_parse_inaddr_prefix_bin (addr_family, text, &addrbin, out_prefix))
+	if (!nm_utils_parse_inaddr_prefix_bin (addr_family, text, &addr_family, &addrbin, out_prefix))
 		return FALSE;
 	NM_SET_OUT (out_addr, g_strdup (inet_ntop (addr_family, &addrbin, addrstr_buf, sizeof (addrstr_buf))));
 	return TRUE;
@@ -1122,7 +1256,7 @@ nm_utils_error_is_notfound (GError *error)
  */
 gboolean
 nm_g_object_set_property (GObject *object,
-                          const char   *property_name,
+                          const char *property_name,
                           const GValue *value,
                           GError **error)
 {
@@ -1195,30 +1329,136 @@ nm_g_object_set_property (GObject *object,
 	return TRUE;
 }
 
+#define _set_property(object, property_name, gtype, gtype_set, value, error) \
+	G_STMT_START { \
+		nm_auto_unset_gvalue GValue gvalue = { 0 }; \
+		\
+		g_value_init (&gvalue, gtype); \
+		gtype_set (&gvalue, (value)); \
+		return nm_g_object_set_property ((object), (property_name), &gvalue, (error)); \
+	} G_STMT_END
+
+gboolean
+nm_g_object_set_property_string (GObject *object,
+                                 const char *property_name,
+                                 const char *value,
+                                 GError **error)
+{
+	_set_property (object, property_name, G_TYPE_STRING, g_value_set_string, value, error);
+}
+
+gboolean
+nm_g_object_set_property_string_static (GObject *object,
+                                        const char *property_name,
+                                        const char *value,
+                                        GError **error)
+{
+	_set_property (object, property_name, G_TYPE_STRING, g_value_set_static_string, value, error);
+}
+
+gboolean
+nm_g_object_set_property_string_take (GObject *object,
+                                      const char *property_name,
+                                      char *value,
+                                      GError **error)
+{
+	_set_property (object, property_name, G_TYPE_STRING, g_value_take_string, value, error);
+}
+
 gboolean
 nm_g_object_set_property_boolean (GObject *object,
-                                  const char   *property_name,
+                                  const char *property_name,
                                   gboolean value,
                                   GError **error)
 {
-	nm_auto_unset_gvalue GValue gvalue = { 0 };
+	_set_property (object, property_name, G_TYPE_BOOLEAN, g_value_set_boolean, !!value, error);
+}
 
-	g_value_init (&gvalue, G_TYPE_BOOLEAN);
-	g_value_set_boolean (&gvalue, !!value);
-	return nm_g_object_set_property (object, property_name, &gvalue, error);
+gboolean
+nm_g_object_set_property_char (GObject *object,
+                               const char *property_name,
+                               gint8 value,
+                               GError **error)
+{
+	/* glib says about G_TYPE_CHAR:
+	 *
+	 * The type designated by G_TYPE_CHAR is unconditionally an 8-bit signed integer.
+	 *
+	 * This is always a (signed!) char. */
+	_set_property (object, property_name, G_TYPE_CHAR, g_value_set_schar, value, error);
+}
+
+gboolean
+nm_g_object_set_property_uchar (GObject *object,
+                                const char *property_name,
+                                guint8 value,
+                                GError **error)
+{
+	_set_property (object, property_name, G_TYPE_UCHAR, g_value_set_uchar, value, error);
+}
+
+gboolean
+nm_g_object_set_property_int (GObject *object,
+                              const char *property_name,
+                              int value,
+                              GError **error)
+{
+	_set_property (object, property_name, G_TYPE_INT, g_value_set_int, value, error);
+}
+
+gboolean
+nm_g_object_set_property_int64 (GObject *object,
+                                const char *property_name,
+                                gint64 value,
+                                GError **error)
+{
+	_set_property (object, property_name, G_TYPE_INT64, g_value_set_int64, value, error);
 }
 
 gboolean
 nm_g_object_set_property_uint (GObject *object,
-                               const char   *property_name,
+                               const char *property_name,
                                guint value,
                                GError **error)
 {
-	nm_auto_unset_gvalue GValue gvalue = { 0 };
+	_set_property (object, property_name, G_TYPE_UINT, g_value_set_uint, value, error);
+}
 
-	g_value_init (&gvalue, G_TYPE_UINT);
-	g_value_set_uint (&gvalue, value);
-	return nm_g_object_set_property (object, property_name, &gvalue, error);
+gboolean
+nm_g_object_set_property_uint64 (GObject *object,
+                                 const char *property_name,
+                                 guint64 value,
+                                 GError **error)
+{
+	_set_property (object, property_name, G_TYPE_UINT64, g_value_set_uint64, value, error);
+}
+
+gboolean
+nm_g_object_set_property_flags (GObject *object,
+                                const char *property_name,
+                                GType gtype,
+                                guint value,
+                                GError **error)
+{
+	nm_assert (({
+	                nm_auto_unref_gtypeclass GTypeClass *gtypeclass = g_type_class_ref (gtype);
+	                G_IS_FLAGS_CLASS (gtypeclass);
+	           }));
+	_set_property (object, property_name, gtype, g_value_set_flags, value, error);
+}
+
+gboolean
+nm_g_object_set_property_enum (GObject *object,
+                               const char *property_name,
+                               GType gtype,
+                               int value,
+                               GError **error)
+{
+	nm_assert (({
+	                nm_auto_unref_gtypeclass GTypeClass *gtypeclass = g_type_class_ref (gtype);
+	                G_IS_ENUM_CLASS (gtypeclass);
+	           }));
+	_set_property (object, property_name, gtype, g_value_set_enum, value, error);
 }
 
 GParamSpec *
@@ -1229,6 +1469,53 @@ nm_g_object_class_find_property_from_gtype (GType gtype,
 
 	gclass = g_type_class_ref (gtype);
 	return g_object_class_find_property (gclass, property_name);
+}
+
+/*****************************************************************************/
+
+/**
+ * nm_g_type_find_implementing_class_for_property:
+ * @gtype: the GObject type which has a property @pname
+ * @pname: the name of the property to look up
+ *
+ * This is only a helper function for printf debugging. It's not
+ * used in actual code. Hence, the function just asserts that
+ * @pname and @gtype arguments are suitable. It cannot fail.
+ *
+ * Returns: the most ancestor type of @gtype, that
+ *   implements the property @pname. It means, it
+ *   searches the type hierarchy to find the type
+ *   that added @pname.
+ */
+GType
+nm_g_type_find_implementing_class_for_property (GType gtype,
+                                                const char *pname)
+{
+	nm_auto_unref_gtypeclass GObjectClass *klass = NULL;
+	GParamSpec *pspec;
+
+	g_return_val_if_fail (pname, G_TYPE_INVALID);
+
+	klass = g_type_class_ref (gtype);
+	g_return_val_if_fail (G_IS_OBJECT_CLASS (klass), G_TYPE_INVALID);
+
+	pspec = g_object_class_find_property (klass, pname);
+	g_return_val_if_fail (pspec, G_TYPE_INVALID);
+
+	gtype = G_TYPE_FROM_CLASS (klass);
+
+	while (TRUE) {
+		nm_auto_unref_gtypeclass GObjectClass *k = NULL;
+
+		k = g_type_class_ref (g_type_parent (gtype));
+
+		g_return_val_if_fail (G_IS_OBJECT_CLASS (k), G_TYPE_INVALID);
+
+		if (g_object_class_find_property (k, pname) != pspec)
+			return gtype;
+
+		gtype = G_TYPE_FROM_CLASS (k);
+	}
 }
 
 /*****************************************************************************/
@@ -1564,7 +1851,7 @@ nm_utils_fd_wait_for_event (int fd, int event, gint64 timeout_ns)
 
 	r = ppoll (&pollfd, 1, pts, NULL);
 	if (r < 0)
-		return -errno;
+		return -NM_ERRNO_NATIVE (errno);
 	if (r == 0)
 		return 0;
 	return pollfd.revents;
@@ -1591,10 +1878,12 @@ nm_utils_fd_read_loop (int fd, void *buf, size_t nbytes, bool do_poll)
 
 		k = read (fd, p, nbytes);
 		if (k < 0) {
-			if (errno == EINTR)
+			int errsv = errno;
+
+			if (errsv == EINTR)
 				continue;
 
-			if (errno == EAGAIN && do_poll) {
+			if (errsv == EAGAIN && do_poll) {
 
 				/* We knowingly ignore any return value here,
 				 * and expect that any error/EOF is reported
@@ -1604,7 +1893,7 @@ nm_utils_fd_read_loop (int fd, void *buf, size_t nbytes, bool do_poll)
 				continue;
 			}
 
-			return n > 0 ? n : -errno;
+			return n > 0 ? n : -NM_ERRNO_NATIVE (errsv);
 		}
 
 		if (k == 0)
@@ -2126,3 +2415,327 @@ _nm_utils_unescape_spaces (char *str)
 }
 
 #undef IS_SPACE
+
+/*****************************************************************************/
+
+typedef struct {
+	gpointer callback_user_data;
+	GCancellable *cancellable;
+	NMUtilsInvokeOnIdleCallback callback;
+	gulong cancelled_id;
+	guint idle_id;
+} InvokeOnIdleData;
+
+static gboolean
+_nm_utils_invoke_on_idle_cb_idle (gpointer user_data)
+{
+	InvokeOnIdleData *data = user_data;
+
+	data->idle_id = 0;
+	nm_clear_g_signal_handler (data->cancellable, &data->cancelled_id);
+
+	data->callback (data->callback_user_data, data->cancellable);
+	nm_g_object_unref (data->cancellable);
+	g_slice_free (InvokeOnIdleData, data);
+	return G_SOURCE_REMOVE;
+}
+
+static void
+_nm_utils_invoke_on_idle_cb_cancelled (GCancellable *cancellable,
+                                       InvokeOnIdleData *data)
+{
+	/* on cancellation, we invoke the callback synchronously. */
+	nm_clear_g_signal_handler (data->cancellable, &data->cancelled_id);
+	nm_clear_g_source (&data->idle_id);
+	data->callback (data->callback_user_data, data->cancellable);
+	nm_g_object_unref (data->cancellable);
+	g_slice_free (InvokeOnIdleData, data);
+}
+
+void
+nm_utils_invoke_on_idle (NMUtilsInvokeOnIdleCallback callback,
+                         gpointer callback_user_data,
+                         GCancellable *cancellable)
+{
+	InvokeOnIdleData *data;
+
+	g_return_if_fail (callback);
+
+	data = g_slice_new (InvokeOnIdleData);
+	data->callback = callback;
+	data->callback_user_data = callback_user_data;
+	data->cancellable = nm_g_object_ref (cancellable);
+	if (   cancellable
+	    && !g_cancellable_is_cancelled (cancellable)) {
+		/* if we are passed a non-cancelled cancellable, we register to the "cancelled"
+		 * signal an invoke the callback synchronously (from the signal handler).
+		 *
+		 * We don't do that,
+		 *  - if the cancellable is already cancelled (because we don't want to invoke
+		 *    the callback synchronously from the caller).
+		 *  - if we have no cancellable at hand. */
+		data->cancelled_id = g_signal_connect (cancellable,
+		                                       "cancelled",
+		                                       G_CALLBACK (_nm_utils_invoke_on_idle_cb_cancelled),
+		                                       data);
+	} else
+		data->cancelled_id = 0;
+	data->idle_id = g_idle_add (_nm_utils_invoke_on_idle_cb_idle, data);
+}
+
+/*****************************************************************************/
+
+int
+nm_utils_getpagesize (void)
+{
+	static volatile int val = 0;
+	long l;
+	int v;
+
+	v = g_atomic_int_get (&val);
+
+	if (G_UNLIKELY (v == 0)) {
+		l = sysconf (_SC_PAGESIZE);
+
+		g_return_val_if_fail (l > 0 && l < G_MAXINT, 4*1024);
+
+		v = (int) l;
+		if (!g_atomic_int_compare_and_exchange (&val, 0, v)) {
+			v = g_atomic_int_get (&val);
+			g_return_val_if_fail (v > 0, 4*1024);
+		}
+	}
+
+	nm_assert (v > 0);
+#if NM_MORE_ASSERTS > 5
+	nm_assert (v == getpagesize ());
+	nm_assert (v == sysconf (_SC_PAGESIZE));
+#endif
+
+	return v;
+}
+
+gboolean
+nm_utils_memeqzero (gconstpointer data, gsize length)
+{
+	const unsigned char *p = data;
+	int len;
+
+	/* Taken from https://github.com/rustyrussell/ccan/blob/9d2d2c49f053018724bcc6e37029da10b7c3d60d/ccan/mem/mem.c#L92,
+	 * CC-0 licensed. */
+
+	/* Check first 16 bytes manually */
+	for (len = 0; len < 16; len++) {
+		if (!length)
+			return TRUE;
+		if (*p)
+			return FALSE;
+		p++;
+		length--;
+	}
+
+	/* Now we know that's zero, memcmp with self. */
+	return memcmp (data, p, length) == 0;
+}
+
+/**
+ * nm_utils_bin2hexstr_full:
+ * @addr: pointer of @length bytes. If @length is zero, this may
+ *   also be %NULL.
+ * @length: number of bytes in @addr. May also be zero, in which
+ *   case this will return an empty string.
+ * @delimiter: either '\0', otherwise the output string will have the
+ *   given delimiter character between each two hex numbers.
+ * @upper_case: if TRUE, use upper case ASCII characters for hex.
+ * @out: if %NULL, the function will allocate a new buffer of
+ *   either (@length*2+1) or (@length*3) bytes, depending on whether
+ *   a @delimiter is specified. In that case, the allocated buffer will
+ *   be returned and must be freed by the caller.
+ *   If not %NULL, the buffer must already be preallocated and contain
+ *   at least (@length*2+1) or (@length*3) bytes, depending on the delimiter.
+ *
+ * Returns: the binary value converted to a hex string. If @out is given,
+ *   this always returns @out. If @out is %NULL, a newly allocated string
+ *   is returned.
+ */
+char *
+nm_utils_bin2hexstr_full (gconstpointer addr,
+                          gsize length,
+                          char delimiter,
+                          gboolean upper_case,
+                          char *out)
+{
+	const guint8 *in = addr;
+	const char *LOOKUP = upper_case ? "0123456789ABCDEF" : "0123456789abcdef";
+	char *out0;
+
+	if (out)
+		out0 = out;
+	else {
+		out0 = out = g_new (char, delimiter == '\0'
+		                          ? length * 2 + 1
+		                          : length * 3);
+	}
+
+	/* @out must contain at least @length*3 bytes if @delimiter is set,
+	 * otherwise, @length*2+1. */
+
+	if (length > 0) {
+		nm_assert (in);
+		for (;;) {
+			const guint8 v = *in++;
+
+			*out++ = LOOKUP[v >> 4];
+			*out++ = LOOKUP[v & 0x0F];
+			length--;
+			if (!length)
+				break;
+			if (delimiter)
+				*out++ = delimiter;
+		}
+	}
+
+	*out = '\0';
+	return out0;
+}
+
+guint8 *
+nm_utils_hexstr2bin_full (const char *hexstr,
+                          gboolean allow_0x_prefix,
+                          gboolean delimiter_required,
+                          const char *delimiter_candidates,
+                          gsize required_len,
+                          guint8 *buffer,
+                          gsize buffer_len,
+                          gsize *out_len)
+{
+	const char *in = hexstr;
+	guint8 *out = buffer;
+	gboolean delimiter_has = TRUE;
+	guint8 delimiter = '\0';
+	gsize len;
+
+	nm_assert (hexstr);
+	nm_assert (buffer);
+	nm_assert (required_len > 0 || out_len);
+
+	if (   allow_0x_prefix
+	    && in[0] == '0'
+	    && in[1] == 'x')
+		in += 2;
+
+	while (TRUE) {
+		const guint8 d1 = in[0];
+		guint8 d2;
+		int i1, i2;
+
+		i1 = nm_utils_hexchar_to_int (d1);
+		if (i1 < 0)
+			goto fail;
+
+		/* If there's no leading zero (ie "aa:b:cc") then fake it */
+		d2 = in[1];
+		if (   d2
+		    && (i2 = nm_utils_hexchar_to_int (d2)) >= 0) {
+			*out++ = (i1 << 4) + i2;
+			d2 = in[2];
+			if (!d2)
+				break;
+			in += 2;
+		} else {
+			/* Fake leading zero */
+			*out++ = i1;
+			if (!d2) {
+				if (!delimiter_has) {
+					/* when using no delimiter, there must be pairs of hex chars */
+					goto fail;
+				}
+				break;
+			}
+			in += 1;
+		}
+
+		if (--buffer_len == 0)
+			goto fail;
+
+		if (delimiter_has) {
+			if (d2 != delimiter) {
+				if (delimiter)
+					goto fail;
+				if (delimiter_candidates) {
+					while (delimiter_candidates[0]) {
+						if (delimiter_candidates++[0] == d2)
+							delimiter = d2;
+					}
+				}
+				if (!delimiter) {
+					if (delimiter_required)
+						goto fail;
+					delimiter_has = FALSE;
+					continue;
+				}
+			}
+			in++;
+		}
+	}
+
+	len = out - buffer;
+	if (   required_len == 0
+	    || len == required_len) {
+		NM_SET_OUT (out_len, len);
+		return buffer;
+	}
+
+fail:
+	NM_SET_OUT (out_len, 0);
+	return NULL;
+}
+
+guint8 *
+nm_utils_hexstr2bin_alloc (const char *hexstr,
+                           gboolean allow_0x_prefix,
+                           gboolean delimiter_required,
+                           const char *delimiter_candidates,
+                           gsize required_len,
+                           gsize *out_len)
+{
+	guint8 *buffer;
+	gsize buffer_len, len;
+
+	g_return_val_if_fail (hexstr, NULL);
+
+	nm_assert (required_len > 0 || out_len);
+
+	if (   allow_0x_prefix
+	    && hexstr[0] == '0'
+	    && hexstr[1] == 'x')
+		hexstr += 2;
+
+	if (!hexstr[0])
+		goto fail;
+
+	if (required_len > 0)
+		buffer_len = required_len;
+	else
+		buffer_len = strlen (hexstr) / 2 + 3;
+
+	buffer = g_malloc (buffer_len);
+
+	if (nm_utils_hexstr2bin_full (hexstr,
+	                              FALSE,
+	                              delimiter_required,
+	                              delimiter_candidates,
+	                              required_len,
+	                              buffer,
+	                              buffer_len,
+	                              &len)) {
+		NM_SET_OUT (out_len, len);
+		return buffer;
+	}
+
+	g_free (buffer);
+
+fail:
+	NM_SET_OUT (out_len, 0);
+	return NULL;
+}

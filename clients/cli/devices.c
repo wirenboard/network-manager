@@ -22,9 +22,7 @@
 #include "devices.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <readline/readline.h>
 
 #include "nm-secret-agent-simple.h"
@@ -44,43 +42,39 @@
 static char *
 ap_wpa_rsn_flags_to_string (NM80211ApSecurityFlags flags)
 {
-	char *flags_str[16]; /* Enough space for flags and terminating NULL */
-	char *ret_str;
+	char *flags_str[13];
 	int i = 0;
 
 	if (flags & NM_802_11_AP_SEC_PAIR_WEP40)
-		flags_str[i++] = g_strdup ("pair_wpe40");
+		flags_str[i++] = "pair_wpe40";
 	if (flags & NM_802_11_AP_SEC_PAIR_WEP104)
-		flags_str[i++] = g_strdup ("pair_wpe104");
+		flags_str[i++] = "pair_wpe104";
 	if (flags & NM_802_11_AP_SEC_PAIR_TKIP)
-		flags_str[i++] = g_strdup ("pair_tkip");
+		flags_str[i++] = "pair_tkip";
 	if (flags & NM_802_11_AP_SEC_PAIR_CCMP)
-		flags_str[i++] = g_strdup ("pair_ccmp");
+		flags_str[i++] = "pair_ccmp";
 	if (flags & NM_802_11_AP_SEC_GROUP_WEP40)
-		flags_str[i++] = g_strdup ("group_wpe40");
+		flags_str[i++] = "group_wpe40";
 	if (flags & NM_802_11_AP_SEC_GROUP_WEP104)
-		flags_str[i++] = g_strdup ("group_wpe104");
+		flags_str[i++] = "group_wpe104";
 	if (flags & NM_802_11_AP_SEC_GROUP_TKIP)
-		flags_str[i++] = g_strdup ("group_tkip");
+		flags_str[i++] = "group_tkip";
 	if (flags & NM_802_11_AP_SEC_GROUP_CCMP)
-		flags_str[i++] = g_strdup ("group_ccmp");
+		flags_str[i++] = "group_ccmp";
 	if (flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
-		flags_str[i++] = g_strdup ("psk");
+		flags_str[i++] = "psk";
 	if (flags & NM_802_11_AP_SEC_KEY_MGMT_802_1X)
-		flags_str[i++] = g_strdup ("802.1X");
+		flags_str[i++] = "802.1X";
+	if (flags & NM_802_11_AP_SEC_KEY_MGMT_SAE)
+		flags_str[i++] = "sae";
+	/* Make sure you grow flags_str when adding items here. */
 
 	if (i == 0)
-		flags_str[i++] = g_strdup (_("(none)"));
+		flags_str[i++] = _("(none)");
 
 	flags_str[i] = NULL;
 
-	ret_str = g_strjoinv (" ", flags_str);
-
-	i = 0;
-	while (flags_str[i])
-		g_free (flags_str[i++]);
-
-	return ret_str;
+	return g_strjoinv (" ", flags_str);
 }
 
 static NMMetaColor
@@ -116,6 +110,12 @@ _metagen_device_status_get_fcn (NMC_META_GENERIC_INFO_GET_FCN_ARGS)
 	case NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_STATE:
 		return nmc_meta_generic_get_str_i18n (nmc_device_state_to_string (nm_device_get_state (d)),
 		                                      get_type);
+	case NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_IP4_CONNECTIVITY:
+		return nmc_meta_generic_get_str_i18n (nm_connectivity_to_string (nm_device_get_connectivity (d, AF_INET)),
+		                                      get_type);
+	case NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_IP6_CONNECTIVITY:
+		return nmc_meta_generic_get_str_i18n (nm_connectivity_to_string (nm_device_get_connectivity (d, AF_INET6)),
+		                                      get_type);
 	case NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_DBUS_PATH:
 		return nm_object_get_path (NM_OBJECT (d));
 	case NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CONNECTION:
@@ -137,13 +137,15 @@ _metagen_device_status_get_fcn (NMC_META_GENERIC_INFO_GET_FCN_ARGS)
 const NmcMetaGenericInfo *const metagen_device_status[_NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_NUM + 1] = {
 #define _METAGEN_DEVICE_STATUS(type, name) \
 	[type] = NMC_META_GENERIC(name, .info_type = type, .get_fcn = _metagen_device_status_get_fcn)
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_DEVICE,     "DEVICE"),
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_TYPE,       "TYPE"),
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_STATE,      "STATE"),
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_DBUS_PATH,  "DBUS-PATH"),
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CONNECTION, "CONNECTION"),
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CON_UUID,   "CON-UUID"),
-	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CON_PATH,   "CON-PATH"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_DEVICE,             "DEVICE"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_TYPE,               "TYPE"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_STATE,              "STATE"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_IP4_CONNECTIVITY,   "IP4-CONNECTIVITY"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_IP6_CONNECTIVITY,   "IP6-CONNECTIVITY"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_DBUS_PATH,          "DBUS-PATH"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CONNECTION,         "CONNECTION"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CON_UUID,           "CON-UUID"),
+	_METAGEN_DEVICE_STATUS (NMC_GENERIC_INFO_TYPE_DEVICE_STATUS_CON_PATH,           "CON-PATH"),
 };
 
 /*****************************************************************************/
@@ -155,6 +157,7 @@ _metagen_device_detail_general_get_fcn (NMC_META_GENERIC_INFO_GET_FCN_ARGS)
 	NMActiveConnection *ac;
 	NMDeviceState state;
 	NMDeviceStateReason state_reason;
+	NMConnectivityState connectivity;
 	const char *s;
 
 	NMC_HANDLE_COLOR (NM_META_COLOR_NONE);
@@ -193,6 +196,18 @@ _metagen_device_detail_general_get_fcn (NMC_META_GENERIC_INFO_GET_FCN_ARGS)
 		return (*out_to_free = nmc_meta_generic_get_enum_with_detail (NMC_META_GENERIC_GET_ENUM_TYPE_PARENTHESES,
 		                                                              state_reason,
 		                                                              nmc_device_reason_to_string (state_reason),
+		                                                              get_type));
+	case NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_IP4_CONNECTIVITY:
+		connectivity = nm_device_get_connectivity (d, AF_INET);
+		return (*out_to_free = nmc_meta_generic_get_enum_with_detail (NMC_META_GENERIC_GET_ENUM_TYPE_PARENTHESES,
+		                                                              connectivity,
+		                                                              nm_connectivity_to_string (connectivity),
+		                                                              get_type));
+	case NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_IP6_CONNECTIVITY:
+		connectivity = nm_device_get_connectivity (d, AF_INET6);
+		return (*out_to_free = nmc_meta_generic_get_enum_with_detail (NMC_META_GENERIC_GET_ENUM_TYPE_PARENTHESES,
+		                                                              connectivity,
+		                                                              nm_connectivity_to_string (connectivity),
 		                                                              get_type));
 	case NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_UDI:
 		return nm_device_get_udi (d);
@@ -244,6 +259,8 @@ const NmcMetaGenericInfo *const metagen_device_detail_general[_NMC_GENERIC_INFO_
 	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_MTU,               "MTU"),
 	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_STATE,             "STATE"),
 	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_REASON,            "REASON"),
+	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_IP4_CONNECTIVITY,  "IP4-CONNECTIVITY"),
+	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_IP6_CONNECTIVITY,  "IP6-CONNECTIVITY"),
 	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_UDI,               "UDI"),
 	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_IP_IFACE,          "IP-IFACE"),
 	_METAGEN_DEVICE_DETAIL_GENERAL (NMC_GENERIC_INFO_TYPE_DEVICE_DETAIL_GENERAL_IS_SOFTWARE,       "IS-SOFTWARE"),
@@ -680,7 +697,7 @@ usage (void)
 	              "  disconnect <ifname> ...\n\n"
 	              "  delete <ifname> ...\n\n"
 	              "  monitor <ifname> ...\n\n"
-	              "  wifi [list [ifname <ifname>] [bssid <BSSID>]]\n\n"
+	              "  wifi [list [ifname <ifname>] [bssid <BSSID>] [--rescan yes|no|auto]]\n\n"
 	              "  wifi connect <(B)SSID> [password <password>] [wep-key-type key|phrase] [ifname <ifname>]\n"
 	              "                         [bssid <BSSID>] [name <name>] [private yes|no] [hidden yes|no]\n\n"
 	              "  wifi hotspot [ifname <ifname>] [con-name <name>] [ssid <SSID>] [band a|bg] [channel <channel>] [password <password>]\n\n"
@@ -815,22 +832,22 @@ usage_device_wifi (void)
 	              "\n"
 	              "Perform operation on Wi-Fi devices.\n"
 	              "\n"
-	              "ARGUMENTS := [list [ifname <ifname>] [bssid <BSSID>]]\n"
+	              "ARGUMENTS := [list [ifname <ifname>] [bssid <BSSID>] [--rescan yes|no|auto]]\n"
 	              "\n"
 	              "List available Wi-Fi access points. The 'ifname' and 'bssid' options can be\n"
-	              "used to list APs for a particular interface, or with a specific BSSID.\n"
+	              "used to list APs for a particular interface, or with a specific BSSID. The\n"
+	              "--rescan flag tells whether a new Wi-Fi scan should be triggered.\n"
 	              "\n"
 	              "ARGUMENTS := connect <(B)SSID> [password <password>] [wep-key-type key|phrase] [ifname <ifname>]\n"
 	              "                     [bssid <BSSID>] [name <name>] [private yes|no] [hidden yes|no]\n"
 	              "\n"
-	              "Connect to a Wi-Fi network specified by SSID or BSSID. The command creates\n"
-	              "a new connection and then activates it on a device. This is a command-line\n"
-	              "counterpart of clicking an SSID in a GUI client. The command always creates\n"
-	              "a new connection and thus it is mainly useful for connecting to new Wi-Fi\n"
-	              "networks. If a connection for the network already exists, it is better to\n"
-	              "bring up the existing profile as follows: nmcli con up id <name>. Note that\n"
-	              "only open, WEP and WPA-PSK networks are supported at the moment. It is also\n"
-	              "assumed that IP configuration is obtained via DHCP.\n"
+	              "Connect to a Wi-Fi network specified by SSID or BSSID. The command finds a\n"
+	              "matching connection or creates one and then activates it on a device. This\n"
+	              "is a command-line counterpart of clicking an SSID in a GUI client. If a\n"
+	              "connection for the network already exists, it is possible to bring up the\n"
+	              "existing profile as follows: nmcli con up id <name>. Note that only open,\n"
+	              "WEP and WPA-PSK networks are supported if no previous connection exists.\n"
+	              "It is also assumed that IP configuration is obtained via DHCP.\n"
 	              "\n"
 	              "ARGUMENTS := hotspot [ifname <ifname>] [con-name <name>] [ssid <SSID>]\n"
 	              "                     [band a|bg] [channel <channel>] [password <password>]\n"
@@ -879,77 +896,19 @@ compare_devices (const void *a, const void *b)
 {
 	NMDevice *da = *(NMDevice **)a;
 	NMDevice *db = *(NMDevice **)b;
-	NMActiveConnection *da_ac;
-	NMActiveConnection *db_ac;
-	NMIPConfig *da_ip;
-	NMIPConfig *db_ip;
-	int da_num_addrs;
-	int db_num_addrs;
-	int cmp;
+	NMActiveConnection *da_ac = nm_device_get_active_connection (da);
+	NMActiveConnection *db_ac = nm_device_get_active_connection (db);
 
-	/* Sort by later device states first */
-	cmp = nm_device_get_state (db) - nm_device_get_state (da);
-	if (cmp != 0)
-		return cmp;
+	NM_CMP_DIRECT (nm_device_get_state (db), nm_device_get_state (da));
+	NM_CMP_RETURN (nmc_active_connection_cmp (db_ac, da_ac));
+	NM_CMP_DIRECT_STRCMP0 (nm_device_get_type_description (da),
+	                       nm_device_get_type_description (db));
+	NM_CMP_DIRECT_STRCMP0 (nm_device_get_iface (da),
+	                       nm_device_get_iface (db));
+	NM_CMP_DIRECT_STRCMP0 (nm_object_get_path (NM_OBJECT (da)),
+	                       nm_object_get_path (NM_OBJECT (db)));
 
-	da_ac = nm_device_get_active_connection (da);
-	db_ac = nm_device_get_active_connection (db);
-
-	/* Prioritize devices with active connections */
-	if (da_ac)
-		cmp++;
-	if (db_ac)
-		cmp--;
-	if (cmp != 0)
-		return cmp;
-
-	/* VPNs go on the top if possible */
-	if (da_ac && !nm_active_connection_get_vpn (da_ac))
-		cmp++;
-	if (db_ac && !nm_active_connection_get_vpn (db_ac))
-		cmp--;
-	if (cmp != 0)
-		return cmp;
-
-	/* Default devices are prioritized */
-	if (da_ac && !nm_active_connection_get_default (da_ac))
-		cmp++;
-	if (db_ac && !nm_active_connection_get_default (db_ac))
-		cmp--;
-	if (cmp != 0)
-		return cmp;
-
-	/* Default IPv6 devices are prioritized */
-	if (da_ac && !nm_active_connection_get_default6 (da_ac))
-		cmp++;
-	if (db_ac && !nm_active_connection_get_default6 (db_ac))
-		cmp--;
-	if (cmp != 0)
-		return cmp;
-
-	/* Sort by number of addresses. */
-	da_ip = da_ac ? nm_active_connection_get_ip4_config (da_ac) : NULL;
-	da_num_addrs = da_ip ? nm_ip_config_get_addresses (da_ip)->len : 0;
-	db_ip = db_ac ? nm_active_connection_get_ip4_config (db_ac) : NULL;
-	db_num_addrs = db_ip ? nm_ip_config_get_addresses (db_ip)->len : 0;
-
-	da_ip = da_ac ? nm_active_connection_get_ip6_config (da_ac) : NULL;
-	da_num_addrs += da_ip ? nm_ip_config_get_addresses (da_ip)->len : 0;
-	db_ip = db_ac ? nm_active_connection_get_ip6_config (db_ac) : NULL;
-	db_num_addrs += db_ip ? nm_ip_config_get_addresses (db_ip)->len : 0;
-
-	cmp = db_num_addrs - da_num_addrs;
-	if (cmp != 0)
-		return cmp;
-
-	/* Fall back to alphanumeric sort by description and interface. */
-	cmp = g_strcmp0 (nm_device_get_type_description (da),
-	                 nm_device_get_type_description (db));
-	if (cmp != 0)
-		return cmp;
-
-	return g_strcmp0 (nm_device_get_iface (da),
-	                  nm_device_get_iface (db));
+	g_return_val_if_reached (0);
 }
 
 NMDevice **
@@ -1006,9 +965,11 @@ get_device_list (NmCli *nmc, int argc, char **argv)
 
 	if (argc == 0) {
 		if (nmc->ask) {
-			char *line = nmc_readline (PROMPT_INTERFACES);
+			gs_free char *line = NULL;
+
+			line = nmc_readline (&nmc->nmc_config,
+			                     PROMPT_INTERFACES);
 			nmc_string_to_arg_array (line, NULL, FALSE, &arg_arr, &arg_num);
-			g_free (line);
 			arg_ptr = arg_arr;
 		}
 		if (arg_num == 0) {
@@ -1063,8 +1024,10 @@ get_device (NmCli *nmc, int *argc, char ***argv, GError **error)
 	int i;
 
 	if (*argc == 0) {
-		if (nmc->ask)
-			ifname = ifname_ask = nmc_readline (PROMPT_INTERFACE);
+		if (nmc->ask) {
+			ifname = ifname_ask = nmc_readline (&nmc->nmc_config,
+			                                    PROMPT_INTERFACE);
+		}
 
 		if (!ifname_ask) {
 			g_set_error_literal (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
@@ -1195,21 +1158,21 @@ fill_output_access_point (gpointer data, gpointer user_data)
 	if (   (flags & NM_802_11_AP_FLAGS_PRIVACY)
 	    && (wpa_flags == NM_802_11_AP_SEC_NONE)
 	    && (rsn_flags == NM_802_11_AP_SEC_NONE)) {
-		g_string_append (security_str, _("WEP"));
-		g_string_append_c (security_str, ' ');
+		g_string_append (security_str, "WEP ");
 	}
 	if (wpa_flags != NM_802_11_AP_SEC_NONE) {
-		g_string_append (security_str, _("WPA1"));
-		g_string_append_c (security_str, ' ');
+		g_string_append (security_str, "WPA1 ");
 	}
-	if (rsn_flags != NM_802_11_AP_SEC_NONE) {
-		g_string_append (security_str, _("WPA2"));
-		g_string_append_c (security_str, ' ');
+	if (   (rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
+	    || (rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_802_1X)) {
+		g_string_append (security_str, "WPA2 ");
+	}
+	if (rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_SAE) {
+		g_string_append (security_str, "WPA3 ");
 	}
 	if (   (wpa_flags & NM_802_11_AP_SEC_KEY_MGMT_802_1X)
 	    || (rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_802_1X)) {
-		g_string_append   (security_str, _("802.1X"));
-		g_string_append_c (security_str, ' ');
+		g_string_append   (security_str, "802.1X ");
 	}
 
 	if (security_str->len > 0)
@@ -1869,6 +1832,7 @@ typedef struct {
 	NmCli *nmc;
 	NMDevice *device;
 	gboolean hotspot;
+	gboolean create;
 } AddAndActivateInfo;
 
 static void
@@ -1879,53 +1843,37 @@ add_and_activate_cb (GObject *client,
 	AddAndActivateInfo *info = (AddAndActivateInfo *) user_data;
 	NmCli *nmc = info->nmc;
 	NMDevice *device = info->device;
-	NMActiveConnectionState state;
 	NMActiveConnection *active;
 	GError *error = NULL;
 
-	active = nm_client_add_and_activate_connection_finish (NM_CLIENT (client), result, &error);
+	if (info->create)
+		active = nm_client_add_and_activate_connection_finish (NM_CLIENT (client), result, &error);
+	else
+		active = nm_client_activate_connection_finish (NM_CLIENT (client), result, &error);
 
 	if (error) {
 		if (info->hotspot)
 			g_string_printf (nmc->return_text, _("Error: Failed to setup a Wi-Fi hotspot: %s"),
 			                 error->message);
-		else
+		else if (info->create)
 			g_string_printf (nmc->return_text, _("Error: Failed to add/activate new connection: %s"),
+			                 error->message);
+		else
+			g_string_printf (nmc->return_text, _("Error: Failed to activate connection: %s"),
 			                 error->message);
 		g_error_free (error);
 		nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
 		quit ();
 	} else {
-		state = nm_active_connection_get_state (active);
-
-		if (state == NM_ACTIVE_CONNECTION_STATE_UNKNOWN) {
-			if (info->hotspot)
-				g_string_printf (nmc->return_text, _("Error: Failed to setup a Wi-Fi hotspot"));
-			else
-				g_string_printf (nmc->return_text, _("Error: Failed to add/activate new connection: Unknown error"));
-			nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
-			g_object_unref (active);
-			quit ();
-		}
-
-		if (nmc->nowait_flag || state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
-			/* User doesn't want to wait or already activated */
-			if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
-				if (nmc->nmc_config.print_output == NMC_PRINT_PRETTY)
-					nmc_terminal_erase_line ();
-				if (!info->hotspot)
-					g_print (_("Connection with UUID '%s' created and activated on device '%s'\n"),
-					         nm_active_connection_get_uuid (active), nm_device_get_iface (device));
-				else
-					g_print (_("Hotspot '%s' activated on device '%s'\n"),
-					         nm_active_connection_get_id (active), nm_device_get_iface (device));
-			}
+		if (nmc->nowait_flag) {
 			g_object_unref (active);
 			quit ();
 		} else {
 			g_object_ref (device);
 			g_signal_connect (device, "notify::state", G_CALLBACK (device_state_cb), active);
 			g_signal_connect (active, "notify::state", G_CALLBACK (active_state_cb), device);
+
+			connected_state_cb (device, active);
 
 			g_timeout_add_seconds (nmc->timeout, timeout_cb, nmc);  /* Exit if timeout expires */
 
@@ -1970,13 +1918,13 @@ connect_device_cb (GObject *client, GAsyncResult *result, gpointer user_data)
 	GError *error = NULL;
 	const GPtrArray *devices;
 	NMDevice *device;
-	NMDeviceState state;
 
 	active = nm_client_activate_connection_finish (NM_CLIENT (client), result, &error);
 
 	if (error) {
 		/* If no connection existed for the device, create one and activate it */
 		if (g_error_matches (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_UNKNOWN_CONNECTION)) {
+			info->create = TRUE;
 			create_connect_connection_for_device (info);
 			return;
 		}
@@ -1999,27 +1947,24 @@ connect_device_cb (GObject *client, GAsyncResult *result, gpointer user_data)
 		}
 
 		device = g_ptr_array_index (devices, 0);
-		state = nm_device_get_state (device);
 
-		if (nmc->nowait_flag || state == NM_DEVICE_STATE_ACTIVATED) {
-			/* Don't want to wait or device already activated */
-			if (state == NM_DEVICE_STATE_ACTIVATED && nmc->nmc_config.print_output == NMC_PRINT_PRETTY) {
-				nmc_terminal_erase_line ();
-				g_print (_("Device '%s' has been connected.\n"), nm_device_get_iface (device));
-			}
+		if (nmc->nowait_flag) {
 			g_object_unref (active);
 			quit ();
 		} else {
 			if (nmc->secret_agent) {
 				NMRemoteConnection *connection = nm_active_connection_get_connection (active);
 
-				nm_secret_agent_simple_enable (NM_SECRET_AGENT_SIMPLE (nmc->secret_agent),
+				nm_secret_agent_simple_enable (nmc->secret_agent,
 				                               nm_connection_get_path (NM_CONNECTION (connection)));
 			}
 
 			g_object_ref (device);
 			g_signal_connect (device, "notify::state", G_CALLBACK (device_state_cb), active);
 			g_signal_connect (active, "notify::state", G_CALLBACK (active_state_cb), device);
+
+			connected_state_cb (device, active);
+
 			/* Start timer not to loop forever if "notify::state" signal is not issued */
 			g_timeout_add_seconds (nmc->timeout, timeout_cb, nmc);
 		}
@@ -2518,7 +2463,7 @@ do_device_set (NmCli *nmc, int argc, char **argv)
 		return error->code;
 	}
 
-        if (!argc) {
+	if (!argc) {
 		g_string_printf (nmc->return_text, _("Error: No property specified."));
 		return NMC_RESULT_ERROR_USER_INPUT;
 	}
@@ -2717,7 +2662,7 @@ find_wifi_device_by_iface (NMDevice **devices, const char *iface, int *idx)
 }
 
 /*
- * Find AP on 'device' according to 'bssid' or 'ssid' parameter.
+ * Find AP on 'device' according to 'bssid' and 'ssid' parameters.
  * Returns: found AP or NULL
  */
 static NMAccessPoint *
@@ -2734,17 +2679,17 @@ find_ap_on_device (NMDevice *device, const char *bssid, const char *ssid, gboole
 		NMAccessPoint *candidate_ap = g_ptr_array_index (aps, i);
 
 		if (bssid) {
-			/* Parameter is BSSID */
 			const char *candidate_bssid = nm_access_point_get_bssid (candidate_ap);
+
+			if (!candidate_bssid)
+				continue;
 
 			/* Compare BSSIDs */
 			if (complete) {
 				if (g_str_has_prefix (candidate_bssid, bssid))
 					g_print ("%s\n", candidate_bssid);
-			} else if (strcmp (bssid, candidate_bssid) == 0) {
-				ap = candidate_ap;
-				break;
-			}
+			} else if (strcmp (bssid, candidate_bssid) != 0)
+				continue;
 		}
 
 		if (ssid) {
@@ -2763,13 +2708,18 @@ find_ap_on_device (NMDevice *device, const char *bssid, const char *ssid, gboole
 			if (complete) {
 				if (g_str_has_prefix (ssid_tmp, ssid))
 					g_print ("%s\n", ssid_tmp);
-			} else if (strcmp (ssid, ssid_tmp) == 0) {
-				ap = candidate_ap;
+			} else if (strcmp (ssid, ssid_tmp) != 0) {
 				g_free (ssid_tmp);
-				break;
+				continue;
 			}
 			g_free (ssid_tmp);
 		}
+
+		if (complete)
+			continue;
+
+		ap = candidate_ap;
+		break;
 	}
 
 	return ap;
@@ -3173,7 +3123,6 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 	NMConnection *connection = NULL;
 	NMSettingConnection *s_con;
 	NMSettingWireless *s_wifi;
-	NMSettingWirelessSecurity *s_wsec;
 	AddAndActivateInfo *info;
 	const char *param_user = NULL;
 	const char *ifname = NULL;
@@ -3189,6 +3138,10 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 	int devices_idx;
 	char *ssid_ask = NULL;
 	char *passwd_ask = NULL;
+	const GPtrArray *avail_cons;
+	gboolean name_match = FALSE;
+	gboolean existing_con = FALSE;
+	int i;
 
 	/* Set default timeout waiting for operation completion. */
 	if (nmc->timeout == -1)
@@ -3211,7 +3164,7 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 		g_assert (!nmc->complete);
 
 		if (nmc->ask) {
-			ssid_ask = nmc_readline (_("SSID or BSSID: "));
+			ssid_ask = nmc_readline (&nmc->nmc_config, _("SSID or BSSID: "));
 			param_user = ssid_ask ?: "";
 			bssid1_arr = nm_utils_hwaddr_atoba (param_user, ETH_ALEN);
 		}
@@ -3393,14 +3346,14 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 	}
 
 	/* Find an AP to connect to */
-	ap = find_ap_on_device (device, bssid1_arr ? param_user : NULL,
+	ap = find_ap_on_device (device, bssid1_arr ? param_user : bssid,
 	                                bssid1_arr ? NULL : param_user, FALSE);
 	if (!ap && !ifname) {
 		NMDevice *dev;
 
 		/* AP not found, ifname was not specified, so try finding the AP on another device. */
 		while ((dev = find_wifi_device_by_iface (devices, NULL, &devices_idx)) != NULL) {
-			ap = find_ap_on_device (dev, bssid1_arr ? param_user : NULL,
+			ap = find_ap_on_device (dev, bssid1_arr ? param_user : bssid,
 			                             bssid1_arr ? NULL : param_user, FALSE);
 			if (ap) {
 				device = dev;
@@ -3418,45 +3371,75 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 		goto finish;
 	}
 
-	/* If there are some connection data from user, create a connection and
-	 * fill them into proper settings. */
-	if (con_name || private || bssid2_arr || password || hidden)
-		connection = nm_simple_connection_new ();
+	avail_cons = nm_device_get_available_connections (device);
+	for (i = 0; i < avail_cons->len; i++) {
+		NMRemoteConnection *avail_con = g_ptr_array_index (avail_cons, i);
+		const char *id = nm_connection_get_id (NM_CONNECTION (avail_con));
 
-	if (con_name || private) {
-		s_con =  (NMSettingConnection *) nm_setting_connection_new ();
-		nm_connection_add_setting (connection, NM_SETTING (s_con));
+		if (con_name) {
+			if (!id || strcmp (id, con_name))
+				continue;
 
-		/* Set user provided connection name */
-		if (con_name)
-			g_object_set (s_con, NM_SETTING_CONNECTION_ID, con_name, NULL);
+			name_match = TRUE;
+		}
 
-		/* Connection will only be visible to this user when 'private' is specified */
-		if (private)
-			nm_setting_connection_add_permission (s_con, "user", g_get_user_name (), NULL);
+		if (nm_access_point_connection_valid (ap, NM_CONNECTION (avail_con))) {
+			/* ap has been checked against bssid1, bssid2 and the ssid
+			 * and now avail_con has been checked against ap.
+			 */
+			connection = NM_CONNECTION (avail_con);
+			existing_con = TRUE;
+			break;
+		}
 	}
-	if (bssid2_arr || hidden) {
-		s_wifi = (NMSettingWireless *) nm_setting_wireless_new ();
-		nm_connection_add_setting (connection, NM_SETTING (s_wifi));
 
-		/* 'bssid' parameter is used to restrict the connection only to the BSSID */
-		if (bssid2_arr)
-			g_object_set (s_wifi, NM_SETTING_WIRELESS_BSSID, bssid2_arr, NULL);
+	if (name_match && !existing_con) {
+		g_string_printf (nmc->return_text, _("Error: Connection '%s' exists but properties don't match."), con_name);
+		nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
+		goto finish;
+	}
 
-		/* 'hidden' parameter is used to indicate that SSID is not broadcasted */
-		if (hidden) {
-			GBytes *ssid = g_bytes_new (param_user, strlen (param_user));
+	if (!existing_con) {
+		/* If there are some connection data from user, create a connection and
+		 * fill them into proper settings. */
+		if (con_name || private || bssid2_arr || password || hidden)
+			connection = nm_simple_connection_new ();
 
-			g_object_set (s_wifi,
-			              NM_SETTING_WIRELESS_SSID, ssid,
-			              NM_SETTING_WIRELESS_HIDDEN, hidden,
-			              NULL);
-			g_bytes_unref (ssid);
+		if (con_name || private) {
+			s_con =  (NMSettingConnection *) nm_setting_connection_new ();
+			nm_connection_add_setting (connection, NM_SETTING (s_con));
 
-			/* Warn when the provided AP identifier looks like BSSID instead of SSID */
-			if (bssid1_arr)
-				g_printerr (_("Warning: '%s' should be SSID for hidden APs; but it looks like a BSSID.\n"),
-				               param_user);
+			/* Set user provided connection name */
+			if (con_name)
+				g_object_set (s_con, NM_SETTING_CONNECTION_ID, con_name, NULL);
+
+			/* Connection will only be visible to this user when 'private' is specified */
+			if (private)
+				nm_setting_connection_add_permission (s_con, "user", g_get_user_name (), NULL);
+		}
+		if (bssid2_arr || hidden) {
+			s_wifi = (NMSettingWireless *) nm_setting_wireless_new ();
+			nm_connection_add_setting (connection, NM_SETTING (s_wifi));
+
+			/* 'bssid' parameter is used to restrict the connection only to the BSSID */
+			if (bssid2_arr)
+				g_object_set (s_wifi, NM_SETTING_WIRELESS_BSSID, bssid2_arr, NULL);
+
+			/* 'hidden' parameter is used to indicate that SSID is not broadcasted */
+			if (hidden) {
+				GBytes *ssid = g_bytes_new (param_user, strlen (param_user));
+
+				g_object_set (s_wifi,
+				              NM_SETTING_WIRELESS_SSID, ssid,
+				              NM_SETTING_WIRELESS_HIDDEN, hidden,
+				              NULL);
+				g_bytes_unref (ssid);
+
+				/* Warn when the provided AP identifier looks like BSSID instead of SSID */
+				if (bssid1_arr)
+					g_printerr (_("Warning: '%s' should be SSID for hidden APs; but it looks like a BSSID.\n"),
+					               param_user);
+			}
 		}
 	}
 
@@ -3469,15 +3452,38 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 	if (   (ap_flags & NM_802_11_AP_FLAGS_PRIVACY)
 	    || ap_wpa_flags != NM_802_11_AP_SEC_NONE
 	    || ap_rsn_flags != NM_802_11_AP_SEC_NONE) {
+		const char *con_password = NULL;
+		NMSettingWirelessSecurity *s_wsec = NULL;
+
+		if (connection) {
+			s_wsec = nm_connection_get_setting_wireless_security (connection);
+			if (s_wsec) {
+				if (ap_wpa_flags == NM_802_11_AP_SEC_NONE && ap_rsn_flags == NM_802_11_AP_SEC_NONE) {
+					/* WEP */
+					con_password = nm_setting_wireless_security_get_wep_key (s_wsec, 0);
+				} else if (   (ap_wpa_flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
+				           || (ap_rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
+				           || (ap_rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_SAE)) {
+					/* WPA PSK */
+					con_password = nm_setting_wireless_security_get_psk (s_wsec);
+				}
+			}
+		}
+
 		/* Ask for missing password when one is expected and '--ask' is used */
-		if (!password && nmc->ask)
-			password = passwd_ask = nmc_readline_echo (nmc->nmc_config.show_secrets, _("Password: "));
+		if (!password && !con_password && nmc->ask) {
+			password = passwd_ask = nmc_readline_echo (&nmc->nmc_config,
+			                                           nmc->nmc_config.show_secrets,
+			                                           _("Password: "));
+		}
 
 		if (password) {
 			if (!connection)
 				connection = nm_simple_connection_new ();
-			s_wsec = (NMSettingWirelessSecurity *) nm_setting_wireless_security_new ();
-			nm_connection_add_setting (connection, NM_SETTING (s_wsec));
+			if (!s_wsec) {
+				s_wsec = (NMSettingWirelessSecurity *) nm_setting_wireless_security_new ();
+				nm_connection_add_setting (connection, NM_SETTING (s_wsec));
+			}
 
 			if (ap_wpa_flags == NM_802_11_AP_SEC_NONE && ap_rsn_flags == NM_802_11_AP_SEC_NONE) {
 				/* WEP */
@@ -3487,13 +3493,14 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 				              wep_passphrase ? NM_WEP_KEY_TYPE_PASSPHRASE: NM_WEP_KEY_TYPE_KEY,
 				              NULL);
 			} else if (   (ap_wpa_flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
-			           || (ap_rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)) {
+			           || (ap_rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_PSK)
+			           || (ap_rsn_flags & NM_802_11_AP_SEC_KEY_MGMT_SAE)) {
 				/* WPA PSK */
 				g_object_set (s_wsec, NM_SETTING_WIRELESS_SECURITY_PSK, password, NULL);
 			}
 		}
 	}
-	// FIXME: WPA-Enterprise is not supported yet.
+	// FIXME: Creating WPA-Enterprise connections is not supported yet.
 	// We are not able to determine and fill all the parameters for
 	// 802.1X authentication automatically without user providing
 	// the data. Adding nmcli options for the 8021x setting would
@@ -3511,14 +3518,24 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 	info->nmc = nmc;
 	info->device = device;
 	info->hotspot = FALSE;
-
-	nm_client_add_and_activate_connection_async (nmc->client,
-	                                             connection,
-	                                             device,
-	                                             nm_object_get_path (NM_OBJECT (ap)),
-	                                             NULL,
-	                                             add_and_activate_cb,
-	                                             info);
+	info->create = !existing_con;
+	if (existing_con) {
+		nm_client_activate_connection_async (nmc->client,
+		                                     connection,
+		                                     device,
+		                                     nm_object_get_path (NM_OBJECT (ap)),
+		                                     NULL,
+		                                     add_and_activate_cb,
+		                                     info);
+	} else {
+		nm_client_add_and_activate_connection_async (nmc->client,
+		                                             connection,
+		                                             device,
+		                                             nm_object_get_path (NM_OBJECT (ap)),
+		                                             NULL,
+		                                             add_and_activate_cb,
+		                                             info);
+	}
 
 finish:
 	if (bssid1_arr)

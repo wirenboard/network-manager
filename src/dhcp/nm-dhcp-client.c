@@ -21,10 +21,8 @@
 
 #include "nm-dhcp-client.h"
 
-#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -291,12 +289,13 @@ nm_dhcp_client_get_use_fqdn (NMDhcpClient *self)
 /*****************************************************************************/
 
 static const char *state_table[NM_DHCP_STATE_MAX + 1] = {
-	[NM_DHCP_STATE_UNKNOWN]  = "unknown",
-	[NM_DHCP_STATE_BOUND]    = "bound",
-	[NM_DHCP_STATE_TIMEOUT]  = "timeout",
-	[NM_DHCP_STATE_EXPIRE]   = "expire",
-	[NM_DHCP_STATE_DONE]     = "done",
-	[NM_DHCP_STATE_FAIL]     = "fail",
+	[NM_DHCP_STATE_UNKNOWN]    = "unknown",
+	[NM_DHCP_STATE_BOUND]      = "bound",
+	[NM_DHCP_STATE_TIMEOUT]    = "timeout",
+	[NM_DHCP_STATE_EXPIRE]     = "expire",
+	[NM_DHCP_STATE_DONE]       = "done",
+	[NM_DHCP_STATE_FAIL]       = "fail",
+	[NM_DHCP_STATE_TERMINATED] = "terminated",
 };
 
 static const char *
@@ -452,7 +451,6 @@ daemon_watch_cb (GPid pid, int status, gpointer user_data)
 {
 	NMDhcpClient *self = NM_DHCP_CLIENT (user_data);
 	NMDhcpClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
-	NMDhcpState new_state;
 
 	g_return_if_fail (priv->watch_id);
 	priv->watch_id = 0;
@@ -468,14 +466,9 @@ daemon_watch_cb (GPid pid, int status, gpointer user_data)
 	else
 		_LOGW ("client died abnormally");
 
-	if (!WIFEXITED (status))
-		new_state = NM_DHCP_STATE_FAIL;
-	else
-		new_state = NM_DHCP_STATE_DONE;
-
 	priv->pid = -1;
 
-	nm_dhcp_client_set_state (self, new_state, NULL, NULL);
+	nm_dhcp_client_set_state (self, NM_DHCP_STATE_TERMINATED, NULL, NULL);
 }
 
 void
@@ -632,7 +625,7 @@ out:
 		int errsv = errno;
 
 		nm_log_dbg (LOGD_DHCP, "dhcp: could not remove pid file \"%s\": %s (%d)",
-		            pid_file, g_strerror (errsv), errsv);
+		            pid_file, nm_strerror_native (errsv), errsv);
 	}
 }
 

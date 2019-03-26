@@ -23,8 +23,6 @@
 
 #include "nm-utils.h"
 
-#include <string.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <netinet/ether.h>
 #include <arpa/inet.h>
@@ -40,6 +38,8 @@
 #endif
 
 #include "nm-utils/nm-enum-utils.h"
+#include "nm-utils/nm-secret-utils.h"
+#include "systemd/nm-sd-utils-shared.h"
 #include "nm-common-macros.h"
 #include "nm-utils-private.h"
 #include "nm-setting-private.h"
@@ -61,13 +61,284 @@
  * access points and devices, among other things.
  */
 
+/*****************************************************************************/
+
+struct _NMSockAddrEndpoint {
+	const char *host;
+	guint16 port;
+	guint refcount;
+	char endpoint[];
+};
+
+static gboolean
+NM_IS_SOCK_ADDR_ENDPOINT (const NMSockAddrEndpoint *self)
+{
+	return self && self->refcount > 0;
+}
+
+static const char *
+_parse_endpoint (char *str,
+                 guint16 *out_port)
+{
+	char *s;
+	const char *s_port;
+	gint16 port;
+
+	/* Like
+	 * - https://git.zx2c4.com/WireGuard/tree/src/tools/config.c?id=5e99a6d43fe2351adf36c786f5ea2086a8fe7ab8#n192
+	 * - https://github.com/systemd/systemd/blob/911649fdd43f3a9158b847947724a772a5a45c34/src/network/netdev/wireguard.c#L614
+	 */
+
+	g_strstrip (str);
+
+	if (!str[0])
+		return NULL;
+
+	if (str[0] == '[') {
+		str++;
+		s = strchr (str, ']');
+		if (!s)
+			return NULL;
+		if (s == str)
+			return NULL;
+		if (s[1] != ':')
+			return NULL;
+		if (!s[2])
+			return NULL;
+		*s = '\0';
+		s_port = &s[2];
+	} else {
+		s = strrchr (str, ':');
+		if (!s)
+			return NULL;
+		if (s == str)
+			return NULL;
+		if (!s[1])
+			return NULL;
+		*s = '\0';
+		s_port = &s[1];
+	}
+
+	if (!NM_STRCHAR_ALL (s_port, ch, (ch >= '0' && ch <= '9')))
+		return NULL;
+
+	port = _nm_utils_ascii_str_to_int64 (s_port, 10, 1, G_MAXUINT16, 0);
+	if (port == 0)
+		return NULL;
+
+	*out_port = port;
+	return str;
+}
+
+/**
+ * nm_sock_addr_endpoint_new:
+ * @endpoint: the endpoint string.
+ *
+ * This function cannot fail, even if the @endpoint is invalid.
+ * The reason is to allow NMSockAddrEndpoint also to be used
+ * for tracking invalid endpoints. Use nm_sock_addr_endpoint_get_host()
+ * to determine whether the endpoint is valid.
+ *
+ * Returns: (transfer full): the new #NMSockAddrEndpoint endpoint.
+ */
+NMSockAddrEndpoint *
+nm_sock_addr_endpoint_new (const char *endpoint)
+{
+	NMSockAddrEndpoint *ep;
+	gsize l_endpoint;
+	gsize l_host = 0;
+	gsize i;
+	gs_free char *host_clone = NULL;
+	const char *host;
+	guint16 port;
+
+	g_return_val_if_fail (endpoint, NULL);
+
+	l_endpoint = strlen (endpoint) + 1;
+
+	host = _parse_endpoint (nm_strndup_a (200, endpoint, l_endpoint - 1, &host_clone),
+	                        &port);
+
+	if (host)
+		l_host = strlen (host) + 1;
+
+	ep = g_malloc (sizeof (NMSockAddrEndpoint) + l_endpoint + l_host);
+	ep->refcount = 1;
+	memcpy (ep->endpoint, endpoint, l_endpoint);
+	if (host) {
+		i = l_endpoint;
+		memcpy (&ep->endpoint[i], host, l_host);
+		ep->host = &ep->endpoint[i];
+		ep->port = port;
+	} else {
+		ep->host = NULL;
+		ep->port = 0;
+	}
+	return ep;
+}
+
+/**
+ * nm_sock_addr_endpoint_ref:
+ * @self: (allow-none): the #NMSockAddrEndpoint
+ */
+NMSockAddrEndpoint *
+nm_sock_addr_endpoint_ref (NMSockAddrEndpoint *self)
+{
+	if (!self)
+		return NULL;
+
+	g_return_val_if_fail (NM_IS_SOCK_ADDR_ENDPOINT (self), NULL);
+
+	nm_assert (self->refcount < G_MAXUINT);
+
+	self->refcount++;
+	return self;
+}
+
+/**
+ * nm_sock_addr_endpoint_unref:
+ * @self: (allow-none): the #NMSockAddrEndpoint
+ */
+void
+nm_sock_addr_endpoint_unref (NMSockAddrEndpoint *self)
+{
+	if (!self)
+		return;
+
+	g_return_if_fail (NM_IS_SOCK_ADDR_ENDPOINT (self));
+
+	if (--self->refcount == 0)
+		g_free (self);
+}
+
+/**
+ * nm_sock_addr_endpoint_get_endpoint:
+ * @self: the #NMSockAddrEndpoint
+ *
+ * Gives the endpoint string. Since #NMSockAddrEndpoint's only
+ * information is the endpoint string, this can be used for comparing
+ * to instances for equality and order them lexically.
+ *
+ * Returns: (transfer none): the endpoint.
+ */
+const char *
+nm_sock_addr_endpoint_get_endpoint (NMSockAddrEndpoint *self)
+{
+	g_return_val_if_fail (NM_IS_SOCK_ADDR_ENDPOINT (self), NULL);
+
+	return self->endpoint;
+}
+
+/**
+ * nm_sock_addr_endpoint_get_host:
+ * @self: the #NMSockAddrEndpoint
+ *
+ * Returns: (transfer none): the parsed host part of the endpoint.
+ *   If the endpoint is invalid, %NULL will be returned.
+ */
+const char *
+nm_sock_addr_endpoint_get_host (NMSockAddrEndpoint *self)
+{
+	g_return_val_if_fail (NM_IS_SOCK_ADDR_ENDPOINT (self), NULL);
+
+	return self->host;
+}
+
+/**
+ * nm_sock_addr_endpoint_get_port:
+ * @self: the #NMSockAddrEndpoint
+ *
+ * Returns: the parsed port part of the endpoint (the service).
+ *   If the endpoint is invalid, -1 will be returned.
+ */
+gint32
+nm_sock_addr_endpoint_get_port (NMSockAddrEndpoint *self)
+{
+	g_return_val_if_fail (NM_IS_SOCK_ADDR_ENDPOINT (self), -1);
+
+	return self->host ? (int) self->port : -1;
+}
+
+gboolean
+nm_sock_addr_endpoint_get_fixed_sockaddr (NMSockAddrEndpoint *self,
+                                          gpointer sockaddr)
+{
+	int addr_family;
+	NMIPAddr addrbin;
+	const char *s;
+	guint scope_id = 0;
+
+	g_return_val_if_fail (NM_IS_SOCK_ADDR_ENDPOINT (self), FALSE);
+	g_return_val_if_fail (sockaddr, FALSE);
+
+	if (!self->host)
+		return FALSE;
+
+	if (nm_utils_parse_inaddr_bin (AF_UNSPEC, self->host, &addr_family, &addrbin))
+		goto good;
+
+	/* See if there is an IPv6 scope-id...
+	 *
+	 * Note that it does not make sense to persist connection profiles to disk,
+	 * that refenrence a scope-id (because the interface's ifindex changes on
+	 * reboot). However, we also support runtime only changes like `nmcli device modify`
+	 * where nothing is persisted to disk. At least in that case, passing a scope-id
+	 * might be reasonable. So, parse that too. */
+	s = strchr (self->host, '%');
+	if (!s)
+		return FALSE;
+
+	if (   s[1] == '\0'
+	    || !NM_STRCHAR_ALL (&s[1], ch, (ch >= '0' && ch <= '9')))
+		return FALSE;
+
+	scope_id = _nm_utils_ascii_str_to_int64 (&s[1], 10, 0, G_MAXINT32, G_MAXUINT);
+	if (scope_id == G_MAXUINT && errno)
+		return FALSE;
+
+	{
+		gs_free char *tmp_str = NULL;
+		const char *host_part;
+
+		host_part = nm_strndup_a (200, self->host, s - self->host, &tmp_str);
+		if (nm_utils_parse_inaddr_bin (AF_INET6, host_part, &addr_family, &addrbin))
+			goto good;
+	}
+
+	return FALSE;
+
+good:
+	switch (addr_family) {
+	case AF_INET:
+		*((struct sockaddr_in *) sockaddr) = (struct sockaddr_in) {
+			.sin_family = AF_INET,
+			.sin_addr   = addrbin.addr4_struct,
+			.sin_port   = htons (self->port),
+		};
+		return TRUE;
+	case AF_INET6:
+		*((struct sockaddr_in6 *) sockaddr) = (struct sockaddr_in6) {
+			.sin6_family   = AF_INET6,
+			.sin6_addr     = addrbin.addr6,
+			.sin6_port     = htons (self->port),
+			.sin6_scope_id = scope_id,
+			.sin6_flowinfo = 0,
+		};
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/*****************************************************************************/
+
 struct IsoLangToEncodings
 {
 	const char *lang;
 	const char *const *encodings;
 };
 
-#define LANG_ENCODINGS(l, ...) { .lang = l, .encodings = (const char *[]) { __VA_ARGS__, NULL }}
+#define LANG_ENCODINGS(l, ...) { .lang = l, .encodings = NM_MAKE_STRV (__VA_ARGS__), }
 
 /* 5-letter language codes */
 static const struct IsoLangToEncodings isoLangEntries5[] =
@@ -112,7 +383,7 @@ static const struct IsoLangToEncodings isoLangEntries2[] =
 	LANG_ENCODINGS ("bg",      "windows-1251","koi8-r", "iso-8859-5"), /* Bulgarian */
 	LANG_ENCODINGS ("mk",      "koi8-r", "windows-1251", "iso-8859-5"),/* Macedonian */
 	LANG_ENCODINGS ("sr",      "koi8-r", "windows-1251", "iso-8859-5"),/* Serbian */
-	LANG_ENCODINGS ("uk",      "koi8-u", "koi8-r", "windows-1251"),    /* Ukranian */
+	LANG_ENCODINGS ("uk",      "koi8-u", "koi8-r", "windows-1251"),    /* Ukrainian */
 
 	/* Arabic */
 	LANG_ENCODINGS ("ar",      "iso-8859-6","windows-1256"),
@@ -836,7 +1107,7 @@ device_supports_ap_ciphers (guint32 dev_caps,
 
 /**
  * nm_utils_ap_mode_security_valid:
- * @type: the security type to check device capabilties against,
+ * @type: the security type to check device capabilities against,
  * e.g. #NMU_SEC_STATIC_WEP
  * @wifi_caps: bitfield of the capabilities of the specific Wi-Fi device, e.g.
  * #NM_WIFI_DEVICE_CAP_CIPHER_WEP40
@@ -872,16 +1143,16 @@ nm_utils_ap_mode_security_valid (NMUtilsSecurityType type,
 
 /**
  * nm_utils_security_valid:
- * @type: the security type to check AP flags and device capabilties against,
+ * @type: the security type to check AP flags and device capabilities against,
  * e.g. #NMU_SEC_STATIC_WEP
  * @wifi_caps: bitfield of the capabilities of the specific Wi-Fi device, e.g.
  * #NM_WIFI_DEVICE_CAP_CIPHER_WEP40
  * @have_ap: whether the @ap_flags, @ap_wpa, and @ap_rsn arguments are valid
  * @adhoc: whether the capabilities being tested are from an Ad-Hoc AP (IBSS)
  * @ap_flags: bitfield of AP capabilities, e.g. #NM_802_11_AP_FLAGS_PRIVACY
- * @ap_wpa: bitfield of AP capabilties derived from the AP's WPA beacon,
+ * @ap_wpa: bitfield of AP capabilities derived from the AP's WPA beacon,
  * e.g. (#NM_802_11_AP_SEC_PAIR_TKIP | #NM_802_11_AP_SEC_KEY_MGMT_PSK)
- * @ap_rsn: bitfield of AP capabilties derived from the AP's RSN/WPA2 beacon,
+ * @ap_rsn: bitfield of AP capabilities derived from the AP's RSN/WPA2 beacon,
  * e.g. (#NM_802_11_AP_SEC_PAIR_CCMP | #NM_802_11_AP_SEC_PAIR_TKIP)
  *
  * Given a set of device capabilities, and a desired security type to check
@@ -891,7 +1162,7 @@ nm_utils_ap_mode_security_valid (NMUtilsSecurityType type,
  * NOTE: this function cannot handle checking security for AP/Hotspot mode;
  * use nm_utils_ap_mode_security_valid() instead.
  *
- * Returns: %TRUE if the device capabilities and AP capabilties intersect and are
+ * Returns: %TRUE if the device capabilities and AP capabilities intersect and are
  * compatible with the desired @type, %FALSE if they are not
  **/
 gboolean
@@ -1173,7 +1444,7 @@ nm_utils_ip4_dns_from_variant (GVariant *value)
 	dns = g_new (char *, length + 1);
 
 	for (i = 0; i < length; i++)
-		dns[i] = g_strdup (nm_utils_inet4_ntop (array[i], NULL));
+		dns[i] = nm_utils_inet4_ntop_dup (array[i]);
 	dns[i] = NULL;
 
 	return dns;
@@ -1271,7 +1542,7 @@ nm_utils_ip4_addresses_from_variant (GVariant *value, char **out_gateway)
 			g_ptr_array_add (addresses, addr);
 
 			if (addr_array[2] && out_gateway && !*out_gateway)
-				*out_gateway = g_strdup (nm_utils_inet4_ntop (addr_array[2], NULL));
+				*out_gateway = nm_utils_inet4_ntop_dup (addr_array[2]);
 		} else {
 			g_warning ("Ignoring invalid IP4 address: %s", error->message);
 			g_clear_error (&error);
@@ -1389,30 +1660,13 @@ nm_utils_ip4_routes_from_variant (GVariant *value)
 guint32
 nm_utils_ip4_netmask_to_prefix (guint32 netmask)
 {
-	guint32 prefix;
-	guint8 v;
-	const guint8 *p = (guint8 *) &netmask;
+	G_STATIC_ASSERT_EXPR (__SIZEOF_INT__   == 4);
+	G_STATIC_ASSERT_EXPR (sizeof (int)     == 4);
+	G_STATIC_ASSERT_EXPR (sizeof (netmask) == 4);
 
-	if (p[3]) {
-		prefix = 24;
-		v = p[3];
-	} else if (p[2]) {
-		prefix = 16;
-		v = p[2];
-	} else if (p[1]) {
-		prefix = 8;
-		v = p[1];
-	} else {
-		prefix = 0;
-		v = p[0];
-	}
-
-	while (v) {
-		prefix++;
-		v <<= 1;
-	}
-
-	return prefix;
+	return  (  (netmask != 0)
+	         ? (32 - __builtin_ctz (ntohl (netmask)))
+	         : 0);
 }
 
 /**
@@ -1510,7 +1764,7 @@ nm_utils_ip6_dns_from_variant (GVariant *value)
 			continue;
 		}
 
-		dns[i++] = g_strdup (nm_utils_inet6_ntop (ip, NULL));
+		dns[i++] = nm_utils_inet6_ntop_dup (ip);
 		g_variant_unref (ip_var);
 	}
 	dns[i] = NULL;
@@ -1629,7 +1883,7 @@ nm_utils_ip6_addresses_from_variant (GVariant *value, char **out_gateway)
 					goto next;
 				}
 				if (!IN6_IS_ADDR_UNSPECIFIED (gateway_bytes))
-					*out_gateway = g_strdup (nm_utils_inet6_ntop (gateway_bytes, NULL));
+					*out_gateway = nm_utils_inet6_ntop_dup (gateway_bytes);
 			}
 		} else {
 			g_warning ("Ignoring invalid IP6 address: %s", error->message);
@@ -2017,7 +2271,7 @@ _string_append_tc_handle (GString *string, guint32 handle)
  * or to pretty-format (use symbolic name for root) the key in keyfile.
  * The presence of prefix determnines which one is the case.
  *
- * Private API due to general uglyness and overall uselessness for anything
+ * Private API due to general ugliness and overall uselessness for anything
  * sensible.
  */
 void
@@ -2909,7 +3163,7 @@ nm_utils_uuid_generate_from_string_bin (NMUuid *uuid, const char *s, gssize slen
 		break;
 	case NM_UTILS_UUID_TYPE_VERSION3:
 	case NM_UTILS_UUID_TYPE_VERSION5: {
-		NMUuid ns_uuid = { 0 };
+		NMUuid ns_uuid = { };
 
 		if (type_args) {
 			/* type_args can be a name space UUID. Interpret it as (char *) */
@@ -3124,7 +3378,7 @@ _nm_utils_check_file (const char *filename,
 		g_set_error (error,
 		             NM_VPN_PLUGIN_ERROR,
 		             NM_VPN_PLUGIN_ERROR_FAILED,
-		             _("failed stat file %s: %s"), filename, strerror (errsv));
+		             _("failed stat file %s: %s"), filename, nm_strerror_native (errsv));
 		return FALSE;
 	}
 
@@ -3243,7 +3497,7 @@ _nm_utils_check_module_file (const char *name,
  * @predicate: (scope call): if given, pass the file name to this function
  *   for additional checks. This check is performed after the check for
  *   @file_test_flags. You cannot omit both @file_test_flags and @predicate.
- * @user_data: (closure): (allow-none): user data for @predicate function.
+ * @user_data: (closure) (allow-none): user data for @predicate function.
  * @error: (allow-none): on failure, set a "not found" error %G_IO_ERROR %G_IO_ERROR_NOT_FOUND.
  *
  * Searches for a @progname file in a list of search @paths.
@@ -3620,147 +3874,6 @@ nm_utils_hwaddr_len (int type)
 	g_return_val_if_reached (0);
 }
 
-guint8 *
-_nm_utils_hexstr2bin_full (const char *hexstr,
-                           gboolean allow_0x_prefix,
-                           gboolean delimiter_required,
-                           const char *delimiter_candidates,
-                           gsize required_len,
-                           guint8 *buffer,
-                           gsize buffer_len,
-                           gsize *out_len)
-{
-	const char *in = hexstr;
-	guint8 *out = buffer;
-	gboolean delimiter_has = TRUE;
-	guint8 delimiter = '\0';
-	gsize len;
-
-	nm_assert (hexstr);
-	nm_assert (buffer);
-	nm_assert (required_len > 0 || out_len);
-
-	if (   allow_0x_prefix
-	    && in[0] == '0'
-	    && in[1] == 'x')
-		in += 2;
-
-	while (TRUE) {
-		const guint8 d1 = in[0];
-		guint8 d2;
-		int i1, i2;
-
-		i1 = nm_utils_hexchar_to_int (d1);
-		if (i1 < 0)
-			goto fail;
-
-		/* If there's no leading zero (ie "aa:b:cc") then fake it */
-		d2 = in[1];
-		if (   d2
-		    && (i2 = nm_utils_hexchar_to_int (d2)) >= 0) {
-			*out++ = (i1 << 4) + i2;
-			d2 = in[2];
-			if (!d2)
-				break;
-			in += 2;
-		} else {
-			/* Fake leading zero */
-			*out++ = i1;
-			if (!d2) {
-				if (!delimiter_has) {
-					/* when using no delimiter, there must be pairs of hex chars */
-					goto fail;
-				}
-				break;
-			}
-			in += 1;
-		}
-
-		if (--buffer_len == 0)
-			goto fail;
-
-		if (delimiter_has) {
-			if (d2 != delimiter) {
-				if (delimiter)
-					goto fail;
-				if (delimiter_candidates) {
-					while (delimiter_candidates[0]) {
-						if (delimiter_candidates++[0] == d2)
-							delimiter = d2;
-					}
-				}
-				if (!delimiter) {
-					if (delimiter_required)
-						goto fail;
-					delimiter_has = FALSE;
-					continue;
-				}
-			}
-			in++;
-		}
-	}
-
-	len = out - buffer;
-	if (   required_len == 0
-	    || len == required_len) {
-		NM_SET_OUT (out_len, len);
-		return buffer;
-	}
-
-fail:
-	NM_SET_OUT (out_len, 0);
-	return NULL;
-}
-
-guint8 *
-_nm_utils_hexstr2bin_alloc (const char *hexstr,
-                            gboolean allow_0x_prefix,
-                            gboolean delimiter_required,
-                            const char *delimiter_candidates,
-                            gsize required_len,
-                            gsize *out_len)
-{
-	guint8 *buffer;
-	gsize buffer_len, len;
-
-	g_return_val_if_fail (hexstr, NULL);
-
-	nm_assert (required_len > 0 || out_len);
-
-	if (   allow_0x_prefix
-	    && hexstr[0] == '0'
-	    && hexstr[1] == 'x')
-		hexstr += 2;
-
-	if (!hexstr[0])
-		goto fail;
-
-	if (required_len > 0)
-		buffer_len = required_len;
-	else
-		buffer_len = strlen (hexstr) / 2 + 3;
-
-	buffer = g_malloc (buffer_len);
-
-	if (_nm_utils_hexstr2bin_full (hexstr,
-	                               FALSE,
-	                               delimiter_required,
-	                               delimiter_candidates,
-	                               required_len,
-	                               buffer,
-	                               buffer_len,
-	                               &len)) {
-		NM_SET_OUT (out_len, len);
-		return buffer;
-	}
-
-	g_free (buffer);
-
-fail:
-	NM_SET_OUT (out_len, 0);
-	return NULL;
-}
-
 /**
  * nm_utils_hexstr2bin:
  * @hex: a string of hexadecimal characters with optional ':' separators
@@ -3778,14 +3891,14 @@ nm_utils_hexstr2bin (const char *hex)
 	guint8 *buffer;
 	gsize len;
 
-	buffer = _nm_utils_hexstr2bin_alloc (hex, TRUE, FALSE, ":", 0, &len);
+	buffer = nm_utils_hexstr2bin_alloc (hex, TRUE, FALSE, ":", 0, &len);
 	if (!buffer)
 		return NULL;
 	buffer = g_realloc (buffer, len);
 	return g_bytes_new_take (buffer, len);
 }
 
-#define hwaddr_aton(asc, buffer, buffer_len, out_len) _nm_utils_hexstr2bin_full ((asc), FALSE, TRUE, ":-", 0, (buffer), (buffer_len), (out_len))
+#define hwaddr_aton(asc, buffer, buffer_len, out_len) nm_utils_hexstr2bin_full ((asc), FALSE, TRUE, ":-", 0, (buffer), (buffer_len), (out_len))
 
 /**
  * nm_utils_hwaddr_atoba:
@@ -3879,64 +3992,7 @@ nm_utils_hwaddr_aton (const char *asc, gpointer buffer, gsize length)
 	return buffer;
 }
 
-/**
- * _nm_utils_bin2hexstr_full:
- * @addr: pointer of @length bytes.
- * @length: number of bytes in @addr
- * @delimiter: either '\0', otherwise the output string will have the
- *   given delimiter character between each two hex numbers.
- * @upper_case: if TRUE, use upper case ASCII characters for hex.
- * @out: if %NULL, the function will allocate a new buffer of
- *   either (@length*2+1) or (@length*3) bytes, depending on whether
- *   a @delimiter is specified. In that case, the allocated buffer will
- *   be returned and must be freed by the caller.
- *   If not %NULL, the buffer must already be preallocated and contain
- *   at least (@length*2+1) or (@length*3) bytes, depending on the delimiter.
- *
- * Returns: the binary value converted to a hex string. If @out is given,
- *   this always returns @out. If @out is %NULL, a newly allocated string
- *   is returned.
- */
-char *
-_nm_utils_bin2hexstr_full (gconstpointer addr,
-                           gsize length,
-                           char delimiter,
-                           gboolean upper_case,
-                           char *out)
-{
-	const guint8 *in = addr;
-	const char *LOOKUP = upper_case ? "0123456789ABCDEF" : "0123456789abcdef";
-	char *out0;
 
-	nm_assert (addr);
-	nm_assert (length > 0);
-
-	if (out)
-		out0 = out;
-	else {
-		out0 = out = g_new (char, delimiter == '\0'
-		                          ? length * 2 + 1
-		                          : length * 3);
-	}
-
-	/* @out must contain at least @length*3 bytes if @delimiter is set,
-	 * otherwise, @length*2+1. */
-
-	for (;;) {
-		const guint8 v = *in++;
-
-		*out++ = LOOKUP[v >> 4];
-		*out++ = LOOKUP[v & 0x0F];
-		length--;
-		if (!length)
-			break;
-		if (delimiter)
-			*out++ = delimiter;
-	}
-
-	*out = 0;
-	return out0;
-}
 
 /**
  * nm_utils_bin2hexstr:
@@ -3962,7 +4018,7 @@ nm_utils_bin2hexstr (gconstpointer src, gsize len, int final_len)
 
 	result = g_malloc (buflen);
 
-	_nm_utils_bin2hexstr_full (src, len, '\0', FALSE, result);
+	nm_utils_bin2hexstr_full (src, len, '\0', FALSE, result);
 
 	/* Cut converted key off at the correct length for this cipher type */
 	if (final_len >= 0 && (gsize) final_len < buflen)
@@ -3986,7 +4042,7 @@ nm_utils_hwaddr_ntoa (gconstpointer addr, gsize length)
 	g_return_val_if_fail (addr, g_strdup (""));
 	g_return_val_if_fail (length > 0, g_strdup (""));
 
-	return _nm_utils_bin2hexstr_full (addr, length, ':', TRUE, NULL);
+	return nm_utils_bin2hexstr_full (addr, length, ':', TRUE, NULL);
 }
 
 const char *
@@ -3998,7 +4054,7 @@ nm_utils_hwaddr_ntoa_buf (gconstpointer addr, gsize addr_len, gboolean upper_cas
 	if (buf_len < addr_len * 3)
 		g_return_val_if_reached (NULL);
 
-	return _nm_utils_bin2hexstr_full (addr, addr_len, ':', upper_case, buf);
+	return nm_utils_bin2hexstr_full (addr, addr_len, ':', upper_case, buf);
 }
 
 /**
@@ -4251,13 +4307,18 @@ _nm_utils_hwaddr_cloned_not_set (NMSetting *setting,
 }
 
 GVariant *
-_nm_utils_hwaddr_cloned_data_synth (NMSetting *setting,
+_nm_utils_hwaddr_cloned_data_synth (const NMSettInfoSetting *sett_info,
+                                    guint property_idx,
                                     NMConnection *connection,
-                                    const char *property)
+                                    NMSetting *setting,
+                                    NMConnectionSerializationFlags flags)
 {
 	gs_free char *addr = NULL;
 
-	nm_assert (nm_streq0 (property, "assigned-mac-address"));
+	if (flags & NM_CONNECTION_SERIALIZE_ONLY_SECRETS)
+		return NULL;
+
+	nm_assert (nm_streq0 (sett_info->property_infos[property_idx].name, "assigned-mac-address"));
 
 	g_object_get (setting,
 	              "cloned-mac-address",
@@ -4278,7 +4339,9 @@ _nm_utils_hwaddr_cloned_data_synth (NMSetting *setting,
 	 * To preserve that behavior, serialize "" as NULL.
 	 */
 
-	return addr && addr[0] ? g_variant_new_string (addr) : NULL;
+	return addr && addr[0]
+	       ? g_variant_new_take_string (g_steal_pointer (&addr))
+	       : NULL;
 }
 
 gboolean
@@ -4317,6 +4380,102 @@ _nm_utils_hwaddr_from_dbus (GVariant *dbus_value,
 
 	str = length ? nm_utils_hwaddr_ntoa (array, length) : NULL;
 	g_value_take_string (prop_value, str);
+}
+
+/*****************************************************************************/
+
+/* Validate secret-flags. Most settings don't validate them, which is a bug.
+ * But we possibly cannot enforce a strict validation now.
+ *
+ * For new settings, they shall validate the secret-flags strictly. */
+gboolean
+_nm_utils_secret_flags_validate (NMSettingSecretFlags secret_flags,
+                                 const char *setting_name,
+                                 const char *property_name,
+                                 NMSettingSecretFlags disallowed_flags,
+                                 GError **error)
+{
+	if (secret_flags == NM_SETTING_SECRET_FLAG_NONE)
+		return TRUE;
+
+	if (NM_FLAGS_ANY (secret_flags, ~NM_SETTING_SECRET_FLAG_ALL)) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("unknown secret flags"));
+		if (setting_name)
+			g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+		return FALSE;
+	}
+
+	if (!nm_utils_is_power_of_two (secret_flags)) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("conflicting secret flags"));
+		if (setting_name)
+			g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+		return FALSE;
+	}
+
+	if (NM_FLAGS_ANY (secret_flags, disallowed_flags)) {
+		if (NM_FLAGS_HAS (secret_flags, NM_SETTING_SECRET_FLAG_NOT_REQUIRED)) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("secret flags must not be \"not-required\""));
+			if (setting_name)
+				g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+			return FALSE;
+		}
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("unsupported secret flags"));
+		if (setting_name)
+			g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+gboolean
+_nm_utils_wps_method_validate (NMSettingWirelessSecurityWpsMethod wps_method,
+                               const char *setting_name,
+                               const char *property_name,
+                               gboolean wps_required,
+                               GError **error)
+{
+	if (wps_method > NM_SETTING_WIRELESS_SECURITY_WPS_METHOD_PIN) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("property is invalid"));
+		g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+		return FALSE;
+	}
+
+	if (NM_FLAGS_HAS (wps_method, NM_SETTING_WIRELESS_SECURITY_WPS_METHOD_DISABLED)) {
+		if (wps_method != NM_SETTING_WIRELESS_SECURITY_WPS_METHOD_DISABLED) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("can't be simultaneously disabled and enabled"));
+			g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+			return FALSE;
+		}
+		if (wps_required) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("WPS is required"));
+			g_prefix_error (error, "%s.%s: ", setting_name, property_name);
+			return FALSE;
+		}
+	}
+
+	return TRUE;
 }
 
 /*****************************************************************************/
@@ -4517,10 +4676,11 @@ nm_utils_inet_ntop (int addr_family, gconstpointer addr, char *dst)
 
 	nm_assert_addr_family (addr_family);
 	nm_assert (addr);
+	nm_assert (dst);
 
 	s = inet_ntop (addr_family,
 	               addr,
-	               dst ?: _nm_utils_inet_ntop_buffer,
+	               dst,
 	               addr_family == AF_INET6 ? INET6_ADDRSTRLEN : INET_ADDRSTRLEN);
 	nm_assert (s);
 	return s;
@@ -4546,6 +4706,11 @@ nm_utils_inet_ntop (int addr_family, gconstpointer addr, char *dst)
 const char *
 nm_utils_inet4_ntop (in_addr_t inaddr, char *dst)
 {
+	/* relying on the static buffer (by leaving @dst as %NULL) is discouraged.
+	 * Don't do that!
+	 *
+	 * However, still support it to be lenient against mistakes and because
+	 * this is public API of libnm. */
 	return inet_ntop (AF_INET, &inaddr, dst ?: _nm_utils_inet_ntop_buffer,
 	                  INET_ADDRSTRLEN);
 }
@@ -4571,6 +4736,11 @@ nm_utils_inet4_ntop (in_addr_t inaddr, char *dst)
 const char *
 nm_utils_inet6_ntop (const struct in6_addr *in6addr, char *dst)
 {
+	/* relying on the static buffer (by leaving @dst as %NULL) is discouraged.
+	 * Don't do that!
+	 *
+	 * However, still support it to be lenient against mistakes and because
+	 * this is public API of libnm. */
 	g_return_val_if_fail (in6addr, NULL);
 	return inet_ntop (AF_INET6, in6addr, dst ?: _nm_utils_inet_ntop_buffer,
 	                  INET6_ADDRSTRLEN);
@@ -4665,7 +4835,7 @@ _nm_utils_dhcp_duid_valid (const char *duid, GBytes **out_duid_bin)
 		return TRUE;
 	}
 
-	if (_nm_utils_hexstr2bin_full (duid, FALSE, FALSE, ":", 0, duid_arr, sizeof (duid_arr), &duid_len)) {
+	if (nm_utils_hexstr2bin_full (duid, FALSE, FALSE, ":", 0, duid_arr, sizeof (duid_arr), &duid_len)) {
 		/* MAX DUID length is 128 octects + the type code (2 octects). */
 		if (   duid_len > 2
 		    && duid_len <= (128 + 2)) {
@@ -5315,7 +5485,7 @@ _json_find_object (json_t *json,
 	return json_element;
 }
 
-static inline void
+static void
 _json_delete_object_on_int_match (json_t *json,
                                   const char *key1,
                                   const char *key2,
@@ -5331,7 +5501,7 @@ _json_delete_object_on_int_match (json_t *json,
 		_json_del_object (json, key1, key2, key3);
 }
 
-static inline void
+static void
 _json_delete_object_on_bool_match (json_t *json,
                                    const char *key1,
                                    const char *key2,
@@ -5347,7 +5517,7 @@ _json_delete_object_on_bool_match (json_t *json,
 		_json_del_object (json, key1, key2, key3);
 }
 
-static inline void
+static void
 _json_delete_object_on_string_match (json_t *json,
                                      const char *key1,
                                      const char *key2,
@@ -5435,7 +5605,7 @@ _nm_utils_team_link_watcher_from_json (json_t *json_element)
 	const char *j_key;
 	json_t *j_val;
 	gs_free char *name = NULL, *target_host = NULL, *source_host = NULL;
-	int val1 = 0, val2 = 0, val3 = 3;
+	int val1 = 0, val2 = 0, val3 = 3, val4 = -1;
 	NMTeamLinkWatcherArpPingFlags flags = 0;
 
 	g_return_val_if_fail (json_element, NULL);
@@ -5456,6 +5626,8 @@ _nm_utils_team_link_watcher_from_json (json_t *json_element)
 			val2 = json_integer_value (j_val);
 		else if (nm_streq (j_key, "missed_max"))
 			val3 = json_integer_value (j_val);
+		else if (nm_streq (j_key, "vlanid"))
+			val4 = json_integer_value (j_val);
 		else if (nm_streq (j_key, "validate_active")) {
 			if (json_is_true (j_val))
 				flags |= NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_VALIDATE_ACTIVE;
@@ -5473,8 +5645,8 @@ _nm_utils_team_link_watcher_from_json (json_t *json_element)
 	else if (nm_streq0 (name, NM_TEAM_LINK_WATCHER_NSNA_PING))
 		return nm_team_link_watcher_new_nsna_ping (val1, val2, val3, target_host, NULL);
 	else if (nm_streq0 (name, NM_TEAM_LINK_WATCHER_ARP_PING)) {
-		return nm_team_link_watcher_new_arp_ping (val1, val2, val3, target_host,
-		                                          source_host, flags, NULL);
+		return nm_team_link_watcher_new_arp_ping2 (val1, val2, val3, val4, target_host,
+		                                           source_host, flags, NULL);
 	} else
 		return NULL;
 }
@@ -5524,6 +5696,9 @@ _nm_utils_team_link_watcher_to_json (NMTeamLinkWatcher *watcher)
 	if (nm_streq (name, NM_TEAM_LINK_WATCHER_NSNA_PING))
 		return json_element;
 
+	int_val = nm_team_link_watcher_get_vlanid (watcher);
+	if (int_val != -1)
+		json_object_set_new (json_element, "vlanid", json_integer (int_val));
 	str_val = nm_team_link_watcher_get_source_host (watcher);
 	if (!str_val)
 		goto fail;
@@ -5976,15 +6151,15 @@ _nm_utils_team_link_watchers_to_variant (GPtrArray *link_watchers)
 
 		name = nm_team_link_watcher_get_name (watcher);
 		g_variant_builder_add (&watcher_builder, "{sv}",
-				       "name",
-				       g_variant_new_string (name));
+		                       "name",
+		                       g_variant_new_string (name));
 
-		if nm_streq (name, NM_TEAM_LINK_WATCHER_ETHTOOL) {
+		if (nm_streq (name, NM_TEAM_LINK_WATCHER_ETHTOOL)) {
 			int_val = nm_team_link_watcher_get_delay_up (watcher);
 			if (int_val) {
 				g_variant_builder_add (&watcher_builder, "{sv}",
-						       "delay-up",
-						       g_variant_new_int32 (int_val));
+				                       "delay-up",
+				                       g_variant_new_int32 (int_val));
 			}
 			int_val = nm_team_link_watcher_get_delay_down (watcher);
 			if (int_val) {
@@ -6019,12 +6194,18 @@ _nm_utils_team_link_watchers_to_variant (GPtrArray *link_watchers)
 		                       "target-host",
 		                       g_variant_new_string (nm_team_link_watcher_get_target_host (watcher)));
 
-		if nm_streq (name, NM_TEAM_LINK_WATCHER_NSNA_PING) {
+		if (nm_streq (name, NM_TEAM_LINK_WATCHER_NSNA_PING)) {
 			g_variant_builder_add (&builder, "a{sv}", &watcher_builder);
 			continue;
 		}
 
 		/* arp_ping watcher only */
+		int_val = nm_team_link_watcher_get_vlanid (watcher);
+		if (int_val != -1) {
+			g_variant_builder_add (&watcher_builder, "{sv}",
+			                       "vlanid",
+			                       g_variant_new_int32 (int_val));
+		}
 		g_variant_builder_add (&watcher_builder, "{sv}",
 		                       "source-host",
 		                       g_variant_new_string (nm_team_link_watcher_get_source_host (watcher)));
@@ -6075,7 +6256,7 @@ _nm_utils_team_link_watchers_from_variant (GVariant *value)
 	while (g_variant_iter_next (&iter, "@a{sv}", &watcher_var)) {
 		NMTeamLinkWatcher *watcher;
 		const char *name;
-		int val1, val2, val3 = 0;
+		int val1, val2, val3 = 0, val4 = -1;
 		const char *target_host = NULL, *source_host = NULL;
 		gboolean bval;
 		NMTeamLinkWatcherArpPingFlags flags = NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_NONE;
@@ -6105,7 +6286,9 @@ _nm_utils_team_link_watchers_from_variant (GVariant *value)
 				val2 = 0;
 			if (!g_variant_lookup (watcher_var, "missed-max", "i", &val3))
 				val3 = 3;
-			if nm_streq (name, NM_TEAM_LINK_WATCHER_ARP_PING) {
+			if (nm_streq (name, NM_TEAM_LINK_WATCHER_ARP_PING)) {
+				if (!g_variant_lookup (watcher_var, "vlanid", "i", &val4))
+					val4 = -1;
 				if (!g_variant_lookup (watcher_var, "source-host", "&s", &source_host))
 					goto next;
 				if (!g_variant_lookup (watcher_var, "validate-active", "b", &bval))
@@ -6120,9 +6303,9 @@ _nm_utils_team_link_watchers_from_variant (GVariant *value)
 					bval = FALSE;
 				if (bval)
 					flags |= NM_TEAM_LINK_WATCHER_ARP_PING_FLAG_SEND_ALWAYS;
-				watcher = nm_team_link_watcher_new_arp_ping (val1, val2, val3,
-				                                             target_host, source_host,
-				                                             flags, &error);
+				watcher = nm_team_link_watcher_new_arp_ping2 (val1, val2, val3, val4,
+				                                              target_host, source_host,
+				                                              flags, &error);
 			} else
 				watcher = nm_team_link_watcher_new_nsna_ping (val1, val2, val3,
 				                                              target_host, &error);
@@ -6487,3 +6670,73 @@ nm_utils_version (void)
 	return NM_VERSION;
 }
 
+/*****************************************************************************/
+
+/**
+ * nm_utils_base64secret_decode:
+ * @base64_key: the (possibly invalid) base64 encode key.
+ * @required_key_len: the expected (binary) length of the key after
+ *   decoding. If the length does not match, the validation fails.
+ * @out_key: (allow-none): (out): an optional output buffer for the binary
+ *   key. If given, it will be filled with exactly @required_key_len
+ *   bytes.
+ *
+ * Returns: %TRUE if the input key is a valid base64 encoded key
+ *   with @required_key_len bytes.
+ *
+ * Since: 1.16
+ */
+gboolean
+nm_utils_base64secret_decode (const char *base64_key,
+                              gsize required_key_len,
+                              guint8 *out_key)
+{
+	gs_free guint8 *bin_arr = NULL;
+	gsize base64_key_len;
+	gsize bin_len;
+	int r;
+
+	if (!base64_key)
+		return FALSE;
+
+	base64_key_len = strlen (base64_key);
+
+	r = nm_sd_utils_unbase64mem (base64_key, base64_key_len, &bin_arr, &bin_len);
+	if (r < 0)
+		return FALSE;
+	if (bin_len != required_key_len) {
+		nm_explicit_bzero (bin_arr, bin_len);
+		return FALSE;
+	}
+
+	if (out_key)
+		memcpy (out_key, bin_arr, required_key_len);
+
+	nm_explicit_bzero (bin_arr, bin_len);
+	return TRUE;
+}
+
+gboolean
+nm_utils_base64secret_normalize (const char *base64_key,
+                                 gsize required_key_len,
+                                 char **out_base64_key_norm)
+{
+	gs_free guint8 *buf_free = NULL;
+	guint8 buf_static[200];
+	guint8 *buf;
+
+	if (required_key_len > sizeof (buf_static)) {
+		buf_free = g_new (guint8, required_key_len);
+		buf = buf_free;
+	} else
+		buf = buf_static;
+
+	if (!nm_utils_base64secret_decode (base64_key, required_key_len, buf)) {
+		NM_SET_OUT (out_base64_key_norm, NULL);
+		return FALSE;
+	}
+
+	NM_SET_OUT (out_base64_key_norm, g_base64_encode (buf, required_key_len));
+	nm_explicit_bzero (buf, required_key_len);
+	return TRUE;
+}

@@ -7,7 +7,7 @@ from __future__ import print_function
 # This test starts NetworkManager stub service in a user D-Bus session,
 # and runs nmcli against it. The output is recorded and compared to a pre-generated
 # expected output (clients/tests/test-client.check-on-disk/*.expected) which
-# is also commited to git.
+# is also committed to git.
 #
 ###############################################################################
 #
@@ -27,7 +27,7 @@ from __future__ import print_function
 #    #  $ LANG=pl_PL.UTF-8 ./clients/cli/nmcli --version
 #    # also ensure that `locale -a` reports the Polish locale.
 #  $ rm -rf  clients/tests/test-client.check-on-disk/*.expected
-#    # (step seldomly required)
+#    # (step seldom required)
 #    # Sometimes, if you want to be sure that the test would generate
 #    # exactly the same .expected files, purge the previous version first.
 #    # This is only necessary, when you remove test from this file.
@@ -748,6 +748,7 @@ class TestNmcli(NmTestBase):
                 print("EXPECT OUTPUT:\n[[%s]]\n" % (results_expect[i]))
                 print("Let the test write the file by rerunning with NM_TEST_REGENERATE=1")
                 print("See howto in %s for details.\n" % (PathConfiguration.canonical_script_filename()))
+                sys.stdout.flush()
                 self.fail("Unexpected output of command, expected %s. Rerun test with NM_TEST_REGENERATE=1 to regenerate files" % (filename))
             if len(results_expect) != len(results):
                 if not regenerate:
@@ -758,6 +759,7 @@ class TestNmcli(NmTestBase):
                         print("EXPECT OUTPUT:\n[[%s]]\n" % (results_expect[len(results)]))
                     print("Let the test write the file by rerunning with NM_TEST_REGENERATE=1")
                     print("See howto in %s for details.\n" % (PathConfiguration.canonical_script_filename()))
+                    sys.stdout.flush()
                     self.fail("Unexpected output of command, expected %s. Rerun test with NM_TEST_REGENERATE=1 to regenerate files" % (filename))
 
         if regenerate:
@@ -805,11 +807,23 @@ class TestNmcli(NmTestBase):
                            iface = 'wlan1')
 
         self.srv.op_AddObj('WifiAp',
-                           device = 'wlan0')
+                           device = 'wlan0',
+                           rsnf = 0x0)
+
         self.srv.op_AddObj('WifiAp',
                            device = 'wlan0')
+
+        NM_AP_FLAGS = getattr(NM, '80211ApSecurityFlags')
+        rsnf = 0x0
+        rsnf = rsnf | NM_AP_FLAGS.PAIR_TKIP
+        rsnf = rsnf | NM_AP_FLAGS.PAIR_CCMP
+        rsnf = rsnf | NM_AP_FLAGS.GROUP_TKIP
+        rsnf = rsnf | NM_AP_FLAGS.GROUP_CCMP
+        rsnf = rsnf | NM_AP_FLAGS.KEY_MGMT_SAE
         self.srv.op_AddObj('WifiAp',
-                           device = 'wlan0')
+                           device = 'wlan0',
+                           wpaf = 0x0,
+                           rsnf = rsnf)
 
         self.srv.op_AddObj('WifiAp',
                            device = 'wlan1')

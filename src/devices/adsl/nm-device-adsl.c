@@ -25,13 +25,12 @@
 #include <sys/socket.h>
 #include <linux/atmdev.h>
 #include <linux/atmbr2684.h>
-#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
 
+#include "nm-ip4-config.h"
 #include "devices/nm-device-private.h"
 #include "platform/nm-platform.h"
 #include "ppp/nm-ppp-manager-call.h"
@@ -259,8 +258,9 @@ pppoe_vcc_config (NMDeviceAdsl *self)
 	NMDevice *device = NM_DEVICE (self);
 	NMSettingAdsl *s_adsl;
 
-	s_adsl = nm_connection_get_setting_adsl (nm_device_get_applied_connection (device));
-	g_assert (s_adsl);
+	s_adsl = nm_device_get_applied_setting (device, NM_TYPE_SETTING_ADSL);
+
+	g_return_val_if_fail (s_adsl, FALSE);
 
 	/* Set up the VCC */
 	if (!br2684_assign_vcc (self, s_adsl))
@@ -370,8 +370,8 @@ br2684_create_iface (NMDeviceAdsl *self,
 			priv->nas_update_id = g_timeout_add (100, nas_update_cb, self);
 			return NM_ACT_STAGE_RETURN_POSTPONE;
 		}
-		if (errno != EEXIST) {
-			errsv = errno;
+		errsv = errno;
+		if (errsv != EEXIST) {
 			_LOGW (LOGD_ADSL, "failed to create br2684 interface (%d)", errsv);
 			break;
 		}
@@ -389,7 +389,8 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 	NMSettingAdsl *s_adsl;
 	const char *protocol;
 
-	s_adsl = nm_connection_get_setting_adsl (nm_device_get_applied_connection (device));
+	s_adsl = nm_device_get_applied_setting (device, NM_TYPE_SETTING_ADSL);
+
 	g_return_val_if_fail (s_adsl, NM_ACT_STAGE_RETURN_FAILURE);
 
 	protocol = nm_setting_adsl_get_protocol (s_adsl);
@@ -447,9 +448,8 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 	NMDevice *device = NM_DEVICE (user_data);
 
 	/* Ignore PPP IP4 events that come in after initial configuration */
-	if (nm_device_activate_ip4_state_in_conf (device)) {
-		nm_device_activate_schedule_ip4_config_result (device, config);
-	}
+	if (nm_device_activate_ip4_state_in_conf (device))
+		nm_device_activate_schedule_ip_config_result (device, AF_INET, NM_IP_CONFIG_CAST (config));
 }
 
 static NMActStageReturn
@@ -465,8 +465,11 @@ act_stage3_ip4_config_start (NMDevice *device,
 	const char *ppp_iface;
 
 	req = nm_device_get_act_request (device);
+
 	g_return_val_if_fail (req, NM_ACT_STAGE_RETURN_FAILURE);
-	s_adsl = (NMSettingAdsl *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_ADSL);
+
+	s_adsl = nm_device_get_applied_setting (device, NM_TYPE_SETTING_ADSL);
+
 	g_return_val_if_fail (s_adsl, NM_ACT_STAGE_RETURN_FAILURE);
 
 	/* PPPoE uses the NAS interface, not the ATM interface */
@@ -515,6 +518,18 @@ act_stage3_ip4_config_start (NMDevice *device,
 	return NM_ACT_STAGE_RETURN_POSTPONE;
 }
 
+static NMActStageReturn
+act_stage3_ip_config_start (NMDevice *device,
+                            int addr_family,
+                            gpointer *out_config,
+                            NMDeviceStateReason *out_failure_reason)
+{
+	if (addr_family == AF_INET)
+		return act_stage3_ip4_config_start (device, (NMIP4Config **) out_config, out_failure_reason);
+
+	return NM_DEVICE_CLASS (nm_device_adsl_parent_class)->act_stage3_ip_config_start (device, addr_family, out_config, out_failure_reason);
+}
+
 static void
 adsl_cleanup (NMDeviceAdsl *self)
 {
@@ -523,7 +538,7 @@ adsl_cleanup (NMDeviceAdsl *self)
 	if (priv->ppp_manager) {
 		g_signal_handlers_disconnect_by_func (priv->ppp_manager, G_CALLBACK (ppp_state_changed), self);
 		g_signal_handlers_disconnect_by_func (priv->ppp_manager, G_CALLBACK (ppp_ip4_config), self);
-		nm_ppp_manager_stop (priv->ppp_manager, NULL, NULL);
+		nm_ppp_manager_stop (priv->ppp_manager, NULL, NULL, NULL);
 		g_clear_object (&priv->ppp_manager);
 	}
 
@@ -684,7 +699,7 @@ nm_device_adsl_class_init (NMDeviceAdslClass *klass)
 	device_class->complete_connection = complete_connection;
 
 	device_class->act_stage2_config = act_stage2_config;
-	device_class->act_stage3_ip4_config_start = act_stage3_ip4_config_start;
+	device_class->act_stage3_ip_config_start = act_stage3_ip_config_start;
 	device_class->deactivate = deactivate;
 
 	obj_properties[PROP_ATM_INDEX] =

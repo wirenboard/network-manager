@@ -20,7 +20,7 @@
 #ifndef NMC_NMCLI_H
 #define NMC_NMCLI_H
 
-#include "nm-secret-agent-old.h"
+#include "nm-secret-agent-simple.h"
 #include "nm-meta-setting-desc.h"
 
 struct _NMPolkitListener;
@@ -129,7 +129,7 @@ typedef struct _NmCli {
 
 	int timeout;                                      /* Operation timeout */
 
-	NMSecretAgentOld *secret_agent;                   /* Secret agent */
+	NMSecretAgentSimple *secret_agent;                /* Secret agent */
 	GHashTable *pwds_hash;                            /* Hash table with passwords in passwd-file */
 	struct _NMPolkitListener *pk_listener;            /* polkit agent listener */
 
@@ -166,6 +166,8 @@ gboolean nmc_seen_sigint (void);
 void     nmc_clear_sigint (void);
 void     nmc_set_sigquit_internal (void);
 void     nmc_exit (void);
+
+void nm_cli_spawn_pager (NmCli *nmc);
 
 void nmc_empty_output_fields (NmcOutputData *output_data);
 

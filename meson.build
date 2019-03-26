@@ -4,13 +4,13 @@ project(
 #  - add corresponding NM_VERSION_x_y_z macros in
 #    "shared/nm-version-macros.h.in"
 #  - update number in configure.ac
-  version: '1.14.6',
+  version: '1.16.0',
   license: 'GPL2+',
   default_options: [
     'buildtype=debugoptimized',
-    'c_std=gnu99'
+    'c_std=gnu11',
   ],
-  meson_version: '>= 0.44.0'
+  meson_version: '>= 0.44.0',
 )
 
 nm_name = meson.project_name()
@@ -95,8 +95,10 @@ config_h = configuration_data()
 set_defines = [
   ['GETTEXT_PACKAGE', nm_name],
   ['PACKAGE_STRING', '@0@ @1@'.format(nm_name, nm_version)],
-  ['VERSION', nm_version]
+  ['VERSION', nm_version],
 ]
+
+default_test_timeout = 90
 
 foreach define: set_defines
   config_h.set_quoted(define[0], define[1])
@@ -115,6 +117,7 @@ config_h.set('HAVE_SECURE_GETENV', cc.has_function('secure_getenv'))
 config_h.set('HAVE___SECURE_GETENV', cc.has_function('__secure_getenv'))
 config_h.set10('HAVE_DECL_REALLOCARRAY', cc.has_function('reallocarray', prefix: '#include <malloc.h>'))
 config_h.set10('HAVE_DECL_EXPLICIT_BZERO', cc.has_function('explicit_bzero', prefix: '#include <string.h>'))
+config_h.set10('HAVE_DECL_MEMFD_CREATE', cc.has_function('memfd_create', prefix: '#include <sys/mman.h>'))
 
 # types
 config_h.set('SIZEOF_DEV_T', cc.sizeof('dev_t', prefix: '#include <sys/types.h>'))
@@ -146,9 +149,17 @@ if enable_ld_gc
   common_ldflags += test_ldflags
 endif
 
+enable_lto = get_option('b_lto')
+if enable_lto
+  # meson already adds '-flto'
+  lto_flag = '-flto-partition=none'
+  assert(cc.has_argument(lto_flag), '-flto-partition=none not supported. Disable link-time optimization with -Db_lto=false.')
+  common_flags += lto_flag
+  common_ldflags += lto_flag
+endif
+
 if nm_debug
-  test_cflags = [
-    '-fno-strict-aliasing',
+  common_flags += cc.get_supported_arguments([
     '-Wdeclaration-after-statement',
     '-Wfloat-equal',
     '-Wimplicit-fallthrough',
@@ -159,7 +170,7 @@ if nm_debug
     '-Wmissing-prototypes',
     '-Wno-duplicate-decl-specifier',
     '-Wno-format-truncation',
-    '-Wno-missing-braces',
+    '-Wno-gnu-variable-sized-type-not-at-end',
     '-Wno-missing-field-initializers',
     '-Wno-pragmas',
     '-Wno-sign-compare',
@@ -170,10 +181,9 @@ if nm_debug
     '-Wstrict-prototypes',
     '-Wtypedef-redefinition',
     '-Wundef',
-    '-Wunknown-attributes'
-  ]
-
-  common_flags += cc.get_supported_arguments(test_cflags)
+    '-Wunknown-attributes',
+    '-fno-strict-aliasing',
+  ])
 endif
 
 add_project_arguments(common_flags, language: 'c')
@@ -222,11 +232,11 @@ gio_unix_dep = dependency('gio-unix-2.0', version: '>= 2.40')
 glib_dep = declare_dependency(
   dependencies: [
     gio_unix_dep,
-    dependency('gmodule-2.0')
+    dependency('gmodule-2.0'),
   ],
   compile_args: [
     '-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_40',
-    '-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_40'
+    '-DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_40',
   ]
 )
 
@@ -366,6 +376,8 @@ elif session_tracking == 'elogind'
   config_h.set10('SESSION_TRACKING_SYSTEMD', false)
   config_h.set10('SESSION_TRACKING_ELOGIND', true)
 else
+  config_h.set10('SESSION_TRACKING_SYSTEMD', false)
+  config_h.set10('SESSION_TRACKING_ELOGIND', false)
   logind_dep = dependency('', required:false)
 endif
 
@@ -423,12 +435,24 @@ if enable_selinux
 endif
 config_h.set10('HAVE_SELINUX', enable_selinux)
 
+# eBPF support
+ebpf_opt = get_option('ebpf')
+if ebpf_opt == 'false'
+  enable_ebpf = false
+else
+  enable_ebpf = true
+  if not cc.has_header('linux/bpf.h')
+    assert(ebpf_opt != 'true', 'eBPF requires kernel support')
+    enable_ebpf = false
+  endif
+endif
+
 # libaudit support
 libaudit = get_option('libaudit')
 enable_libaudit = libaudit.contains('yes')
 if enable_libaudit
   libaudit_dep = dependency('audit', required: false)
-  assert(libaudit_dep.found(), 'You must have libaudit installed to build. Use -Dlibaudit=false to disable it')
+  assert(libaudit_dep.found(), 'You must have libaudit installed to build. Use -Dlibaudit=no to disable it')
 endif
 config_default_logging_audit = (libaudit == 'yes').to_string()
 config_h.set_quoted('NM_CONFIG_DEFAULT_LOGGING_AUDIT', config_default_logging_audit)
@@ -449,17 +473,13 @@ endif
 config_h.set10('WITH_JSON_VALIDATION', enable_json_validation)
 
 # polkit
-polkit = get_option('polkit')
-enable_polkit = (polkit != 'no')
-
+enable_polkit = get_option('polkit')
 if enable_polkit
-  polkit_dir = get_option('polkit_dir')
-  if polkit_dir == ''
-    polkit_dir = dependency('polkit-gobject-1').get_pkgconfig_variable('policydir')
-  endif
+  # FIXME: policydir should be relative to `datadir`, not `prefix`. Fixed in https://gitlab.freedesktop.org/polkit/polkit/merge_requests/2
+  polkit_dir = dependency('polkit-gobject-1').get_pkgconfig_variable('policydir', define_variable: ['prefix', nm_prefix])
 endif
 
-config_default_main_auth_polkit = (polkit == 'yes').to_string()
+config_default_main_auth_polkit = enable_polkit.to_string()
 config_h.set_quoted('NM_CONFIG_DEFAULT_MAIN_AUTH_POLKIT', config_default_main_auth_polkit)
 
 enable_modify_system = get_option('modify_system')
@@ -488,17 +508,8 @@ if dbus_conf_dir == ''
   dbus_conf_dir = join_paths(dbus_dep.get_pkgconfig_variable('sysconfdir'), 'dbus-1', 'system.d')
 endif
 
-dbus_ifaces_dir = get_option('dbus_ifaces_dir')
-if dbus_ifaces_dir == ''
-  assert(dbus_dep.found(), 'D-Bus required but not found, please provide a valid interfaces dir')
-  dbus_ifaces_dir = dbus_dep.get_pkgconfig_variable('interfaces_dir')
-endif
-
-dbus_sys_dir = get_option('dbus_sys_dir')
-if dbus_sys_dir == ''
-  assert(dbus_dep.found(), 'D-Bus required but not found, please provide a valid system bus services dir')
-  dbus_sys_dir = dbus_dep.get_pkgconfig_variable('system_bus_services_dir')
-endif
+dbus_ifaces_dir = dbus_dep.get_pkgconfig_variable('interfaces_dir',  define_variable: ['datadir', nm_datadir])
+dbus_sys_dir = dbus_dep.get_pkgconfig_variable('system_bus_services_dir', define_variable: ['datadir', nm_datadir])
 
 # pppd
 enable_ppp = get_option('ppp')
@@ -573,10 +584,10 @@ foreach client : [ 'dhclient', 'dhcpcd', 'dhcpcanon' ]
   dhcp_summary += '\n'
 endforeach
 
-# OpenVSwitch integration
+# Open vSwitch integration
 enable_ovs = get_option('ovs')
 if enable_ovs
-  assert(jansson_dep.found(), 'jansson is needed for OpenVSwitch integration. Use -Dovs=false to disable it')
+  assert(jansson_dep.found(), 'jansson is needed for Open vSwitch integration. Use -Dovs=false to disable it')
 endif
 
 # DNS resolv.conf managers
@@ -761,7 +772,7 @@ test_args = [
   '',
   enable_valgrind ? valgrind.path() : '',
   enable_valgrind ? valgrind_suppressions_path : '',
-  '--launch-dbus=auto'
+  '--launch-dbus=auto',
 ]
 
 py3 = import('python3')
@@ -877,7 +888,7 @@ config = 'config.h'
 configure_file(
   input: config + '.meson',
   output: config,
-  configuration: config_h
+  configuration: config_h,
 )
 
 config_extra_h = configuration_data()
@@ -907,7 +918,7 @@ config_extra_h.set_quoted('SYSCONFDIR',        nm_sysconfdir)
 configure_file(
   input: 'config-extra.h.meson',
   output: 'config-extra.h',
-  configuration: config_extra_h
+  configuration: config_extra_h,
 )
 
 meson.add_install_script(
@@ -918,7 +929,7 @@ meson.add_install_script(
   nm_pkglibdir,
   nm_pkgstatedir,
   enable_docs ? 'install_docs' : '',
-  nm_mandir
+  nm_mandir,
 )
 
 output = '\nSystem paths:\n'
@@ -939,7 +950,7 @@ output += '  suspend/resume: ' + suspend_resume + '\n'
 output += '  policykit: ' + enable_polkit.to_string()
 if enable_polkit
   modify = (enable_modify_system ? 'permissive' : 'restrictive')
-  output += ' (' + modify + ' modify.system) (default: main.auth-polkit=' + polkit + ')'
+  output += ' (' + modify + ' modify.system) (default: main.auth-polkit=true)'
 endif
 output += '\n'
 output += '  polkit agent: ' + enable_polkit_agent.to_string() + '\n'
@@ -988,11 +999,12 @@ if enable_valgrind
 endif
 output += '\n'
 output += '  code coverage: ' + get_option('b_coverage').to_string() + '\n'
-output += '  LTO: ' + get_option('b_lto').to_string() + '\n'
+output += '  LTO: ' + enable_lto.to_string() + '\n'
 output += '  Linker garbage collection: ' + enable_ld_gc.to_string() + '\n'
 output += '  JSON validation for libnm: ' + enable_json_validation.to_string() + '\n'
 output += '  crypto: ' + crypto + ' (have-gnutls: ' + crypto_gnutls_dep.found().to_string() + ', have-nss: ' + crypto_nss_dep.found().to_string() + ')\n'
 output += '  sanitizers: ' + get_option('b_sanitize') + '\n'
 output += '  Mozilla Public Suffix List: ' + enable_libpsl.to_string() + '\n'
 output += '  vapi: ' + enable_vapi.to_string() + '\n'
+output += '  ebpf: ' + enable_ebpf.to_string() + '\n'
 message(output)

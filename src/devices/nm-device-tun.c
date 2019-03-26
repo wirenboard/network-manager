@@ -23,7 +23,6 @@
 #include "nm-device-tun.h"
 
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <linux/if_tun.h>
 
@@ -231,9 +230,10 @@ create_and_realize (NMDevice *device,
 {
 	const char *iface = nm_device_get_iface (device);
 	NMPlatformLnkTun props = { };
-	NMPlatformError plerr;
 	NMSettingTun *s_tun;
-	gint64 owner, group;
+	gint64 owner;
+	gint64 group;
+	int r;
 
 	s_tun = nm_connection_get_setting_tun (connection);
 	g_return_val_if_fail (s_tun, FALSE);
@@ -261,17 +261,17 @@ create_and_realize (NMDevice *device,
 	props.multi_queue = nm_setting_tun_get_multi_queue (s_tun);
 	props.persist = TRUE;
 
-	plerr = nm_platform_link_tun_add (nm_device_get_platform (device),
-	                                  iface,
-	                                  &props,
-	                                  out_plink,
-	                                  NULL);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
+	r = nm_platform_link_tun_add (nm_device_get_platform (device),
+	                              iface,
+	                              &props,
+	                              out_plink,
+	                              NULL);
+	if (r < 0) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create TUN/TAP interface '%s' for '%s': %s",
 		             iface,
 		             nm_connection_get_id (connection),
-		             nm_platform_error_to_string_a (plerr));
+		             nm_strerror (r));
 		return FALSE;
 	}
 

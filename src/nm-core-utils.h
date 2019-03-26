@@ -27,6 +27,8 @@
 
 #include "nm-connection.h"
 
+#include "nm-utils/nm-time-utils.h"
+
 /*****************************************************************************/
 
 #define NM_PLATFORM_LIFETIME_PERMANENT G_MAXUINT32
@@ -237,9 +239,6 @@ gboolean nm_wildcard_match_check (const char *str,
 
 /*****************************************************************************/
 
-const char *nm_utils_get_ip_config_method (NMConnection *connection,
-                                           GType         ip_setting_type);
-
 gboolean nm_utils_connection_has_default_route (NMConnection *connection,
                                                 int addr_family,
                                                 gboolean *out_is_never_default);
@@ -255,19 +254,6 @@ void nm_utils_log_connection_diff (NMConnection *connection,
                                    const char *name,
                                    const char *prefix,
                                    const char *dbus_path);
-
-gint64 nm_utils_get_monotonic_timestamp_ns (void);
-gint64 nm_utils_get_monotonic_timestamp_us (void);
-gint64 nm_utils_get_monotonic_timestamp_ms (void);
-gint32 nm_utils_get_monotonic_timestamp_s (void);
-gint64 nm_utils_monotonic_timestamp_as_boottime (gint64 timestamp, gint64 timestamp_ticks_per_ns);
-
-static inline gint64
-nm_utils_get_monotonic_timestamp_ns_cached (gint64 *cache_now)
-{
-	return    (*cache_now)
-	       ?: (*cache_now = nm_utils_get_monotonic_timestamp_ns ());
-}
 
 gboolean    nm_utils_is_valid_path_component (const char *name);
 const char *NM_ASSERT_VALID_PATH_COMPONENT (const char *name);
@@ -405,6 +391,10 @@ GBytes *nm_utils_dhcp_client_id_mac (int arp_type,
                                      const guint8 *hwaddr,
                                      gsize hwaddr_len);
 
+guint32 nm_utils_create_dhcp_iaid (gboolean legacy_unstable_byteorder,
+                                   const guint8 *interface_id,
+                                   gsize interface_id_len);
+
 GBytes *nm_utils_dhcp_client_id_systemd_node_specific_full (gboolean legacy_unstable_byteorder,
                                                             const guint8 *interface_id,
                                                             gsize interface_id_len,
@@ -494,5 +484,9 @@ const char *nm_activation_type_to_string (NMActivationType activation_type);
 /*****************************************************************************/
 
 const char *nm_utils_parse_dns_domain (const char *domain, gboolean *is_routing);
+
+/*****************************************************************************/
+
+#define NM_VPN_ROUTE_METRIC_DEFAULT     50
 
 #endif /* __NM_CORE_UTILS_H__ */

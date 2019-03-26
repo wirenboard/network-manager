@@ -23,9 +23,7 @@
 #include "utils.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -36,6 +34,7 @@
 #include "nm-meta-setting-access.h"
 
 #include "common.h"
+#include "nmcli.h"
 #include "settings.h"
 
 #define ML_HEADER_WIDTH 79
@@ -1100,7 +1099,7 @@ _print_fill (const NmcConfig *nmc_config,
 				/* don't mark the entry for display. This is to shorten the output in case
 				 * the property is the default value. But we only do that, if the user
 				 * opts in to this behavior (-overview), or of the property marks itself
-				 * elegible to be hidden.
+				 * eligible to be hidden.
 				 *
 				 * In general, only new API shall mark itself eligible to be hidden.
 				 * Long established properties cannot, because it would be a change
@@ -1275,7 +1274,7 @@ _print_do (const NmcConfig *nmc_config,
 			title = header_cell->title;
 
 			width1 = strlen (title);
-			width2 = nmc_string_screen_width (title, NULL);  /* Width of the string (in screen colums) */
+			width2 = nmc_string_screen_width (title, NULL);  /* Width of the string (in screen columns) */
 			g_string_append_printf (str, "%-*s", (int) (header_cell->width + width1 - width2), title);
 			g_string_append_c (str, ' ');  /* Column separator */
 			table_width += header_cell->width + width1 - width2 + 1;
@@ -1357,7 +1356,7 @@ _print_do (const NmcConfig *nmc_config,
 						const PrintDataHeaderCell *header_cell = &header_row[i_col];
 
 						width1 = strlen (text);
-						width2 = nmc_string_screen_width (text, NULL);  /* Width of the string (in screen colums) */
+						width2 = nmc_string_screen_width (text, NULL);  /* Width of the string (in screen columns) */
 						g_string_append_printf (str, "%-*s", (int) (header_cell->width + width1 - width2), text);
 						g_string_append_c (str, ' ');  /* Column separator */
 						table_width += header_cell->width + width1 - width2 + 1;
@@ -1427,19 +1426,20 @@ pager_fallback (void)
 {
 	char buf[64];
 	int rb;
+	int errsv;
 
 	do {
 		rb = read (STDIN_FILENO, buf, sizeof (buf));
 		if (rb == -1) {
-			if (errno == EINTR) {
+			errsv = errno;
+			if (errsv == EINTR)
 				continue;
-			} else {
-				g_printerr (_("Error reading nmcli output: %s\n"), strerror (errno));
-				_exit(EXIT_FAILURE);
-			}
+			g_printerr (_("Error reading nmcli output: %s\n"), nm_strerror_native (errsv));
+			_exit(EXIT_FAILURE);
 		}
 		if (write (STDOUT_FILENO, buf, rb) == -1) {
-			g_printerr (_("Error writing nmcli output: %s\n"), strerror (errno));
+			errsv = errno;
+			g_printerr (_("Error writing nmcli output: %s\n"), nm_strerror_native (errsv));
 			_exit(EXIT_FAILURE);
 		}
 	} while (rb > 0);
@@ -1447,38 +1447,41 @@ pager_fallback (void)
 	_exit(EXIT_SUCCESS);
 }
 
-void
+pid_t
 nmc_terminal_spawn_pager (const NmcConfig *nmc_config)
 {
 	const char *pager = getenv ("PAGER");
+	pid_t pager_pid;
 	pid_t parent_pid;
 	int fd[2];
+	int errsv;
 
-	if (   nm_cli.nmc_config.in_editor
-	    || nm_cli.pager_pid > 0
+	if (   nmc_config->in_editor
 	    || nmc_config->print_output == NMC_PRINT_TERSE
 	    || !nmc_config->use_colors
 	    || g_strcmp0 (pager, "") == 0
 	    || getauxval (AT_SECURE))
-		return;
+		return 0;
 
 	if (pipe (fd) == -1) {
-		g_printerr (_("Failed to create pager pipe: %s\n"), strerror (errno));
-		return;
+		errsv = errno;
+		g_printerr (_("Failed to create pager pipe: %s\n"), nm_strerror_native (errsv));
+		return 0;
 	}
 
 	parent_pid = getpid ();
 
-	nm_cli.pager_pid = fork ();
-	if (nm_cli.pager_pid == -1) {
-		g_printerr (_("Failed to fork pager: %s\n"), strerror (errno));
+	pager_pid = fork ();
+	if (pager_pid == -1) {
+		errsv = errno;
+		g_printerr (_("Failed to fork pager: %s\n"), nm_strerror_native (errsv));
 		nm_close (fd[0]);
 		nm_close (fd[1]);
-		return;
+		return 0;
 	}
 
 	/* In the child start the pager */
-	if (nm_cli.pager_pid == 0) {
+	if (pager_pid == 0) {
 		dup2 (fd[0], STDIN_FILENO);
 		nm_close (fd[0]);
 		nm_close (fd[1]);
@@ -1516,13 +1519,18 @@ nmc_terminal_spawn_pager (const NmcConfig *nmc_config)
 	}
 
 	/* Return in the parent */
-	if (dup2 (fd[1], STDOUT_FILENO) < 0)
-		g_printerr (_("Failed to duplicate pager pipe: %s\n"), strerror (errno));
-	if (dup2 (fd[1], STDERR_FILENO) < 0)
-		g_printerr (_("Failed to duplicate pager pipe: %s\n"), strerror (errno));
+	if (dup2 (fd[1], STDOUT_FILENO) < 0) {
+		errsv = errno;
+		g_printerr (_("Failed to duplicate pager pipe: %s\n"), nm_strerror_native (errsv));
+	}
+	if (dup2 (fd[1], STDERR_FILENO) < 0) {
+		errsv = errno;
+		g_printerr (_("Failed to duplicate pager pipe: %s\n"), nm_strerror_native (errsv));
+	}
 
 	nm_close (fd[0]);
 	nm_close (fd[1]);
+	return pager_pid;
 }
 
 /*****************************************************************************/
@@ -1589,8 +1597,7 @@ print_required_fields (const NmcConfig *nmc_config,
 	gboolean field_names = of_flags & NMC_OF_FLAG_FIELD_NAMES;
 	gboolean section_prefix = of_flags & NMC_OF_FLAG_SECTION_PREFIX;
 
-	/* Optionally start paging the output. */
-	nmc_terminal_spawn_pager (nmc_config);
+	nm_cli_spawn_pager (&nm_cli);
 
 	/* --- Main header --- */
 	if (   nmc_config->print_output == NMC_PRINT_PRETTY
@@ -1730,7 +1737,7 @@ print_required_fields (const NmcConfig *nmc_config,
 			g_string_append_c (str, ':');  /* Column separator */
 		} else {
 			width1 = strlen (value);
-			width2 = nmc_string_screen_width (value, NULL);  /* Width of the string (in screen colums) */
+			width2 = nmc_string_screen_width (value, NULL);  /* Width of the string (in screen columns) */
 			g_string_append_printf (str, "%-*s", field_values[idx].width + width1 - width2, strlen (value) > 0 ? value : not_set_str);
 			g_string_append_c (str, ' ');  /* Column separator */
 			table_width += field_values[idx].width + width1 - width2 + 1;

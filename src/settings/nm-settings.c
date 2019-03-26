@@ -29,8 +29,6 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <string.h>
 #include <gmodule.h>
 #include <pwd.h>
 
@@ -129,6 +127,8 @@ typedef struct {
 
 	NMHostnameManager *hostname_manager;
 
+	NMSettingsConnection *startup_complete_blocked_by;
+
 	guint connections_len;
 
 	bool started:1;
@@ -182,19 +182,23 @@ static void
 check_startup_complete (NMSettings *self)
 {
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
-	NMSettingsConnection *conn;
+	NMSettingsConnection *sett_conn;
 
 	if (priv->startup_complete)
 		return;
 
-	c_list_for_each_entry (conn, &priv->connections_lst_head, _connections_lst) {
-		if (!nm_settings_connection_get_ready (conn))
+	c_list_for_each_entry (sett_conn, &priv->connections_lst_head, _connections_lst) {
+		if (!nm_settings_connection_get_ready (sett_conn)) {
+			nm_g_object_ref_set (&priv->startup_complete_blocked_by, sett_conn);
 			return;
+		}
 	}
 
+	g_clear_object (&priv->startup_complete_blocked_by);
+
 	/* the connection_ready_changed signal handler is no longer needed. */
-	c_list_for_each_entry (conn, &priv->connections_lst_head, _connections_lst)
-		g_signal_handlers_disconnect_by_func (conn, G_CALLBACK (connection_ready_changed), self);
+	c_list_for_each_entry (sett_conn, &priv->connections_lst_head, _connections_lst)
+		g_signal_handlers_disconnect_by_func (sett_conn, G_CALLBACK (connection_ready_changed), self);
 
 	priv->startup_complete = TRUE;
 	_notify (self, PROP_STARTUP_COMPLETE);
@@ -369,10 +373,10 @@ _clear_connections_cached_list (NMSettingsPrivate *priv)
 /**
  * nm_settings_get_connections:
  * @self: the #NMSettings
- * @out_len: (out): (allow-none): returns the number of returned
+ * @out_len: (out) (allow-none): returns the number of returned
  *   connections.
  *
- * Returns: (transfer-none): a list of NMSettingsConnections. The list is
+ * Returns: (transfer none): a list of NMSettingsConnections. The list is
  * unsorted and NULL terminated. The result is never %NULL, in case of no
  * connections, it returns an empty list.
  * The returned list is cached internally, only valid until the next
@@ -632,7 +636,7 @@ add_plugin_load_file (NMSettings *self, const char *pname, GError **error)
 
 	if (stat (path, &st) != 0) {
 		errsv = errno;
-		_LOGW ("could not load plugin '%s' from file '%s': %s", pname, path, strerror (errsv));
+		_LOGW ("could not load plugin '%s' from file '%s': %s", pname, path, nm_strerror_native (errsv));
 		return TRUE;
 	}
 	if (!S_ISREG (st.st_mode)) {
@@ -840,9 +844,9 @@ connection_removed (NMSettingsConnection *connection, gpointer user_data)
 	if (priv->connections_loaded)
 		g_signal_emit (self, signals[CONNECTION_REMOVED], 0, connection);
 
-	g_object_unref (connection);
-
 	check_startup_complete (self);
+
+	g_object_unref (connection);
 
 	g_object_unref (self);       /* Balanced by a ref in claim_connection() */
 }
@@ -1754,12 +1758,17 @@ nm_settings_device_removed (NMSettings *self, NMDevice *device, gboolean quittin
 
 /*****************************************************************************/
 
-gboolean
-nm_settings_get_startup_complete (NMSettings *self)
+const char *
+nm_settings_get_startup_complete_blocked_reason (NMSettings *self)
 {
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+	const char *uuid = NULL;
 
-	return priv->startup_complete;
+	if (priv->startup_complete)
+		return NULL;
+	if (priv->startup_complete_blocked_by)
+		uuid = nm_settings_connection_get_uuid (priv->startup_complete_blocked_by);
+	return uuid ?: "unknown";
 }
 
 /*****************************************************************************/
@@ -1845,7 +1854,7 @@ get_property (GObject *object, guint prop_id,
 			g_value_set_boxed (value, NULL);
 		break;
 	case PROP_STARTUP_COMPLETE:
-		g_value_set_boolean (value, nm_settings_get_startup_complete (self));
+		g_value_set_boolean (value, !nm_settings_get_startup_complete_blocked_reason (self));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1877,6 +1886,8 @@ dispose (GObject *object)
 {
 	NMSettings *self = NM_SETTINGS (object);
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+
+	g_clear_object (&priv->startup_complete_blocked_by);
 
 	g_slist_free_full (priv->auths, (GDestroyNotify) nm_auth_chain_destroy);
 	priv->auths = NULL;

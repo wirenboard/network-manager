@@ -23,8 +23,6 @@
 
 #include "nm-default.h"
 
-#include <string.h>
-
 #include "nm-utils/c-list-util.h"
 #include "nm-utils/nm-enum-utils.h"
 
@@ -755,10 +753,12 @@ vpn_check_empty_func (const char *key, const char *value, gpointer user_data)
 static void
 test_setting_vpn_items (void)
 {
-	gs_unref_object NMSettingVpn *s_vpn = NULL;
+	gs_unref_object NMConnection *connection = NULL;
+	NMSettingVpn *s_vpn;
 
-	s_vpn = (NMSettingVpn *) nm_setting_vpn_new ();
-	g_assert (s_vpn);
+	connection = nmtst_create_minimal_connection ("vpn-items", NULL, NM_SETTING_VPN_SETTING_NAME, NULL);
+
+	s_vpn = nm_connection_get_setting_vpn (connection);
 
 	nm_setting_vpn_add_data_item (s_vpn, "foobar1", "blahblah1");
 	nm_setting_vpn_add_data_item (s_vpn, "foobar2", "blahblah2");
@@ -772,7 +772,14 @@ test_setting_vpn_items (void)
 	nm_setting_vpn_remove_data_item (s_vpn, "foobar3");
 	nm_setting_vpn_remove_data_item (s_vpn, "foobar4");
 
+	g_assert (!_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (!_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
 	nm_setting_vpn_add_secret (s_vpn, "foobar1", "blahblah1");
+
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
 	nm_setting_vpn_add_secret (s_vpn, "foobar2", "blahblah2");
 	nm_setting_vpn_add_secret (s_vpn, "foobar3", "blahblah3");
 	nm_setting_vpn_add_secret (s_vpn, "foobar4", "blahblah4");
@@ -782,7 +789,24 @@ test_setting_vpn_items (void)
 	nm_setting_vpn_remove_secret (s_vpn, "foobar1");
 	nm_setting_vpn_remove_secret (s_vpn, "foobar2");
 	nm_setting_vpn_remove_secret (s_vpn, "foobar3");
+
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
+	nm_setting_vpn_add_data_item (s_vpn, "foobar4-flags", "blahblah4");
+
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
+	nm_setting_vpn_add_data_item (s_vpn, "foobar4-flags", "2");
+
+	g_assert (!_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
 	nm_setting_vpn_remove_secret (s_vpn, "foobar4");
+
+	g_assert (!_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (!_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
+	nm_setting_vpn_remove_data_item (s_vpn, "foobar4-flags");
 
 	/* Try to add some blank values and make sure they are rejected */
 	NMTST_EXPECT_LIBNM_CRITICAL (NMTST_G_RETURN_MSG (key != NULL));
@@ -1351,8 +1375,6 @@ test_setting_gsm_apn_bad_chars (void)
 	s_gsm = (NMSettingGsm *) nm_setting_gsm_new ();
 	g_assert (s_gsm);
 
-	g_object_set (s_gsm, NM_SETTING_GSM_NUMBER, "*99#", NULL);
-
 	/* Make sure a valid APN works */
 	g_object_set (s_gsm, NM_SETTING_GSM_APN, "foobar123.-baz", NULL);
 	g_assert (nm_setting_verify (NM_SETTING (s_gsm), NULL, NULL));
@@ -1381,8 +1403,6 @@ test_setting_gsm_apn_underscore (void)
 
 	s_gsm = (NMSettingGsm *) nm_setting_gsm_new ();
 	g_assert (s_gsm);
-
-	g_object_set (s_gsm, NM_SETTING_GSM_NUMBER, "*99#", NULL);
 
 	/* 65-character long */
 	g_object_set (s_gsm, NM_SETTING_GSM_APN, "foobar_baz", NULL);
@@ -1635,6 +1655,25 @@ test_connection_to_dbus_setting_name (void)
 	connection = nm_simple_connection_new ();
 	s_wsec = make_test_wsec_setting ("connection-to-dbus-setting-name");
 	nm_connection_add_setting (connection, NM_SETTING (s_wsec));
+
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
+	g_object_set (s_wsec,
+	              NM_SETTING_WIRELESS_SECURITY_WEP_KEY_FLAGS, NM_SETTING_SECRET_FLAG_NOT_SAVED,
+	              NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD_FLAGS, NM_SETTING_SECRET_FLAG_NOT_SAVED,
+	              NULL);
+
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (!_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
+
+	g_object_set (s_wsec,
+	              NM_SETTING_WIRELESS_SECURITY_WEP_KEY_FLAGS, NM_SETTING_SECRET_FLAG_NONE,
+	              NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD_FLAGS, NM_SETTING_SECRET_FLAG_NONE,
+	              NULL);
+
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SECRETS, NULL));
+	g_assert (_nm_connection_aggregate (connection, NM_CONNECTION_AGGREGATE_ANY_SYSTEM_SECRET_FLAGS, NULL));
 
 	dict = nm_connection_to_dbus (connection, NM_CONNECTION_SERIALIZE_ALL);
 
@@ -2946,7 +2985,6 @@ test_connection_good_base_types (void)
 
 	setting = nm_setting_gsm_new ();
 	g_object_set (setting,
-	              NM_SETTING_GSM_NUMBER, "*99#",
 	              NM_SETTING_GSM_APN, "metered.billing.sucks",
 	              NULL);
 	nm_connection_add_setting (connection, setting);
@@ -3267,11 +3305,110 @@ test_data_compare_secrets_new (NMSettingSecretFlags secret_flags,
 }
 
 static void
+_test_compare_secrets_check_diff (NMSetting *a,
+                                  NMSetting *b,
+                                  NMSettingCompareFlags flags,
+                                  gboolean exp_same_psk,
+                                  gboolean exp_same_psk_flags)
+{
+	gs_unref_hashtable GHashTable *h = NULL;
+	NMSettingDiffResult _RESULT_IN_A = NM_SETTING_DIFF_RESULT_IN_A;
+	NMSettingDiffResult _RESULT_IN_B = NM_SETTING_DIFF_RESULT_IN_B;
+	gboolean invert_results;
+	gboolean diff_result;
+	NMSettingSecretFlags a_psk_flags = nm_setting_wireless_security_get_psk_flags (NM_SETTING_WIRELESS_SECURITY (a));
+	NMSettingSecretFlags b_psk_flags = nm_setting_wireless_security_get_psk_flags (NM_SETTING_WIRELESS_SECURITY (b));
+	const char *a_psk = nm_setting_wireless_security_get_psk (NM_SETTING_WIRELESS_SECURITY (a));
+	const char *b_psk = nm_setting_wireless_security_get_psk (NM_SETTING_WIRELESS_SECURITY (b));
+
+	g_assert (NM_IS_SETTING_WIRELESS_SECURITY (a));
+	g_assert (NM_IS_SETTING_WIRELESS_SECURITY (b));
+
+	invert_results = nmtst_get_rand_bool ();
+	if (invert_results) {
+		_RESULT_IN_A = NM_SETTING_DIFF_RESULT_IN_B;
+		_RESULT_IN_B = NM_SETTING_DIFF_RESULT_IN_A;
+	}
+
+	diff_result = nm_setting_diff (a, b, flags, invert_results, &h);
+
+	g_assert (exp_same_psk_flags == (a_psk_flags == b_psk_flags));
+
+	if (nm_streq0 (a_psk, b_psk))
+		g_assert (exp_same_psk);
+	else {
+		if (flags == NM_SETTING_COMPARE_FLAG_EXACT)
+			g_assert (!exp_same_psk);
+		else if (flags == NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS) {
+			if (   !NM_FLAGS_HAS (a_psk_flags, NM_SETTING_SECRET_FLAG_AGENT_OWNED)
+			    && !NM_FLAGS_HAS (b_psk_flags, NM_SETTING_SECRET_FLAG_AGENT_OWNED))
+				g_assert (!exp_same_psk);
+			else if (   !NM_FLAGS_HAS (a_psk_flags, NM_SETTING_SECRET_FLAG_AGENT_OWNED)
+			         && NM_FLAGS_HAS (b_psk_flags, NM_SETTING_SECRET_FLAG_AGENT_OWNED))
+				g_assert (!exp_same_psk);
+			else
+				g_assert (exp_same_psk);
+		} else if (flags == NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS) {
+			if (   !NM_FLAGS_HAS (a_psk_flags, NM_SETTING_SECRET_FLAG_NOT_SAVED)
+			    && !NM_FLAGS_HAS (b_psk_flags, NM_SETTING_SECRET_FLAG_NOT_SAVED))
+				g_assert (!exp_same_psk);
+			else if (   !NM_FLAGS_HAS (a_psk_flags, NM_SETTING_SECRET_FLAG_NOT_SAVED)
+			         && NM_FLAGS_HAS (b_psk_flags, NM_SETTING_SECRET_FLAG_NOT_SAVED))
+				g_assert (!exp_same_psk);
+			else
+				g_assert (exp_same_psk);
+		} else if (flags == NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS)
+			g_assert (exp_same_psk);
+		else
+			g_assert_not_reached ();
+	}
+
+	g_assert (diff_result == (exp_same_psk && exp_same_psk_flags));
+	g_assert (diff_result == (!h));
+
+	if (!diff_result) {
+		if (flags == NM_SETTING_COMPARE_FLAG_EXACT)
+			g_assert (!exp_same_psk);
+		else if (   NM_IN_SET (flags, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS,
+		                              NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS)
+		         && (a_psk_flags != b_psk_flags)
+		         && nm_setting_wireless_security_get_psk_flags (NM_SETTING_WIRELESS_SECURITY (a)) == NM_SETTING_SECRET_FLAG_NONE)
+			g_assert (!exp_same_psk);
+		else
+			g_assert (exp_same_psk);
+
+		g_assert ((!exp_same_psk) == g_hash_table_contains (h, NM_SETTING_WIRELESS_SECURITY_PSK));
+		if (!exp_same_psk) {
+			if (nm_setting_wireless_security_get_psk (NM_SETTING_WIRELESS_SECURITY (a)))
+				g_assert_cmpint (GPOINTER_TO_UINT (g_hash_table_lookup (h, NM_SETTING_WIRELESS_SECURITY_PSK)), ==, _RESULT_IN_A);
+			else
+				g_assert_cmpint (GPOINTER_TO_UINT (g_hash_table_lookup (h, NM_SETTING_WIRELESS_SECURITY_PSK)), ==, _RESULT_IN_B);
+		}
+
+		g_assert ((!exp_same_psk_flags) == g_hash_table_contains (h, NM_SETTING_WIRELESS_SECURITY_PSK_FLAGS));
+		if (!exp_same_psk_flags) {
+			if (nm_setting_wireless_security_get_psk_flags (NM_SETTING_WIRELESS_SECURITY (a)) != NM_SETTING_SECRET_FLAG_NONE)
+				g_assert_cmpint (GPOINTER_TO_UINT (g_hash_table_lookup (h, NM_SETTING_WIRELESS_SECURITY_PSK_FLAGS)), ==, _RESULT_IN_A);
+			else
+				g_assert_cmpint (GPOINTER_TO_UINT (g_hash_table_lookup (h, NM_SETTING_WIRELESS_SECURITY_PSK_FLAGS)), ==, _RESULT_IN_B);
+		}
+
+		g_assert_cmpint (g_hash_table_size (h), ==, (!exp_same_psk) + (!exp_same_psk_flags));
+	}
+
+	g_assert (diff_result == nm_setting_compare (a, b, flags));
+	g_assert (diff_result == nm_setting_compare (b, a, flags));
+
+}
+
+static void
 test_setting_compare_secrets (gconstpointer test_data)
 {
 	const TestDataCompareSecrets *data = test_data;
-	gs_unref_object NMSetting *old = NULL, *new = NULL;
-	gboolean success;
+	gs_unref_object NMConnection *conn_old = NULL;
+	gs_unref_object NMConnection *conn_new = NULL;
+	gs_unref_object NMSetting *old = NULL;
+	gs_unref_object NMSetting *new = NULL;
 
 	/* Make sure that a connection with transient/unsaved secrets compares
 	 * successfully to the same connection without those secrets.
@@ -3284,17 +3421,45 @@ test_setting_compare_secrets (gconstpointer test_data)
 	              NULL);
 	nm_setting_set_secret_flags (old, NM_SETTING_WIRELESS_SECURITY_PSK, data->secret_flags, NULL);
 
-	/* Clear the PSK from the duplicated setting */
 	new = nm_setting_duplicate (old);
-	if (data->remove_secret) {
+	if (data->remove_secret)
 		g_object_set (new, NM_SETTING_WIRELESS_SECURITY_PSK, NULL, NULL);
 
-		success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
-		g_assert (success == FALSE);
+	g_assert ((!data->remove_secret) == nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT));
+	g_assert ((!data->remove_secret) == nm_setting_compare (new, old, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	_test_compare_secrets_check_diff (old, new, NM_SETTING_COMPARE_FLAG_EXACT, !data->remove_secret, TRUE);
+	_test_compare_secrets_check_diff (new, old, NM_SETTING_COMPARE_FLAG_EXACT, !data->remove_secret, TRUE);
+
+	g_assert (nm_setting_compare (old, new, data->comp_flags));
+	g_assert (nm_setting_compare (new, old, data->comp_flags));
+
+	_test_compare_secrets_check_diff (old, new, data->comp_flags, TRUE, TRUE);
+	_test_compare_secrets_check_diff (new, old, data->comp_flags, TRUE, TRUE);
+
+	/* OK. Try again, but this time not only change the secret, also let the secret flags differ... */
+	if (data->secret_flags != NM_SETTING_SECRET_FLAG_NONE) {
+		nm_setting_set_secret_flags (new, NM_SETTING_WIRELESS_SECURITY_PSK, NM_SETTING_SECRET_FLAG_NONE, NULL);
+
+		_test_compare_secrets_check_diff (old, new, NM_SETTING_COMPARE_FLAG_EXACT, FALSE, FALSE);
+		_test_compare_secrets_check_diff (new, old, NM_SETTING_COMPARE_FLAG_EXACT, FALSE, FALSE);
+
+		_test_compare_secrets_check_diff (old, new, data->comp_flags, TRUE, FALSE);
+		_test_compare_secrets_check_diff (new, old, data->comp_flags, FALSE, FALSE);
+
+		nm_setting_set_secret_flags (new, NM_SETTING_WIRELESS_SECURITY_PSK, data->secret_flags, NULL);
 	}
 
-	success = nm_setting_compare (old, new, data->comp_flags);
-	g_assert (success);
+	conn_old = nmtst_create_minimal_connection ("test-compare-secrets", NULL, NM_SETTING_WIRELESS_SETTING_NAME, NULL);
+	nm_connection_add_setting (conn_old, nm_setting_duplicate (old));
+	conn_new = nm_simple_connection_new_clone (conn_old);
+	nm_connection_add_setting (conn_new, nm_setting_duplicate (new));
+
+	g_assert ((!data->remove_secret) == nm_connection_compare (conn_old, conn_new, NM_SETTING_COMPARE_FLAG_EXACT));
+	g_assert ((!data->remove_secret) == nm_connection_compare (conn_new, conn_old, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	g_assert (nm_connection_compare (conn_old, conn_new, data->comp_flags));
+	g_assert (nm_connection_compare (conn_new, conn_old, data->comp_flags));
 }
 
 static void
@@ -3473,6 +3638,41 @@ test_connection_changed_cb (NMConnection *connection, gboolean *data)
 	*data = TRUE;
 }
 
+static guint32
+_netmask_to_prefix (guint32 netmask)
+{
+	guint32 prefix;
+	guint8 v;
+	const guint8 *p = (guint8 *) &netmask;
+
+	if (p[3]) {
+		prefix = 24;
+		v = p[3];
+	} else if (p[2]) {
+		prefix = 16;
+		v = p[2];
+	} else if (p[1]) {
+		prefix = 8;
+		v = p[1];
+	} else {
+		prefix = 0;
+		v = p[0];
+	}
+
+	while (v) {
+		prefix++;
+		v <<= 1;
+	}
+
+	g_assert_cmpint (prefix, <=, 32);
+
+	/* we re-implemented the netmask-to-prefix code differently. Check
+	 * that they agree. */
+	g_assert_cmpint (prefix, ==, nm_utils_ip4_netmask_to_prefix (netmask));
+
+	return prefix;
+}
+
 static void
 test_ip4_prefix_to_netmask (void)
 {
@@ -3480,7 +3680,7 @@ test_ip4_prefix_to_netmask (void)
 
 	for (i = 0; i<=32; i++) {
 		guint32 netmask = _nm_utils_ip4_prefix_to_netmask (i);
-		int plen = nm_utils_ip4_netmask_to_prefix (netmask);
+		int plen = _netmask_to_prefix (netmask);
 
 		g_assert_cmpint (i, ==, plen);
 		{
@@ -3510,7 +3710,7 @@ test_ip4_netmask_to_prefix (void)
 		guint32 netmask = _nm_utils_ip4_prefix_to_netmask (i);
 		guint32 netmask_lowest_bit = netmask & ~_nm_utils_ip4_prefix_to_netmask (i-1);
 
-		g_assert_cmpint (i, ==, nm_utils_ip4_netmask_to_prefix (netmask));
+		g_assert_cmpint (i, ==, _netmask_to_prefix (netmask));
 
 		for (j = 0; j < 2*i; j++) {
 			guint32 r = g_rand_int (rand);
@@ -3524,7 +3724,7 @@ test_ip4_netmask_to_prefix (void)
 
 			/* create an invalid netmask with holes and check that the function
 			 * returns the longest prefix. */
-			prefix_holey = nm_utils_ip4_netmask_to_prefix (netmask_holey);
+			prefix_holey = _netmask_to_prefix (netmask_holey);
 
 			g_assert_cmpint (i, ==, prefix_holey);
 		}
@@ -5054,7 +5254,7 @@ test_setting_ip4_gateway (void)
 	GVariantBuilder addrs_builder;
 	GError *error = NULL;
 
-	g_assert_cmpstr (nm_utils_inet4_ntop (addr_vals_0[0], NULL), ==, "192.168.1.10");
+	nmtst_assert_ip4_address (addr_vals_0[0], "192.168.1.10");
 
 	/* When serializing on the daemon side, ipv4.gateway is copied to the first
 	 * entry of ipv4.addresses
@@ -5096,7 +5296,7 @@ test_setting_ip4_gateway (void)
 
 		addr_array = g_variant_get_fixed_array (addr_var, &length, sizeof (guint32));
 		g_assert_cmpint (length, ==, 3);
-		g_assert_cmpstr (nm_utils_inet4_ntop (addr_array[2], NULL), ==, "192.168.1.1");
+		nmtst_assert_ip4_address (addr_array[2], "192.168.1.1");
 		g_variant_unref (addr_var);
 	}
 	g_variant_unref (value);
@@ -5203,7 +5403,7 @@ test_setting_ip6_gateway (void)
 
 		gateway_bytes = g_variant_get_fixed_array (gateway_var, &length, 1);
 		g_assert_cmpint (length, ==, 16);
-		g_assert_cmpstr (nm_utils_inet6_ntop ((struct in6_addr *) gateway_bytes, NULL), ==, "abcd::1");
+		nmtst_assert_ip6_address ((struct in6_addr *) gateway_bytes, "abcd::1");
 		g_variant_unref (gateway_var);
 	}
 	g_variant_unref (value);
@@ -5318,6 +5518,158 @@ test_setting_user_data (void)
 	gs_unref_object NMSettingUser *s_user = NULL;
 
 	s_user = NM_SETTING_USER (nm_setting_user_new ());
+}
+
+/*****************************************************************************/
+
+typedef union {
+	struct sockaddr     sa;
+	struct sockaddr_in  in;
+	struct sockaddr_in6 in6;
+} SockAddrUnion;
+
+static void
+_sock_addr_endpoint (const char *endpoint,
+                     const char *host,
+                     gint32 port)
+{
+	nm_auto_unref_sockaddrendpoint NMSockAddrEndpoint *ep = NULL;
+	const char *s_endpoint;
+	const char *s_host;
+	gint32 s_port;
+	SockAddrUnion sockaddr = { };
+
+	g_assert (endpoint);
+	g_assert (!host == (port == -1));
+	g_assert (port >= -1 && port <= G_MAXUINT16);
+
+	ep = nm_sock_addr_endpoint_new (endpoint);
+	g_assert (ep);
+
+	s_endpoint = nm_sock_addr_endpoint_get_endpoint (ep);
+	s_host = nm_sock_addr_endpoint_get_host (ep);
+	s_port = nm_sock_addr_endpoint_get_port (ep);
+	g_assert_cmpstr (endpoint, ==, s_endpoint);
+	g_assert_cmpstr (host,     ==, s_host);
+	g_assert_cmpint (port,     ==, s_port);
+
+	g_assert (!nm_sock_addr_endpoint_get_fixed_sockaddr (ep, &sockaddr));
+
+	if (endpoint[0] != ' ') {
+		gs_free char *endpoint2 = NULL;
+
+		/* also test with a leading space */
+		endpoint2 = g_strdup_printf (" %s", endpoint);
+		_sock_addr_endpoint (endpoint2, host, port);
+	}
+
+	if (endpoint[0] && endpoint[strlen (endpoint) - 1] != ' ') {
+		gs_free char *endpoint2 = NULL;
+
+		/* also test with a trailing space */
+		endpoint2 = g_strdup_printf ("%s ", endpoint);
+		_sock_addr_endpoint (endpoint2, host, port);
+	}
+}
+
+static void
+_sock_addr_endpoint_fixed (const char *endpoint,
+                           const char *host,
+                           guint16 port,
+                           guint scope_id)
+{
+	nm_auto_unref_sockaddrendpoint NMSockAddrEndpoint *ep = NULL;
+	const char *s_endpoint;
+	const char *s_host;
+	gint32 s_port;
+	int addr_family;
+	NMIPAddr addrbin;
+	SockAddrUnion sockaddr = { };
+
+	g_assert (endpoint);
+	g_assert (host);
+	g_assert (port > 0);
+
+	if (!nm_utils_parse_inaddr_bin (AF_UNSPEC, host, &addr_family, &addrbin))
+		g_assert_not_reached ();
+
+	ep = nm_sock_addr_endpoint_new (endpoint);
+	g_assert (ep);
+
+	s_endpoint = nm_sock_addr_endpoint_get_endpoint (ep);
+	s_host = nm_sock_addr_endpoint_get_host (ep);
+	s_port = nm_sock_addr_endpoint_get_port (ep);
+	g_assert_cmpstr (endpoint, ==, s_endpoint);
+	g_assert_cmpstr (NULL,     !=, s_host);
+	g_assert_cmpint (port,     ==, s_port);
+
+	if (!nm_sock_addr_endpoint_get_fixed_sockaddr (ep, &sockaddr))
+		g_assert_not_reached ();
+
+	g_assert_cmpint (sockaddr.sa.sa_family, ==, addr_family);
+	if (addr_family == AF_INET) {
+		const SockAddrUnion s = {
+			.in = {
+				.sin_family = AF_INET,
+				.sin_addr   = addrbin.addr4_struct,
+				.sin_port   = htons (port),
+			},
+		};
+
+		g_assert_cmpint (sockaddr.in.sin_addr.s_addr, ==, addrbin.addr4);
+		g_assert_cmpint (sockaddr.in.sin_port, ==, htons (port));
+		g_assert (memcmp (&s, &sockaddr, sizeof (s.in)) == 0);
+	} else if (addr_family == AF_INET6) {
+		const SockAddrUnion s = {
+			.in6 = {
+				.sin6_family   = AF_INET6,
+				.sin6_addr     = addrbin.addr6,
+				.sin6_scope_id = scope_id,
+				.sin6_port     = htons (port),
+			},
+		};
+
+		g_assert (memcmp (&sockaddr.in6.sin6_addr, &addrbin, sizeof (addrbin.addr6)) == 0);
+		g_assert_cmpint (sockaddr.in6.sin6_port, ==, htons (port));
+		g_assert_cmpint (sockaddr.in6.sin6_scope_id, ==, scope_id);
+		g_assert_cmpint (sockaddr.in6.sin6_flowinfo, ==, 0);
+		g_assert (memcmp (&s, &sockaddr, sizeof (s.in6)) == 0);
+	} else
+		g_assert_not_reached ();
+}
+
+static void
+test_sock_addr_endpoint (void)
+{
+	_sock_addr_endpoint ("",                NULL, -1);
+	_sock_addr_endpoint (":",               NULL, -1);
+	_sock_addr_endpoint ("a",               NULL, -1);
+	_sock_addr_endpoint ("a:",              NULL, -1);
+	_sock_addr_endpoint (":a",              NULL, -1);
+	_sock_addr_endpoint ("[]:a",            NULL, -1);
+	_sock_addr_endpoint ("[]a",             NULL, -1);
+	_sock_addr_endpoint ("[]:",             NULL, -1);
+	_sock_addr_endpoint ("[a]b",            NULL, -1);
+	_sock_addr_endpoint ("[a:b",            NULL, -1);
+	_sock_addr_endpoint ("[a[:b",           NULL, -1);
+	_sock_addr_endpoint ("a:6",             "a",  6);
+	_sock_addr_endpoint ("a:6",             "a",  6);
+	_sock_addr_endpoint ("[a]:6",           "a",  6);
+	_sock_addr_endpoint ("[a]:6",           "a",  6);
+	_sock_addr_endpoint ("[a]:655",         "a",  655);
+	_sock_addr_endpoint ("[ab]:][6",        NULL, -1);
+	_sock_addr_endpoint ("[ab]:]:[6",       NULL, -1);
+	_sock_addr_endpoint ("[a[]:b",          NULL, -1);
+	_sock_addr_endpoint ("[192.169.6.x]:6", "192.169.6.x", 6);
+	_sock_addr_endpoint ("[192.169.6.x]:0", NULL, -1);
+	_sock_addr_endpoint ("192.169.6.7:0",   NULL, -1);
+
+	_sock_addr_endpoint_fixed ("192.169.6.7:6",   "192.169.6.7", 6, 0);
+	_sock_addr_endpoint_fixed ("[192.169.6.7]:6", "192.169.6.7", 6, 0);
+	_sock_addr_endpoint_fixed ("[a:b::]:6", "a:b::", 6, 0);
+	_sock_addr_endpoint_fixed ("[a:b::%7]:6", "a:b::", 6, 7);
+	_sock_addr_endpoint_fixed ("a:b::1%75:6", "a:b::1", 6, 75);
+	_sock_addr_endpoint_fixed ("a:b::1%0:64", "a:b::1", 64, 0);
 }
 
 /*****************************************************************************/
@@ -5687,7 +6039,7 @@ __test_uuid (const char *expected_uuid, const char *str, gssize slen, char *uuid
 static void
 test_nm_utils_uuid_generate_from_strings (void)
 {
-	const NMUuid uuid0 = { 0 };
+	const NMUuid uuid0 = { };
 
 	g_assert_cmpmem (&uuid0, sizeof (uuid0), _uuid ("00000000-0000-0000-0000-000000000000"), 16);
 
@@ -7535,6 +7887,8 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_compare_default_strv", test_setting_compare_default_strv);
 	g_test_add_func ("/core/general/test_setting_user_data", test_setting_user_data);
 
+	g_test_add_func ("/core/general/test_sock_addr_endpoint", test_sock_addr_endpoint);
+
 	g_test_add_func ("/core/general/hexstr2bin", test_hexstr2bin);
 	g_test_add_func ("/core/general/nm_strquote", test_nm_strquote);
 	g_test_add_func ("/core/general/test_nm_utils_uuid_generate_from_string", test_nm_utils_uuid_generate_from_string);
@@ -7564,4 +7918,3 @@ int main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
