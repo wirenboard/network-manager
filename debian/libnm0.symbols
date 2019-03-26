@@ -8,6 +8,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_12_0@libnm_1_12_0 1.11.3
  libnm_1_12_2@libnm_1_12_2 1.12.2
  libnm_1_14_0@libnm_1_14_0 1.13.90
+ libnm_1_16_0@libnm_1_16_0 1.16.0
  libnm_1_2_0@libnm_1_2_0 1.1.90
  libnm_1_2_4@libnm_1_2_4 1.2.4
  libnm_1_4_0@libnm_1_4_0 1.4.0
@@ -62,6 +63,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_checkpoint_get_type@libnm_1_12_0 1.11.3
  nm_client_activate_connection_async@libnm_1_0_0 1.0.0
  nm_client_activate_connection_finish@libnm_1_0_0 1.0.0
+ nm_client_add_and_activate_connection2@libnm_1_16_0 1.16.0
+ nm_client_add_and_activate_connection2_finish@libnm_1_16_0 1.16.0
  nm_client_add_and_activate_connection_async@libnm_1_0_0 1.0.0
  nm_client_add_and_activate_connection_finish@libnm_1_0_0 1.0.0
  nm_client_add_connection_async@libnm_1_0_0 1.0.0
@@ -254,6 +257,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_get_autoconnect@libnm_1_0_0 1.0.0
  nm_device_get_available_connections@libnm_1_0_0 1.0.0
  nm_device_get_capabilities@libnm_1_0_0 1.0.0
+ nm_device_get_connectivity@libnm_1_16_0 1.16.0
  nm_device_get_description@libnm_1_0_0 1.0.0
  nm_device_get_device_type@libnm_1_0_0 1.0.0
  nm_device_get_dhcp4_config@libnm_1_0_0 1.0.0
@@ -388,6 +392,13 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_wifi_get_mode@libnm_1_0_0 1.0.0
  nm_device_wifi_get_permanent_hw_address@libnm_1_0_0 1.0.0
  nm_device_wifi_get_type@libnm_1_0_0 1.0.0
+ nm_device_wifi_p2p_get_hw_address@libnm_1_16_0 1.16.0
+ nm_device_wifi_p2p_get_peers@libnm_1_16_0 1.16.0
+ nm_device_wifi_p2p_get_type@libnm_1_16_0 1.16.0
+ nm_device_wifi_p2p_start_find@libnm_1_16_0 1.16.0
+ nm_device_wifi_p2p_start_find_finish@libnm_1_16_0 1.16.0
+ nm_device_wifi_p2p_stop_find@libnm_1_16_0 1.16.0
+ nm_device_wifi_p2p_stop_find_finish@libnm_1_16_0 1.16.0
  nm_device_wifi_request_scan@libnm_1_0_0 1.0.0
  nm_device_wifi_request_scan_async@libnm_1_0_0 1.0.0
  nm_device_wifi_request_scan_finish@libnm_1_0_0 1.0.0
@@ -1071,6 +1082,11 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_vxlan_get_ttl@libnm_1_2_0 1.1.90
  nm_setting_vxlan_get_type@libnm_1_2_0 1.1.90
  nm_setting_vxlan_new@libnm_1_2_0 1.1.90
+ nm_setting_wifi_p2p_get_peer@libnm_1_16_0 1.16.0
+ nm_setting_wifi_p2p_get_type@libnm_1_16_0 1.16.0
+ nm_setting_wifi_p2p_get_wfd_ies@libnm_1_16_0 1.16.0
+ nm_setting_wifi_p2p_get_wps_method@libnm_1_16_0 1.16.0
+ nm_setting_wifi_p2p_new@libnm_1_16_0 1.16.0
  nm_setting_wimax_get_mac_address@libnm_1_0_0 1.0.0
  nm_setting_wimax_get_network_name@libnm_1_0_0 1.0.0
  nm_setting_wimax_get_type@libnm_1_0_0 1.0.0
@@ -1106,6 +1122,21 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wired_remove_s390_option@libnm_1_0_0 1.0.0
  nm_setting_wired_wake_on_lan_get_type@libnm_1_0_6 1.0.6
  nm_setting_wired_wake_on_lan_get_type@libnm_1_2_0 1.1.90
+ nm_setting_wireguard_append_peer@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_clear_peers@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_fwmark@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_listen_port@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_mtu@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_peer@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_peer_by_public_key@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_peer_routes@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_peers_len@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_private_key@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_private_key_flags@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_get_type@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_new@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_remove_peer@libnm_1_16_0 1.16.0
+ nm_setting_wireguard_set_peer@libnm_1_16_0 1.16.0
  nm_setting_wireless_add_mac_blacklist_item@libnm_1_0_0 1.0.0
  nm_setting_wireless_add_seen_bssid@libnm_1_0_0 1.0.0
  nm_setting_wireless_ap_security_compatible@libnm_1_0_0 1.0.0
@@ -1245,6 +1276,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_team_link_watcher_get_source_host@libnm_1_10_2 1.10.2
  nm_team_link_watcher_get_target_host@libnm_1_10_2 1.10.2
  nm_team_link_watcher_get_type@libnm_1_10_2 1.10.2
+ nm_team_link_watcher_get_vlanid@libnm_1_16_0 1.16.0
+ nm_team_link_watcher_new_arp_ping2@libnm_1_16_0 1.16.0
  nm_team_link_watcher_new_arp_ping@libnm_1_10_2 1.10.2
  nm_team_link_watcher_new_ethtool@libnm_1_10_2 1.10.2
  nm_team_link_watcher_new_nsna_ping@libnm_1_10_2 1.10.2
@@ -1252,6 +1285,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_team_link_watcher_unref@libnm_1_10_2 1.10.2
  nm_ternary_get_type@libnm_1_14_0 1.13.90
  nm_utils_ap_mode_security_valid@libnm_1_0_0 1.0.0
+ nm_utils_base64secret_decode@libnm_1_16_0 1.16.0
  nm_utils_bin2hexstr@libnm_1_0_0 1.0.0
  nm_utils_bond_mode_int_to_string@libnm_1_2_0 1.1.90
  nm_utils_bond_mode_string_to_int@libnm_1_2_0 1.1.90
@@ -1400,6 +1434,19 @@ libnm.so.0 libnm0 #MINVER#
  nm_vpn_service_plugin_shutdown@libnm_1_12_0 1.11.3
  nm_vpn_service_state_get_type@libnm_1_0_0 1.0.0
  nm_wep_key_type_get_type@libnm_1_0_0 1.0.0
+ nm_wifi_p2p_peer_connection_valid@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_filter_connections@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_flags@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_hw_address@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_last_seen@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_manufacturer@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_model@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_model_number@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_name@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_serial@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_strength@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_type@libnm_1_16_0 1.16.0
+ nm_wifi_p2p_peer_get_wfd_ies@libnm_1_16_0 1.16.0
  nm_wimax_nsp_connection_valid@libnm_1_0_0 1.0.0
  nm_wimax_nsp_filter_connections@libnm_1_0_0 1.0.0
  nm_wimax_nsp_get_name@libnm_1_0_0 1.0.0
@@ -1407,3 +1454,27 @@ libnm.so.0 libnm0 #MINVER#
  nm_wimax_nsp_get_signal_quality@libnm_1_0_0 1.0.0
  nm_wimax_nsp_get_type@libnm_1_0_0 1.0.0
  nm_wimax_nsp_network_type_get_type@libnm_1_0_0 1.0.0
+ nm_wireguard_peer_append_allowed_ip@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_clear_allowed_ips@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_cmp@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_allowed_ip@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_allowed_ips_len@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_endpoint@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_persistent_keepalive@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_preshared_key@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_preshared_key_flags@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_public_key@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_get_type@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_is_sealed@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_is_valid@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_new@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_new_clone@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_ref@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_remove_allowed_ip@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_seal@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_set_endpoint@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_set_persistent_keepalive@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_set_preshared_key@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_set_preshared_key_flags@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_set_public_key@libnm_1_16_0 1.16.0
+ nm_wireguard_peer_unref@libnm_1_16_0 1.16.0
