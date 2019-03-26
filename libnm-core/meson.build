@@ -45,8 +45,10 @@ libnm_core_headers = files(
   'nm-setting-vlan.h',
   'nm-setting-vpn.h',
   'nm-setting-vxlan.h',
+  'nm-setting-wifi-p2p.h',
   'nm-setting-wimax.h',
   'nm-setting-wired.h',
+  'nm-setting-wireguard.h',
   'nm-setting-wireless-security.h',
   'nm-setting-wireless.h',
   'nm-setting-wpan.h',
@@ -56,7 +58,7 @@ libnm_core_headers = files(
   'nm-version.h',
   'nm-vpn-dbus-interface.h',
   'nm-vpn-editor-plugin.h',
-  'nm-vpn-plugin-info.h'
+  'nm-vpn-plugin-info.h',
 )
 
 libnm_core_settings_sources = files(
@@ -100,11 +102,13 @@ libnm_core_settings_sources = files(
   'nm-setting-vlan.c',
   'nm-setting-vpn.c',
   'nm-setting-vxlan.c',
+  'nm-setting-wifi-p2p.c',
   'nm-setting-wimax.c',
   'nm-setting-wired.c',
+  'nm-setting-wireguard.c',
   'nm-setting-wireless-security.c',
   'nm-setting-wireless.c',
-  'nm-setting-wpan.c'
+  'nm-setting-wpan.c',
 )
 
 libnm_core_sources = libnm_core_settings_sources + files(
@@ -119,7 +123,7 @@ libnm_core_sources = libnm_core_settings_sources + files(
   'nm-simple-connection.c',
   'nm-utils.c',
   'nm-vpn-editor-plugin.c',
-  'nm-vpn-plugin-info.c'
+  'nm-vpn-plugin-info.c',
 )
 
 enum_headers = libnm_core_headers + [version_header]
@@ -132,15 +136,17 @@ libnm_core_enum = gnome.mkenums(
   c_template: enum_types + '.c.template',
   h_template: enum_types + '.h.template',
   install_header: true,
-  install_dir: libnm_pkgincludedir
+  install_dir: libnm_pkgincludedir,
 )
 
 deps = [
   dl_dep,
   libudev_dep,
-  shared_dep,
   uuid_dep,
+  glib_dep,
   shared_c_siphash_dep,
+  shared_nm_utils_base_dep,
+  shared_nm_utils_udev_dep,
 ]
 
 cflags = [
@@ -158,7 +164,7 @@ if (crypto_gnutls_dep.found())
     'nm-crypto-gnutls',
     sources: [ 'nm-crypto-gnutls.c' ],
     dependencies: deps + [ crypto_gnutls_dep ],
-    c_args: cflags
+    c_args: cflags,
   )
 endif
 
@@ -167,7 +173,7 @@ if (crypto_nss_dep.found())
     'nm-crypto-nss',
     sources: [ 'nm-crypto-nss.c' ],
     dependencies: deps + [ crypto_nss_dep ],
-    c_args: cflags
+    c_args: cflags,
   )
 endif
 
@@ -183,7 +189,6 @@ libnm_core_sources_all =  libnm_core_sources
 libnm_core_sources_all += libnm_core_enum
 libnm_core_sources_all += shared_nm_meta_setting_c
 libnm_core_sources_all += shared_nm_ethtool_utils_c
-libnm_core_sources_all += shared_files_libnm_core
 libnm_core_sources_all += [version_header]
 
 libnm_core = static_library(
@@ -191,15 +196,16 @@ libnm_core = static_library(
   sources: libnm_core_sources_all,
   dependencies: deps,
   link_with: libnm_crypto,
-  c_args: cflags
+  c_args: cflags,
 )
 
 nm_core_dep = declare_dependency(
   sources: libnm_core_enum[1],
   include_directories: libnm_core_inc,
   dependencies: [
-    shared_dep,
+    shared_nm_utils_base_dep,
     shared_c_siphash_dep,
+    libnm_systemd_shared_dep,
   ],
 )
 
@@ -207,7 +213,7 @@ enums_to_docbook = join_paths(meson.source_root(), 'tools', 'enums-to-docbook.pl
 
 docbooks = [
   ['nm-dbus-types', 'nm-dbus-interface.h', 'NetworkManager D-Bus API Types'],
-  ['nm-vpn-dbus-types', 'nm-vpn-dbus-interface.h', 'VPN Plugin D-Bus API Types']
+  ['nm-vpn-dbus-types', 'nm-vpn-dbus-interface.h', 'VPN Plugin D-Bus API Types'],
 ]
 
 foreach docbook: docbooks
@@ -221,7 +227,7 @@ foreach docbook: docbooks
     command: [perl, enums_to_docbook, docbook[0], docbook[2], '@INPUT@'],
     # FIXME: gtkdoc does not depend directly on this.
     #        https://github.com/mesonbuild/meson/pull/2806
-    build_by_default: true
+    build_by_default: true,
   )
 
   content_files += xml.full_path()

@@ -23,10 +23,8 @@
 
 #include "nm-core-utils.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
-#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <resolv.h>
@@ -50,6 +48,10 @@
 #include "nm-setting-ip6-config.h"
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
+
+#ifdef __NM_SD_UTILS_H__
+#error "nm-core-utils.c should stay independent of systemd utils. Are you looking for NetworkMangerUtils.c? "
+#endif
 
 G_STATIC_ASSERT (sizeof (NMUtilsTestFlags) <= sizeof (int));
 
@@ -242,16 +244,20 @@ nm_ethernet_address_is_valid (gconstpointer addr, gssize len)
 gconstpointer
 nm_utils_ipx_address_clear_host_address (int family, gpointer dst, gconstpointer src, guint8 plen)
 {
-	g_return_val_if_fail (src, NULL);
 	g_return_val_if_fail (dst, NULL);
 
 	switch (family) {
 	case AF_INET:
 		g_return_val_if_fail (plen <= 32, NULL);
+
+		if (!src) {
+			/* allow "self-assignment", by specifying %NULL as source. */
+			src = dst;
+		}
+
 		*((guint32 *) dst) = nm_utils_ip4_address_clear_host_address (*((guint32 *) src), plen);
 		break;
 	case AF_INET6:
-		g_return_val_if_fail (plen <= 128, NULL);
 		nm_utils_ip6_address_clear_host_address (dst, src, plen);
 		break;
 	default:
@@ -437,6 +443,7 @@ nm_utils_modprobe (GError **error, gboolean suppress_error_logging, const char *
 	/* construct the argument list */
 	argv = g_ptr_array_sized_new (4);
 	g_ptr_array_add (argv, "/sbin/modprobe");
+	g_ptr_array_add (argv, "--use-blacklist");
 	g_ptr_array_add (argv, (char *) arg1);
 
 	va_start (ap, arg1);
@@ -571,7 +578,7 @@ _kc_cb_timeout_grace_period (void *user_data)
 		/* ESRCH means, process does not exist or is already a zombie. */
 		if (errsv != ESRCH) {
 			nm_log_err (LOGD_CORE | data->log_domain, "%s: kill(SIGKILL) returned unexpected return value %d: (%s, %d)",
-			            data->log_name, ret, strerror (errsv), errsv);
+			            data->log_name, ret, nm_strerror_native (errsv), errsv);
 		}
 	} else {
 		nm_log_dbg (data->log_domain, "%s: process not terminated after %ld usec. Sending SIGKILL signal",
@@ -657,7 +664,7 @@ nm_utils_kill_child_async (pid_t pid, int sig, NMLogDomain log_domain,
 		/* ECHILD means, the process is not a child/does not exist or it has SIGCHILD blocked. */
 		if (errsv != ECHILD) {
 			nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": unexpected error while waitpid: %s (%d)",
-			            LOG_NAME_ARGS, strerror (errsv), errsv);
+			            LOG_NAME_ARGS, nm_strerror_native (errsv), errsv);
 			_kc_invoke_callback (pid, log_domain, log_name, callback, user_data, FALSE, -1);
 			return;
 		}
@@ -669,7 +676,7 @@ nm_utils_kill_child_async (pid_t pid, int sig, NMLogDomain log_domain,
 		/* ESRCH means, process does not exist or is already a zombie. */
 		if (errsv != ESRCH) {
 			nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": unexpected error sending %s: %s (%d)",
-			            LOG_NAME_ARGS, _kc_signal_to_string (sig), strerror (errsv), errsv);
+			            LOG_NAME_ARGS, _kc_signal_to_string (sig), nm_strerror_native (errsv), errsv);
 			_kc_invoke_callback (pid, log_domain, log_name, callback, user_data, FALSE, -1);
 			return;
 		}
@@ -683,7 +690,7 @@ nm_utils_kill_child_async (pid_t pid, int sig, NMLogDomain log_domain,
 		} else {
 			errsv = errno;
 			nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": failed due to unexpected return value %ld by waitpid (%s, %d) after sending %s",
-			            LOG_NAME_ARGS, (long) ret, strerror (errsv), errsv, _kc_signal_to_string (sig));
+			            LOG_NAME_ARGS, (long) ret, nm_strerror_native (errsv), errsv, _kc_signal_to_string (sig));
 			_kc_invoke_callback (pid, log_domain, log_name, callback, user_data, FALSE, -1);
 		}
 		return;
@@ -705,7 +712,7 @@ nm_utils_kill_child_async (pid_t pid, int sig, NMLogDomain log_domain,
 	g_child_watch_add (pid, _kc_cb_watch_child, data);
 }
 
-static inline gulong
+static gulong
 _sleep_duration_convert_ms_to_us (guint32 sleep_duration_msec)
 {
 	if (sleep_duration_msec > 0) {
@@ -723,7 +730,7 @@ _sleep_duration_convert_ms_to_us (guint32 sleep_duration_msec)
  * @log_domain: log debug information for this domain. Errors and warnings are logged both
  * as %LOGD_CORE and @log_domain.
  * @log_name: name of the process to kill for logging.
- * @child_status: (out) (allow-none): return the exit status of the child, if no error occured.
+ * @child_status: (out) (allow-none): return the exit status of the child, if no error occurred.
  * @wait_before_kill_msec: Waittime in milliseconds before sending %SIGKILL signal. Set this value
  * to zero, not to send %SIGKILL. If @sig is already %SIGKILL, this parameter has not effect.
  * @sleep_duration_msec: the synchronous function sleeps repeatedly waiting for the child to terminate.
@@ -732,7 +739,7 @@ _sleep_duration_convert_ms_to_us (guint32 sleep_duration_msec)
  * Kill a child process synchronously and wait. The function first checks if the child already terminated
  * and if it did, return the exit status. Otherwise send one @sig signal. @sig  will always be
  * sent unless the child already exited. If the child does not exit within @wait_before_kill_msec milliseconds,
- * the function will send %SIGKILL and waits for the child indefinitly. If @wait_before_kill_msec is zero, no
+ * the function will send %SIGKILL and waits for the child indefinitely. If @wait_before_kill_msec is zero, no
  * %SIGKILL signal will be sent.
  *
  * In case of error, errno is preserved to contain the last reason of failure.
@@ -765,7 +772,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char
 		/* ECHILD means, the process is not a child/does not exist or it has SIGCHILD blocked. */
 		if (errsv != ECHILD) {
 			nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": unexpected error while waitpid: %s (%d)",
-			            LOG_NAME_ARGS, strerror (errsv), errsv);
+			            LOG_NAME_ARGS, nm_strerror_native (errsv), errsv);
 			goto out;
 		}
 	}
@@ -776,7 +783,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char
 		/* ESRCH means, process does not exist or is already a zombie. */
 		if (errsv != ESRCH) {
 			nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": failed to send %s: %s (%d)",
-			            LOG_NAME_ARGS, _kc_signal_to_string (sig), strerror (errsv), errsv);
+			            LOG_NAME_ARGS, _kc_signal_to_string (sig), nm_strerror_native (errsv), errsv);
 		} else {
 			/* let's try again with waitpid, probably there was a race... */
 			ret = waitpid (pid, &status, 0);
@@ -787,7 +794,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char
 			} else {
 				errsv = errno;
 				nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": failed due to unexpected return value %ld by waitpid (%s, %d) after sending %s",
-				            LOG_NAME_ARGS, (long) ret, strerror (errsv), errsv, _kc_signal_to_string (sig));
+				            LOG_NAME_ARGS, (long) ret, nm_strerror_native (errsv), errsv, _kc_signal_to_string (sig));
 			}
 		}
 		goto out;
@@ -818,7 +825,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char
 				/* ECHILD means, the process is not a child/does not exist or it has SIGCHILD blocked. */
 				if (errsv != ECHILD) {
 					nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": after sending %s, waitpid failed with %s (%d)%s",
-					            LOG_NAME_ARGS, _kc_signal_to_string (sig), strerror (errsv), errsv,
+					            LOG_NAME_ARGS, _kc_signal_to_string (sig), nm_strerror_native (errsv), errsv,
 					           was_waiting ? _kc_waited_to_string (buf_wait, wait_start_us) : "");
 					goto out;
 				}
@@ -857,7 +864,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char
 				/* ESRCH means, process does not exist or is already a zombie. */
 				if (errsv != ESRCH) {
 					nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": failed to send SIGKILL (after sending %s), %s (%d)",
-								LOG_NAME_ARGS, _kc_signal_to_string (sig), strerror (errsv), errsv);
+								LOG_NAME_ARGS, _kc_signal_to_string (sig), nm_strerror_native (errsv), errsv);
 					goto out;
 				}
 			}
@@ -875,7 +882,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char
 
 		if (errsv != EINTR) {
 			nm_log_err (LOGD_CORE | log_domain, LOG_NAME_FMT ": after sending %s%s, waitpid failed with %s (%d)%s",
-			            LOG_NAME_ARGS, _kc_signal_to_string (sig), send_kill ? " and SIGKILL" : "", strerror (errsv), errsv,
+			            LOG_NAME_ARGS, _kc_signal_to_string (sig), send_kill ? " and SIGKILL" : "", nm_strerror_native (errsv), errsv,
 			            _kc_waited_to_string (buf_wait, wait_start_us));
 			goto out;
 		}
@@ -909,7 +916,7 @@ out:
  * @sleep_duration_msec: the synchronous function sleeps repeatedly waiting for the child to terminate.
  *   Set to zero, to use the default (meaning 20 wakeups per seconds).
  * @max_wait_msec: if 0, waits indefinitely until the process is gone (or a zombie). Otherwise, this
- *   is the maxium wait time until returning. If @max_wait_msec is non-zero but smaller then @wait_before_kill_msec,
+ *   is the maximum wait time until returning. If @max_wait_msec is non-zero but smaller then @wait_before_kill_msec,
  *   we will not send a final %SIGKILL.
  *
  * Kill a non-child process synchronously and wait. This function will not return before the
@@ -963,7 +970,7 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 			            LOG_NAME_ARGS, _kc_signal_to_string (sig));
 		} else {
 			nm_log_warn (LOGD_CORE | log_domain, LOG_NAME_PROCESS_FMT ": failed to send %s: %s (%d)",
-			             LOG_NAME_ARGS, _kc_signal_to_string (sig), strerror (errsv), errsv);
+			             LOG_NAME_ARGS, _kc_signal_to_string (sig), nm_strerror_native (errsv), errsv);
 		}
 		return;
 	}
@@ -1014,7 +1021,7 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 				            was_waiting ? _kc_waited_to_string (buf_wait, wait_start_us) : "");
 			} else {
 				nm_log_warn (LOGD_CORE | log_domain, LOG_NAME_PROCESS_FMT ": failed to kill(%ld, 0): %s (%d)%s",
-				             LOG_NAME_ARGS, (long int) pid, strerror (errsv), errsv,
+				             LOG_NAME_ARGS, (long int) pid, nm_strerror_native (errsv), errsv,
 				             was_waiting ? _kc_waited_to_string (buf_wait, wait_start_us) : "");
 			}
 			return;
@@ -1050,7 +1057,7 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 						            LOG_NAME_ARGS, _kc_waited_to_string (buf_wait, wait_start_us));
 					} else {
 						nm_log_warn (LOGD_CORE | log_domain, LOG_NAME_PROCESS_FMT ": failed to send SIGKILL (after sending %s), %s (%d)%s",
-						             LOG_NAME_ARGS, _kc_signal_to_string (sig), strerror (errsv), errsv,
+						             LOG_NAME_ARGS, _kc_signal_to_string (sig), nm_strerror_native (errsv), errsv,
 						             _kc_waited_to_string (buf_wait, wait_start_us));
 					}
 					return;
@@ -1129,13 +1136,17 @@ nm_utils_read_link_absolute (const char *link_file, GError **error)
 		return ln;
 
 	dirname = g_path_get_dirname (link_file);
-	if (!g_path_is_absolute (link_file)) {
-		gs_free char *dirname_rel = dirname;
+	if (!g_path_is_absolute (dirname)) {
 		gs_free char *current_dir = g_get_current_dir ();
 
-		dirname = g_build_filename (current_dir, dirname_rel, NULL);
-	}
-	ln_abs = g_build_filename (dirname, ln, NULL);
+		/* @link_file argument was not an absolute path in the first place.
+		 * That actually may be a bug, because the CWD is not well defined
+		 * in most cases. Anyway, apparently we were able to load the file
+		 * even from a relative path. So, when making the link absolute, we
+		 * also need to prepend the CWD. */
+		ln_abs = g_build_filename (current_dir, dirname, ln, NULL);
+	} else
+		ln_abs = g_build_filename (dirname, ln, NULL);
 	g_free (dirname);
 	g_free (ln);
 	return ln_abs;
@@ -1939,173 +1950,6 @@ nm_utils_cmp_connection_by_autoconnect_priority (NMConnection *a, NMConnection *
 
 /*****************************************************************************/
 
-static gint64 monotonic_timestamp_offset_sec;
-static int monotonic_timestamp_clock_mode = 0;
-
-static void
-monotonic_timestamp_get (struct timespec *tp)
-{
-	int clock_mode = 0;
-	int err = 0;
-
-	switch (monotonic_timestamp_clock_mode) {
-	case 0:
-		/* the clock is not yet initialized (first run) */
-		err = clock_gettime (CLOCK_BOOTTIME, tp);
-		if (err == -1 && errno == EINVAL) {
-			clock_mode = 2;
-			err = clock_gettime (CLOCK_MONOTONIC, tp);
-		} else
-			clock_mode = 1;
-		break;
-	case 1:
-		/* default, return CLOCK_BOOTTIME */
-		err = clock_gettime (CLOCK_BOOTTIME, tp);
-		break;
-	case 2:
-		/* fallback, return CLOCK_MONOTONIC. Kernels prior to 2.6.39
-		 * (released on 18 May, 2011) don't support CLOCK_BOOTTIME. */
-		err = clock_gettime (CLOCK_MONOTONIC, tp);
-		break;
-	}
-
-	g_assert (err == 0); (void)err;
-	g_assert (tp->tv_nsec >= 0 && tp->tv_nsec < NM_UTILS_NS_PER_SECOND);
-
-	if (G_LIKELY (clock_mode == 0))
-		return;
-
-	/* Calculate an offset for the time stamp.
-	 *
-	 * We always want positive values, because then we can initialize
-	 * a timestamp with 0 and be sure, that it will be less then any
-	 * value nm_utils_get_monotonic_timestamp_*() might return.
-	 * For this to be true also for nm_utils_get_monotonic_timestamp_s() at
-	 * early boot, we have to shift the timestamp to start counting at
-	 * least from 1 second onward.
-	 *
-	 * Another advantage of shifting is, that this way we make use of the whole 31 bit
-	 * range of signed int, before the time stamp for nm_utils_get_monotonic_timestamp_s()
-	 * wraps (~68 years).
-	 **/
-	monotonic_timestamp_offset_sec = (- ((gint64) tp->tv_sec)) + 1;
-	monotonic_timestamp_clock_mode = clock_mode;
-
-	if (nm_logging_enabled (LOGL_DEBUG, LOGD_CORE)) {
-		time_t now = time (NULL);
-		struct tm tm;
-		char s[255];
-
-		strftime (s, sizeof (s), "%Y-%m-%d %H:%M:%S", localtime_r (&now, &tm));
-		nm_log_dbg (LOGD_CORE, "monotonic timestamp started counting 1.%09ld seconds ago with "
-		                       "an offset of %lld.0 seconds to %s (local time is %s)",
-		                       tp->tv_nsec, (long long) -monotonic_timestamp_offset_sec,
-		                       clock_mode == 1 ? "CLOCK_BOOTTIME" : "CLOCK_MONOTONIC", s);
-	}
-}
-
-/**
- * nm_utils_get_monotonic_timestamp_ns:
- *
- * Returns: a monotonically increasing time stamp in nanoseconds,
- * starting at an unspecified offset. See clock_gettime(), %CLOCK_BOOTTIME.
- *
- * The returned value will start counting at an undefined point
- * in the past and will always be positive.
- *
- * All the nm_utils_get_monotonic_timestamp_*s functions return the same
- * timestamp but in different scales (nsec, usec, msec, sec).
- **/
-gint64
-nm_utils_get_monotonic_timestamp_ns (void)
-{
-	struct timespec tp = { 0 };
-
-	monotonic_timestamp_get (&tp);
-
-	/* Although the result will always be positive, we return a signed
-	 * integer, which makes it easier to calculate time differences (when
-	 * you want to subtract signed values).
-	 **/
-	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec) * NM_UTILS_NS_PER_SECOND +
-	       tp.tv_nsec;
-}
-
-/**
- * nm_utils_get_monotonic_timestamp_us:
- *
- * Returns: a monotonically increasing time stamp in microseconds,
- * starting at an unspecified offset. See clock_gettime(), %CLOCK_BOOTTIME.
- *
- * The returned value will start counting at an undefined point
- * in the past and will always be positive.
- *
- * All the nm_utils_get_monotonic_timestamp_*s functions return the same
- * timestamp but in different scales (nsec, usec, msec, sec).
- **/
-gint64
-nm_utils_get_monotonic_timestamp_us (void)
-{
-	struct timespec tp = { 0 };
-
-	monotonic_timestamp_get (&tp);
-
-	/* Although the result will always be positive, we return a signed
-	 * integer, which makes it easier to calculate time differences (when
-	 * you want to subtract signed values).
-	 **/
-	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec) * ((gint64) G_USEC_PER_SEC) +
-	       (tp.tv_nsec / (NM_UTILS_NS_PER_SECOND/G_USEC_PER_SEC));
-}
-
-/**
- * nm_utils_get_monotonic_timestamp_ms:
- *
- * Returns: a monotonically increasing time stamp in milliseconds,
- * starting at an unspecified offset. See clock_gettime(), %CLOCK_BOOTTIME.
- *
- * The returned value will start counting at an undefined point
- * in the past and will always be positive.
- *
- * All the nm_utils_get_monotonic_timestamp_*s functions return the same
- * timestamp but in different scales (nsec, usec, msec, sec).
- **/
-gint64
-nm_utils_get_monotonic_timestamp_ms (void)
-{
-	struct timespec tp = { 0 };
-
-	monotonic_timestamp_get (&tp);
-
-	/* Although the result will always be positive, we return a signed
-	 * integer, which makes it easier to calculate time differences (when
-	 * you want to subtract signed values).
-	 **/
-	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec) * ((gint64) 1000) +
-	       (tp.tv_nsec / (NM_UTILS_NS_PER_SECOND/1000));
-}
-
-/**
- * nm_utils_get_monotonic_timestamp_s:
- *
- * Returns: nm_utils_get_monotonic_timestamp_ms() in seconds (throwing
- * away sub second parts). The returned value will always be positive.
- *
- * This value wraps after roughly 68 years which should be fine for any
- * practical purpose.
- *
- * All the nm_utils_get_monotonic_timestamp_*s functions return the same
- * timestamp but in different scales (nsec, usec, msec, sec).
- **/
-gint32
-nm_utils_get_monotonic_timestamp_s (void)
-{
-	struct timespec tp = { 0 };
-
-	monotonic_timestamp_get (&tp);
-	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec);
-}
-
 typedef struct
 {
 	const char *name;
@@ -2192,7 +2036,7 @@ _log_connection_get_property (NMSetting *setting, const char *name)
 		return g_strdup ("****");
 
 	if (!_nm_setting_get_property (setting, name, &val))
-		g_return_val_if_reached (FALSE);
+		return g_strdup ("<unknown>");
 
 	if (G_VALUE_HOLDS_STRING (&val)) {
 		const char *val_s;
@@ -2295,7 +2139,7 @@ nm_utils_log_connection_diff (NMConnection *connection,
 		return;
 	}
 
-	/* FIXME: it doesn't nicely show the content of NMSettingVpn, becuase nm_connection_diff() does not
+	/* FIXME: it doesn't nicely show the content of NMSettingVpn, because nm_connection_diff() does not
 	 * expand the hash values. */
 
 	sorted_hashes = _log_connection_sort_hashes (connection, diff_base, connection_diff);
@@ -2383,49 +2227,6 @@ nm_utils_log_connection_diff (NMConnection *connection,
 out:
 	g_hash_table_destroy (connection_diff);
 	g_array_free (sorted_hashes, TRUE);
-}
-
-/**
- * nm_utils_monotonic_timestamp_as_boottime:
- * @timestamp: the monotonic-timestamp that should be converted into CLOCK_BOOTTIME.
- * @timestamp_ns_per_tick: How many nano seconds make one unit of @timestamp? E.g. if
- * @timestamp is in unit seconds, pass %NM_UTILS_NS_PER_SECOND; @timestamp in nano
- * seconds, pass 1; @timestamp in milli seconds, pass %NM_UTILS_NS_PER_SECOND/1000; etc.
- *
- * Returns: the monotonic-timestamp as CLOCK_BOOTTIME, as returned by clock_gettime().
- * The unit is the same as the passed in @timestamp basd on @timestamp_ns_per_tick.
- * E.g. if you passed @timestamp in as seconds, it will return boottime in seconds.
- * If @timestamp is a non-positive, it returns -1. Note that a (valid) monotonic-timestamp
- * is always positive.
- *
- * On older kernels that don't support CLOCK_BOOTTIME, the returned time is instead CLOCK_MONOTONIC.
- **/
-gint64
-nm_utils_monotonic_timestamp_as_boottime (gint64 timestamp, gint64 timestamp_ns_per_tick)
-{
-	gint64 offset;
-
-	/* only support ns-per-tick being a multiple of 10. */
-	g_return_val_if_fail (timestamp_ns_per_tick == 1
-	                      || (timestamp_ns_per_tick > 0 &&
-	                          timestamp_ns_per_tick <= NM_UTILS_NS_PER_SECOND &&
-	                          timestamp_ns_per_tick % 10 == 0),
-	                      -1);
-
-	/* Check that the timestamp is in a valid range. */
-	g_return_val_if_fail (timestamp >= 0, -1);
-
-	/* if the caller didn't yet ever fetch a monotonic-timestamp, he cannot pass any meaningful
-	 * value (because he has no idea what these timestamps would be). That would be a bug. */
-	g_return_val_if_fail (monotonic_timestamp_clock_mode != 0, -1);
-
-	/* calculate the offset of monotonic-timestamp to boottime. offset_s is <= 1. */
-	offset = monotonic_timestamp_offset_sec * (NM_UTILS_NS_PER_SECOND / timestamp_ns_per_tick);
-
-	/* check for overflow. */
-	g_return_val_if_fail (offset > 0 || timestamp < G_MAXINT64 + offset, G_MAXINT64);
-
-	return timestamp - offset;
 }
 
 #define IPV6_PROPERTY_DIR "/proc/sys/net/ipv6/conf/"
@@ -2595,11 +2396,11 @@ _uuid_data_init (UuidData *uuid_data,
 	uuid_data->is_fake = is_fake;
 	if (packed) {
 		G_STATIC_ASSERT_EXPR (sizeof (uuid_data->str) >= (sizeof (*uuid) * 2 + 1));
-		_nm_utils_bin2hexstr_full (uuid,
-		                           sizeof (*uuid),
-		                           '\0',
-		                           FALSE,
-		                           uuid_data->str);
+		nm_utils_bin2hexstr_full (uuid,
+		                          sizeof (*uuid),
+		                          '\0',
+		                          FALSE,
+		                          uuid_data->str);
 	} else {
 		G_STATIC_ASSERT_EXPR (sizeof (uuid_data->str) >= 37);
 		_nm_utils_uuid_unparse (uuid, uuid_data->str);
@@ -2632,14 +2433,14 @@ again:
 		if (   nm_utils_file_get_contents (-1, "/etc/machine-id", 100*1024, 0, &content, NULL, NULL) >= 0
 		    || nm_utils_file_get_contents (-1, LOCALSTATEDIR"/lib/dbus/machine-id", 100*1024, 0, &content, NULL, NULL) >= 0) {
 			g_strstrip (content);
-			if (_nm_utils_hexstr2bin_full (content,
-			                               FALSE,
-			                               FALSE,
-			                               NULL,
-			                               16,
-			                               (guint8 *) &uuid,
-			                               sizeof (uuid),
-			                               NULL)) {
+			if (nm_utils_hexstr2bin_full (content,
+			                              FALSE,
+			                              FALSE,
+			                              NULL,
+			                              16,
+			                              (guint8 *) &uuid,
+			                              sizeof (uuid),
+			                              NULL)) {
 				if (!nm_utils_uuid_is_null (&uuid)) {
 					/* an all-zero machine-id is not valid. */
 					is_fake = FALSE;
@@ -2661,7 +2462,7 @@ again:
 			if (nm_utils_host_id_get (&seed_bin, &seed_len)) {
 				/* we have no valid machine-id. Generate a fake one by hashing
 				 * the secret-key. This key is commonly persisted, so it should be
-				 * stable accross reboots (despite having a broken system without
+				 * stable across reboots (despite having a broken system without
 				 * proper machine-id). */
 				fake_type = "secret-key";
 				hash_seed = "ab085f06-b629-46d1-a553-84eeba5683b6";
@@ -2758,7 +2559,7 @@ _host_id_read_timestamp (gboolean use_secret_key_file,
 	 * the secret_key) if we are unable to access the secret_key file in the first place.
 	 *
 	 * Pick a random timestamp from the past two years. Yes, this timestamp
-	 * is not stable accross restarts, but apparently neither is the host-id
+	 * is not stable across restarts, but apparently neither is the host-id
 	 * nor the secret_key itself. */
 
 #define EPOCH_TWO_YEARS  (G_GINT64_CONSTANT (2 * 365 * 24 * 3600) * NM_UTILS_NS_PER_SECOND)
@@ -3292,14 +3093,12 @@ nm_utils_ipv6_interface_identifier_get_from_token (NMUtilsIPv6IfaceId *iid,
 /**
  * nm_utils_inet6_interface_identifier_to_token:
  * @iid: %NMUtilsIPv6IfaceId interface identifier
- * @buf: the destination buffer or %NULL
+ * @buf: the destination buffer of at least %NM_UTILS_INET_ADDRSTRLEN
+ *   bytes.
  *
  * Converts the interface identifier to a string token.
- * If the destination buffer it set, set it is used to store the
- * resulting token, otherwise an internal static buffer is used.
- * The buffer needs to be %NM_UTILS_INET_ADDRSTRLEN characters long.
  *
- * Returns: a statically allocated array. Do not g_free().
+ * Returns: the input buffer filled with the id as string.
  */
 const char *
 nm_utils_inet6_interface_identifier_to_token (NMUtilsIPv6IfaceId iid, char *buf)
@@ -3328,7 +3127,7 @@ nm_utils_stable_id_generated_complete (const char *stable_id_generated)
 	guint8 buf[NM_UTILS_CHECKSUM_LENGTH_SHA1];
 	char *base64;
 
-	/* for NM_UTILS_STABLE_TYPE_GENERATED we genererate a possibly long string
+	/* for NM_UTILS_STABLE_TYPE_GENERATED we generate a possibly long string
 	 * by doing text-substitutions in nm_utils_stable_id_parse().
 	 *
 	 * Let's shorten the (possibly) long stable_id to something more compact. */
@@ -3382,7 +3181,7 @@ nm_utils_stable_id_parse (const char *stable_id,
 	 * of ${...} patterns.
 	 *
 	 * At first, it looks a bit like bash parameter substitution.
-	 * In contrast however, the process is unambigious so that the resulting
+	 * In contrast however, the process is unambiguous so that the resulting
 	 * effective id differs if:
 	 *  - the original, untranslated stable-id differs
 	 *  - or any of the subsitutions differs.
@@ -3446,7 +3245,7 @@ nm_utils_stable_id_parse (const char *stable_id,
 			_stable_id_append (str, hwaddr);
 		else if (g_str_has_prefix (&stable_id[i], "${RANDOM}")) {
 			/* RANDOM makes not so much sense for cloned-mac-address
-			 * as the result is simmilar to specyifing "cloned-mac-address=random".
+			 * as the result is similar to specyifing "cloned-mac-address=random".
 			 * It makes however sense for RFC 7217 Stable Privacy IPv6 addresses
 			 * where this is effectively the only way to generate a different
 			 * (random) host identifier for each connect.
@@ -3780,12 +3579,55 @@ nm_utils_dhcp_client_id_mac (int arp_type,
 	return g_bytes_new_take (client_id_buf, hwaddr_len + 1);
 }
 
+#define HASH_KEY ((const guint8[16]) { 0x80, 0x11, 0x8c, 0xc2, 0xfe, 0x4a, 0x03, 0xee, 0x3e, 0xd6, 0x0c, 0x6f, 0x36, 0x39, 0x14, 0x09 })
+
+/**
+ * nm_utils_create_dhcp_iaid:
+ * @legacy_unstable_byteorder: legacy behavior is to generate a u32 iaid which
+ *   is endianness dependent. This is to preserve backward compatibility.
+ *   For non-legacy behavior, the returned integer is in stable endianness,
+ *   and corresponds to legacy behavior on little endian systems.
+ * @interface_id: the seed for hashing when generating the ID. Usually,
+ *   this is the interface name.
+ * @interface_id_len: length of @interface_id
+ *
+ * This corresponds to systemd's dhcp_identifier_set_iaid() for generating
+ * a IAID for the interface.
+ *
+ * Returns: the IAID in host byte order. */
+guint32
+nm_utils_create_dhcp_iaid (gboolean legacy_unstable_byteorder,
+                           const guint8 *interface_id,
+                           gsize interface_id_len)
+{
+	guint64 u64;
+	guint32 u32;
+
+	u64 = c_siphash_hash (HASH_KEY, interface_id, interface_id_len);
+	u32 = (u64 & 0xffffffffu) ^ (u64 >> 32);
+	if (legacy_unstable_byteorder) {
+		/* legacy systemd code dhcp_identifier_set_iaid() generates the iaid
+		 * dependent on the host endianness. Since this function returns the IAID
+		 * in native-byte order, we need to account for that.
+		 *
+		 * On little endian systems, we want the legacy-behavior is identical to
+		 * the endianness-agnostic behavior. So, we need to swap the bytes on
+		 * big-endian systems.
+		 *
+		 * (https://github.com/systemd/systemd/pull/10614). */
+		return htole32 (u32);
+	} else {
+		/* we return the value as-is, in native byte order. */
+		return u32;
+	}
+}
+
 /**
  * nm_utils_dhcp_client_id_systemd_node_specific_full:
  * @legacy_unstable_byteorder: historically, the code would generate a iaid
  *   dependent on host endianness. This is undesirable, if backward compatibility
  *   are not a concern, generate stable endianness.
- * @interface_id: a binary identifer that is hashed into the DUID.
+ * @interface_id: a binary identifier that is hashed into the DUID.
  *   Comonly this is the interface-name, but it may be the MAC address.
  * @interface_id_len: the length of @interface_id.
  * @machine_id: the binary identifier for the machine. It is hashed
@@ -3805,7 +3647,6 @@ nm_utils_dhcp_client_id_systemd_node_specific_full (gboolean legacy_unstable_byt
                                                     const guint8 *machine_id,
                                                     gsize machine_id_len)
 {
-	const guint8 HASH_KEY[16] = { 0x80, 0x11, 0x8c, 0xc2, 0xfe, 0x4a, 0x03, 0xee, 0x3e, 0xd6, 0x0c, 0x6f, 0x36, 0x39, 0x14, 0x09 };
 	const guint16 DUID_TYPE_EN = 2;
 	const guint32 SYSTEMD_PEN = 43793;
 	struct _nm_packed {
@@ -3834,20 +3675,10 @@ nm_utils_dhcp_client_id_systemd_node_specific_full (gboolean legacy_unstable_byt
 
 	client_id->type = 255;
 
-	u64 = c_siphash_hash (HASH_KEY, interface_id, interface_id_len);
-	u32 = (u64 & 0xffffffffu) ^ (u64 >> 32);
-	if (legacy_unstable_byteorder) {
-		/* original systemd code dhcp_identifier_set_iaid() generates the iaid
-		 * in native endianness. Do that too, to preserve compatibility
-		 * (https://github.com/systemd/systemd/pull/10614). */
-		u32 = bswap_32 (u32);
-	} else {
-		/* generate fixed byteorder, in a way that on little endian systems
-		 * the values agree. Meaning: legacy behavior is identical to this
-		 * on little endian. */
-		u32 = be32toh (u32);
-	}
-	unaligned_write_ne32 (&client_id->iaid, u32);
+	u32 = nm_utils_create_dhcp_iaid (legacy_unstable_byteorder,
+	                                 interface_id,
+	                                 interface_id_len);
+	unaligned_write_be32 (&client_id->iaid, u32);
 
 	unaligned_write_be16 (&client_id->duid.type, DUID_TYPE_EN);
 
@@ -4191,7 +4022,7 @@ nm_utils_get_reverse_dns_domains_ip6 (const struct in6_addr *ip, guint8 plen, GP
 		return;
 
 	memcpy (&addr, ip, sizeof (struct in6_addr));
-	nm_utils_ip6_address_clear_host_address (&addr, &addr, plen);
+	nm_utils_ip6_address_clear_host_address (&addr, NULL, plen);
 
 	/* Number of nibbles to include in domains */
 	nibbles = (plen - 1) / 4 + 1;
@@ -4315,7 +4146,7 @@ nm_utils_read_plugin_paths (const char *dirname, const char *prefix)
 			errsv = errno;
 			nm_log_warn (LOGD_CORE,
 			             "plugin: skip invalid file %s (error during stat: %s)",
-			             data.path, strerror (errsv));
+			             data.path, nm_strerror_native (errsv));
 			goto skip;
 		}
 

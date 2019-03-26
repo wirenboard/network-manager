@@ -650,7 +650,7 @@ nm_setting_compare (NMSetting *a,
 	return same;
 }
 
-static inline gboolean
+static gboolean
 should_compare_prop (NMSetting *setting,
                      const char *prop_name,
                      NMSettingCompareFlags comp_flags,
@@ -674,7 +674,7 @@ should_compare_prop (NMSetting *setting,
 		    && g_strcmp0 (prop_name, NM_SETTING_VPN_SECRETS) == 0) {
 			/* FIXME: NMSettingVPN:NM_SETTING_VPN_SECRETS has NM_SETTING_PARAM_SECRET.
 			 * nm_setting_get_secret_flags() quite possibly fails, but it might succeed if the
-			 * setting accidently uses a key "secrets". */
+			 * setting accidentally uses a key "secrets". */
 			return FALSE;
 		}
 

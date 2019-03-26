@@ -269,6 +269,9 @@ struct _NMMetaPropertyTypData {
 			const char *(*validate_fcn) (const char *value, char **out_to_free, GError **error);
 		} gobject_string;
 		struct {
+			bool legacy_format:1;
+		} gobject_bytes;
+		struct {
 			guint32 (*get_fcn) (NMSetting *setting);
 		} mtu;
 		struct {
@@ -412,7 +415,7 @@ typedef enum {
 
 /* the settings-meta data is supposed to be independent of an actual client
  * implementation. Hence, there is a need for hooks to the meta-data.
- * The meta-data handlers may call back to the enviroment with certain
+ * The meta-data handlers may call back to the environment with certain
  * actions. */
 struct _NMMetaEnvironment {
 

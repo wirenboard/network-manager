@@ -20,8 +20,6 @@
 
 #include "nm-default.h"
 
-#include <string.h>
-#include <errno.h>
 #include <net/if.h>
 #include <byteswap.h>
 
@@ -31,7 +29,7 @@
 #include "NetworkManagerUtils.h"
 #include "nm-core-internal.h"
 #include "nm-core-utils.h"
-#include "systemd/nm-sd-utils.h"
+#include "systemd/nm-sd-utils-core.h"
 
 #include "dns/nm-dns-manager.h"
 #include "nm-connectivity.h"
@@ -352,13 +350,13 @@ _match_connection (GSList *connections,
                    gint64 default_v4_metric,
                    gint64 default_v6_metric)
 {
-	NMConnection **list;
+	gs_free NMConnection **list = NULL;
 	guint i, len;
 
 	len = g_slist_length (connections);
 	g_assert (len < 10);
 
-	list = g_alloca ((len + 1) * sizeof (NMConnection *));
+	list = g_malloc ((len + 1) * sizeof (NMConnection *));
 	for (i = 0; i < len; i++, connections = connections->next) {
 		g_assert (connections);
 		g_assert (connections->data);
@@ -1116,7 +1114,10 @@ _test_match_spec_device (const GSList *specs, const char *match_str)
 }
 
 static void
-_do_test_match_spec_device (const char *spec_str, const char **matches, const char **no_matches, const char **neg_matches)
+_do_test_match_spec_device (const char *spec_str,
+                            const char *const *matches,
+                            const char *const *no_matches,
+                            const char *const *neg_matches)
 {
 	GSList *specs, *specs_randperm = NULL, *specs_resplit, *specs_i, *specs_j;
 	guint i;
@@ -1188,102 +1189,100 @@ _do_test_match_spec_device (const char *spec_str, const char **matches, const ch
 static void
 test_match_spec_device (void)
 {
-#define S(...) ((const char *[]) { __VA_ARGS__, NULL } )
 	_do_test_match_spec_device ("em1",
-	                            S ("em1"),
+	                            NM_MAKE_STRV ("em1"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("em1,em2",
-	                            S ("em1", "em2"),
+	                            NM_MAKE_STRV ("em1", "em2"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("em1,em2,interface-name:em2",
-	                            S ("em1", "em2"),
+	                            NM_MAKE_STRV ("em1", "em2"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("interface-name:em1",
-	                            S ("em1"),
+	                            NM_MAKE_STRV ("em1"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("interface-name:em*",
-	                            S ("em", "em*", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
+	                            NM_MAKE_STRV ("em", "em*", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("interface-name:em\\*",
-	                            S ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
+	                            NM_MAKE_STRV ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("interface-name:~em\\*",
-	                            S ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
+	                            NM_MAKE_STRV ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("except:*",
 	                            NULL,
-	                            S (NULL),
-	                            S ("a"));
+	                            NM_MAKE_STRV (NULL),
+	                            NM_MAKE_STRV ("a"));
 	_do_test_match_spec_device ("interface-name:=em*",
-	                            S ("em*"),
+	                            NM_MAKE_STRV ("em*"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("interface-name:em*,except:interface-name:em1*",
-	                            S ("em", "em*", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em2", "em3"),
+	                            NM_MAKE_STRV ("em", "em*", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em2", "em3"),
 	                            NULL,
-	                            S ("em1", "em11"));
+	                            NM_MAKE_STRV ("em1", "em11"));
 	_do_test_match_spec_device ("interface-name:em*,except:interface-name:=em*",
-	                            S ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
+	                            NM_MAKE_STRV ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
 	                            NULL,
-	                            S ("em*"));
+	                            NM_MAKE_STRV ("em*"));
 	_do_test_match_spec_device ("except:interface-name:em*",
-	                            S ("", "eth", "eth1", "e1"),
-	                            S (NULL),
-	                            S ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"));
+	                            NM_MAKE_STRV ("", "eth", "eth1", "e1"),
+	                            NM_MAKE_STRV (NULL),
+	                            NM_MAKE_STRV ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"));
 	_do_test_match_spec_device ("aa,bb,cc\\,dd,e,,",
-	                            S ("aa", "bb", "cc,dd", "e"),
+	                            NM_MAKE_STRV ("aa", "bb", "cc,dd", "e"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("aa;bb;cc\\;dd;e,;",
-	                            S ("aa", "bb", "cc;dd", "e"),
+	                            NM_MAKE_STRV ("aa", "bb", "cc;dd", "e"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("interface-name:em\\;1,em\\,2,\\,,\\\\,,em\\\\x",
-	                            S ("em;1", "em,2", ",", "\\", "em\\x"),
+	                            NM_MAKE_STRV ("em;1", "em,2", ",", "\\", "em\\x"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device ("\\s\\s,\\sinterface-name:a,\\s,",
-	                            S ("  ", " ", " interface-name:a"),
+	                            NM_MAKE_STRV ("  ", " ", " interface-name:a"),
 	                            NULL,
 	                            NULL);
 	_do_test_match_spec_device (" aa ;  bb   ; cc\\;dd  ;e , ; \t\\t  , ",
-	                            S ("aa", "bb", "cc;dd", "e", "\t"),
+	                            NM_MAKE_STRV ("aa", "bb", "cc;dd", "e", "\t"),
 	                            NULL,
 	                            NULL);
 
 	_do_test_match_spec_device ("s390-subchannels:0.0.1000\\,0.0.1001",
-	                            S (MATCH_S390"0.0.1000", MATCH_S390"0.0.1000,deadbeef", MATCH_S390"0.0.1000,0.0.1001", MATCH_S390"0.0.1000,0.0.1002"),
-	                            S (MATCH_S390"0.0.1001"),
+	                            NM_MAKE_STRV (MATCH_S390"0.0.1000", MATCH_S390"0.0.1000,deadbeef", MATCH_S390"0.0.1000,0.0.1001", MATCH_S390"0.0.1000,0.0.1002"),
+	                            NM_MAKE_STRV (MATCH_S390"0.0.1001"),
 	                            NULL);
 	_do_test_match_spec_device ("*,except:s390-subchannels:0.0.1000\\,0.0.1001",
 	                            NULL,
-	                            S (NULL),
-	                            S (MATCH_S390"0.0.1000", MATCH_S390"0.0.1000,deadbeef", MATCH_S390"0.0.1000,0.0.1001", MATCH_S390"0.0.1000,0.0.1002"));
+	                            NM_MAKE_STRV (NULL),
+	                            NM_MAKE_STRV (MATCH_S390"0.0.1000", MATCH_S390"0.0.1000,deadbeef", MATCH_S390"0.0.1000,0.0.1001", MATCH_S390"0.0.1000,0.0.1002"));
 
 	_do_test_match_spec_device ("driver:DRV",
-	                            S (MATCH_DRIVER"DRV", MATCH_DRIVER"DRV|1.6"),
-	                            S (MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DRV", MATCH_DRIVER"DRV|1.6"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
 	                            NULL);
 	_do_test_match_spec_device ("driver:DRV//",
-	                            S (MATCH_DRIVER"DRV/"),
-	                            S (MATCH_DRIVER"DRV/|1.6", MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DRV/"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DRV/|1.6", MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
 	                            NULL);
 	_do_test_match_spec_device ("driver:DRV//*",
-	                            S (MATCH_DRIVER"DRV/", MATCH_DRIVER"DRV/|1.6"),
-	                            S (MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DRV/", MATCH_DRIVER"DRV/|1.6"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
 	                            NULL);
 	_do_test_match_spec_device ("driver:DRV//1.5*",
-	                            S (MATCH_DRIVER"DRV/|1.5", MATCH_DRIVER"DRV/|1.5.2"),
-	                            S (MATCH_DRIVER"DRV/", MATCH_DRIVER"DRV/|1.6", MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DRV/|1.5", MATCH_DRIVER"DRV/|1.5.2"),
+	                            NM_MAKE_STRV (MATCH_DRIVER"DRV/", MATCH_DRIVER"DRV/|1.6", MATCH_DRIVER"DR", MATCH_DRIVER"DR*"),
 	                            NULL);
-#undef S
 }
 
 /*****************************************************************************/
@@ -1307,7 +1306,7 @@ _do_test_match_spec_config (const char *file, int line, const char *spec_str, gu
 	match_result = nm_match_spec_config (specs, version, NULL);
 
 	if (expected != match_result)
-		g_error ("%s:%d: faild comparing \"%s\" with %u.%u.%u. Expected %d, but got %d", file, line, spec_str, v_maj, v_min, v_mic, (int) expected, (int) match_result);
+		g_error ("%s:%d: failed comparing \"%s\" with %u.%u.%u. Expected %d, but got %d", file, line, spec_str, v_maj, v_min, v_mic, (int) expected, (int) match_result);
 
 	if (   g_slist_length (specs) == 1
 	    && !g_str_has_prefix (specs->data, "except:")) {
@@ -1439,6 +1438,82 @@ test_nm_utils_strbuf_append (void)
 	char buf[NM_STRLEN (BUF_ORIG) + 1];
 	char str[NM_STRLEN (BUF_ORIG) + 1];
 
+#define _strbuf_append(buf, len, format, ...) \
+	G_STMT_START { \
+		char **_buf = (buf); \
+		gsize *_len = (len); \
+		const char *_str_iter; \
+		gs_free char *_str = NULL; \
+		\
+		switch (nmtst_get_rand_int () % 4) { \
+		case 0: \
+			nm_utils_strbuf_append (_buf, _len, (format), __VA_ARGS__); \
+			break; \
+		case 1: \
+			_str = g_strdup_printf ((format), __VA_ARGS__); \
+			nm_utils_strbuf_append_str (_buf, _len, _str); \
+			break; \
+		case 2: \
+			_str = g_strdup_printf ((format), __VA_ARGS__); \
+			nm_utils_strbuf_append_bin (_buf, _len, _str, strlen (_str)); \
+			break; \
+		case 3: \
+			_str = g_strdup_printf ((format), __VA_ARGS__); \
+			if (!_str[0]) \
+				nm_utils_strbuf_append_str (_buf, _len, _str); \
+			for (_str_iter = _str; _str_iter[0]; _str_iter++) \
+				nm_utils_strbuf_append_c (_buf, _len, _str_iter[0]); \
+			break; \
+		} \
+	} G_STMT_END
+
+#define _strbuf_append_str(buf, len, str) \
+	G_STMT_START { \
+		char **_buf = (buf); \
+		gsize *_len = (len); \
+		const char *_str = (str); \
+		\
+		switch (nmtst_get_rand_int () % 4) { \
+		case 0: \
+			nm_utils_strbuf_append (_buf, _len, "%s", _str ?: ""); \
+			break; \
+		case 1: \
+			nm_utils_strbuf_append_str (_buf, _len, _str); \
+			break; \
+		case 2: \
+			nm_utils_strbuf_append_bin (_buf, _len, _str, _str ? strlen (_str) : 0); \
+			break; \
+		case 3: \
+			if (!_str || !_str[0]) \
+				nm_utils_strbuf_append_str (_buf, _len, _str); \
+			for (; _str && _str[0]; _str++) \
+				nm_utils_strbuf_append_c (_buf, _len, _str[0]); \
+			break; \
+		} \
+	} G_STMT_END
+
+#define _strbuf_append_c(buf, len, ch) \
+	G_STMT_START { \
+		char **_buf = (buf); \
+		gsize *_len = (len); \
+		char _ch = (ch); \
+		\
+		switch (nmtst_get_rand_int () % 4) { \
+		case 0: \
+			nm_utils_strbuf_append (_buf, _len, "%c", _ch); \
+			break; \
+		case 1: \
+			nm_utils_strbuf_append_str (_buf, _len, ((char[2]) { _ch, 0 })); \
+			break; \
+		case 2: \
+			nm_utils_strbuf_append_bin (_buf, _len, &_ch, 1); \
+			break; \
+		case 3: \
+			nm_utils_strbuf_append_c (_buf, _len, _ch); \
+			break; \
+		} \
+	} G_STMT_END
+
 	for (buf_len = 0; buf_len < 10; buf_len++) {
 		for (rep = 0; rep < 50; rep++) {
 			const int s_len = nmtst_get_rand_int () % (sizeof (str) - 5);
@@ -1462,21 +1537,21 @@ test_nm_utils_strbuf_append (void)
 			switch (test_mode) {
 			case 0:
 				if (s_len == 1) {
-					nm_utils_strbuf_append_c (&t_buf, &t_len, str[0]);
+					_strbuf_append_c (&t_buf, &t_len, str[0]);
 					break;
 				}
 				/* fall through */
 			case 1:
-				nm_utils_strbuf_append_str (&t_buf, &t_len, str);
+				_strbuf_append_str (&t_buf, &t_len, str);
 				break;
 			case 2:
 				if (s_len == 1) {
-					nm_utils_strbuf_append (&t_buf, &t_len, "%c", str[0]);
+					_strbuf_append (&t_buf, &t_len, "%c", str[0]);
 					break;
 				}
 				/* fall through */
 			case 3:
-				nm_utils_strbuf_append (&t_buf, &t_len, "%s", str);
+				_strbuf_append (&t_buf, &t_len, "%s", str);
 				break;
 			case 4:
 				g_snprintf (t_buf, t_len, "%s", str);
@@ -1589,7 +1664,7 @@ test_duplicate_decl_specifier (void)
 	/* have some static variables, so that the result is certainly not optimized out. */
 	static const int v_const[1] = { 1 };
 	static int v_result[1] = { };
-	const const int v2 = 3;
+	const int v2 = 3;
 
 	/* Test that we don't get a compiler warning about duplicate const specifier.
 	 * C99 allows that and it can easily happen in macros. */
@@ -1858,6 +1933,25 @@ test_nm_utils_exp10 (void)
 
 /*****************************************************************************/
 
+static void
+test_utils_file_is_in_path (void)
+{
+	g_assert (!nm_utils_file_is_in_path ("/", "/"));
+	g_assert (!nm_utils_file_is_in_path ("//", "/"));
+	g_assert (!nm_utils_file_is_in_path ("/a/", "/"));
+	g_assert ( nm_utils_file_is_in_path ("/a", "/"));
+	g_assert ( nm_utils_file_is_in_path ("///a", "/"));
+	g_assert ( nm_utils_file_is_in_path ("//b/a", "/b//"));
+	g_assert ( nm_utils_file_is_in_path ("//b///a", "/b//"));
+	g_assert (!nm_utils_file_is_in_path ("//b///a/", "/b//"));
+	g_assert (!nm_utils_file_is_in_path ("//b///a/", "/b/a/"));
+	g_assert (!nm_utils_file_is_in_path ("//b///a", "/b/a/"));
+	g_assert ( nm_utils_file_is_in_path ("//b///a/.", "/b/a/"));
+	g_assert ( nm_utils_file_is_in_path ("//b///a/..", "/b/a/"));
+}
+
+/*****************************************************************************/
+
 #define _TEST_RC(searches, nameservers, options, expected) \
 	G_STMT_START { \
 		const char *const*const _searches = (searches); \
@@ -1918,11 +2012,11 @@ test_machine_id_read (void)
 	nmtst_logging_reenable (logstate);
 
 	g_assert (machine_id);
-	g_assert (_nm_utils_bin2hexstr_full (machine_id,
-	                                     sizeof (NMUuid),
-	                                     '\0',
-	                                     FALSE,
-	                                     machine_id_str) == machine_id_str);
+	g_assert (nm_utils_bin2hexstr_full (machine_id,
+	                                    sizeof (NMUuid),
+	                                    '\0',
+	                                    FALSE,
+	                                    machine_id_str) == machine_id_str);
 	g_assert (strlen (machine_id_str) == 32);
 	g_assert_cmpstr (machine_id_str, ==, nm_utils_machine_id_str ());
 
@@ -1959,14 +2053,14 @@ test_nm_utils_dhcp_client_id_systemd_node_specific (gconstpointer test_data)
 		guint64 duid_id;
 	} d_array[] = {
 		[0] = {
-			.machine_id = { 0xcb, 0xc2, 0x2e, 0x47, 0x41, 0x8e, 0x40, 0x2a, 0xa7, 0xb3, 0x0d, 0xea, 0x92, 0x83, 0x94, 0xef },
+			.machine_id.uuid = { 0xcb, 0xc2, 0x2e, 0x47, 0x41, 0x8e, 0x40, 0x2a, 0xa7, 0xb3, 0x0d, 0xea, 0x92, 0x83, 0x94, 0xef },
 			.ifname = "lo",
 			.ifname_hash_1 = 0x7297085c2b12c911llu,
 			.iaid_ifname = htobe32 (0x5985c14du),
 			.duid_id = htobe64 (0x3d769bb2c14d29e1u),
 		},
 		[1] = {
-			.machine_id = { 0x11, 0x4e, 0xb4, 0xda, 0xd3, 0x22, 0x4a, 0xff, 0x9f, 0xc3, 0x30, 0x83, 0x38, 0xa0, 0xeb, 0xb7 },
+			.machine_id.uuid = { 0x11, 0x4e, 0xb4, 0xda, 0xd3, 0x22, 0x4a, 0xff, 0x9f, 0xc3, 0x30, 0x83, 0x38, 0xa0, 0xeb, 0xb7 },
 			.ifname = "eth0",
 			.ifname_hash_1 = 0x9e1cb083b54cd7b6llu,
 			.iaid_ifname = htobe32 (0x2b506735u),
@@ -2016,6 +2110,10 @@ test_nm_utils_dhcp_client_id_systemd_node_specific (gconstpointer test_data)
 		g_assert_cmpmem (&cid[5], 2, &duid_type_en, sizeof (duid_type_en));
 		g_assert_cmpmem (&cid[7], 4, &systemd_pen, sizeof (systemd_pen));
 		g_assert_cmpmem (&cid[11], 8, &d->duid_id, sizeof (d->duid_id));
+
+		g_assert_cmpint (iaid, ==, htonl (nm_utils_create_dhcp_iaid (legacy_unstable_byteorder,
+		                                                             (const guint8 *) d->ifname,
+		                                                             strlen (d->ifname))));
 	}
 }
 
@@ -2122,6 +2220,8 @@ main (int argc, char **argv)
 	g_test_add_func ("/general/stable-id/generated-complete", test_stable_id_generated_complete);
 
 	g_test_add_func ("/general/machine-id/read", test_machine_id_read);
+
+	g_test_add_func ("/general/test_utils_file_is_in_path", test_utils_file_is_in_path);
 
 	g_test_add_func ("/general/test_dns_create_resolv_conf", test_dns_create_resolv_conf);
 

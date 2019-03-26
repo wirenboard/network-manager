@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 02/23/2019
+.\"      Date: 03/15/2019
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.14.6
+.\"    Source: NetworkManager 1.16.0
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.14\&.6" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.16\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -266,7 +266,7 @@ string
 T}:T{
 \ \&
 T}:T{
-This represents the identity of the connection used for various purposes\&. It allows to configure multiple profiles to share the identity\&. Also, the stable\-id can contain placeholders that are substituted dynamically and deterministically depending on the context\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. It is also used as DHCP client identifier with ipv4\&.dhcp\-client\-id=stable and to derive the DHCP DUID with ipv6\&.dhcp\-duid=stable\-[llt,ll,uuid]\&. Note that depending on the context where it is used, other parameters are also seeded into the generation algorithm\&. For example, a per\-host key is commonly also included, so that different systems end up generating different IDs\&. Or with ipv6\&.addr\-gen\-mode=stable\-privacy, also the device\*(Aqs name is included, so that different interfaces yield different addresses\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${DEVICE}", "${MAC}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-device, per\-boot, or every time\&. Note that "${DEVICE}" corresponds the the interface name of the device and "${MAC}" is the permanent MAC address of the device\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}\-${BOOT}\-${DEVICE}" to create a unique id for this connection that changes with every reboot and differs depending on the interface where the profile activates\&. If the value is unset, a global connection default is consulted\&. If the value is still unset, the default is similar to "${CONNECTION}" and uses a unique, fixed ID for the connection\&.
+This represents the identity of the connection used for various purposes\&. It allows to configure multiple profiles to share the identity\&. Also, the stable\-id can contain placeholders that are substituted dynamically and deterministically depending on the context\&. The stable\-id is used for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&. It is also used as DHCP client identifier with ipv4\&.dhcp\-client\-id=stable and to derive the DHCP DUID with ipv6\&.dhcp\-duid=stable\-[llt,ll,uuid]\&. Note that depending on the context where it is used, other parameters are also seeded into the generation algorithm\&. For example, a per\-host key is commonly also included, so that different systems end up generating different IDs\&. Or with ipv6\&.addr\-gen\-mode=stable\-privacy, also the device\*(Aqs name is included, so that different interfaces yield different addresses\&. The \*(Aq$\*(Aq character is treated special to perform dynamic substitutions at runtime\&. Currently supported are "${CONNECTION}", "${DEVICE}", "${MAC}", "${BOOT}", "${RANDOM}"\&. These effectively create unique IDs per\-connection, per\-device, per\-boot, or every time\&. Note that "${DEVICE}" corresponds to the interface name of the device and "${MAC}" is the permanent MAC address of the device\&. Any unrecognized patterns following \*(Aq$\*(Aq are treated verbatim, however are reserved for future use\&. You are thus advised to avoid \*(Aq$\*(Aq or escape it as "$$"\&. For example, set it to "${CONNECTION}\-${BOOT}\-${DEVICE}" to create a unique id for this connection that changes with every reboot and differs depending on the interface where the profile activates\&. If the value is unset, a global connection default is consulted\&. If the value is still unset, the default is similar to "${CONNECTION}" and uses a unique, fixed ID for the connection\&.
 T}
 T{
 timestamp
@@ -1496,7 +1496,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Number to dial when establishing a PPP data session with the GSM\-based mobile broadband network\&.  Many modems do not require PPP for connections to the mobile network and thus this property should be left blank, which allows NetworkManager to select the appropriate settings automatically\&.
+Legacy setting that used to help establishing PPP data sessions for GSM\-based modems\&. Deprecated: 1
 T}
 T{
 password
@@ -1766,7 +1766,7 @@ int32
 T}:T{
 0
 T}:T{
-DNS servers priority\&. The relative priority for DNS servers specified by this setting\&.  A lower value is better (higher priority)\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&. Note that the priority is to order DNS settings for multiple active connections\&.  It does not disambiguate multiple DNS servers within the same connection profile\&. When using dns=default, servers with higher priority will be on top of resolv\&.conf\&.  To prioritize a given server over another one within the same connection, just specify them in the desired order\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used\&. When using a DNS resolver that supports split\-DNS as dns=dnsmasq or dns=systemd\-resolved, each connection is used to query domains in its search list\&.  Queries for domains not present in any search list are routed through connections having the \*(Aq~\&.\*(Aq special wildcard domain, which is added automatically to connections with the default route (or can be added manually)\&.  When multiple connections specify the same domain, the one with the highest priority (lowest numerical value) wins\&.  If a connection specifies a domain which is subdomain of another domain with a negative DNS priority value, the subdomain is ignored\&.
+DNS servers priority\&. The relative priority for DNS servers specified by this setting\&.  A lower value is better (higher priority)\&. Zero selects a globally configured default value\&. If the latter is missing or zero too, it defaults to 50 for VPNs and 100 for other connections\&. Note that the priority is to order DNS settings for multiple active connections\&.  It does not disambiguate multiple DNS servers within the same connection profile\&. When using dns=default, servers with higher priority will be on top of resolv\&.conf\&.  To prioritize a given server over another one within the same connection, just specify them in the desired order\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used\&. When using a DNS resolver that supports split\-DNS as dns=dnsmasq or dns=systemd\-resolved, each connection is used to query domains in its search list\&.  Queries for domains not present in any search list are routed through connections having the \*(Aq~\&.\*(Aq special wildcard domain, which is added automatically to connections with the default route (or can be added manually)\&.  When multiple connections specify the same domain, the one with the highest priority (lowest numerical value) wins\&.  If a connection specifies a domain which is subdomain of another domain with a negative DNS priority value, the subdomain is ignored\&.
 T}
 T{
 dns\-search
@@ -2006,7 +2006,7 @@ int32
 T}:T{
 0
 T}:T{
-DNS servers priority\&. The relative priority for DNS servers specified by this setting\&.  A lower value is better (higher priority)\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&. Note that the priority is to order DNS settings for multiple active connections\&.  It does not disambiguate multiple DNS servers within the same connection profile\&. When using dns=default, servers with higher priority will be on top of resolv\&.conf\&.  To prioritize a given server over another one within the same connection, just specify them in the desired order\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used\&. When using a DNS resolver that supports split\-DNS as dns=dnsmasq or dns=systemd\-resolved, each connection is used to query domains in its search list\&.  Queries for domains not present in any search list are routed through connections having the \*(Aq~\&.\*(Aq special wildcard domain, which is added automatically to connections with the default route (or can be added manually)\&.  When multiple connections specify the same domain, the one with the highest priority (lowest numerical value) wins\&.  If a connection specifies a domain which is subdomain of another domain with a negative DNS priority value, the subdomain is ignored\&.
+DNS servers priority\&. The relative priority for DNS servers specified by this setting\&.  A lower value is better (higher priority)\&. Zero selects a globally configured default value\&. If the latter is missing or zero too, it defaults to 50 for VPNs and 100 for other connections\&. Note that the priority is to order DNS settings for multiple active connections\&.  It does not disambiguate multiple DNS servers within the same connection profile\&. When using dns=default, servers with higher priority will be on top of resolv\&.conf\&.  To prioritize a given server over another one within the same connection, just specify them in the desired order\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from connections with the lowest priority value will be used\&. When using a DNS resolver that supports split\-DNS as dns=dnsmasq or dns=systemd\-resolved, each connection is used to query domains in its search list\&.  Queries for domains not present in any search list are routed through connections having the \*(Aq~\&.\*(Aq special wildcard domain, which is added automatically to connections with the default route (or can be added manually)\&.  When multiple connections specify the same domain, the one with the highest priority (lowest numerical value) wins\&.  If a connection specifies a domain which is subdomain of another domain with a negative DNS priority value, the subdomain is ignored\&.
 T}
 T{
 dns\-search
@@ -3245,7 +3245,7 @@ array of vardict
 T}:T{
 []
 T}:T{
-Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher\&. Available link watchers are \*(Aqethtool\*(Aq, \*(Aqnsna_ping\*(Aq and \*(Aqarp_ping\*(Aq and it is specified in the dictionary with the key \*(Aqname\*(Aq\&. Available keys are:   ethtool: \*(Aqdelay\-up\*(Aq, \*(Aqdelay\-down\*(Aq, \*(Aqinit\-wait\*(Aq; nsna_ping: \*(Aqinit\-wait\*(Aq, \*(Aqinterval\*(Aq, \*(Aqmissed\-max\*(Aq, \*(Aqtarget\-host\*(Aq; arp_ping: all the ones in nsna_ping and \*(Aqsource\-host\*(Aq, \*(Aqvalidate\-active\*(Aq, \*(Aqvalidate\-incative\*(Aq, \*(Aqsend\-always\*(Aq\&. See teamd\&.conf man for more details\&.
+Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher\&. Available link watchers are \*(Aqethtool\*(Aq, \*(Aqnsna_ping\*(Aq and \*(Aqarp_ping\*(Aq and it is specified in the dictionary with the key \*(Aqname\*(Aq\&. Available keys are:   ethtool: \*(Aqdelay\-up\*(Aq, \*(Aqdelay\-down\*(Aq, \*(Aqinit\-wait\*(Aq; nsna_ping: \*(Aqinit\-wait\*(Aq, \*(Aqinterval\*(Aq, \*(Aqmissed\-max\*(Aq, \*(Aqtarget\-host\*(Aq; arp_ping: all the ones in nsna_ping and \*(Aqsource\-host\*(Aq, \*(Aqvalidate\-active\*(Aq, \*(Aqvalidate\-inactive\*(Aq, \*(Aqsend\-always\*(Aq\&. See teamd\&.conf man for more details\&.
 T}
 T{
 mcast\-rejoin\-count
@@ -3432,7 +3432,7 @@ array of vardict
 T}:T{
 []
 T}:T{
-Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher\&. Available link watchers are \*(Aqethtool\*(Aq, \*(Aqnsna_ping\*(Aq and \*(Aqarp_ping\*(Aq and it is specified in the dictionary with the key \*(Aqname\*(Aq\&. Available keys are:   ethtool: \*(Aqdelay\-up\*(Aq, \*(Aqdelay\-down\*(Aq, \*(Aqinit\-wait\*(Aq; nsna_ping: \*(Aqinit\-wait\*(Aq, \*(Aqinterval\*(Aq, \*(Aqmissed\-max\*(Aq, \*(Aqtarget\-host\*(Aq; arp_ping: all the ones in nsna_ping and \*(Aqsource\-host\*(Aq, \*(Aqvalidate\-active\*(Aq, \*(Aqvalidate\-incative\*(Aq, \*(Aqsend\-always\*(Aq\&. See teamd\&.conf man for more details\&.
+Link watchers configuration for the connection: each link watcher is defined by a dictionary, whose keys depend upon the selected link watcher\&. Available link watchers are \*(Aqethtool\*(Aq, \*(Aqnsna_ping\*(Aq and \*(Aqarp_ping\*(Aq and it is specified in the dictionary with the key \*(Aqname\*(Aq\&. Available keys are:   ethtool: \*(Aqdelay\-up\*(Aq, \*(Aqdelay\-down\*(Aq, \*(Aqinit\-wait\*(Aq; nsna_ping: \*(Aqinit\-wait\*(Aq, \*(Aqinterval\*(Aq, \*(Aqmissed\-max\*(Aq, \*(Aqtarget\-host\*(Aq; arp_ping: all the ones in nsna_ping and \*(Aqsource\-host\*(Aq, \*(Aqvalidate\-active\*(Aq, \*(Aqvalidate\-inactive\*(Aq, \*(Aqsend\-always\*(Aq\&. See teamd\&.conf man for more details\&.
 T}
 T{
 prio
@@ -3903,6 +3903,54 @@ Specifies the time\-to\-live value to use in outgoing packets\&.
 T}
 .TE
 .sp 1
+.SS "wifi\-p2p setting"
+.PP
+Wi\-Fi P2P Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l.
+T{
+peer
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The P2P device that should be connected to\&. Currently this is the only way to create or join a group\&.
+T}
+T{
+wfd\-ies
+T}:T{
+byte array
+T}:T{
+\ \&
+T}:T{
+The Wi\-Fi Display (WFD) Information Elements (IEs) to set\&. Wi\-Fi Display requires a protocol specific information element to be set in certain Wi\-Fi frames\&. These can be specified here for the purpose of establishing a connection\&. This setting is only useful when implementing a Wi\-Fi Display client\&.
+T}
+T{
+wps\-method
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+Flags indicating which mode of WPS is to be used\&. There\*(Aqs little point in changing the default setting as NetworkManager will automatically determine the best method to use\&.
+T}
+.TE
+.sp 1
 .SS "wimax setting"
 .PP
 WiMax Settings\&.
@@ -3979,7 +4027,7 @@ string
 T}:T{
 \ \&
 T}:T{
-The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&. Note that this property only exists in D\-Bus API\&. libnm and nmcli continue to call this property "cloned\-mac\-address"\&.
+The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explicit hardware addresses\&. Note that this property only exists in D\-Bus API\&. libnm and nmcli continue to call this property "cloned\-mac\-address"\&.
 T}
 T{
 auto\-negotiate
@@ -4109,6 +4157,94 @@ If specified, the password used with magic\-packet\-based Wake\-on\-LAN, represe
 T}
 .TE
 .sp 1
+.SS "wireguard setting"
+.PP
+WireGuard Ethernet Settings\&.
+.TS
+allbox tab(:);
+lB lB lB lB.
+T{
+Key Name
+T}:T{
+Value Type
+T}:T{
+Default Value
+T}:T{
+Value Description
+T}
+.T&
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l
+l l l l.
+T{
+fwmark
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+The use of fwmark is optional and is by default off\&. Setting it to 0 disables it\&. Otherwise it is a 32\-bit fwmark for outgoing packets\&.
+T}
+T{
+listen\-port
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+The listen\-port\&. If listen\-port is not specified, the port will be chosen randomly when the interface comes up\&.
+T}
+T{
+mtu
+T}:T{
+uint32
+T}:T{
+0
+T}:T{
+If non\-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple fragments\&. If zero a default MTU is used\&. Note that contrary to wg\-quick\*(Aqs MTU setting, this does not take into account the current routes at the time of activation\&.
+T}
+T{
+peer\-routes
+T}:T{
+boolean
+T}:T{
+TRUE
+T}:T{
+Whether to automatically add routes for the AllowedIPs ranges of the peers\&. If TRUE (the default), NetworkManager will automatically add routes in the routing tables according to ipv4\&.route\-table and ipv6\&.route\-table\&. If FALSE, no such routes are added automatically\&. In this case, the user may want to configure static routes in ipv4\&.routes and ipv6\&.routes, respectively\&.
+T}
+T{
+peers
+T}:T{
+array of \*(Aqa{sv}\*(Aq
+T}:T{
+\ \&
+T}:T{
+Array of dictionaries for the WireGuard peers\&.
+T}
+T{
+private\-key
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The 256 bit private\-key in base64 encoding\&.
+T}
+T{
+private\-key\-flags
+T}:T{
+NMSettingSecretFlags (uint32)
+T}:T{
+\ \&
+T}:T{
+Flags indicating how to handle the "private\-key" property\&. (see the section called \(lqSecret flag types:\(rq for flag values)
+T}
+.TE
+.sp 1
 .SS "802\-11\-wireless setting"
 .PP
 Wi\-Fi Settings\&.
@@ -4151,7 +4287,7 @@ string
 T}:T{
 \ \&
 T}:T{
-The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&. Note that this property only exists in D\-Bus API\&. libnm and nmcli continue to call this property "cloned\-mac\-address"\&.
+The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explicit hardware addresses\&. Note that this property only exists in D\-Bus API\&. libnm and nmcli continue to call this property "cloned\-mac\-address"\&.
 T}
 T{
 band
@@ -4387,7 +4523,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Key management used for the connection\&.  One of "none" (WEP), "ieee8021x" (Dynamic WEP), "wpa\-none" (Ad\-Hoc WPA\-PSK), "wpa\-psk" (infrastructure WPA\-PSK), or "wpa\-eap" (WPA\-Enterprise)\&.  This property must be set for any Wi\-Fi connection that uses security\&.
+Key management used for the connection\&.  One of "none" (WEP), "ieee8021x" (Dynamic WEP), "wpa\-none" (Ad\-Hoc WPA\-PSK), "wpa\-psk" (infrastructure WPA\-PSK), "sae" (SAE) or "wpa\-eap" (WPA\-Enterprise)\&. This property must be set for any Wi\-Fi connection that uses security\&.
 T}
 T{
 leap\-password
@@ -4450,7 +4586,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Pre\-Shared\-Key for WPA networks\&.  If the key is 64\-characters long, it must contain only hexadecimal characters and is interpreted as a hexadecimal WPA key\&.  Otherwise, the key must be between 8 and 63 ASCII characters (as specified in the 802\&.11i standard) and is interpreted as a WPA passphrase, and is hashed to derive the actual WPA\-PSK used when connecting to the Wi\-Fi network\&.
+Pre\-Shared\-Key for WPA networks\&. For WPA\-PSK, it\*(Aqs either an ASCII passphrase of 8 to 63 characters that is (as specified in the 802\&.11i standard) hashed to derive the actual key, or the key in form of 64 hexadecimal character\&. The WPA3\-Personal networks use a passphrase of any length for SAE authentication\&.
 T}
 T{
 psk\-flags
@@ -4553,7 +4689,18 @@ T}
 .T&
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
+T{
+channel
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+IEEE 802\&.15\&.4 channel\&. A positive integer or \-1, meaning "do not set, use whatever the device is already set to"\&.
+T}
 T{
 mac\-address
 T}:T{
@@ -4562,6 +4709,15 @@ T}:T{
 \ \&
 T}:T{
 If specified, this connection will only apply to the IEEE 802\&.15\&.4 (WPAN) MAC layer device whose permanent MAC address matches\&.
+T}
+T{
+page
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+IEEE 802\&.15\&.4 channel page\&. A positive integer or \-1, meaning "do not set, use whatever the device is already set to"\&.
 T}
 T{
 pan\-id

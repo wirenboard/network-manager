@@ -23,11 +23,9 @@
 #include <glib-unix.h>
 #include <getopt.h>
 #include <locale.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <string.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <signal.h>
@@ -223,14 +221,14 @@ ndisc_config_changed (NMNDisc *ndisc, const NMNDiscData *rdata, guint changed_in
 	}
 
 	if (changed & NM_NDISC_CONFIG_HOP_LIMIT)
-		nm_platform_sysctl_set_ip6_hop_limit_safe (NM_PLATFORM_GET, global_opt.ifname, rdata->hop_limit);
+		nm_platform_sysctl_ip_conf_set_ipv6_hop_limit_safe (NM_PLATFORM_GET, global_opt.ifname, rdata->hop_limit);
 
 	if (changed & NM_NDISC_CONFIG_MTU) {
-		char val[16];
-		char sysctl_path_buf[NM_UTILS_SYSCTL_IP_CONF_PATH_BUFSIZE];
-
-		g_snprintf (val, sizeof (val), "%d", rdata->mtu);
-		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_sysctl_ip_conf_path (AF_INET6, sysctl_path_buf, global_opt.ifname, "mtu")), val);
+		nm_platform_sysctl_ip_conf_set_int64 (NM_PLATFORM_GET,
+		                                      AF_INET6,
+		                                      global_opt.ifname,
+		                                      "mtu",
+		                                      rdata->mtu);
 	}
 
 	nm_ip6_config_merge (existing, ndisc_config, NM_IP_CONFIG_MERGE_DEFAULT, 0);
@@ -389,7 +387,7 @@ main (int argc, char *argv[])
 	gs_unref_bytes GBytes *client_id = NULL;
 	gs_free NMUtilsIPv6IfaceId *iid = NULL;
 	guint sd_id;
-	char sysctl_path_buf[NM_UTILS_SYSCTL_IP_CONF_PATH_BUFSIZE];
+	int errsv;
 
 	c_list_init (&gl.dad_failed_lst_head);
 
@@ -398,11 +396,11 @@ main (int argc, char *argv[])
 	if (!do_early_setup (&argc, &argv))
 		return 1;
 
-	nm_logging_set_syslog_identifier ("nm-iface-helper");
-	nm_logging_set_prefix ("%s[%ld] (%s): ",
-	                       _NMLOG_PREFIX_NAME,
-	                       (long) getpid (),
-	                       global_opt.ifname ?: "???");
+	nm_logging_init_pre ("nm-iface-helper",
+	                     g_strdup_printf ("%s[%ld] (%s): ",
+	                                      _NMLOG_PREFIX_NAME,
+	                                      (long) getpid (),
+	                                      global_opt.ifname ?: "???"));
 
 	if (global_opt.g_fatal_warnings) {
 		GLogLevelFlags fatal_mask;
@@ -426,7 +424,8 @@ main (int argc, char *argv[])
 
 	gl.ifindex = nmp_utils_if_nametoindex (global_opt.ifname);
 	if (gl.ifindex <= 0) {
-		fprintf (stderr, _("Failed to find interface index for %s (%s)\n"), global_opt.ifname, strerror (errno));
+		errsv = errno;
+		fprintf (stderr, _("Failed to find interface index for %s (%s)\n"), global_opt.ifname, nm_strerror_native (errsv));
 		return 1;
 	}
 	pidfile = g_strdup_printf (NMIH_PID_FILE_FMT, gl.ifindex);
@@ -451,12 +450,10 @@ main (int argc, char *argv[])
 
 	if (global_opt.become_daemon && !global_opt.debug) {
 		if (daemon (0, 0) < 0) {
-			int saved_errno;
-
-			saved_errno = errno;
+			errsv = errno;
 			fprintf (stderr, _("Could not daemonize: %s [error %u]\n"),
-			         g_strerror (saved_errno),
-			         saved_errno);
+			         nm_strerror_native (errsv),
+			         errsv);
 			return 1;
 		}
 		if (nm_main_utils_write_pidfile (pidfile))
@@ -467,8 +464,8 @@ main (int argc, char *argv[])
 	gl.main_loop = g_main_loop_new (NULL, FALSE);
 	setup_signals ();
 
-	nm_logging_syslog_openlog (global_opt.logging_backend,
-	                           global_opt.debug);
+	nm_logging_init (global_opt.logging_backend,
+	                 global_opt.debug);
 
 	_LOGI (LOGD_CORE, "nm-iface-helper (version " NM_DIST_VERSION ") is starting...");
 
@@ -500,7 +497,11 @@ main (int argc, char *argv[])
 	}
 
 	if (global_opt.dhcp4_address) {
-		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_sysctl_ip_conf_path (AF_INET, sysctl_path_buf, global_opt.ifname, "promote_secondaries")), "1");
+		nm_platform_sysctl_ip_conf_set (NM_PLATFORM_GET,
+		                                AF_INET,
+		                                global_opt.ifname,
+		                                "promote_secondaries",
+		                                "1");
 
 		dhcp4_client = nm_dhcp_manager_start_ip4 (nm_dhcp_manager_get (),
 		                                          nm_platform_get_multi_idx (NM_PLATFORM_GET),
@@ -552,10 +553,10 @@ main (int argc, char *argv[])
 		if (iid)
 			nm_ndisc_set_iid (ndisc, *iid);
 
-		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_sysctl_ip_conf_path (AF_INET6, sysctl_path_buf, global_opt.ifname, "accept_ra")), "1");
-		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_sysctl_ip_conf_path (AF_INET6, sysctl_path_buf, global_opt.ifname, "accept_ra_defrtr")), "0");
-		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_sysctl_ip_conf_path (AF_INET6, sysctl_path_buf, global_opt.ifname, "accept_ra_pinfo")), "0");
-		nm_platform_sysctl_set (NM_PLATFORM_GET, NMP_SYSCTL_PATHID_ABSOLUTE (nm_utils_sysctl_ip_conf_path (AF_INET6, sysctl_path_buf, global_opt.ifname, "accept_ra_rtr_pref")), "0");
+		nm_platform_sysctl_ip_conf_set (NM_PLATFORM_GET, AF_INET6, global_opt.ifname, "accept_ra",          "1");
+		nm_platform_sysctl_ip_conf_set (NM_PLATFORM_GET, AF_INET6, global_opt.ifname, "accept_ra_defrtr",   "0");
+		nm_platform_sysctl_ip_conf_set (NM_PLATFORM_GET, AF_INET6, global_opt.ifname, "accept_ra_pinfo",    "0");
+		nm_platform_sysctl_ip_conf_set (NM_PLATFORM_GET, AF_INET6, global_opt.ifname, "accept_ra_rtr_pref", "0");
 
 		g_signal_connect (NM_PLATFORM_GET,
 		                  NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED,

@@ -45,7 +45,7 @@ G_BEGIN_DECLS
 
 /*
  * NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD: overwrite the ip6 method
- * when normalizing ip6 configuration. If omited, this defaults to
+ * when normalizing ip6 configuration. If omitted, this defaults to
  * @NM_SETTING_IP6_CONFIG_METHOD_AUTO.
  */
 #define NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD "ip6-config-method"
@@ -59,7 +59,7 @@ G_BEGIN_DECLS
 
 /**
  * NMConnectionInterface:
- * @parent: the parent interace struct
+ * @parent: the parent interface struct
  * @secrets_updated: emitted when the connection's secrets are updated
  * @secrets_cleared: emitted when the connection's secrets are cleared
  * @changed: emitted when any change to the connection's settings occurs
@@ -121,8 +121,6 @@ typedef enum { /*< flags >*/
 	NM_CONNECTION_SERIALIZE_ALL = 0x00000000,
 	NM_CONNECTION_SERIALIZE_NO_SECRETS = 0x00000001,
 	NM_CONNECTION_SERIALIZE_ONLY_SECRETS = 0x00000002,
-
-	/* 0x80000000 is used for a private flag */
 } NMConnectionSerializationFlags;
 
 GVariant     *nm_connection_to_dbus       (NMConnection *connection,

@@ -23,7 +23,6 @@
 
 #include "nm-default.h"
 
-#include <errno.h>
 #include <fcntl.h>
 #include <resolv.h>
 #include <stdlib.h>
@@ -122,6 +121,7 @@ typedef struct {
 
 	NMDnsManagerResolvConfManager rc_manager;
 	char *mode;
+	NMDnsPlugin *sd_resolve_plugin;
 	NMDnsPlugin *plugin;
 
 	NMConfig *config;
@@ -311,35 +311,21 @@ _config_data_free (NMDnsConfigData *data)
 }
 
 static int
-_ip_config_data_cmp (const NMDnsIPConfigData *a, const NMDnsIPConfigData *b)
-{
-	int a_prio, b_prio;
-
-	a_prio = nm_ip_config_get_dns_priority (a->ip_config);
-	b_prio = nm_ip_config_get_dns_priority (b->ip_config);
-
-	/* Configurations with lower priority value first */
-	if (a_prio < b_prio)
-		return -1;
-	else if (a_prio > b_prio)
-		return 1;
-
-	/* Sort also according to type */
-	if (a->ip_config_type > b->ip_config_type)
-		return -1;
-	else if (a->ip_config_type < b->ip_config_type)
-		return 1;
-
-	return 0;
-}
-
-static int
-_ip_config_lst_cmp (const CList *a,
-                    const CList *b,
+_ip_config_lst_cmp (const CList *a_lst,
+                    const CList *b_lst,
                     const void *user_data)
 {
-	return _ip_config_data_cmp (c_list_entry (a, NMDnsIPConfigData, ip_config_lst),
-	                            c_list_entry (b, NMDnsIPConfigData, ip_config_lst));
+	const NMDnsIPConfigData *a = c_list_entry (a_lst, NMDnsIPConfigData, ip_config_lst);
+	const NMDnsIPConfigData *b = c_list_entry (b_lst, NMDnsIPConfigData, ip_config_lst);
+
+	/* Configurations with lower priority value first */
+	NM_CMP_DIRECT (nm_ip_config_get_dns_priority (a->ip_config),
+	               nm_ip_config_get_dns_priority (b->ip_config));
+
+	/* Sort according to type (descendingly) */
+	NM_CMP_FIELD (b, a, ip_config_type);
+
+	return 0;
 }
 
 static CList *
@@ -353,6 +339,21 @@ _ip_config_lst_head (NMDnsManager *self)
 	}
 
 	return &priv->ip_config_lst_head;
+}
+
+/*****************************************************************************/
+
+gboolean
+nm_dns_manager_has_systemd_resolved (NMDnsManager *self)
+{
+	NMDnsManagerPrivate *priv;
+
+	g_return_val_if_fail (NM_IS_DNS_MANAGER (self), FALSE);
+
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
+
+	return    priv->sd_resolve_plugin
+	       || NM_IS_DNS_SYSTEMD_RESOLVED (priv->plugin);
 }
 
 /*****************************************************************************/
@@ -534,6 +535,7 @@ dispatch_netconfig (NMDnsManager *self,
 {
 	GPid pid;
 	int fd;
+	int errsv;
 	int status;
 	gssize l;
 	nm_auto_free_gstring GString *str = NULL;
@@ -564,11 +566,10 @@ again:
 
 	/* Wait until the process exits */
 	if (!nm_utils_kill_child_sync (pid, 0, LOGD_DNS, "netconfig", &status, 1000, 0)) {
-		int errsv = errno;
-
+		errsv = errno;
 		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 		             "Error waiting for netconfig to exit: %s",
-		             strerror (errsv));
+		             nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 	if (!WIFEXITED (status) || WEXITSTATUS (status) != EXIT_SUCCESS) {
@@ -676,7 +677,7 @@ write_resolv_conf_contents (FILE *f,
 		             NM_MANAGER_ERROR,
 		             NM_MANAGER_ERROR_FAILED,
 		             "Could not write " _PATH_RESCONF ": %s",
-		             g_strerror (errsv));
+		             nm_strerror_native (errsv));
 		errno = errsv;
 		return FALSE;
 	}
@@ -707,7 +708,8 @@ dispatch_resolvconf (NMDnsManager *self,
 	gs_free char *cmd = NULL;
 	FILE *f;
 	gboolean success = FALSE;
-	int errnosv, err;
+	int errsv;
+	int err;
 	char *argv[] = { RESOLVCONF_PATH, "-d", "NetworkManager", NULL };
 	int status;
 
@@ -741,12 +743,13 @@ dispatch_resolvconf (NMDnsManager *self,
 
 	cmd = g_strconcat (RESOLVCONF_PATH, " -a ", "NetworkManager", NULL);
 	if ((f = popen (cmd, "w")) == NULL) {
+		errsv = errno;
 		g_set_error (error,
 		             NM_MANAGER_ERROR,
 		             NM_MANAGER_ERROR_FAILED,
 		             "Could not write to %s: %s",
 		             RESOLVCONF_PATH,
-		             g_strerror (errno));
+		             nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 
@@ -757,10 +760,10 @@ dispatch_resolvconf (NMDnsManager *self,
 	                             error);
 	err = pclose (f);
 	if (err < 0) {
-		errnosv = errno;
+		errsv = errno;
 		g_clear_error (error);
-		g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errnosv),
-		             "Failed to close pipe to resolvconf: %d", errnosv);
+		g_set_error (error, G_IO_ERROR, g_io_error_from_errno (errsv),
+		             "Failed to close pipe to resolvconf: %d", errsv);
 		return SR_ERROR;
 	} else if (err > 0) {
 		_LOGW ("resolvconf failed with status %d", err);
@@ -787,9 +790,36 @@ _read_link_cached (const char *path, gboolean *is_cached, char **cached)
 	return (*cached = g_file_read_link (path, NULL));
 }
 
-#define MY_RESOLV_CONF NMRUNDIR "/resolv.conf"
-#define MY_RESOLV_CONF_TMP MY_RESOLV_CONF ".tmp"
-#define RESOLV_CONF_TMP "/etc/.resolv.conf.NetworkManager"
+#define MY_RESOLV_CONF             NMRUNDIR"/resolv.conf"
+#define MY_RESOLV_CONF_TMP         MY_RESOLV_CONF".tmp"
+#define RESOLV_CONF_TMP            "/etc/.resolv.conf.NetworkManager"
+
+#define NO_STUB_RESOLV_CONF        NMRUNDIR "/no-stub-resolv.conf"
+
+static void
+update_resolv_conf_no_stub (NMDnsManager *self,
+                            const char *const*searches,
+                            const char *const*nameservers,
+                            const char *const*options)
+{
+	gs_free char *content = NULL;
+	GError *local = NULL;
+
+	content = create_resolv_conf (searches, nameservers, options);
+
+	if (!g_file_set_contents (NO_STUB_RESOLV_CONF,
+	                          content,
+	                          -1,
+	                          &local)) {
+		_LOGD ("update-resolv-no-stub: failure to write file: %s",
+		       local->message);
+		g_error_free (local);
+		return;
+	}
+
+	_LOGT ("update-resolv-no-stub: '%s' successfully written",
+	       NO_STUB_RESOLV_CONF);
+}
 
 static SpawnResult
 update_resolv_conf (NMDnsManager *self,
@@ -806,22 +836,6 @@ update_resolv_conf (NMDnsManager *self,
 	int errsv;
 	gboolean resconf_link_cached = FALSE;
 	gs_free char *resconf_link = NULL;
-
-	/* If we are not managing /etc/resolv.conf and it points to
-	 * MY_RESOLV_CONF, don't write the private DNS configuration to
-	 * MY_RESOLV_CONF otherwise we would overwrite the changes done by
-	 * some external application.
-	 *
-	 * This is the only situation, where we don't try to update our
-	 * internal resolv.conf file. */
-	if (rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_UNMANAGED) {
-		if (nm_streq0 (_read_link_cached (_PATH_RESCONF, &resconf_link_cached, &resconf_link),
-		               MY_RESOLV_CONF)) {
-			_LOGD ("update-resolv-conf: not updating " _PATH_RESCONF
-			       " since it points to " MY_RESOLV_CONF);
-			return SR_SUCCESS;
-		}
-	}
 
 	content = create_resolv_conf (searches, nameservers, options);
 
@@ -873,9 +887,9 @@ update_resolv_conf (NMDnsManager *self,
 		             NM_MANAGER_ERROR_FAILED,
 		             "Could not open %s: %s",
 		             MY_RESOLV_CONF_TMP,
-		             g_strerror (errsv));
+		             nm_strerror_native (errsv));
 		_LOGT ("update-resolv-conf: open temporary file %s failed (%s)",
-		       MY_RESOLV_CONF_TMP, g_strerror (errsv));
+		       MY_RESOLV_CONF_TMP, nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 
@@ -883,7 +897,7 @@ update_resolv_conf (NMDnsManager *self,
 	if (!success) {
 		errsv = errno;
 		_LOGT ("update-resolv-conf: write temporary file %s failed (%s)",
-		       MY_RESOLV_CONF_TMP, g_strerror (errsv));
+		       MY_RESOLV_CONF_TMP, nm_strerror_native (errsv));
 	}
 
 	if (fclose (f) < 0) {
@@ -897,9 +911,9 @@ update_resolv_conf (NMDnsManager *self,
 			             NM_MANAGER_ERROR_FAILED,
 			             "Could not close %s: %s",
 			             MY_RESOLV_CONF_TMP,
-			             g_strerror (errsv));
+			             nm_strerror_native (errsv));
 			_LOGT ("update-resolv-conf: close temporary file %s failed (%s)",
-			       MY_RESOLV_CONF_TMP, g_strerror (errsv));
+			       MY_RESOLV_CONF_TMP, nm_strerror_native (errsv));
 		}
 		return SR_ERROR;
 	} else if (!success)
@@ -912,9 +926,9 @@ update_resolv_conf (NMDnsManager *self,
 		             NM_MANAGER_ERROR_FAILED,
 		             "Could not replace %s: %s",
 		             MY_RESOLV_CONF,
-		             g_strerror (errno));
+		             nm_strerror_native (errsv));
 		_LOGT ("update-resolv-conf: failed to rename temporary file %s to %s (%s)",
-		       MY_RESOLV_CONF_TMP, MY_RESOLV_CONF, g_strerror (errsv));
+		       MY_RESOLV_CONF_TMP, MY_RESOLV_CONF, nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 
@@ -949,10 +963,10 @@ update_resolv_conf (NMDnsManager *self,
 		             NM_MANAGER_ERROR_FAILED,
 		             "Could not unlink %s: %s",
 		             RESOLV_CONF_TMP,
-		             g_strerror (errsv));
+		             nm_strerror_native (errsv));
 		_LOGT ("update-resolv-conf: write internal file %s succeeded "
 		       "but canot delete temporary file %s: %s",
-		       MY_RESOLV_CONF, RESOLV_CONF_TMP, g_strerror (errsv));
+		       MY_RESOLV_CONF, RESOLV_CONF_TMP, nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 
@@ -964,10 +978,10 @@ update_resolv_conf (NMDnsManager *self,
 		             "Could not create symlink %s pointing to %s: %s",
 		             RESOLV_CONF_TMP,
 		             MY_RESOLV_CONF,
-		             g_strerror (errsv));
+		             nm_strerror_native (errsv));
 		_LOGT ("update-resolv-conf: write internal file %s succeeded "
 		       "but failed to symlink %s: %s",
-		       MY_RESOLV_CONF, RESOLV_CONF_TMP, g_strerror (errsv));
+		       MY_RESOLV_CONF, RESOLV_CONF_TMP, nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 
@@ -979,10 +993,10 @@ update_resolv_conf (NMDnsManager *self,
 		             "Could not rename %s to %s: %s",
 		             RESOLV_CONF_TMP,
 		             _PATH_RESCONF,
-		             g_strerror (errsv));
+		             nm_strerror_native (errsv));
 		_LOGT ("update-resolv-conf: write internal file %s succeeded "
 		       "but failed to rename temporary symlink %s to %s: %s",
-		       MY_RESOLV_CONF, RESOLV_CONF_TMP, _PATH_RESCONF, g_strerror (errsv));
+		       MY_RESOLV_CONF, RESOLV_CONF_TMP, _PATH_RESCONF, nm_strerror_native (errsv));
 		return SR_ERROR;
 	}
 
@@ -1414,6 +1428,16 @@ update_dns (NMDnsManager *self,
 	                           &searches, &options, &nameservers,
 	                           &nis_servers, &nis_domain);
 
+	if (priv->plugin || priv->sd_resolve_plugin)
+		rebuild_domain_lists (self);
+
+	if (priv->sd_resolve_plugin) {
+		nm_dns_plugin_update (priv->sd_resolve_plugin,
+		                      global_config,
+		                      _ip_config_lst_head (self),
+		                      priv->hostname);
+	}
+
 	/* Let any plugins do their thing first */
 	if (priv->plugin) {
 		NMDnsPlugin *plugin = priv->plugin;
@@ -1429,7 +1453,6 @@ update_dns (NMDnsManager *self,
 		}
 
 		_LOGD ("update-dns: updating plugin %s", plugin_name);
-		rebuild_domain_lists (self);
 		if (!nm_dns_plugin_update (plugin,
 		                           global_config,
 		                           _ip_config_lst_head (self),
@@ -1441,14 +1464,20 @@ update_dns (NMDnsManager *self,
 			 */
 			caching = FALSE;
 		}
-		/* Clear the generated search list as it points to
-		 * strings owned by IP configurations and we can't
-		 * guarantee they stay alive. */
-		clear_domain_lists (self);
 
 	skip:
 		;
 	}
+
+	/* Clear the generated search list as it points to
+	 * strings owned by IP configurations and we can't
+	 * guarantee they stay alive. */
+	clear_domain_lists (self);
+
+	update_resolv_conf_no_stub (self,
+	                            NM_CAST_STRV_CC (searches),
+	                            NM_CAST_STRV_CC (nameservers),
+	                            NM_CAST_STRV_CC (options));
 
 	/* If caching was successful, we only send 127.0.0.1 to /etc/resolv.conf
 	 * to ensure that the glibc resolver doesn't try to round-robin nameservers,
@@ -1963,9 +1992,13 @@ init_resolv_conf_mode (NMDnsManager *self, gboolean force_reload_plugin)
 	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	NMDnsManagerResolvConfManager rc_manager;
 	const char *mode;
-	gboolean param_changed = FALSE, plugin_changed = FALSE;
+	gboolean systemd_resolved;
+	gboolean param_changed = FALSE;
+	gboolean plugin_changed = FALSE;
+	gboolean systemd_resolved_changed = FALSE;
 
 	mode = nm_config_data_get_dns_mode (nm_config_get_data (priv->config));
+	systemd_resolved = nm_config_data_get_systemd_resolved (nm_config_get_data (priv->config));
 
 	if (nm_streq0 (mode, "none"))
 		rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_UNMANAGED;
@@ -2011,6 +2044,7 @@ again:
 			plugin_changed = TRUE;
 		}
 		mode = "systemd-resolved";
+		systemd_resolved = FALSE;
 	} else if (nm_streq0 (mode, "dnsmasq")) {
 		if (force_reload_plugin || !NM_IS_DNS_DNSMASQ (priv->plugin)) {
 			_clear_plugin (self);
@@ -2033,7 +2067,18 @@ again:
 			plugin_changed = TRUE;
 	}
 
-	if (plugin_changed && priv->plugin) {
+	/* The systemd-resolved plugin is special. We typically always want to keep
+	 * systemd-resolved up to date even if the configured plugin is different. */
+	if (systemd_resolved) {
+		if (!priv->sd_resolve_plugin) {
+			priv->sd_resolve_plugin = nm_dns_systemd_resolved_new ();
+			systemd_resolved_changed = TRUE;
+		}
+	} else if (nm_clear_g_object (&priv->sd_resolve_plugin))
+		systemd_resolved_changed = TRUE;
+
+	if (   plugin_changed
+	    && priv->plugin) {
 		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_FAILED, G_CALLBACK (plugin_failed), self);
 		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_CHILD_QUIT, G_CALLBACK (plugin_child_quit), self);
 	}
@@ -2053,9 +2098,11 @@ again:
 		_notify (self, PROP_RC_MANAGER);
 	}
 
-	if (param_changed || plugin_changed) {
-		_LOGI ("init: dns=%s, rc-manager=%s%s%s%s",
-		       mode, _rc_manager_to_string (rc_manager),
+	if (param_changed || plugin_changed || systemd_resolved_changed) {
+		_LOGI ("init: dns=%s%s rc-manager=%s%s%s%s",
+		       mode,
+		       (systemd_resolved ? ",systemd-resolved" : ""),
+		       _rc_manager_to_string (rc_manager),
 		       NM_PRINT_FMT_QUOTED (priv->plugin, ", plugin=",
 		                            nm_dns_plugin_get_name (priv->plugin), "", ""));
 	}
@@ -2316,6 +2363,7 @@ dispose (GObject *object)
 	if (priv->config)
 		g_signal_handlers_disconnect_by_func (priv->config, config_changed_cb, self);
 
+	g_clear_object (&priv->sd_resolve_plugin);
 	_clear_plugin (self);
 
 	priv->best_ip_config_4 = NULL;

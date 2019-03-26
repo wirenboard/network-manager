@@ -23,13 +23,12 @@
 
 #include "nm-policy.h"
 
-#include <string.h>
 #include <unistd.h>
-#include <errno.h>
 #include <netdb.h>
 
 #include "NetworkManagerUtils.h"
 #include "nm-act-request.h"
+#include "nm-keep-alive.h"
 #include "devices/nm-device.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-connection.h"
@@ -150,6 +149,25 @@ static NMDevice *get_default_device (NMPolicy *self, int addr_family);
 
 /*****************************************************************************/
 
+static void
+_dns_manager_set_ip_config (NMDnsManager *dns_manager,
+                            NMIPConfig *ip_config,
+                            NMDnsIPConfigType ip_config_type,
+                            NMDevice *device)
+{
+	if (   NM_IN_SET (ip_config_type, NM_DNS_IP_CONFIG_TYPE_DEFAULT,
+	                                  NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE)
+	    && device
+	    && nm_device_get_route_metric_default (nm_device_get_device_type (device)) == NM_VPN_ROUTE_METRIC_DEFAULT) {
+		/* some device types are inherently VPN. */
+		ip_config_type = NM_DNS_IP_CONFIG_TYPE_VPN;
+	}
+
+	nm_dns_manager_set_ip_config (dns_manager, ip_config, ip_config_type);
+}
+
+/*****************************************************************************/
+
 typedef struct {
 	NMPlatformIP6Address prefix;
 	NMDevice *device;             /* The requesting ("uplink") device */
@@ -178,9 +196,10 @@ static void
 clear_ip6_prefix_delegation (gpointer data)
 {
 	IP6PrefixDelegation *delegation = data;
+	char sbuf[NM_UTILS_INET_ADDRSTRLEN];
 
 	_LOGD (LOGD_IP6, "ipv6-pd: undelegating prefix %s/%d",
-	       nm_utils_inet6_ntop (&delegation->prefix.address, NULL),
+	       nm_utils_inet6_ntop (&delegation->prefix.address, sbuf),
 	       delegation->prefix.plen);
 
 	g_hash_table_foreach (delegation->subnets, _clear_ip6_subnet, NULL);
@@ -214,13 +233,14 @@ ip6_subnet_from_delegation (IP6PrefixDelegation *delegation, NMDevice *device)
 {
 	NMPlatformIP6Address *subnet;
 	int ifindex = nm_device_get_ifindex (device);
+	char sbuf[NM_UTILS_INET_ADDRSTRLEN];
 
 	subnet = g_hash_table_lookup (delegation->subnets, GINT_TO_POINTER (ifindex));
 	if (!subnet) {
 		/* Check for out-of-prefixes condition. */
 		if (delegation->next_subnet >= (1 << (64 - delegation->prefix.plen))) {
 			_LOGD (LOGD_IP6, "ipv6-pd: no more prefixes in %s/%d",
-			       nm_utils_inet6_ntop (&delegation->prefix.address, NULL),
+			       nm_utils_inet6_ntop (&delegation->prefix.address, sbuf),
 			       delegation->prefix.plen);
 			return FALSE;
 		}
@@ -248,7 +268,7 @@ ip6_subnet_from_delegation (IP6PrefixDelegation *delegation, NMDevice *device)
 	subnet->preferred = delegation->prefix.preferred;
 
 	_LOGD (LOGD_IP6, "ipv6-pd: %s allocated from a /%d prefix on %s",
-	       nm_utils_inet6_ntop (&subnet->address, NULL),
+	       nm_utils_inet6_ntop (&subnet->address, sbuf),
 	       delegation->prefix.plen,
 	       nm_device_get_iface (device));
 
@@ -319,9 +339,10 @@ device_ip6_prefix_delegated (NMDevice *device,
 	guint i;
 	const CList *tmp_list;
 	NMActiveConnection *ac;
+	char sbuf[NM_UTILS_INET_ADDRSTRLEN];
 
 	_LOGI (LOGD_IP6, "ipv6-pd: received a prefix %s/%d from %s",
-	       nm_utils_inet6_ntop (&prefix->address, NULL),
+	       nm_utils_inet6_ntop (&prefix->address, sbuf),
 	       prefix->plen,
 	       nm_device_get_iface (device));
 
@@ -504,15 +525,15 @@ settings_set_hostname_cb (const char *hostname,
 	NMPolicy *self = NM_POLICY (user_data);
 	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
 	int ret = 0;
+	int errsv;
 
 	if (!result) {
 		_LOGT (LOGD_DNS, "set-hostname: hostname set via dbus failed, fallback to \"sethostname\"");
 		ret = sethostname (hostname, strlen (hostname));
 		if (ret != 0) {
-			int errsv = errno;
-
+			errsv = errno;
 			_LOGW (LOGD_DNS, "set-hostname: couldn't set the system hostname to '%s': (%d) %s",
-			       hostname, errsv, strerror (errsv));
+			       hostname, errsv, nm_strerror_native (errsv));
 			if (errsv == EPERM)
 				_LOGW (LOGD_DNS, "set-hostname: you should use hostnamed when systemd hardening is in effect!");
 		}
@@ -531,6 +552,7 @@ _get_hostname (NMPolicy *self)
 {
 	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
 	char *hostname = NULL;
+	int errsv;
 
 	/* If there is an in-progress hostname change, return
 	 * the last hostname set as would be set soon...
@@ -549,10 +571,9 @@ _get_hostname (NMPolicy *self)
 	/* ...or retrieve it by yourself */
 	hostname = g_malloc (HOST_NAME_BUFSIZE);
 	if (gethostname (hostname, HOST_NAME_BUFSIZE -1) != 0) {
-		int errsv = errno;
-
+		errsv = errno;
 		_LOGT (LOGD_DNS, "get-hostname: couldn't get the system hostname: (%d) %s",
-		       errsv, g_strerror (errsv));
+		       errsv, nm_strerror_native (errsv));
 		g_free (hostname);
 		return NULL;
 	}
@@ -1088,19 +1109,21 @@ update_ip_dns (NMPolicy *self, int addr_family)
 	gpointer ip_config;
 	const char *ip_iface = NULL;
 	NMVpnConnection *vpn = NULL;
+	NMDevice *device = NULL;
 
 	nm_assert_addr_family (addr_family);
 
-	ip_config = get_best_ip_config (self, addr_family, &ip_iface, NULL, NULL, &vpn);
+	ip_config = get_best_ip_config (self, addr_family, &ip_iface, NULL, &device, &vpn);
 	if (ip_config) {
 		/* Tell the DNS manager this config is preferred by re-adding it with
 		 * a different IP config type.
 		 */
-		nm_dns_manager_set_ip_config (NM_POLICY_GET_PRIVATE (self)->dns_manager,
-		                              ip_config,
-		                              vpn
-		                                ? NM_DNS_IP_CONFIG_TYPE_VPN
-		                                : NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE);
+		_dns_manager_set_ip_config (NM_POLICY_GET_PRIVATE (self)->dns_manager,
+		                            ip_config,
+		                            vpn
+		                            ? NM_DNS_IP_CONFIG_TYPE_VPN
+		                            : NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE,
+		                            device);
 	}
 
 	if (addr_family == AF_INET6)
@@ -1283,6 +1306,7 @@ auto_activate_device (NMPolicy *self,
 	                                     subject,
 	                                     NM_ACTIVATION_TYPE_MANAGED,
 	                                     NM_ACTIVATION_REASON_AUTOCONNECT,
+	                                     NM_ACTIVATION_STATE_FLAG_LIFETIME_BOUND_TO_PROFILE_VISIBILITY,
 	                                     &error);
 	if (!ac) {
 		_LOGI (LOGD_DEVICE, "connection '%s' auto-activation failed: %s",
@@ -1673,9 +1697,14 @@ activate_secondary_connections (NMPolicy *self,
 	GError *error = NULL;
 	guint32 i;
 	gboolean success = TRUE;
+	NMActivationStateFlags initial_state_flags;
 
 	s_con = nm_connection_get_setting_connection (connection);
-	nm_assert (s_con);
+	nm_assert (NM_IS_SETTING_CONNECTION (s_con));
+
+	/* we propagate the activation's state flags. */
+	initial_state_flags =   nm_device_get_activation_state_flags (device)
+	                      & NM_ACTIVATION_STATE_FLAG_LIFETIME_BOUND_TO_PROFILE_VISIBILITY;
 
 	for (i = 0; i < nm_setting_connection_get_num_secondaries (s_con); i++) {
 		NMSettingsConnection *sett_conn;
@@ -1699,7 +1728,6 @@ activate_secondary_connections (NMPolicy *self,
 		}
 
 		req = nm_device_get_act_request (device);
-		g_assert (req);
 
 		_LOGD (LOGD_DEVICE, "activating secondary connection '%s (%s)' for base connection '%s (%s)'",
 		       nm_settings_connection_get_id (sett_conn), sec_uuid,
@@ -1712,6 +1740,7 @@ activate_secondary_connections (NMPolicy *self,
 		                                     nm_active_connection_get_subject (NM_ACTIVE_CONNECTION (req)),
 		                                     NM_ACTIVATION_TYPE_MANAGED,
 		                                     nm_active_connection_get_activation_reason (NM_ACTIVE_CONNECTION (req)),
+		                                     initial_state_flags,
 		                                     &error);
 		if (ac)
 			secondary_ac_list = g_slist_append (secondary_ac_list, g_object_ref (ac));
@@ -1841,10 +1870,10 @@ device_state_changed (NMDevice *device,
 
 		ip4_config = nm_device_get_ip4_config (device);
 		if (ip4_config)
-			nm_dns_manager_set_ip_config (priv->dns_manager, NM_IP_CONFIG_CAST (ip4_config), NM_DNS_IP_CONFIG_TYPE_DEFAULT);
+			_dns_manager_set_ip_config (priv->dns_manager, NM_IP_CONFIG_CAST (ip4_config), NM_DNS_IP_CONFIG_TYPE_DEFAULT, device);
 		ip6_config = nm_device_get_ip6_config (device);
 		if (ip6_config)
-			nm_dns_manager_set_ip_config (priv->dns_manager, NM_IP_CONFIG_CAST (ip6_config), NM_DNS_IP_CONFIG_TYPE_DEFAULT);
+			_dns_manager_set_ip_config (priv->dns_manager, NM_IP_CONFIG_CAST (ip6_config), NM_DNS_IP_CONFIG_TYPE_DEFAULT, device);
 
 		update_routing_and_dns (self, FALSE);
 
@@ -1872,8 +1901,8 @@ device_state_changed (NMDevice *device,
 			if (blocked_reason != NM_SETTINGS_AUTO_CONNECT_BLOCKED_REASON_NONE) {
 				_LOGD (LOGD_DEVICE, "blocking autoconnect of connection '%s': %s",
 				       nm_settings_connection_get_id (sett_conn),
-				       NM_UTILS_LOOKUP_STR (nm_device_state_reason_to_str,
-				                            nm_device_state_reason_check (reason)));
+				       NM_UTILS_LOOKUP_STR_A (nm_device_state_reason_to_str,
+				                              nm_device_state_reason_check (reason)));
 				nm_settings_connection_autoconnect_blocked_reason_set (sett_conn, blocked_reason, TRUE);
 			}
 		}
@@ -1966,12 +1995,12 @@ device_ip_config_changed (NMDevice *device,
 	/* We catch already all the IP events registering on the device state changes but
 	 * the ones where the IP changes but the device state keep stable (i.e., activated):
 	 * ignore IP config changes but when the device is in activated state.
-	 * Prevents unecessary changes to DNS information.
+	 * Prevents unnecessary changes to DNS information.
 	 */
 	if (nm_device_get_state (device) == NM_DEVICE_STATE_ACTIVATED) {
 		if (old_config != new_config) {
 			if (new_config)
-				nm_dns_manager_set_ip_config (priv->dns_manager, new_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
+				_dns_manager_set_ip_config (priv->dns_manager, new_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT, device);
 			if (old_config)
 				nm_dns_manager_set_ip_config (priv->dns_manager, old_config, NM_DNS_IP_CONFIG_TYPE_REMOVED);
 		}
@@ -2158,6 +2187,8 @@ vpn_connection_retry_after_failure (NMVpnConnection *vpn, NMPolicy *self)
 	                                     nm_active_connection_get_subject (ac),
 	                                     NM_ACTIVATION_TYPE_MANAGED,
 	                                     nm_active_connection_get_activation_reason (ac),
+	                                     (  nm_active_connection_get_state_flags (ac)
+	                                      & NM_ACTIVATION_STATE_FLAG_LIFETIME_BOUND_TO_PROFILE_VISIBILITY),
 	                                     &error)) {
 		_LOGW (LOGD_DEVICE, "VPN '%s' reconnect failed: %s",
 		       nm_settings_connection_get_id (connection),
@@ -2180,12 +2211,47 @@ active_connection_state_changed (NMActiveConnection *active,
 }
 
 static void
+active_connection_keep_alive_changed (NMKeepAlive *keep_alive,
+                                      GParamSpec *pspec,
+                                      NMPolicy *self)
+{
+	NMPolicyPrivate *priv;
+	NMActiveConnection *ac;
+	GError *error = NULL;
+
+	nm_assert (NM_IS_POLICY (self));
+	nm_assert (NM_IS_KEEP_ALIVE (keep_alive));
+	nm_assert (NM_IS_ACTIVE_CONNECTION (nm_keep_alive_get_owner (keep_alive)));
+
+	if (nm_keep_alive_is_alive (keep_alive))
+		return;
+
+	ac = nm_keep_alive_get_owner (keep_alive);
+
+	if (nm_active_connection_get_state (ac) > NM_ACTIVE_CONNECTION_STATE_ACTIVATED)
+		return;
+
+	priv = NM_POLICY_GET_PRIVATE (self);
+
+	if (!nm_manager_deactivate_connection (priv->manager,
+	                                       ac,
+	                                       NM_DEVICE_STATE_REASON_CONNECTION_REMOVED,
+	                                       &error)) {
+		_LOGW (LOGD_DEVICE, "connection '%s' is no longer kept alive, but error deactivating it: %s",
+		       nm_active_connection_get_settings_connection_id (ac),
+		       error->message);
+		g_clear_error (&error);
+	}
+}
+
+static void
 active_connection_added (NMManager *manager,
                          NMActiveConnection *active,
                          gpointer user_data)
 {
 	NMPolicyPrivate *priv = user_data;
 	NMPolicy *self = _PRIV_TO_SELF (priv);
+	NMKeepAlive *keep_alive;
 
 	if (NM_IS_VPN_CONNECTION (active)) {
 		g_signal_connect (active, NM_VPN_CONNECTION_INTERNAL_STATE_CHANGED,
@@ -2196,9 +2262,18 @@ active_connection_added (NMManager *manager,
 		                  self);
 	}
 
+	keep_alive = nm_active_connection_get_keep_alive (active);
+
+	nm_keep_alive_arm (keep_alive);
+
 	g_signal_connect (active, "notify::" NM_ACTIVE_CONNECTION_STATE,
 	                  G_CALLBACK (active_connection_state_changed),
 	                  self);
+	g_signal_connect (keep_alive,
+	                  "notify::" NM_KEEP_ALIVE_ALIVE,
+	                  G_CALLBACK (active_connection_keep_alive_changed),
+	                  self);
+	active_connection_keep_alive_changed (keep_alive, NULL, self);
 }
 
 static void
@@ -2217,6 +2292,9 @@ active_connection_removed (NMManager *manager,
 	                                      self);
 	g_signal_handlers_disconnect_by_func (active,
 	                                      active_connection_state_changed,
+	                                      self);
+	g_signal_handlers_disconnect_by_func (nm_active_connection_get_keep_alive (active),
+	                                      active_connection_keep_alive_changed,
 	                                      self);
 }
 
@@ -2355,12 +2433,12 @@ _deactivate_if_active (NMPolicy *self, NMSettingsConnection *connection)
 {
 	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
 	NMActiveConnection *ac;
-	const CList *tmp_list;
+	const CList *tmp_list, *tmp_safe;
 	GError *error = NULL;
 
 	nm_assert (NM_IS_SETTINGS_CONNECTION (connection));
 
-	nm_manager_for_each_active_connection (priv->manager, ac, tmp_list) {
+	nm_manager_for_each_active_connection_safe (priv->manager, ac, tmp_list, tmp_safe) {
 
 		if (   nm_active_connection_get_settings_connection (ac) == connection
 		    && (nm_active_connection_get_state (ac) <= NM_ACTIVE_CONNECTION_STATE_ACTIVATED)) {
@@ -2401,8 +2479,7 @@ connection_flags_changed (NMSettings *settings,
 	                  NM_SETTINGS_CONNECTION_INT_FLAGS_VISIBLE)) {
 		if (!nm_settings_connection_autoconnect_is_blocked (connection))
 			schedule_activate_all (self);
-	} else
-		_deactivate_if_active (self, connection);
+	}
 }
 
 static void

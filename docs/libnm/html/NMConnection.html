@@ -1239,8 +1239,8 @@ nm_connection_clear_secrets_with_flags
 <tr>
 <td class="parameter_name"><p>func</p></td>
 <td class="parameter_description"><p>function to be called to determine whether a
-specific secret should be cleared or not. </p></td>
-<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>]</span></td>
+specific secret should be cleared or not. If <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>, all secrets are cleared. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid only during the call to the method."><span class="acronym">scope call</span></acronym>][<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
 </tr>
 <tr>
 <td class="parameter_name"><p>user_data</p></td>
@@ -1500,8 +1500,8 @@ nm_connection_get_settings (<em class="parameter"><code><a class="link" href="NM
 </tr>
 <tr>
 <td class="parameter_name"><p>out_length</p></td>
-<td class="parameter_description"><p>(out): the length of the returned array. </p></td>
-<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
+<td class="parameter_description"><p>the length of the returned array. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
 </tr>
 </tbody>
 </table></div>
@@ -2781,7 +2781,7 @@ nm_connection_get_setting_vxlan (<em class="parameter"><code><a class="link" hre
 <tbody>
 <tr>
 <td class="struct_member_name"><p><a href="https://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="NMConnectionInterface.parent"></a>parent</code></em>;</p></td>
-<td class="struct_member_description"><p>the parent interace struct</p></td>
+<td class="struct_member_description"><p>the parent interface struct</p></td>
 <td class="struct_member_annotations"> </td>
 </tr>
 <tr>

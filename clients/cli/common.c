@@ -25,7 +25,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <sys/ioctl.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -661,12 +660,12 @@ vpn_openconnect_get_secrets (NMConnection *connection, GPtrArray *secrets)
 }
 
 static gboolean
-get_secrets_from_user (const char *request_id,
+get_secrets_from_user (const NmcConfig *nmc_config,
+                       const char *request_id,
                        const char *title,
                        const char *msg,
                        NMConnection *connection,
                        gboolean ask,
-                       gboolean echo_on,
                        GHashTable *pwds_hash,
                        GPtrArray *secrets)
 {
@@ -686,6 +685,8 @@ get_secrets_from_user (const char *request_id,
 			pwd = g_strdup (pwd);
 		} else {
 			if (ask) {
+				gboolean echo_on;
+
 				if (secret->value) {
 					if (!g_strcmp0 (secret->vpn_type, NM_DBUS_INTERFACE ".openconnect")) {
 						/* Do not present and ask user for openconnect secrets, we already have them */
@@ -698,10 +699,16 @@ get_secrets_from_user (const char *request_id,
 				}
 				if (msg)
 					g_print ("%s\n", msg);
-				pwd = nmc_readline_echo (secret->is_secret
-				                         ? echo_on
-				                         : TRUE,
-				                         "%s (%s): ", secret->pretty_name, secret->entry_id);
+
+				echo_on = secret->is_secret
+				          ? nmc_config->show_secrets
+				          : TRUE;
+
+				if (secret->no_prompt_entry_id)
+					pwd = nmc_readline_echo (nmc_config, echo_on, "%s: ", secret->pretty_name);
+				else
+					pwd = nmc_readline_echo (nmc_config, echo_on, "%s (%s): ", secret->pretty_name, secret->entry_id);
+
 				if (!pwd)
 					pwd = g_strdup ("");
 			} else {
@@ -763,15 +770,21 @@ nmc_secrets_requested (NMSecretAgentSimple *agent,
 		g_free (path);
 	}
 
-	success = get_secrets_from_user (request_id, title, msg, connection, nmc->nmc_config.in_editor || nmc->ask,
-	                                 nmc->nmc_config.show_secrets, nmc->pwds_hash, secrets);
+	success = get_secrets_from_user (&nmc->nmc_config,
+	                                 request_id,
+	                                 title,
+	                                 msg,
+	                                 connection,
+	                                 nmc->nmc_config.in_editor || nmc->ask,
+	                                 nmc->pwds_hash,
+	                                 secrets);
 	if (success)
 		nm_secret_agent_simple_response (agent, request_id, secrets);
 	else {
 		/* Unregister our secret agent on failure, so that another agent
 		 * may be tried */
 		if (nmc->secret_agent) {
-			nm_secret_agent_old_unregister (nmc->secret_agent, NULL, NULL);
+			nm_secret_agent_old_unregister (NM_SECRET_AGENT_OLD (nmc->secret_agent), NULL, NULL);
 			g_clear_object (&nmc->secret_agent);
 		}
 	}
@@ -847,7 +860,8 @@ stdin_ready_cb (GIOChannel * io, GIOCondition condition, gpointer data)
 }
 
 static char *
-nmc_readline_helper (const char *prompt)
+nmc_readline_helper (const NmcConfig *nmc_config,
+                     const char *prompt)
 {
 	GIOChannel *io = NULL;
 	guint io_watch_id;
@@ -884,7 +898,7 @@ read_again:
 	if (nmc_seen_sigint ()) {
 		/* Ctrl-C */
 		nmc_clear_sigint ();
-		if (   nm_cli.nmc_config.in_editor
+		if (   nmc_config->in_editor
 		    || (rl_string  && *rl_string)) {
 			/* In editor, or the line is not empty */
 			/* Call readline again to get new prompt (repeat) */
@@ -926,22 +940,19 @@ read_again:
  * this function returns NULL.
  */
 char *
-nmc_readline (const char *prompt_fmt, ...)
+nmc_readline (const NmcConfig *nmc_config,
+              const char *prompt_fmt,
+              ...)
 {
 	va_list args;
-	char *prompt, *str;
+	gs_free char *prompt = NULL;
 
 	rl_initialize ();
 
 	va_start (args, prompt_fmt);
 	prompt = g_strdup_vprintf (prompt_fmt, args);
 	va_end (args);
-
-	str = nmc_readline_helper (prompt);
-
-	g_free (prompt);
-
-	return str;
+	return nmc_readline_helper (nmc_config, prompt);
 }
 
 static void
@@ -976,10 +987,14 @@ nmc_secret_redisplay (void)
  * nmc_readline(TRUE, ...) == nmc_readline(...)
  */
 char *
-nmc_readline_echo (gboolean echo_on, const char *prompt_fmt, ...)
+nmc_readline_echo (const NmcConfig *nmc_config,
+                   gboolean echo_on,
+                   const char *prompt_fmt,
+                   ...)
 {
 	va_list args;
-	char *prompt, *str;
+	gs_free char *prompt = NULL;
+	char *str;
 	HISTORY_STATE *saved_history;
 	HISTORY_STATE passwd_history = { 0, };
 
@@ -996,9 +1011,7 @@ nmc_readline_echo (gboolean echo_on, const char *prompt_fmt, ...)
 		rl_redisplay_function = nmc_secret_redisplay;
 	}
 
-	str = nmc_readline_helper (prompt);
-
-	g_free (prompt);
+	str = nmc_readline_helper (nmc_config, prompt);
 
 	/* Restore the non-hiding behavior */
 	if (!echo_on) {
@@ -1336,23 +1349,39 @@ nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *cmd, int argc, char
 /**
  * nmc_complete_strings:
  * @prefix: a string to match
- * @...: a %NULL-terminated list of candidate strings
+ * @nargs: the number of elements in @args. Or -1 if @args is a NULL terminated
+ *   strv array.
+ * @args: the argument list. If @nargs is not -1, then some elements may
+ *   be %NULL to indicate to silently skip the values.
  *
  * Prints all the matching candidates for completion. Useful when there's
  * no better way to suggest completion other than a hardcoded string list.
  */
 void
-nmc_complete_strings (const char *prefix, ...)
+nmc_complete_strv (const char *prefix, gssize nargs, const char *const*args)
 {
-	va_list args;
-	const char *candidate;
+	gsize i, n;
 
-	va_start (args, prefix);
-	while ((candidate = va_arg (args, const char *))) {
-		if (!*prefix || matches (prefix, candidate))
-			g_print ("%s\n", candidate);
+	if (prefix && !prefix[0])
+		prefix = NULL;
+
+	if (nargs < 0) {
+		nm_assert (nargs == -1);
+		n = NM_PTRARRAY_LEN (args);
+	} else
+		n = (gsize) nargs;
+
+	for (i = 0; i < n; i++) {
+		const char *candidate = args[i];
+
+		if (!candidate)
+			continue;
+		if (   prefix
+		    && !matches (prefix, candidate))
+			continue;
+
+		g_print ("%s\n", candidate);
 	}
-	va_end (args);
 }
 
 /**
@@ -1384,3 +1413,14 @@ nmc_error_get_simple_message (GError *error)
 	else
 		return error->message;
 }
+
+/*****************************************************************************/
+
+NM_UTILS_LOOKUP_STR_DEFINE (nm_connectivity_to_string, NMConnectivityState,
+	NM_UTILS_LOOKUP_DEFAULT (N_("unknown")),
+	NM_UTILS_LOOKUP_ITEM (NM_CONNECTIVITY_NONE,    N_("none")),
+	NM_UTILS_LOOKUP_ITEM (NM_CONNECTIVITY_PORTAL,  N_("portal")),
+	NM_UTILS_LOOKUP_ITEM (NM_CONNECTIVITY_LIMITED, N_("limited")),
+	NM_UTILS_LOOKUP_ITEM (NM_CONNECTIVITY_FULL,    N_("full")),
+	NM_UTILS_LOOKUP_ITEM_IGNORE (NM_CONNECTIVITY_UNKNOWN),
+);

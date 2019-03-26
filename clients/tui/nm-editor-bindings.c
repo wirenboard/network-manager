@@ -27,12 +27,11 @@
 
 #include "nm-default.h"
 
+#include "nm-editor-bindings.h"
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdlib.h>
-#include <string.h>
-
-#include "nm-editor-bindings.h"
 
 static void
 value_transform_string_int (const GValue *src_value,
@@ -516,7 +515,7 @@ ip_route_transform_from_metric_string (GBinding     *binding,
  * @addr_family: the IP address family
  * @source: the source object
  * @source_property: the source property
- * @dest_target: the target object for the route's destionation
+ * @dest_target: the target object for the route's destination
  * @dest_target_property: the property on @dest_target
  * @next_hop_target: the target object for the route's next hop
  * @next_hop_target_property: the property on @next_hop_target

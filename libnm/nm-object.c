@@ -23,7 +23,6 @@
 
 #include "nm-object.h"
 
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -612,7 +611,7 @@ handle_object_property (NMObject *self, const char *property_name, GVariant *val
 		 *
 		 * NOTE: We've ignored this before and the server hits the condition
 		 * more often that it should. Given we're able to recover from
-		 * ther error, let's lower the severity of the log message to
+		 * the error, let's lower the severity of the log message to
 		 * avoid unnecessarily bothering the user. This can be removed
 		 * once the issue is fixed on the server. */
 #if NM_MORE_ASSERTS

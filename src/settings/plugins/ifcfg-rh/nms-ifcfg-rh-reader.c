@@ -23,13 +23,11 @@
 #include "nms-ifcfg-rh-reader.h"
 
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <sys/inotify.h>
-#include <errno.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -189,7 +187,7 @@ _secret_password_raw_to_bytes (const char *ifcfg_key,
 		password_raw += 2;
 
 	secret = nm_secret_buf_new (strlen (password_raw) / 2 + 3);
-	if (!_nm_utils_hexstr2bin_full (password_raw, FALSE, FALSE, ":", 0, secret->bin, secret->len, &len)) {
+	if (!nm_utils_hexstr2bin_full (password_raw, FALSE, FALSE, ":", 0, secret->bin, secret->len, &len)) {
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 		             "Invalid hex password in %s",
 		             ifcfg_key);
@@ -670,7 +668,7 @@ read_full_ip4_address (shvarFile *ifcfg,
 		                       &has_key, &a, error))
 			return FALSE;
 		if (has_key)
-			*out_gateway = g_strdup (nm_utils_inet4_ntop (a, inet_buf));
+			*out_gateway = nm_utils_inet4_ntop_dup (a);
 	}
 
 	/* Prefix */
@@ -801,7 +799,7 @@ enum {
  * @options_route: (in-out): when line is from the OPTIONS setting, this is a pre-created
  *   route object that is completed with the settings from options. Otherwise,
  *   it shall point to %NULL and a new route is created and returned.
- * @out_route: (out): (transfer-full): (allow-none): the parsed %NMIPRoute instance.
+ * @out_route: (out) (transfer-full) (allow-none): the parsed %NMIPRoute instance.
  *   In case a @options_route is passed in, it returns the input route that was modified
  *   in-place. But the caller must unref the returned route in either case.
  * @error: the failure description.
@@ -810,7 +808,7 @@ enum {
  * setting, and one for initscript's handle_ip_file(), which takes the lines
  * and passes them to `ip route add`. The modes are similar, but certain properties
  * are not allowed for OPTIONS.
- * The mode is differenciated by having an @options_route argument.
+ * The mode is differentiated by having an @options_route argument.
  *
  * Returns: returns a negative errno on failure. On success, it returns 0
  *   and @out_route.
@@ -873,7 +871,7 @@ parse_route_line (const char *line,
 	};
 
 	nm_assert (line);
-	nm_assert (NM_IN_SET (addr_family, AF_INET, AF_INET6));
+	nm_assert_addr_family (addr_family);
 	nm_assert (!options_route || nm_ip_route_get_family (options_route) == addr_family);
 
 	/* initscripts read the legacy route file line-by-line and
@@ -1018,6 +1016,7 @@ parse_line_type_addr_with_prefix:
 			if (info->type == PARSE_LINE_TYPE_ADDR) {
 				if (!nm_utils_parse_inaddr_bin (addr_family,
 				                                s,
+				                                NULL,
 				                                &info->v.addr.addr)) {
 					if (   info == &infos[PARSE_LINE_ATTR_ROUTE_VIA]
 					    && nm_streq (s, "(null)")) {
@@ -1045,6 +1044,7 @@ parse_line_type_addr_with_prefix:
 					prefix = 0;
 				} else if (!nm_utils_parse_inaddr_prefix_bin (addr_family,
 				                                              s,
+				                                              NULL,
 				                                              &info->v.addr.addr,
 				                                              &prefix)) {
 					g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
@@ -1150,7 +1150,7 @@ next:
 			                                                    : ""));
 			break;
 		case PARSE_LINE_TYPE_FLAG:
-			/* NOTE: the flag (for "onlink") only allows to explictly set "TRUE".
+			/* NOTE: the flag (for "onlink") only allows to explicitly set "TRUE".
 			 * There is no way to express an explicit "FALSE" setting
 			 * of this attribute, hence, the file format cannot encode
 			 * that configuration. */
@@ -1425,8 +1425,8 @@ make_user_setting (shvarFile *ifcfg)
 			has_user_data = TRUE;
 	}
 
-	return has_user_data
-	       ? g_steal_pointer (&s_user)
+	return   has_user_data
+	       ? NM_SETTING (g_steal_pointer (&s_user))
 	       : NULL;
 }
 
@@ -1527,7 +1527,6 @@ make_ip4_setting (shvarFile *ifcfg,
 	gboolean never_default;
 	gint64 timeout;
 	int priority;
-	char inet_buf[NM_UTILS_INET_ADDRSTRLEN];
 	const char *const *item;
 	guint32 route_table;
 
@@ -1612,7 +1611,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	              NULL);
 
 	if (nm_streq (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED))
-		return g_steal_pointer (&s_ip4);
+		return NM_SETTING (g_steal_pointer (&s_ip4));
 
 	/* Handle DHCP settings */
 	nm_clear_g_free (&value);
@@ -1679,7 +1678,7 @@ make_ip4_setting (shvarFile *ifcfg,
 					PARSE_WARNING ("ignoring GATEWAY (/etc/sysconfig/network) for %s "
 					               "because the connection has no static addresses", f);
 				} else
-					gateway = g_strdup (nm_utils_inet4_ntop (a, inet_buf));
+					gateway = nm_utils_inet4_ntop_dup (a);
 			}
 		}
 	}
@@ -1803,7 +1802,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	}
 	g_object_set (s_ip4, NM_SETTING_IP_CONFIG_DAD_TIMEOUT, (int) timeout, NULL);
 
-	return g_steal_pointer (&s_ip4);
+	return NM_SETTING (g_steal_pointer (&s_ip4));
 }
 
 static void
@@ -2945,7 +2944,7 @@ make_wep_setting (shvarFile *ifcfg,
 		return NULL;
 	}
 
-	return g_steal_pointer (&s_wsec);
+	return NM_SETTING (g_steal_pointer (&s_wsec));
 }
 
 static gboolean
@@ -3160,7 +3159,7 @@ eap_tls_reader (const char *eap_method,
 	/* FIXME: writer does not actually write IEEE_8021X_CLIENT_CERT_PASSWORD and other
 	 * certificate related passwords. It should, because otherwise persisting such profiles
 	 * to ifcfg looses information. As this currently only matters for PKCS11 URIs, it seems
-	 * a seldomly used feature so that it is not fixed yet. */
+	 * a seldom used feature so that it is not fixed yet. */
 	_secret_set_from_ifcfg (s_8021x,
 	                        ifcfg,
 	                        keys_ifcfg,
@@ -3535,7 +3534,7 @@ fill_8021x (shvarFile *ifcfg,
 				goto next;
 
 			/* Some EAP methods don't provide keying material, thus they
-			 * cannot be used with WiFi unless they are an inner method
+			 * cannot be used with Wi-Fi unless they are an inner method
 			 * used with TTLS or PEAP or whatever.
 			 */
 			if (wifi && eap->wifi_phase2_only) {
@@ -3611,7 +3610,7 @@ make_wpa_setting (shvarFile *ifcfg,
 	gs_unref_object NMSettingWirelessSecurity *wsec = NULL;
 	gs_free char *value = NULL;
 	const char *v;
-	gboolean wpa_psk = FALSE, wpa_eap = FALSE, ieee8021x = FALSE;
+	gboolean wpa_psk = FALSE, wpa_sae = FALSE, wpa_eap = FALSE, ieee8021x = FALSE;
 	int i_val;
 	GError *local = NULL;
 
@@ -3619,9 +3618,10 @@ make_wpa_setting (shvarFile *ifcfg,
 
 	v = svGetValueStr (ifcfg, "KEY_MGMT", &value);
 	wpa_psk = nm_streq0 (v, "WPA-PSK");
+	wpa_sae = nm_streq0 (v, "SAE");
 	wpa_eap = nm_streq0 (v, "WPA-EAP");
 	ieee8021x = nm_streq0 (v, "IEEE8021X");
-	if (!wpa_psk && !wpa_eap && !ieee8021x)
+	if (!wpa_psk && !wpa_sae && !wpa_eap && !ieee8021x)
 		return NULL; /* Not WPA or Dynamic WEP */
 
 	/* WPS */
@@ -3635,7 +3635,7 @@ make_wpa_setting (shvarFile *ifcfg,
 	              NULL);
 
 	/* Pairwise and Group ciphers (only relevant for WPA/RSN) */
-	if (wpa_psk || wpa_eap) {
+	if (wpa_psk || wpa_sae || wpa_eap) {
 		fill_wpa_ciphers (ifcfg, wsec, FALSE, adhoc);
 		fill_wpa_ciphers (ifcfg, wsec, TRUE, adhoc);
 	}
@@ -3658,7 +3658,7 @@ make_wpa_setting (shvarFile *ifcfg,
 			nm_setting_wireless_security_add_proto (wsec, "rsn");
 	}
 
-	if (wpa_psk) {
+	if (wpa_psk || wpa_sae) {
 		NMSettingSecretFlags psk_flags;
 
 		psk_flags = _secret_read_ifcfg_flags (ifcfg, "WPA_PSK_FLAGS");
@@ -3679,8 +3679,12 @@ make_wpa_setting (shvarFile *ifcfg,
 
 		if (adhoc)
 			g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-none", NULL);
-		else
+		else if (wpa_psk)
 			g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-psk", NULL);
+		else if (wpa_sae)
+			g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "sae", NULL);
+		else
+			g_assert_not_reached ();
 	} else if (wpa_eap || ieee8021x) {
 		/* Adhoc mode is mutually exclusive with any 802.1x-based authentication */
 		if (adhoc) {
@@ -3945,9 +3949,8 @@ make_wireless_setting (shvarFile *ifcfg,
 
 	value = svGetValueStr_cp (ifcfg, "CHANNEL");
 	if (value) {
-		errno = 0;
 		chan = _nm_utils_ascii_str_to_int64 (value, 10, 1, 196, 0);
-		if (errno || (chan == 0)) {
+		if (chan == 0) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Invalid wireless channel '%s'", value);
 			g_free (value);
@@ -4991,7 +4994,7 @@ handle_bridge_option (NMSetting *setting,
 			} else {
 				v = _nm_utils_ascii_str_to_int64 (value, 10, 0, 1, -1);
 				if (v == -1) {
-					error_message = g_strerror (errno);
+					error_message = nm_strerror_native (errno);
 					goto warn;
 				}
 			}
@@ -5003,7 +5006,7 @@ handle_bridge_option (NMSetting *setting,
 		case G_TYPE_UINT:
 			v = _nm_utils_ascii_str_to_int64 (value, 10, 0, G_MAXUINT, -1);
 			if (v == -1) {
-				error_message = g_strerror (errno);
+				error_message = nm_strerror_native (errno);
 				goto warn;
 			}
 			if (!nm_g_object_set_property_uint (G_OBJECT (setting), m[i].property_name, v, NULL)) {
@@ -5228,16 +5231,14 @@ is_vlan_device (const char *name, shvarFile *parsed)
 static gboolean
 is_wifi_device (const char *name, shvarFile *parsed)
 {
-	int ifindex;
+	const NMPlatformLink *pllink;
 
 	g_return_val_if_fail (name != NULL, FALSE);
 	g_return_val_if_fail (parsed != NULL, FALSE);
 
-	ifindex = nm_platform_link_get_ifindex (NM_PLATFORM_GET, name);
-	if (ifindex == 0)
-		return FALSE;
-
-	return nm_platform_link_get_type (NM_PLATFORM_GET, ifindex) == NM_LINK_TYPE_WIFI;
+	pllink = nm_platform_link_get_by_ifname (NM_PLATFORM_GET, name);
+	return    pllink
+	       && pllink->type == NM_LINK_TYPE_WIFI;
 }
 
 static void
@@ -5383,7 +5384,7 @@ make_vlan_setting (shvarFile *ifcfg,
 	parse_prio_map_list (s_vlan, ifcfg, "VLAN_INGRESS_PRIORITY_MAP", NM_VLAN_INGRESS_MAP);
 	parse_prio_map_list (s_vlan, ifcfg, "VLAN_EGRESS_PRIORITY_MAP", NM_VLAN_EGRESS_MAP);
 
-	return g_steal_pointer (&s_vlan);
+	return NM_SETTING (g_steal_pointer (&s_vlan));
 }
 
 static NMConnection *

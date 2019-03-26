@@ -89,6 +89,192 @@ struct _NMPCache {
 
 /*****************************************************************************/
 
+int
+nm_sock_addr_union_cmp (const NMSockAddrUnion *a, const NMSockAddrUnion *b)
+{
+	nm_assert (!a || NM_IN_SET (a->sa.sa_family, AF_UNSPEC, AF_INET, AF_INET6));
+	nm_assert (!b || NM_IN_SET (b->sa.sa_family, AF_UNSPEC, AF_INET, AF_INET6));
+
+	NM_CMP_SELF (a, b);
+
+	NM_CMP_FIELD (a, b, sa.sa_family);
+	switch (a->sa.sa_family) {
+	case AF_INET:
+		NM_CMP_DIRECT (ntohl (a->in.sin_addr.s_addr), ntohl (b->in.sin_addr.s_addr));
+		NM_CMP_DIRECT (htons (a->in.sin_port), htons (b->in.sin_port));
+		break;
+	case AF_INET6:
+		NM_CMP_DIRECT_IN6ADDR (&a->in6.sin6_addr, &b->in6.sin6_addr);
+		NM_CMP_DIRECT (htons (a->in6.sin6_port), htons (b->in6.sin6_port));
+		NM_CMP_FIELD (a, b, in6.sin6_scope_id);
+		NM_CMP_FIELD (a, b, in6.sin6_flowinfo);
+		break;
+	}
+	return 0;
+}
+
+void
+nm_sock_addr_union_hash_update (const NMSockAddrUnion *a, NMHashState *h)
+{
+	if (!a) {
+		nm_hash_update_val (h, 1241364739u);
+		return;
+	}
+
+	nm_assert (NM_IN_SET (a->sa.sa_family, AF_UNSPEC, AF_INET, AF_INET6));
+
+	switch (a->sa.sa_family) {
+	case AF_INET:
+		nm_hash_update_vals (h,
+		                     a->in.sin_family,
+		                     a->in.sin_addr.s_addr,
+		                     a->in.sin_port);
+		return;
+	case AF_INET6:
+		nm_hash_update_vals (h,
+		                     a->in6.sin6_family,
+		                     a->in6.sin6_addr,
+		                     a->in6.sin6_port,
+		                     a->in6.sin6_scope_id,
+		                     a->in6.sin6_flowinfo);
+		return;
+	default:
+		nm_hash_update_val (h, a->sa.sa_family);
+		return;
+	}
+}
+
+/**
+ * nm_sock_addr_union_cpy:
+ * @dst: the destination #NMSockAddrUnion. It will always be fully initialized,
+ *   to one of the address families AF_INET, AF_INET6, or AF_UNSPEC (in case of
+ *   error).
+ * @src: (allow-none): the source buffer with an sockaddr to copy. It may be unaligned in
+ *   memory. If not %NULL, the buffer must be at least large enough to contain
+ *   sa.sa_family, and then, depending on sa.sa_family, it must be large enough
+ *   to hold struct sockaddr_in or struct sockaddr_in6.
+ *
+ * @dst will always be fully initialized (including setting all un-used bytes to zero).
+ */
+void
+nm_sock_addr_union_cpy (NMSockAddrUnion *dst,
+                        gconstpointer src /* unaligned (const NMSockAddrUnion *) */)
+{
+	struct sockaddr sa;
+	gsize src_len;
+
+	nm_assert (dst);
+
+	*dst = (NMSockAddrUnion) NM_SOCK_ADDR_UNION_INIT_UNSPEC;
+
+	if (!src)
+		return;
+
+	memcpy (&sa.sa_family, &((struct sockaddr *) src)->sa_family, sizeof (sa.sa_family));
+
+	if (sa.sa_family == AF_INET)
+		src_len = sizeof (struct sockaddr_in);
+	else if (sa.sa_family == AF_INET6)
+		src_len = sizeof (struct sockaddr_in6);
+	else
+		return;
+
+	memcpy (dst, src, src_len);
+	nm_assert (dst->sa.sa_family == sa.sa_family);
+}
+
+/**
+ * nm_sock_addr_union_cpy_untrusted:
+ * @dst: the destination #NMSockAddrUnion. It will always be fully initialized,
+ *   to one of the address families AF_INET, AF_INET6, or AF_UNSPEC (in case of
+ *   error).
+ * @src: the source buffer with an sockaddr to copy. It may be unaligned in
+ *   memory.
+ * @src_len: the length of @src in bytes.
+ *
+ * The function requires @src_len to be either sizeof(struct sockaddr_in) or sizeof (struct sockaddr_in6).
+ * If that's the case, then @src will be interpreted as such structure (unaligned), and
+ * accessed. It will check sa.sa_family to match the expected sizes, and if it does, the
+ * struct will be copied.
+ *
+ * On any failure, @dst will be set to sa.sa_family AF_UNSPEC.
+ * @dst will always be fully initialized (including setting all un-used bytes to zero).
+ */
+void
+nm_sock_addr_union_cpy_untrusted (NMSockAddrUnion *dst,
+                                  gconstpointer src /* unaligned (const NMSockAddrUnion *) */,
+                                  gsize src_len)
+{
+	int f_expected;
+	struct sockaddr sa;
+
+	nm_assert (dst);
+
+	*dst = (NMSockAddrUnion) NM_SOCK_ADDR_UNION_INIT_UNSPEC;
+
+	if (src_len == sizeof (struct sockaddr_in))
+		f_expected = AF_INET;
+	else if (src_len == sizeof (struct sockaddr_in6))
+		f_expected = AF_INET6;
+	else
+		return;
+
+	memcpy (&sa.sa_family, &((struct sockaddr *) src)->sa_family, sizeof (sa.sa_family));
+
+	if (sa.sa_family != f_expected)
+		return;
+
+	memcpy (dst, src, src_len);
+	nm_assert (dst->sa.sa_family == sa.sa_family);
+}
+
+const char *
+nm_sock_addr_union_to_string (const NMSockAddrUnion *sa,
+                              char *buf,
+                              gsize len)
+{
+	char s_addr[NM_UTILS_INET_ADDRSTRLEN];
+	char s_scope_id[40];
+
+	if (!nm_utils_to_string_buffer_init_null (sa, &buf, &len))
+		return buf;
+
+	/* maybe we should use getnameinfo(), but here implement it ourself.
+	 *
+	 * We want to see the actual bytes for debugging (as we understand them),
+	 * and now what getnameinfo() makes of it. Also, it's simpler this way. */
+
+	switch (sa->sa.sa_family) {
+	case AF_INET:
+		g_snprintf (buf, len,
+		            "%s:%u",
+		            nm_utils_inet4_ntop (sa->in.sin_addr.s_addr, s_addr),
+		            (guint) htons (sa->in.sin_port));
+		break;
+	case AF_INET6:
+		g_snprintf (buf, len,
+		            "[%s%s]:%u",
+		            nm_utils_inet6_ntop (&sa->in6.sin6_addr, s_addr),
+		            (  sa->in6.sin6_scope_id != 0
+		             ? nm_sprintf_buf (s_scope_id, "%u", sa->in6.sin6_scope_id)
+		             : ""),
+		            (guint) htons (sa->in6.sin6_port));
+		break;
+	case AF_UNSPEC:
+		g_snprintf (buf, len, "unspec");
+		break;
+	default:
+		g_snprintf (buf, len,
+		            "{addr-family:%u}",
+		            (unsigned) sa->sa.sa_family);
+		break;
+	}
+
+	return buf;
+}
+
+/*****************************************************************************/
+
 static const NMDedupMultiIdxTypeClass _dedup_multi_idx_type_class;
 
 static void
@@ -392,14 +578,9 @@ _wireguard_peer_hash_update (const NMPWireGuardPeer *peer,
 	                     peer->rx_bytes,
 	                     peer->tx_bytes,
 	                     peer->last_handshake_time.tv_sec,
-	                     peer->last_handshake_time.tv_nsec,
-	                     peer->endpoint_port,
-	                     peer->endpoint_family);
+	                     peer->last_handshake_time.tv_nsec);
 
-	if (peer->endpoint_family == AF_INET)
-		nm_hash_update_val (h, peer->endpoint_addr.addr4);
-	else if (peer->endpoint_family == AF_INET6)
-		nm_hash_update_val (h, peer->endpoint_addr.addr6);
+	nm_sock_addr_union_hash_update (&peer->endpoint, h);
 
 	for (i = 0; i < peer->allowed_ips_len; i++)
 		_wireguard_allowed_ip_hash_update (&peer->allowed_ips[i], h);
@@ -419,15 +600,11 @@ _wireguard_peer_cmp (const NMPWireGuardPeer *a,
 	NM_CMP_FIELD (a, b, tx_bytes);
 	NM_CMP_FIELD (a, b, allowed_ips_len);
 	NM_CMP_FIELD (a, b, persistent_keepalive_interval);
-	NM_CMP_FIELD (a, b, endpoint_port);
-	NM_CMP_FIELD (a, b, endpoint_family);
+	NM_CMP_FIELD (a, b, endpoint.sa.sa_family);
 	NM_CMP_FIELD_MEMCMP (a, b, public_key);
 	NM_CMP_FIELD_MEMCMP (a, b, preshared_key);
 
-	if (a->endpoint_family == AF_INET)
-		NM_CMP_FIELD (a, b, endpoint_addr.addr4);
-	else if (a->endpoint_family == AF_INET6)
-		NM_CMP_FIELD_IN6ADDR (a, b, endpoint_addr.addr6);
+	NM_CMP_RETURN (nm_sock_addr_union_cmp (&a->endpoint, &b->endpoint));
 
 	for (i = 0; i < a->allowed_ips_len; i++) {
 		NM_CMP_RETURN (_wireguard_allowed_ip_cmp (&a->allowed_ips[i],
@@ -630,9 +807,12 @@ _nmp_object_stackinit_from_class (NMPObject *obj, const NMPClass *klass)
 	nm_assert (obj);
 	nm_assert (klass);
 
-	memset (obj, 0, sizeof (NMPObject));
-	obj->_class = klass;
-	obj->parent._ref_count = NM_OBJ_REF_COUNT_STACKINIT;
+	*obj = (NMPObject) {
+		.parent = {
+			.klass      = (const NMDedupMultiObjClass *) klass,
+			._ref_count = NM_OBJ_REF_COUNT_STACKINIT,
+		},
+	};
 }
 
 static NMPObject *
@@ -644,9 +824,12 @@ _nmp_object_stackinit_from_type (NMPObject *obj, NMPObjectType obj_type)
 	klass = nmp_class_from_type (obj_type);
 	nm_assert (klass);
 
-	memset (obj, 0, sizeof (NMPObject));
-	obj->_class = klass;
-	obj->parent._ref_count = NM_OBJ_REF_COUNT_STACKINIT;
+	*obj = (NMPObject) {
+		.parent = {
+			.klass      = (const NMDedupMultiObjClass *) klass,
+			._ref_count = NM_OBJ_REF_COUNT_STACKINIT,
+		},
+	};
 	return obj;
 }
 
@@ -897,11 +1080,9 @@ static const char * \
 _vt_cmd_plobj_to_string_id_##type (const NMPlatformObject *_obj, char *buf, gsize buf_len) \
 { \
 	plat_type *const obj = (plat_type *) _obj; \
-	char buf1[NM_UTILS_INET_ADDRSTRLEN]; \
-	char buf2[NM_UTILS_INET_ADDRSTRLEN]; \
+	_nm_unused char buf1[NM_UTILS_INET_ADDRSTRLEN]; \
+	_nm_unused char buf2[NM_UTILS_INET_ADDRSTRLEN]; \
 	\
-	(void) buf1; \
-	(void) buf2; \
 	g_snprintf (buf, buf_len, \
 	            __VA_ARGS__); \
 	return buf; \
@@ -1364,13 +1545,13 @@ _vt_cmd_plobj_id_hash_update (tfilter, NMPlatformTfilter, {
 	                     obj->handle);
 })
 
-static inline void
+static void
 _vt_cmd_plobj_hash_update_ip4_route (const NMPlatformObject *obj, NMHashState *h)
 {
 	return nm_platform_ip4_route_hash_update ((const NMPlatformIP4Route *) obj, NM_PLATFORM_IP_ROUTE_CMP_TYPE_FULL, h);
 }
 
-static inline void
+static void
 _vt_cmd_plobj_hash_update_ip6_route (const NMPlatformObject *obj, NMHashState *h)
 {
 	return nm_platform_ip6_route_hash_update ((const NMPlatformIP6Route *) obj, NM_PLATFORM_IP_ROUTE_CMP_TYPE_FULL, h);
@@ -1637,7 +1818,7 @@ nmp_cache_link_connected_needs_toggle (const NMPCache *cache, const NMPObject *m
  * The flag obj->link.connected depends on the state of other links in the
  * @cache. See also nmp_cache_link_connected_needs_toggle(). Given an ifindex
  * of a master, check if the cache contains such a master link that needs
- * toogling of the connected flag.
+ * toggling of the connected flag.
  *
  * Returns: NULL if there is no master link with ifindex @master_ifindex that should be toggled.
  *   Otherwise, return the link object from inside the cache with the given ifindex.
@@ -1976,6 +2157,8 @@ nmp_cache_lookup_link_full (const NMPCache *cache,
 	} else if (!ifname && !match_fn)
 		return NULL;
 	else {
+		const NMPObject *obj_best = NULL;
+
 		if (ifname) {
 			if (strlen (ifname) >= IFNAMSIZ)
 				return NULL;
@@ -1987,16 +2170,21 @@ nmp_cache_lookup_link_full (const NMPCache *cache,
 		nmp_cache_iter_for_each_link (&iter, head_entry, &link) {
 			obj = NMP_OBJECT_UP_CAST (link);
 
-			if (visible_only && !nmp_object_is_visible (obj))
-				continue;
 			if (link_type != NM_LINK_TYPE_NONE && obj->link.type != link_type)
+				continue;
+			if (visible_only && !nmp_object_is_visible (obj))
 				continue;
 			if (match_fn && !match_fn (obj, user_data))
 				continue;
 
-			return obj;
+			/* if there are multiple candidates, prefer the visible ones. */
+			if (   visible_only
+			    || nmp_object_is_visible (obj))
+				return obj;
+			if (!obj_best)
+				obj_best = obj;
 		}
-		return NULL;
+		return obj_best;
 	}
 }
 
@@ -2331,15 +2519,15 @@ nmp_cache_remove_netlink (NMPCache *cache,
  *    afterwards. Hence, during a dump, every update should move the object to the
  *    end of the list, to obtain the correct order. That means, to use NM_DEDUP_MULTI_IDX_MODE_APPEND_FORCE,
  *    instead of NM_DEDUP_MULTI_IDX_MODE_APPEND.
- * @out_obj_old: (allow-none): (out): return the object with same ID as @obj_hand_over,
+ * @out_obj_old: (allow-none) (out): return the object with same ID as @obj_hand_over,
  *    that was in the cache before update. If an object is returned, the caller must
  *    unref it afterwards.
- * @out_obj_new: (allow-none): (out): return the object from the cache after update.
+ * @out_obj_new: (allow-none) (out): return the object from the cache after update.
  *    The caller must unref this object.
  *
  * Returns: how the cache changed.
  *
- * Even if there was no change in the cace (NMP_CACHE_OPS_UNCHANGED), @out_obj_old
+ * Even if there was no change in the cache (NMP_CACHE_OPS_UNCHANGED), @out_obj_old
  * and @out_obj_new will be set accordingly.
  **/
 NMPCacheOpsType
@@ -2610,7 +2798,7 @@ update_done:
 		nm_dedup_multi_entry_reorder (entry_cur, NULL, FALSE);
 		break;
 	default:
-		/* this is an unexecpted case, probably a bug that we need to handle better. */
+		/* this is an unexpected case, probably a bug that we need to handle better. */
 		resync_required = TRUE;
 		break;
 	}
@@ -2732,15 +2920,15 @@ nmp_cache_update_link_master_connected (NMPCache *cache,
 /*****************************************************************************/
 
 void
-nmp_cache_dirty_set_all (NMPCache *cache, NMPObjectType obj_type)
+nmp_cache_dirty_set_all (NMPCache *cache,
+                         const NMPLookup *lookup)
 {
-	NMPObject obj_needle;
-
 	nm_assert (cache);
+	nm_assert (lookup);
 
 	nm_dedup_multi_index_dirty_set_head (cache->multi_idx,
-	                                     _idx_type_get (cache, NMP_CACHE_ID_TYPE_OBJECT_TYPE),
-	                                     _nmp_object_stackinit_from_type (&obj_needle, obj_type));
+	                                     _idx_type_get (cache, lookup->cache_id_type),
+	                                     &lookup->selector_obj);
 }
 
 /*****************************************************************************/
@@ -2789,7 +2977,6 @@ const NMPClass _nmp_classes[NMP_OBJECT_TYPE_MAX] = {
 		.sizeof_data                        = sizeof (NMPObjectLink),
 		.sizeof_public                      = sizeof (NMPlatformLink),
 		.obj_type_name                      = "link",
-		.addr_family                        = AF_UNSPEC,
 		.rtm_gettype                        = RTM_GETLINK,
 		.signal_type_id                     = NM_PLATFORM_SIGNAL_ID_LINK,
 		.signal_type                        = NM_PLATFORM_SIGNAL_LINK_CHANGED,
@@ -3097,7 +3284,7 @@ const NMPClass _nmp_classes[NMP_OBJECT_TYPE_MAX] = {
 		.cmd_obj_dispose                    = _vt_cmd_obj_dispose_lnk_wireguard,
 		.cmd_obj_to_string                  = _vt_cmd_obj_to_string_lnk_wireguard,
 		.cmd_plobj_to_string                = (const char *(*) (const NMPlatformObject *obj, char *buf, gsize len)) nm_platform_lnk_wireguard_to_string,
-		.cmd_plobj_hash_update              = (void (*) (const NMPlatformObject *obj, NMHashState *h)) nm_platform_lnk_vlan_hash_update,
-		.cmd_plobj_cmp                      = (int (*) (const NMPlatformObject *obj1, const NMPlatformObject *obj2)) nm_platform_lnk_vlan_cmp,
+		.cmd_plobj_hash_update              = (void (*) (const NMPlatformObject *obj, NMHashState *h)) nm_platform_lnk_wireguard_hash_update,
+		.cmd_plobj_cmp                      = (int (*) (const NMPlatformObject *obj1, const NMPlatformObject *obj2)) nm_platform_lnk_wireguard_cmp,
 	},
 };
