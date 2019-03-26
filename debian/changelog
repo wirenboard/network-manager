@@ -1,8 +1,11 @@
-network-manager (1.16.0-1) UNRELEASED; urgency=medium
+network-manager (1.16.0-1) experimental; urgency=medium
 
   * New upstream version 1.16.0
+  * Rebase patches
+  * Update symbols file for linm0
+  * Drop migration code from pre-stretch
 
- -- Michael Biebl <biebl@debian.org>  Tue, 26 Mar 2019 23:44:12 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 27 Mar 2019 00:13:49 +0100
 
 network-manager (1.14.6-2) unstable; urgency=medium
 
