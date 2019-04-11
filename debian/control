@@ -52,7 +52,6 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libnm0 (= ${binary:Version}),
-         lsb-base,
          wpasupplicant,
          dbus,
          udev,
