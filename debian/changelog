@@ -1,3 +1,13 @@
+network-manager (1.16.0-2) experimental; urgency=medium
+
+  * Drop dependency on lsb-base.
+    It is only needed when booting with sysvinit and initscripts, but
+    initscripts already Depends on lsb-base (see #864999).
+  * Drop dpkg-dev (>= 1.17.14) Build-Depends.
+    No longer needed as even the version in oldstable is new enough.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 11 Apr 2019 11:07:57 +0200
+
 network-manager (1.16.0-1) experimental; urgency=medium
 
   * New upstream version 1.16.0
