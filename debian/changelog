@@ -1,8 +1,10 @@
-network-manager (1.18.0-1) UNRELEASED; urgency=medium
+network-manager (1.18.0-1) experimental; urgency=medium
 
   * New upstream version 1.18.0
+  * Rebase patches
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Sun, 21 Apr 2019 21:10:59 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 21 Apr 2019 22:28:56 +0200
 
 network-manager (1.16.0-2) experimental; urgency=medium
 
