@@ -79,7 +79,6 @@ Description: network management framework (daemon and userspace tools)
   * ppp: Required for establishing dial-up connections (e.g. via GSM).
   * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
     connection sharing.
-    address configuration.
   * libteam-utils: Network Team driver allows multiple network interfaces to be
     teamed together and act like a single one. This process is called "ethernet
     bonding", "channel teaming" or "link aggregation".
