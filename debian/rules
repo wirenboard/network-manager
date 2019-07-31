@@ -39,7 +39,6 @@ override_dh_auto_configure:
 		--with-libaudit \
 		--with-iwd \
 		--without-dhcpcanon \
-		--without-libnm-glib \
 		--enable-polkit \
 		--enable-polkit-agent \
 		--enable-ppp \
@@ -51,7 +50,6 @@ override_dh_auto_configure:
 		--enable-json-validation \
 		--enable-bluez5-dun \
 		--enable-vala \
-		--disable-config-plugin-ibft \
 		--disable-more-warnings \
 		--disable-modify-system \
 		--disable-ovs
