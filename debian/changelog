@@ -1,8 +1,11 @@
-network-manager (1.19.90-1) UNRELEASED; urgency=medium
+network-manager (1.19.90-1) unstable; urgency=medium
 
   * New upstream version 1.19.90 (1.20 rc1)
+  * Drop obsolete configure flags
+  * Rebase patches
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Wed, 31 Jul 2019 10:54:08 +0200
+ -- Michael Biebl <biebl@debian.org>  Wed, 31 Jul 2019 13:35:47 +0200
 
 network-manager (1.18.0-3) unstable; urgency=medium
 
