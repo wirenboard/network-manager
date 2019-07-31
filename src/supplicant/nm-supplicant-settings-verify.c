@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /* NetworkManager -- Network link manager
  *
  * This program is free software; you can redistribute it and/or modify
@@ -67,8 +66,8 @@ static const struct validate_entry validate_table[] = {
 const char * pairwise_allowed[] = { "CCMP", "TKIP", "NONE", NULL };
 const char * group_allowed[] =    { "CCMP", "TKIP", "WEP104", "WEP40", NULL };
 const char * proto_allowed[] =    { "WPA", "RSN", NULL };
-const char * key_mgmt_allowed[] = { "WPA-PSK", "WPA-PSK-SHA256",
-                                    "WPA-EAP", "WPA-EAP-SHA256",
+const char * key_mgmt_allowed[] = { "WPA-PSK", "WPA-PSK-SHA256", "FT-PSK",
+                                    "WPA-EAP", "WPA-EAP-SHA256", "FT-EAP", "FT-EAP-SHA384",
                                     "FILS-SHA256", "FILS-SHA384",
                                     "IEEE8021X", "WPA-NONE", "SAE",
                                     "NONE", NULL };
@@ -94,7 +93,6 @@ static const struct Opt opt_table[] = {
 	{ "ssid",               TYPE_BYTES,   0, 32,FALSE,  NULL },
 	{ "bssid",              TYPE_KEYWORD, 0, 0, FALSE,  NULL },
 	{ "scan_ssid",          TYPE_INT,     0, 1, FALSE,  NULL },
-	{ "mode",               TYPE_INT,     0, 2, FALSE,  NULL },
 	{ "frequency",          TYPE_INT,     2412, 5825, FALSE,  NULL },
 	{ "auth_alg",           TYPE_KEYWORD, 0, 0, FALSE,  auth_alg_allowed },
 	{ "psk",                TYPE_BYTES,   0, 0, FALSE,  NULL },
@@ -254,6 +252,12 @@ nm_supplicant_settings_verify_setting (const char * key,
 
 	g_return_val_if_fail (key != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
+
+	if (strcmp (key, "mode") == 0) {
+		if (strcmp (value, "1") && strcmp (value, "2") && strcmp (value, "5"))
+			return TYPE_INVALID;
+		return TYPE_INT;
+	}
 
 	for (i = 0; i < opt_count; i++) {
 		if (strcmp (opt_table[i].key, key) != 0)
