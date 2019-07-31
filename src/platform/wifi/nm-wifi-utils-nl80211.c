@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /* NetworkManager -- Network link manager
  *
  * This program is free software; you can redistribute it and/or modify
@@ -103,7 +102,7 @@ _nl80211_alloc_msg (int id, int ifindex, int phy, guint32 cmd, guint32 flags)
 	return g_steal_pointer (&msg);
 
 nla_put_failure:
-	return NULL;
+	g_return_val_if_reached (NULL);
 }
 
 static struct nl_msg *
@@ -200,6 +199,9 @@ nl80211_iface_info_handler (struct nl_msg *msg, void *arg)
 	case NL80211_IFTYPE_STATION:
 		info->mode = NM_802_11_MODE_INFRA;
 		break;
+	case NL80211_IFTYPE_MESH_POINT:
+		info->mode = NM_802_11_MODE_MESH;
+		break;
 	}
 
 	return NL_SKIP;
@@ -242,6 +244,9 @@ wifi_nl80211_set_mode (NMWifiUtils *data, const NM80211Mode mode)
 	case NM_802_11_MODE_AP:
 		NLA_PUT_U32 (msg, NL80211_ATTR_IFTYPE, NL80211_IFTYPE_AP);
 		break;
+	case NM_802_11_MODE_MESH:
+		NLA_PUT_U32 (msg, NL80211_ATTR_IFTYPE, NL80211_IFTYPE_MESH_POINT);
+		break;
 	default:
 		g_assert_not_reached ();
 	}
@@ -250,7 +255,7 @@ wifi_nl80211_set_mode (NMWifiUtils *data, const NM80211Mode mode)
 	return err >= 0;
 
 nla_put_failure:
-	return FALSE;
+	g_return_val_if_reached (FALSE);
 }
 
 static gboolean
@@ -267,7 +272,7 @@ wifi_nl80211_set_powersave (NMWifiUtils *data, guint32 powersave)
 	return err >= 0;
 
 nla_put_failure:
-	return FALSE;
+	g_return_val_if_reached (FALSE);
 }
 
 static int
@@ -365,7 +370,7 @@ wifi_nl80211_set_wake_on_wlan (NMWifiUtils *data, NMSettingWirelessWakeOnWLan wo
 	return err >= 0;
 
 nla_put_failure:
-	return FALSE;
+	g_return_val_if_reached (FALSE);
 }
 
 /* @divisor: pass what value @xbm should be divided by to get dBm */
@@ -642,7 +647,7 @@ nl80211_get_ap_info (NMWifiUtilsNl80211 *self,
 	return;
 
 nla_put_failure:
-	return;
+	g_return_if_reached ();
 }
 
 static guint32
@@ -695,7 +700,7 @@ wifi_nl80211_indicate_addressing_running (NMWifiUtils *data, gboolean running)
 	return err >= 0;
 
 nla_put_failure:
-	return FALSE;
+	g_return_val_if_reached (FALSE);
 }
 
 struct nl80211_device_info {
@@ -893,10 +898,11 @@ static int nl80211_wiphy_info_handler (struct nl_msg *msg, void *arg)
 		int i;
 
 		nla_for_each_nested (nl_mode, tb[NL80211_ATTR_SUPPORTED_IFTYPES], i) {
-			if (nla_type (nl_mode) == NL80211_IFTYPE_AP)
-				info->caps |= NM_WIFI_DEVICE_CAP_AP;
-			else if (nla_type (nl_mode) == NL80211_IFTYPE_ADHOC)
-				info->caps |= NM_WIFI_DEVICE_CAP_ADHOC;
+			switch (nla_type (nl_mode)) {
+			case NL80211_IFTYPE_AP:         info->caps |= NM_WIFI_DEVICE_CAP_AP;    break;
+			case NL80211_IFTYPE_ADHOC:      info->caps |= NM_WIFI_DEVICE_CAP_ADHOC; break;
+			case NL80211_IFTYPE_MESH_POINT: info->caps |= NM_WIFI_DEVICE_CAP_MESH;  break;
+			}
 		}
 	}
 
