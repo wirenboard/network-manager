@@ -62,8 +62,8 @@ Recommends: ppp,
             iptables,
             modemmanager,
             crda,
-            isc-dhcp-client,
-Suggests: libteam-utils
+Suggests: libteam-utils,
+          isc-dhcp-client,
 Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
