@@ -1,3 +1,13 @@
+network-manager (1.19.90-2) unstable; urgency=medium
+
+  * Demote isc-dhcp-client to Suggests.
+    The DHCP client now defaults to "internal". This default can be
+    overridden at run time by setting the main.dhcp option in the
+    configuration file. The old default was "dhclient" and required
+    isc-dhcp-client. (Closes: #933545)
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 01 Aug 2019 10:42:16 +0200
+
 network-manager (1.19.90-1) unstable; urgency=medium
 
   * New upstream version 1.19.90 (1.20 rc1)
