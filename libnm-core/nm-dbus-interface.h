@@ -292,7 +292,7 @@ typedef enum { /*< flags >*/
  * @NM_WIFI_DEVICE_CAP_FREQ_VALID: device reports frequency capabilities
  * @NM_WIFI_DEVICE_CAP_FREQ_2GHZ: device supports 2.4GHz frequencies
  * @NM_WIFI_DEVICE_CAP_FREQ_5GHZ: device supports 5GHz frequencies
- * @NM_WIFI_DEVICE_CAP_MESH: device supports acting as a mesh point
+ * @NM_WIFI_DEVICE_CAP_MESH: device supports acting as a mesh point. Since: 1.20.
  *
  * 802.11 specific device encryption and authentication capabilities.
  **/
@@ -385,7 +385,7 @@ typedef enum { /*< underscore_name=nm_802_11_ap_security_flags, flags >*/
  *   provides connectivity to clients.
  * @NM_802_11_MODE_AP: the device is an access point/hotspot.  Not valid for
  *   access point objects; used only for hotspot mode on the local machine.
- * @NM_802_11_MODE_MESH: the device is a 802.11s mesh point.
+ * @NM_802_11_MODE_MESH: the device is a 802.11s mesh point. Since: 1.20.
  *
  * Indicates the 802.11 mode an access point or device is currently in.
  **/
@@ -673,7 +673,7 @@ typedef enum {
  * NMConnectionMultiConnect:
  * @NM_CONNECTION_MULTI_CONNECT_DEFAULT: indicates that the per-connection
  *   setting is unspecified. In this case, it will fallback to the default
- *   value, which is @NM_CONNECTION_MULTI_CONNECT_SINGLE.
+ *   value, which is %NM_CONNECTION_MULTI_CONNECT_SINGLE.
  * @NM_CONNECTION_MULTI_CONNECT_SINGLE: the connection profile can only
  *   be active once at each moment. Activating a profile that is already active,
  *   will first deactivate it.
@@ -1045,14 +1045,14 @@ typedef enum { /*< flags >*/
  *   Likewise, when finally deleting the profile, both the storage from /run
  *   and persistent storage are deleted (or if the persistent storage does not
  *   allow deletion, and nmmeta file is written to mark the UUID as deleted).
- * @NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED: this is almost the same as
- *   @NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY, with one difference: when later deleting
+ * @NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED: this is almost the same
+ *   as %NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY, with one difference: when later deleting
  *   the profile, the original profile will not be deleted. Instead a nmmeta
  *   file is written to /run to indicate that the profile is gone.
  *   Note that if such a nmmeta tombstone file exists and hides a file in persistant
  *   storage, then when re-adding the profile with the same UUID, then the original
  *   storage is taken over again.
- * @NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY: this is like @NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY,
+ * @NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY: this is like %NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY,
  *   but if the connection has a corresponding file on persistent storage, the file
  *   will be deleted right away. If the profile is later again persisted to disk,
  *   a new, unused filename will be chosen.
