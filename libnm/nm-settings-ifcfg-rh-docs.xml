@@ -216,7 +216,7 @@ IPV6ADDR_SECONDARIES=&quot;ab12:9876::2 ab12:9876::3&quot;" description="List of
 but in route6-* file instead in the form of command line for &apos;ip route add&apos;."/>
 <property name="ignore-auto-routes" variable="IPV6_PEERROUTES(+)" format="" values="" default="yes" example="" description="IPV6_PEERROUTES has the opposite meaning as &apos;ignore-auto-routes&apos; property."/>
 <property name="ignore-auto-dns" variable="IPV6_PEERDNS(+)" format="" values="" default="yes" example="" description="IPV6_PEERDNS has the opposite meaning as &apos;ignore-auto-dns&apos; property."/>
-<property name="dhcp-hostname" variable="DHCP_HOSTNAME" format="" values="" default="" example="" description="Hostname to send the DHCP server."/>
+<property name="dhcp-hostname" variable="DHCPV6_HOSTNAME" format="" values="" default="" example="" description="Hostname to send the DHCP server."/>
 <property name="never-default" variable="IPV6_DEFROUTE(+), (and IPV6_DEFAULTGW, IPV6_DEFAULTDEV in /etc/sysconfig/network)" format="" values="" default="IPV6_DEFROUTE=yes (when no variable specified)" example="" description="IPV6_DEFROUTE=no tells NetworkManager that this connection
 should not be assigned the default IPv6 route. IPV6_DEFROUTE has the opposite
 meaning as &apos;never-default&apos; property."/>

@@ -1447,7 +1447,7 @@ GSM/UMTS, or LTE network access protocols</p>
 <tr>
 <td class="enum_member_name"><p><a name="NM-WIFI-DEVICE-CAP-MESH:CAPS"></a>NM_WIFI_DEVICE_CAP_MESH</p></td>
 <td class="enum_member_description">
-<p>device supports acting as a mesh point</p>
+<p>device supports acting as a mesh point. Since: 1.20.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -1669,7 +1669,7 @@ supported</p>
 <tr>
 <td class="enum_member_name"><p><a name="NM-802-11-MODE-MESH:CAPS"></a>NM_802_11_MODE_MESH</p></td>
 <td class="enum_member_description">
-<p>the device is a 802.11s mesh point.</p>
+<p>the device is a 802.11s mesh point. Since: 1.20.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -2510,8 +2510,7 @@ GPRS, EDGE, UMTS, HSDPA, HSUPA, or HSPA+ packet switched data capability</p>
 <td class="enum_member_description">
 <p>indicates that the per-connection
   setting is unspecified. In this case, it will fallback to the default
-  value, which is <em class="parameter"><code>NM_CONNECTION_MULTI_CONNECT_SINGLE</code></em>
-.</p>
+  value, which is <a class="link" href="libnm-nm-dbus-interface.html#NM-CONNECTION-MULTI-CONNECT-SINGLE:CAPS"><code class="literal">NM_CONNECTION_MULTI_CONNECT_SINGLE</code></a>.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -3442,15 +3441,20 @@ VPN plugin authentication dialogs.</p>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-DETACHED:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_DETACHED</p></td>
 <td class="enum_member_description">
-<p>this is almost the same as</p>
+<p>this is almost the same
+  as <a class="link" href="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY:CAPS"><code class="literal">NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</code></a>, with one difference: when later deleting
+  the profile, the original profile will not be deleted. Instead a nmmeta
+  file is written to /run to indicate that the profile is gone.
+  Note that if such a nmmeta tombstone file exists and hides a file in persistant
+  storage, then when re-adding the profile with the same UUID, then the original
+  storage is taken over again.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY-ONLY:CAPS"></a>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY_ONLY</p></td>
 <td class="enum_member_description">
-<p>this is like <em class="parameter"><code>NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</code></em>
-,
+<p>this is like <a class="link" href="libnm-nm-dbus-interface.html#NM-SETTINGS-UPDATE2-FLAG-IN-MEMORY:CAPS"><code class="literal">NM_SETTINGS_UPDATE2_FLAG_IN_MEMORY</code></a>,
   but if the connection has a corresponding file on persistent storage, the file
   will be deleted right away. If the profile is later again persisted to disk,
   a new, unused filename will be chosen.</p>

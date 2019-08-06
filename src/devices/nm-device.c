@@ -3186,14 +3186,11 @@ nm_device_check_connectivity (NMDevice *self,
                               NMDeviceConnectivityCallback callback,
                               gpointer user_data)
 {
-	NMDeviceConnectivityHandle *handle;
-
 	if (!concheck_is_possible (self))
 		return NULL;
 
 	concheck_periodic_schedule_set (self, addr_family, CONCHECK_SCHEDULE_CHECK_EXTERNAL);
-	handle = concheck_start (self, addr_family, callback, user_data, FALSE);
-	return handle;
+	return concheck_start (self, addr_family, callback, user_data, FALSE);
 }
 
 void
@@ -4153,13 +4150,14 @@ nm_device_create_and_realize (NMDevice *self,
 {
 	nm_auto_nmpobj const NMPObject *plink_keep_alive = NULL;
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
-	const NMPlatformLink *plink = NULL;
+	const NMPlatformLink *plink;
 
 	/* Must be set before device is realized */
-	priv->nm_owned = !nm_platform_link_get_by_ifname (nm_device_get_platform (self), priv->iface);
-
+	plink = nm_platform_link_get_by_ifname (nm_device_get_platform (self), priv->iface);
+	priv->nm_owned = !plink || !link_type_compatible (self, plink->type, NULL, NULL);
 	_LOGD (LOGD_DEVICE, "create (is %snm-owned)", priv->nm_owned ? "" : "not ");
 
+	plink = NULL;
 	/* Create any resources the device needs */
 	if (NM_DEVICE_GET_CLASS (self)->create_and_realize) {
 		if (!NM_DEVICE_GET_CLASS (self)->create_and_realize (self, connection, parent, &plink, error))
@@ -4986,7 +4984,6 @@ nm_device_master_release_slaves (NMDevice *self)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	NMDeviceStateReason reason;
-	gboolean configure = TRUE;
 	CList *iter, *safe;
 
 	/* Don't release the slaves if this connection doesn't belong to NM. */
@@ -4997,14 +4994,10 @@ nm_device_master_release_slaves (NMDevice *self)
 	if (priv->state == NM_DEVICE_STATE_FAILED)
 		reason = NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED;
 
-	if (   priv->ifindex <= 0
-	    || !nm_platform_link_get (nm_device_get_platform (self), priv->ifindex))
-		configure = FALSE;
-
 	c_list_for_each_safe (iter, safe, &priv->slaves) {
 		SlaveInfo *info = c_list_entry (iter, SlaveInfo, lst_slave);
 
-		nm_device_master_release_one_slave (self, info->slave, configure, reason);
+		nm_device_master_release_one_slave (self, info->slave, TRUE, reason);
 	}
 }
 
@@ -15121,6 +15114,7 @@ _set_state_full (NMDevice *self,
 	gboolean no_firmware = FALSE;
 	NMSettingsConnection *sett_conn;
 	NMSettingSriov *s_sriov;
+	gboolean concheck_now;
 
 	g_return_if_fail (NM_IS_DEVICE (self));
 
@@ -15456,8 +15450,11 @@ _set_state_full (NMDevice *self,
 	if (ip_config_valid (old_state) && !ip_config_valid (state))
 	    notify_ip_properties (self);
 
-	concheck_update_interval (self, AF_INET, state == NM_DEVICE_STATE_ACTIVATED);
-	concheck_update_interval (self, AF_INET6, state == NM_DEVICE_STATE_ACTIVATED);
+	concheck_now =    NM_IN_SET (state, NM_DEVICE_STATE_ACTIVATED,
+	                                    NM_DEVICE_STATE_DISCONNECTED)
+	               || old_state >= NM_DEVICE_STATE_ACTIVATED;
+	concheck_update_interval (self, AF_INET, concheck_now);
+	concheck_update_interval (self, AF_INET6, concheck_now);
 
 	/* Dispose of the cached activation request */
 	if (req)
