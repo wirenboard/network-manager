@@ -24,6 +24,9 @@ case "$1" in
         # org.freedesktop.NetworkManager.settings.modify.system without prior authentication
         addgroup --quiet --system netdev
 
+        # This directory can contain sensitive data and should not be world-readable
+        chmod 0700 /var/lib/NetworkManager
+
         NIF=/etc/network/interfaces
         if [ -z "$2" ] && [ -f $NIF ]; then
             ifaces=`grep -v '^#' $NIF | awk '/iface/ {print $2}' | sort -u | sed -e 's/lo//' -e '/^$/d' -e 's/^/- /'`
