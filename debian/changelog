@@ -1,3 +1,15 @@
+network-manager (1.20.4-2) unstable; urgency=medium
+
+  * Install directories as created by upstream build system.
+    Drop network-manager.dirs and instead use the directories created by the
+    upstream build system. Fix permissions of /var/lib/NetworkManager to be
+    0700 as it contains possibly sensitive data and should not be
+    world-readable.
+  * Fix permissions of /var/lib/NetworkManager/secret_key on upgrades.
+    The file mode is supposed to be 0600. (Closes: #941609)
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 04 Oct 2019 00:30:01 +0200
+
 network-manager (1.20.4-1) unstable; urgency=medium
 
   [ Michael Biebl ]
