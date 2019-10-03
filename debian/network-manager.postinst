@@ -47,6 +47,12 @@ case "$1" in
                 ln -sf  /run/NetworkManager/resolv.conf /etc/resolv.conf
             fi
         fi
+
+        if dpkg --compare-versions "$2" lt-nl "1.20.4-2"; then
+            if [ -f /var/lib/NetworkManager/secret_key ]; then
+                chmod 0600 /var/lib/NetworkManager/secret_key
+            fi
+        fi
         ;;
 
     abort-upgrade|abort-deconfigure|abort-remove)
