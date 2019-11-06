@@ -1,8 +1,10 @@
-network-manager (1.20.6-1) UNRELEASED; urgency=medium
+network-manager (1.20.6-1) unstable; urgency=medium
 
   * New upstream version 1.20.6
+    - Add support for iwd 1.0. (Closes: #944259)
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Wed, 06 Nov 2019 20:59:17 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 06 Nov 2019 22:32:54 +0100
 
 network-manager (1.20.4-2) unstable; urgency=medium
 
