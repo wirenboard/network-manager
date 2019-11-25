@@ -9274,11 +9274,57 @@ nm_device_get_configured_mtu_from_connection (NMDevice *self,
 }
 
 guint32
-nm_device_get_configured_mtu_for_wired (NMDevice *self, NMDeviceMtuSource *out_source)
+nm_device_get_configured_mtu_for_wired (NMDevice *self,
+                                        NMDeviceMtuSource *out_source,
+                                        gboolean *out_force)
 {
 	return nm_device_get_configured_mtu_from_connection (self,
 	                                                     NM_TYPE_SETTING_WIRED,
 	                                                     out_source);
+}
+
+guint32
+nm_device_get_configured_mtu_wired_parent (NMDevice *self,
+                                           NMDeviceMtuSource *out_source,
+                                           gboolean *out_force)
+{
+	guint32 mtu = 0;
+	guint32 parent_mtu = 0;
+	int ifindex;
+
+	ifindex = nm_device_parent_get_ifindex (self);
+	if (ifindex > 0) {
+		parent_mtu = nm_platform_link_get_mtu (nm_device_get_platform (self), ifindex);
+		if (parent_mtu >= NM_DEVICE_GET_CLASS (self)->mtu_parent_delta)
+			parent_mtu -= NM_DEVICE_GET_CLASS (self)->mtu_parent_delta;
+		else
+			parent_mtu = 0;
+	}
+
+	mtu = nm_device_get_configured_mtu_for_wired (self, out_source, NULL);
+
+	if (parent_mtu && mtu > parent_mtu) {
+		/* Trying to set a MTU that is out of range from configuration:
+		 * fall back to the parent MTU and set force flag so that it
+		 * overrides an MTU with higher priority already configured.
+		 */
+		 *out_source = NM_DEVICE_MTU_SOURCE_PARENT;
+		 *out_force = TRUE;
+		 return parent_mtu;
+	}
+
+	if (*out_source != NM_DEVICE_MTU_SOURCE_NONE) {
+		nm_assert (mtu > 0);
+		return mtu;
+	}
+
+	/* Inherit the MTU from parent device, if any */
+	if (parent_mtu) {
+		mtu = parent_mtu;
+		*out_source = NM_DEVICE_MTU_SOURCE_PARENT;
+	}
+
+	return mtu;
 }
 
 /*****************************************************************************/
@@ -9332,15 +9378,34 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
 
 	{
 		guint32 mtu = 0;
+		gboolean force = FALSE;
 
-		/* preferably, get the MTU from explicit user-configuration.
-		 * Only if that fails, look at the current @config (which contains
-		 * MTUs from DHCP/PPP) or maybe fallback to a device-specific MTU. */
+		/* We take the MTU from various sources: (in order of increasing
+		 * priority) parent link, IP configuration (which contains the
+		 * MTU from DHCP/PPP), connection profile.
+		 *
+		 * We could just compare it with the platform MTU and apply it
+		 * when different, but this would revert at random times manual
+		 * changes done by the user with the MTU from the connection.
+		 *
+		 * Instead, we remember the source of the currently configured
+		 * MTU and apply the new one only when the new source has a
+		 * higher priority, so that we don't set a MTU from same source
+		 * multiple times. An exception to this is for the PARENT
+		 * source, since we need to keep tracking the parent MTU when it
+		 * changes.
+		 *
+		 * The subclass can set the @force argument to TRUE to signal that the
+		 * returned MTU should be applied even if it has a lower priority. This
+		 * is useful when the value from a lower source should
+		 * preempt the one from higher ones.
+		 */
 
 		if (NM_DEVICE_GET_CLASS (self)->get_configured_mtu)
-			mtu = NM_DEVICE_GET_CLASS (self)->get_configured_mtu (self, &source);
+			mtu = NM_DEVICE_GET_CLASS (self)->get_configured_mtu (self, &source, &force);
 
 		if (   config
+		    && !force
 		    && source < NM_DEVICE_MTU_SOURCE_IP_CONFIG
 		    && nm_ip4_config_get_mtu (config)) {
 			mtu = nm_ip4_config_get_mtu (config);
@@ -9349,14 +9414,16 @@ _commit_mtu (NMDevice *self, const NMIP4Config *config)
 
 		if (mtu != 0) {
 			_LOGT (LOGD_DEVICE,
-			       "mtu: value %u from source '%s' (%u), current source '%s' (%u)",
+			       "mtu: value %u from source '%s' (%u), current source '%s' (%u)%s",
 			       (guint) mtu,
 			       mtu_source_to_str (source), (guint) source,
-			       mtu_source_to_str (priv->mtu_source), (guint) priv->mtu_source);
+			       mtu_source_to_str (priv->mtu_source), (guint) priv->mtu_source,
+			       force ? " (forced)" : "");
 		}
 
 		if (   mtu != 0
-		    && (   source > priv->mtu_source
+		    && (   force
+		        || source > priv->mtu_source
 		        || (priv->mtu_source == NM_DEVICE_MTU_SOURCE_PARENT && source == priv->mtu_source)))
 			mtu_desired = mtu;
 		else {
@@ -9600,6 +9667,18 @@ ndisc_config_changed (NMNDisc *ndisc, const NMNDiscData *rdata, guint changed_in
 	if (changed & NM_NDISC_CONFIG_HOP_LIMIT)
 		nm_platform_sysctl_ip_conf_set_ipv6_hop_limit_safe (nm_device_get_platform (self), nm_device_get_ip_iface (self), rdata->hop_limit);
 
+	if (changed & NM_NDISC_CONFIG_REACHABLE_TIME) {
+		nm_platform_sysctl_ip_neigh_set_ipv6_reachable_time (nm_device_get_platform (self),
+		                                                     nm_device_get_ip_iface (self),
+		                                                     rdata->reachable_time_ms);
+	}
+
+	if (changed & NM_NDISC_CONFIG_RETRANS_TIMER) {
+		nm_platform_sysctl_ip_neigh_set_ipv6_retrans_time (nm_device_get_platform (self),
+		                                                   nm_device_get_ip_iface (self),
+		                                                   rdata->retrans_timer_ms);
+	}
+
 	if (changed & NM_NDISC_CONFIG_MTU) {
 		if (priv->ip6_mtu != rdata->mtu) {
 			_LOGD (LOGD_DEVICE, "mtu: set IPv6 MTU to %u", (guint) rdata->mtu);
@@ -9661,24 +9740,11 @@ addrconf6_start_with_link_ready (NMDevice *self)
 	if (!ip_config_merge_and_apply (self, AF_INET6, TRUE))
 		_LOGW (LOGD_IP6, "failed to apply manual IPv6 configuration");
 
-	/* FIXME: These sysctls would probably be better set by the lndp ndisc itself. */
-	switch (nm_ndisc_get_node_type (priv->ndisc)) {
-	case NM_NDISC_NODE_TYPE_HOST:
-		/* Accepting prefixes from discovered routers. */
-		nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra", "1");
-		nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra_defrtr", "0");
-		nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra_pinfo", "0");
-		nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra_rtr_pref", "0");
-		break;
-	case NM_NDISC_NODE_TYPE_ROUTER:
-		/* We're the router. */
+	if (nm_ndisc_get_node_type (priv->ndisc) == NM_NDISC_NODE_TYPE_ROUTER) {
 		nm_device_sysctl_ip_conf_set (self, AF_INET6, "forwarding", "1");
 		nm_device_activate_schedule_ip_config_result (self, AF_INET6, NULL);
 		priv->needs_ip6_subnet = TRUE;
 		g_signal_emit (self, signals[IP6_SUBNET_NEEDED], 0);
-		break;
-	default:
-		g_assert_not_reached ();
 	}
 
 	priv->ndisc_changed_id = g_signal_connect (priv->ndisc,
@@ -9789,9 +9855,6 @@ save_ip6_properties (NMDevice *self)
 {
 	static const char *const ip6_properties_to_save[] = {
 		"accept_ra",
-		"accept_ra_defrtr",
-		"accept_ra_pinfo",
-		"accept_ra_rtr_pref",
 		"forwarding",
 		"disable_ipv6",
 		"hop_limit",
@@ -10116,6 +10179,7 @@ act_stage3_ip_config_start (NMDevice *self,
 			set_nm_ipv6ll (self, TRUE);
 
 		/* Re-enable IPv6 on the interface */
+		nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra", "0");
 		set_disable_ipv6 (self, "0");
 
 		/* Synchronize external IPv6 configuration with kernel, since
@@ -12123,7 +12187,7 @@ _carrier_wait_check_queued_act_request (NMDevice *self)
 		_LOGD (LOGD_DEVICE, "Cancel queued activation request as we have no carrier after timeout");
 		_clear_queued_act_request (priv,
 		                           NM_ACTIVE_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED);
-	} else {
+	} else if (priv->state == NM_DEVICE_STATE_DISCONNECTED) {
 		gs_unref_object NMActRequest *queued_req = NULL;
 
 		_LOGD (LOGD_DEVICE, "Activate queued activation request as we now have carrier");
@@ -14744,7 +14808,6 @@ nm_device_cleanup (NMDevice *self, NMDeviceStateReason reason, CleanupType clean
 	/* Turn off kernel IPv6 */
 	if (cleanup_type == CLEANUP_TYPE_DECONFIGURE) {
 		set_disable_ipv6 (self, "1");
-		nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra", "0");
 		nm_device_sysctl_ip_conf_set (self, AF_INET6, "use_tempaddr", "0");
 	}
 
@@ -14802,6 +14865,7 @@ nm_device_cleanup (NMDevice *self, NMDeviceStateReason reason, CleanupType clean
 	}
 
 	priv->mtu_source = NM_DEVICE_MTU_SOURCE_NONE;
+	priv->ip6_mtu = 0;
 	if (priv->mtu_initial || priv->ip6_mtu_initial) {
 		ifindex = nm_device_get_ip_ifindex (self);
 
@@ -15035,9 +15099,7 @@ ip6_managed_setup (NMDevice *self)
 {
 	set_nm_ipv6ll (self, TRUE);
 	set_disable_ipv6 (self, "1");
-	nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra_defrtr", "0");
-	nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra_pinfo", "0");
-	nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra_rtr_pref", "0");
+	nm_device_sysctl_ip_conf_set (self, AF_INET6, "accept_ra", "0");
 	nm_device_sysctl_ip_conf_set (self, AF_INET6, "use_tempaddr", "0");
 	nm_device_sysctl_ip_conf_set (self, AF_INET6, "forwarding", "0");
 }
