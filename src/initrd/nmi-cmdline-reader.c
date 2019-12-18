@@ -1,20 +1,5 @@
-/* NetworkManager initrd configuration generator
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301 USA.
- *
+// SPDX-License-Identifier: LGPL-2.1+
+/*
  * Copyright (C) 2018 Red Hat, Inc.
  */
 
@@ -74,6 +59,7 @@ add_conn (GHashTable *connections,
 	g_object_set (setting,
 	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_AUTO,
 	              NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE,
+	              NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE, (int) NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64,
 	              NULL);
 
 	setting = nm_setting_connection_new ();
@@ -270,7 +256,8 @@ parse_ip (GHashTable *connections, const char *sysfs_dir, char *argument)
 		}
 	}
 
-	if (ifname == NULL && g_strcmp0 (kind, "ibft") == 0) {
+	if (ifname == NULL && (   g_strcmp0 (kind, "fw") == 0
+	                       || g_strcmp0 (kind, "ibft") == 0)) {
 		GHashTableIter iter;
 		const char *mac;
 		GHashTable *nic;
@@ -299,6 +286,13 @@ parse_ip (GHashTable *connections, const char *sysfs_dir, char *argument)
 
 			g_hash_table_insert (connections,
 			                     g_strdup_printf ("ibft%s", index),
+			                     connection);
+		}
+
+		connection = nmi_dt_reader_parse (sysfs_dir);
+		if (connection) {
+			g_hash_table_insert (connections,
+			                     g_strdup ("ofw"),
 			                     connection);
 		}
 

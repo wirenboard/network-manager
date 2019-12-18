@@ -1,20 +1,6 @@
-/* NetworkManager system settings service - keyfile plugin
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Copyright 2009 - 2015 Red Hat, Inc.
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2009 - 2015 Red Hat, Inc.
  */
 
 #include "nm-default.h"
@@ -305,6 +291,7 @@ write_blobs (GHashTable *blobs, GError **error)
 		                                 (const char *) g_bytes_get_data (blob, NULL),
 		                                 g_bytes_get_size (blob),
 		                                 0600,
+		                                 NULL,
 		                                 &write_error)) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
 			             "Could not write certificate to file \"%s\": %s",
@@ -588,7 +575,7 @@ write_wireless_security_setting (NMConnection *connection,
 		svUnsetValue (ifcfg, "KEY_MGMT");
 		wep = TRUE;
 		*no_8021x = TRUE;
-	} else if (!strcmp (key_mgmt, "wpa-none") || !strcmp (key_mgmt, "wpa-psk")) {
+	} else if (!strcmp (key_mgmt, "wpa-psk")) {
 		svSetValueStr (ifcfg, "KEY_MGMT", "WPA-PSK");
 		wpa = TRUE;
 		*no_8021x = TRUE;
@@ -1943,7 +1930,7 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 		 * it into an interface name, so that legacy tooling is not confused. */
 		if (!nm_utils_get_testing ()) {
 			/* This is conditional for easier testing. */
-			master_iface = nm_manager_iface_for_uuid (nm_manager_get (), master);
+			master_iface = nm_manager_iface_for_uuid (NM_MANAGER_GET, master);
 		}
 		if (!master_iface) {
 			master_iface = master;
@@ -2097,6 +2084,8 @@ get_route_attributes_string (NMIPRoute *route, int family)
 				/* we also have a corresponding attribute with the numeric value. The
 				 * lock setting is handled above. */
 			}
+		} else if (nm_streq (names[i], NM_IP_ROUTE_ATTRIBUTE_SCOPE)) {
+			g_string_append_printf (str, "%s %u", names[i], (unsigned) g_variant_get_byte (attr));
 		} else if (nm_streq (names[i], NM_IP_ROUTE_ATTRIBUTE_TOS)) {
 			g_string_append_printf (str, "%s 0x%02x", names[i], (unsigned) g_variant_get_byte (attr));
 		} else if (nm_streq (names[i], NM_IP_ROUTE_ATTRIBUTE_TABLE)) {
@@ -2449,6 +2438,7 @@ write_ip4_setting (NMConnection *connection,
 	GString *searches;
 	const char *method = NULL;
 	gboolean has_netmask;
+	NMDhcpHostnameFlags flags;
 
 	NM_SET_OUT (out_route_content_svformat, NULL);
 	NM_SET_OUT (out_route_content, NULL);
@@ -2609,6 +2599,12 @@ write_ip4_setting (NMConnection *connection,
 	value = nm_setting_ip4_config_get_dhcp_fqdn (NM_SETTING_IP4_CONFIG (s_ip4));
 	svSetValueStr (ifcfg, "DHCP_FQDN", value);
 
+	flags = nm_setting_ip_config_get_dhcp_hostname_flags (s_ip4);
+	svSetValueInt64_cond (ifcfg,
+	                      "DHCP_HOSTNAME_FLAGS",
+	                      flags != NM_DHCP_HOSTNAME_FLAG_NONE,
+	                      flags);
+
 	/* Missing DHCP_SEND_HOSTNAME means TRUE, and we prefer not write it explicitly
 	 * in that case, because it is NM-specific variable
 	 */
@@ -2617,6 +2613,9 @@ write_ip4_setting (NMConnection *connection,
 
 	value = nm_setting_ip4_config_get_dhcp_client_id (NM_SETTING_IP4_CONFIG (s_ip4));
 	svSetValueStr (ifcfg, "DHCP_CLIENT_ID", value);
+
+	value = nm_setting_ip_config_get_dhcp_iaid (s_ip4);
+	svSetValueStr (ifcfg, "DHCP_IAID", value);
 
 	timeout = nm_setting_ip_config_get_dhcp_timeout (s_ip4);
 	svSetValueInt64_cond (ifcfg,
@@ -2752,6 +2751,7 @@ write_ip4_aliases (NMConnection *connection, const char *base_ifcfg_path)
 static void
 write_ip6_setting_dhcp_hostname (NMSettingIPConfig *s_ip6, shvarFile *ifcfg)
 {
+	NMDhcpHostnameFlags flags;
 	const char *hostname;
 
 	hostname = nm_setting_ip_config_get_dhcp_hostname (s_ip6);
@@ -2764,6 +2764,12 @@ write_ip6_setting_dhcp_hostname (NMSettingIPConfig *s_ip6, shvarFile *ifcfg)
 		svUnsetValue (ifcfg, "DHCPV6_SEND_HOSTNAME");
 	else
 		svSetValueStr (ifcfg, "DHCPV6_SEND_HOSTNAME", "no");
+
+	flags = nm_setting_ip_config_get_dhcp_hostname_flags (s_ip6);
+	svSetValueInt64_cond (ifcfg,
+	                      "DHCPV6_HOSTNAME_FLAGS",
+	                      flags != NM_DHCP_HOSTNAME_FLAG_NONE,
+	                      flags);
 }
 
 static gboolean
@@ -2796,6 +2802,7 @@ write_ip6_setting (NMConnection *connection,
 		svUnsetValue (ifcfg, "IPV6_AUTOCONF");
 		svUnsetValue (ifcfg, "DHCPV6C");
 		svUnsetValue (ifcfg, "DHCPv6_DUID");
+		svUnsetValue (ifcfg, "DHCPv6_IAID");
 		svUnsetValue (ifcfg, "DHCPV6_HOSTNAME");
 		svUnsetValue (ifcfg, "DHCPV6_SEND_HOSTNAME");
 		svUnsetValue (ifcfg, "IPV6_DEFROUTE");
@@ -2845,6 +2852,8 @@ write_ip6_setting (NMConnection *connection,
 
 	svSetValueStr (ifcfg, "DHCPV6_DUID",
 	               nm_setting_ip6_config_get_dhcp_duid (NM_SETTING_IP6_CONFIG (s_ip6)));
+	svSetValueStr (ifcfg, "DHCPV6_IAID",
+	               nm_setting_ip_config_get_dhcp_iaid (s_ip6));
 
 	write_ip6_setting_dhcp_hostname (s_ip6, ifcfg);
 

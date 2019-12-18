@@ -1,19 +1,5 @@
-/* NetworkManager -- Network link manager
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
+// SPDX-License-Identifier: GPL-2.0+
+/*
  * Copyright (C) 2014 Red Hat, Inc.
  */
 
@@ -40,6 +26,7 @@
 #include "ndisc/nm-ndisc.h"
 #include "ndisc/nm-lndp-ndisc.h"
 #include "nm-utils.h"
+#include "nm-core-internal.h"
 #include "nm-setting-ip6-config.h"
 #include "systemd/nm-sd.h"
 
@@ -111,6 +98,7 @@ dhcp4_state_changed (NMDhcpClient *client,
 	static NMIP4Config *last_config = NULL;
 	NMIP4Config *existing;
 	gs_unref_ptrarray GPtrArray *ip4_dev_route_blacklist = NULL;
+	gs_free_error GError *error = NULL;
 
 	g_return_if_fail (!ip4_config || NM_IS_IP4_CONFIG (ip4_config));
 
@@ -135,6 +123,9 @@ dhcp4_state_changed (NMDhcpClient *client,
 		                           NM_PLATFORM_GET,
 		                           NM_IP_ROUTE_TABLE_SYNC_MODE_MAIN))
 			_LOGW (LOGD_DHCP4, "failed to apply DHCPv4 config");
+
+		if (!last_config && !nm_dhcp_client_accept (client, &error))
+			_LOGW (LOGD_DHCP4, "failed to accept lease: %s", error->message);
 
 		nm_platform_ip4_dev_route_blacklist_set (NM_PLATFORM_GET,
 		                                         gl.ifindex,
@@ -530,6 +521,7 @@ main (int argc, char *argv[])
 		                                          !!global_opt.dhcp4_hostname,
 		                                          global_opt.dhcp4_hostname,
 		                                          global_opt.dhcp4_fqdn,
+		                                          NM_DHCP_HOSTNAME_FLAGS_FQDN_DEFAULT_IP4,
 		                                          client_id,
 		                                          NM_DHCP_TIMEOUT_DEFAULT,
 		                                          NULL,
@@ -605,9 +597,10 @@ main (int argc, char *argv[])
 
 /*****************************************************************************/
 
-const NMDhcpClientFactory *const _nm_dhcp_manager_factories[5] = {
+const NMDhcpClientFactory *const _nm_dhcp_manager_factories[6] = {
+	/* For nm-iface-helper there is no option to choose a DHCP plugin.
+	 * It just uses the "internal" one. */
 	&_nm_dhcp_client_factory_internal,
-	&_nm_dhcp_client_factory_nettools,
 };
 
 /*****************************************************************************/
