@@ -1,3 +1,9 @@
+network-manager (1.22.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.22.0
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 18 Dec 2019 18:30:40 +0100
+
 network-manager (1.20.8-1) unstable; urgency=medium
 
   * New upstream version 1.20.8
