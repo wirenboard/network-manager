@@ -77,7 +77,7 @@ foreach iface: ifaces
   if gio_unix_dep.version().version_compare('>= 2.51.3')
     dbus_iface_xml_path = join_paths(meson.current_build_dir(), 'dbus-' + iface_xml)
   else
-    dbus_iface_xml_path = join_paths(meson.build_root(), 'dbus-' + iface_xml)
+    dbus_iface_xml_path = join_paths(build_root, 'dbus-' + iface_xml)
   endif
 
   content_files += dbus_iface_xml_path
@@ -93,7 +93,7 @@ endforeach
 
 install_data(
   ifaces_xmls,
-  install_dir: dbus_ifaces_dir,
+  install_dir: dbus_interfaces_dir,
 )
 
 libnmdbus = static_library(

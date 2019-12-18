@@ -1,19 +1,5 @@
-/* NetworkManager -- Network link manager
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
+// SPDX-License-Identifier: GPL-2.0+
+/*
  * Copyright (C) 2005 - 2014 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
@@ -853,14 +839,19 @@ link_negotiation_set (NMDevice *device)
 		autoneg = nm_setting_wired_get_auto_negotiate (s_wired);
 		speed = nm_setting_wired_get_speed (s_wired);
 		duplex = link_duplex_to_platform (nm_setting_wired_get_duplex (s_wired));
-		if (!autoneg && !speed && !duplex) {
+		if (   !autoneg
+		    && !speed
+		    && !duplex) {
 			_LOGD (LOGD_DEVICE, "set-link: ignore link negotiation");
 			return;
 		}
 	}
 
-	if (!nm_platform_ethtool_get_link_settings (nm_device_get_platform (device), nm_device_get_ifindex (device),
-	                                            &link_autoneg, &link_speed, &link_duplex)) {
+	if (!nm_platform_ethtool_get_link_settings (nm_device_get_platform (device),
+	                                            nm_device_get_ifindex (device),
+	                                            &link_autoneg,
+	                                            &link_speed,
+	                                            &link_duplex)) {
 		_LOGW (LOGD_DEVICE, "set-link: unable to retrieve link negotiation");
 		return;
 	}
@@ -873,16 +864,18 @@ link_negotiation_set (NMDevice *device)
 		return;
 	}
 
-	if (autoneg && !speed && !duplex)
+	if (   autoneg
+	    && !speed
+	    && !duplex)
 		_LOGD (LOGD_DEVICE, "set-link: configure auto-negotiation");
 	else {
 		_LOGD (LOGD_DEVICE, "set-link: configure %snegotiation (%u Mbit%s - %s duplex%s)",
 		       autoneg ? "auto-" : "static ",
 		       speed ?: link_speed,
 		       speed ? "" : "*",
-		       duplex
-		         ? nm_platform_link_duplex_type_to_string (duplex)
-		         : nm_platform_link_duplex_type_to_string (link_duplex),
+		         duplex
+		       ? nm_platform_link_duplex_type_to_string (duplex)
+		       : nm_platform_link_duplex_type_to_string (link_duplex),
 		       duplex ? "" : "*");
 	}
 
@@ -903,9 +896,10 @@ pppoe_reconnect_delay (gpointer user_data)
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 
 	priv->pppoe_wait_id = 0;
+	priv->last_pppoe_time = 0;
 	_LOGI (LOGD_DEVICE, "PPPoE reconnect delay complete, resuming connection...");
-	nm_device_activate_schedule_stage2_device_config (NM_DEVICE (self));
-	return FALSE;
+	nm_device_activate_schedule_stage1_device_prepare (NM_DEVICE (self));
+	return G_SOURCE_REMOVE;
 }
 
 static NMActStageReturn
@@ -913,35 +907,33 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *out_failure_reason)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (device);
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
-	NMActStageReturn ret;
-
-	ret = NM_DEVICE_CLASS (nm_device_ethernet_parent_class)->act_stage1_prepare (device, out_failure_reason);
-	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
-		return ret;
 
 	link_negotiation_set (device);
-
-	if (!nm_device_hw_addr_set_cloned (device, nm_device_get_applied_connection (device), FALSE))
-		return NM_ACT_STAGE_RETURN_FAILURE;
 
 	/* If we're re-activating a PPPoE connection a short while after
 	 * a previous PPPoE connection was torn down, wait a bit to allow the
 	 * remote side to handle the disconnection.  Otherwise the peer may
 	 * get confused and fail to negotiate the new connection. (rh #1023503)
+	 *
+	 * FIXME(shutdown): when exiting, we also need to wait before quiting,
+	 * at least for additional NM_SHUTDOWN_TIMEOUT_MS seconds because
+	 * otherwise after restart the device won't work for the first seconds.
 	 */
-	if (priv->last_pppoe_time) {
+	if (priv->last_pppoe_time != 0) {
 		gint32 delay = nm_utils_get_monotonic_timestamp_s () - priv->last_pppoe_time;
 
 		if (   delay < PPPOE_RECONNECT_DELAY
 		    && nm_device_get_applied_setting (device, NM_TYPE_SETTING_PPPOE)) {
-			_LOGI (LOGD_DEVICE, "delaying PPPoE reconnect for %d seconds to ensure peer is ready...",
-			       delay);
-			g_assert (!priv->pppoe_wait_id);
-			priv->pppoe_wait_id = g_timeout_add_seconds (delay,
-			                                             pppoe_reconnect_delay,
-			                                             self);
+			if (priv->pppoe_wait_id == 0) {
+				_LOGI (LOGD_DEVICE, "delaying PPPoE reconnect for %d seconds to ensure peer is ready...",
+				       delay);
+				priv->pppoe_wait_id = g_timeout_add_seconds (delay,
+				                                             pppoe_reconnect_delay,
+				                                             self);
+			}
 			return NM_ACT_STAGE_RETURN_POSTPONE;
 		}
+		nm_clear_g_source (&priv->pppoe_wait_id);
 		priv->last_pppoe_time = 0;
 	}
 
@@ -1743,6 +1735,7 @@ static void
 reapply_connection (NMDevice *device, NMConnection *con_old, NMConnection *con_new)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (device);
+	NMDeviceState state = nm_device_get_state (device);
 
 	NM_DEVICE_CLASS (nm_device_ethernet_parent_class)->reapply_connection (device,
 	                                                                       con_old,
@@ -1750,8 +1743,10 @@ reapply_connection (NMDevice *device, NMConnection *con_old, NMConnection *con_n
 
 	_LOGD (LOGD_DEVICE, "reapplying wired settings");
 
-	link_negotiation_set (device);
-	wake_on_lan_enable (device);
+	if (state >= NM_DEVICE_STATE_PREPARE)
+		link_negotiation_set (device);
+	if (state >= NM_DEVICE_STATE_CONFIG)
+		wake_on_lan_enable (device);
 }
 
 static void
@@ -1864,6 +1859,7 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 	device_class->new_default_connection = new_default_connection;
 
 	device_class->act_stage1_prepare = act_stage1_prepare;
+	device_class->act_stage1_prepare_set_hwaddr_ethernet = TRUE;
 	device_class->act_stage2_config = act_stage2_config;
 	device_class->act_stage3_ip_config_start = act_stage3_ip_config_start;
 	device_class->get_configured_mtu = get_configured_mtu;
