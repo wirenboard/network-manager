@@ -1,3 +1,9 @@
+network-manager (1.22.0-2) unstable; urgency=medium
+
+  * dhcp: nettools: fix parsing of search domains option (Closes: #947003)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 23 Dec 2019 18:04:05 +0100
+
 network-manager (1.22.0-1) unstable; urgency=medium
 
   * New upstream version 1.22.0
