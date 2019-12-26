@@ -14,6 +14,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_20_0@libnm_1_20_0 1.19.90
  libnm_1_20_6@libnm_1_20_6 1.20.6
  libnm_1_22_0@libnm_1_22_0 1.22.0
+ libnm_1_22_2@libnm_1_22_2 1.22.2
  libnm_1_2_0@libnm_1_2_0 1.1.90
  libnm_1_2_4@libnm_1_2_4 1.2.4
  libnm_1_4_0@libnm_1_4_0 1.4.0
@@ -114,6 +115,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_client_get_activating_connection@libnm_1_0_0 1.0.0
  nm_client_get_active_connections@libnm_1_0_0 1.0.0
  nm_client_get_all_devices@libnm_1_2_0 1.1.90
+ nm_client_get_capabilities@libnm_1_22_2 1.22.2
  nm_client_get_checkpoints@libnm_1_12_0 1.11.3
  nm_client_get_connection_by_id@libnm_1_0_0 1.0.0
  nm_client_get_connection_by_path@libnm_1_0_0 1.0.0
