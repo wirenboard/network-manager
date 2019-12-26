@@ -556,6 +556,7 @@
     <keyword type="enum" name="enum NMVpnConnectionStateReason" link="nm-vpn-dbus-types.html#NMVpnConnectionStateReason"/>
     <keyword type="enum" name="enum NMVpnPluginFailure" link="nm-vpn-dbus-types.html#NMVpnPluginFailure"/>
     <keyword type="constant" name="NM_CAPABILITY_TEAM" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.17.2.3.4.2.1.4.1.1.1id-1.4.17.2.3.4.2.1.4.1.1.2"/>
+    <keyword type="constant" name="NM_CAPABILITY_OVS" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.17.2.3.4.2.1.4.2.1.1id-1.4.17.2.3.4.2.1.4.2.1.2"/>
     <keyword type="constant" name="NM_STATE_UNKNOWN" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.17.2.4.4.2.1.4.1.1.1id-1.4.17.2.4.4.2.1.4.1.1.2"/>
     <keyword type="constant" name="NM_STATE_ASLEEP" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.17.2.4.4.2.1.4.2.1.1id-1.4.17.2.4.4.2.1.4.2.1.2"/>
     <keyword type="constant" name="NM_STATE_DISCONNECTED" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.4.17.2.4.4.2.1.4.3.1.1id-1.4.17.2.4.4.2.1.4.3.1.2"/>

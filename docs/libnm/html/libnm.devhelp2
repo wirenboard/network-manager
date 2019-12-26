@@ -141,6 +141,7 @@
     <keyword type="function" name="nm_client_get_nm_running ()" link="NMClient.html#nm-client-get-nm-running"/>
     <keyword type="function" name="nm_client_get_metered ()" link="NMClient.html#nm-client-get-metered" since="1.22"/>
     <keyword type="function" name="nm_client_networking_get_enabled ()" link="NMClient.html#nm-client-networking-get-enabled"/>
+    <keyword type="function" name="nm_client_get_capabilities ()" link="NMClient.html#nm-client-get-capabilities" since="1.24, 1.22.2"/>
     <keyword type="function" name="nm_client_networking_set_enabled ()" link="NMClient.html#nm-client-networking-set-enabled" deprecated="1.22, use nm_client_networking_set_enabled_async() or GDBusConnection"/>
     <keyword type="function" name="nm_client_wireless_get_enabled ()" link="NMClient.html#nm-client-wireless-get-enabled"/>
     <keyword type="function" name="nm_client_wireless_set_enabled ()" link="NMClient.html#nm-client-wireless-set-enabled" deprecated="1.22, use nm_client_wireless_set_enabled_async() or GDBusConnection"/>
@@ -239,6 +240,7 @@
     <keyword type="macro" name="NM_CLIENT_DNS_RC_MANAGER" link="NMClient.html#NM-CLIENT-DNS-RC-MANAGER:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DNS_CONFIGURATION" link="NMClient.html#NM-CLIENT-DNS-CONFIGURATION:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_CHECKPOINTS" link="NMClient.html#NM-CLIENT-CHECKPOINTS:CAPS"/>
+    <keyword type="macro" name="NM_CLIENT_CAPABILITIES" link="NMClient.html#NM-CLIENT-CAPABILITIES:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DEVICE_ADDED" link="NMClient.html#NM-CLIENT-DEVICE-ADDED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DEVICE_REMOVED" link="NMClient.html#NM-CLIENT-DEVICE-REMOVED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_ANY_DEVICE_ADDED" link="NMClient.html#NM-CLIENT-ANY-DEVICE-ADDED:CAPS"/>
@@ -2903,6 +2905,7 @@
     <keyword type="macro" name="NM_DEPRECATED_IN_1_18_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-18-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_20_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-20-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_22_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-22-FOR:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_22_2_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-22-2-FOR:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MIN_REQUIRED" link="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MAX_ALLOWED" link="libnm-nm-version.html#NM-VERSION-MAX-ALLOWED:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS"/>
@@ -2931,6 +2934,8 @@
     <keyword type="macro" name="NM_AVAILABLE_IN_1_20" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-20:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_22" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-22:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_22" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-22:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_22_2" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-22-2:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_22_2" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-22-2:CAPS"/>
     <keyword type="macro" name="NM_VPN_SERVICE_PLUGIN_DBUS_SERVICE_NAME" link="libnm-nm-vpn-service-plugin.html#NM-VPN-SERVICE-PLUGIN-DBUS-SERVICE-NAME:CAPS"/>
     <keyword type="macro" name="NM_VPN_SERVICE_PLUGIN_DBUS_WATCH_PEER" link="libnm-nm-vpn-service-plugin.html#NM-VPN-SERVICE-PLUGIN-DBUS-WATCH-PEER:CAPS"/>
     <keyword type="macro" name="NM_VPN_SERVICE_PLUGIN_STATE" link="libnm-nm-vpn-service-plugin.html#NM-VPN-SERVICE-PLUGIN-STATE:CAPS"/>
@@ -3066,6 +3071,7 @@
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-INVALID-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-INTERACTIVE-NOT-SUPPORTED:CAPS"/>
     <keyword type="constant" name="NM_CAPABILITY_TEAM" link="libnm-nm-dbus-interface.html#NM-CAPABILITY-TEAM:CAPS"/>
+    <keyword type="constant" name="NM_CAPABILITY_OVS" link="libnm-nm-dbus-interface.html#NM-CAPABILITY-OVS:CAPS"/>
     <keyword type="constant" name="NM_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-STATE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_STATE_ASLEEP" link="libnm-nm-dbus-interface.html#NM-STATE-ASLEEP:CAPS"/>
     <keyword type="constant" name="NM_STATE_DISCONNECTED" link="libnm-nm-dbus-interface.html#NM-STATE-DISCONNECTED:CAPS"/>
