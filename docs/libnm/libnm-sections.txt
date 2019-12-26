@@ -142,6 +142,7 @@ NM_CLIENT_DNS_MODE
 NM_CLIENT_DNS_RC_MANAGER
 NM_CLIENT_DNS_CONFIGURATION
 NM_CLIENT_CHECKPOINTS
+NM_CLIENT_CAPABILITIES
 NM_CLIENT_DEVICE_ADDED
 NM_CLIENT_DEVICE_REMOVED
 NM_CLIENT_ANY_DEVICE_ADDED
@@ -175,6 +176,7 @@ nm_client_get_startup
 nm_client_get_nm_running
 nm_client_get_metered
 nm_client_networking_get_enabled
+nm_client_get_capabilities
 nm_client_networking_set_enabled
 nm_client_wireless_get_enabled
 nm_client_wireless_set_enabled
@@ -4057,6 +4059,9 @@ NM_AVAILABLE_IN_1_20
 NM_DEPRECATED_IN_1_22
 NM_DEPRECATED_IN_1_22_FOR
 NM_AVAILABLE_IN_1_22
+NM_DEPRECATED_IN_1_22_2
+NM_DEPRECATED_IN_1_22_2_FOR
+NM_AVAILABLE_IN_1_22_2
 </SECTION>
 
 <SECTION>
