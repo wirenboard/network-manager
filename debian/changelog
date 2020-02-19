@@ -1,8 +1,9 @@
-network-manager (1.22.8-1) UNRELEASED; urgency=medium
+network-manager (1.22.8-1) unstable; urgency=medium
 
   * New upstream version 1.22.8
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Wed, 19 Feb 2020 23:32:46 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 20 Feb 2020 00:27:58 +0100
 
 network-manager (1.22.6-1) unstable; urgency=medium
 
@@ -46,7 +47,7 @@ network-manager (1.22.0-1) unstable; urgency=medium
   * New upstream version 1.22.0
   * Rebase patches
   * Explicitly disable (experimental) nm-cloud-setup tool
-  * Update symbols file for linm0
+  * Update symbols file for libnm0
 
  -- Michael Biebl <biebl@debian.org>  Wed, 18 Dec 2019 19:05:33 +0100
 
