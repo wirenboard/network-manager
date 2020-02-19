@@ -1010,8 +1010,8 @@ set_property (GObject *object, guint prop_id,
 	case PROP_IFACE:
 		/* construct-only */
 		priv->iface = g_value_dup_string (value);
-		g_return_if_fail (   priv->iface
-		                  && nm_utils_is_valid_iface_name (priv->iface, NULL));
+		g_return_if_fail (priv->iface);
+		nm_assert (nm_utils_ifname_valid_kernel (priv->iface, NULL));
 		break;
 	case PROP_IFINDEX:
 		/* construct-only */
@@ -1203,6 +1203,7 @@ nm_dhcp_client_class_init (NMDhcpClientClass *client_class)
 	                       G_PARAM_READWRITE |
 	                       G_PARAM_STATIC_STRINGS);
 
+	G_STATIC_ASSERT_EXPR (G_MAXINT32 == NM_DHCP_TIMEOUT_INFINITY);
 	obj_properties[PROP_TIMEOUT] =
 	    g_param_spec_uint (NM_DHCP_CLIENT_TIMEOUT, "", "",
 	                       1, G_MAXINT32, NM_DHCP_TIMEOUT_DEFAULT,
