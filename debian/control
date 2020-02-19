@@ -85,12 +85,9 @@ Description: network management framework (daemon and userspace tools)
 
 Package: network-manager-dev
 Section: devel
-Architecture: linux-any
-Multi-Arch: same
+Architecture: all
+Multi-Arch: foreign
 Depends: ${misc:Depends}
-Conflicts: libnm-glib-dev,
-           libnm-glib-vpn-dev,
-           libnm-util-dev,
 Description: network management framework (development files)
  This package provides documentation of the NetworkManager D-Bus API, the
  configuration formats and command line utilities.
