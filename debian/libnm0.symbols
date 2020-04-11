@@ -1,4 +1,5 @@
 libnm.so.0 libnm0 #MINVER#
+* Build-Depends-Package: libnm-dev
  libnm_1_0_0@libnm_1_0_0 1.0.0
  libnm_1_0_4@libnm_1_0_4 1.0.4
  libnm_1_0_6@libnm_1_0_6 1.0.6
