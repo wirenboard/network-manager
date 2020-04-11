@@ -444,6 +444,8 @@ typedef struct _NMDeviceClass {
 
 	gboolean        (* can_update_from_platform_link) (NMDevice *self, const NMPlatformLink *plink);
 
+	gboolean        (* set_platform_mtu) (NMDevice *self, guint32 mtu);
+
 	/* Controls, whether to call act_stage2_config() callback also for assuming
 	 * a device or for external activations. In this case, act_stage2_config() must
 	 * take care not to touch the device's configuration. */
@@ -504,8 +506,7 @@ const char *    nm_device_get_initial_hw_address (NMDevice *dev);
 
 NMProxyConfig * nm_device_get_proxy_config      (NMDevice *dev);
 
-NMDhcp4Config * nm_device_get_dhcp4_config      (NMDevice *dev);
-NMDhcp6Config * nm_device_get_dhcp6_config      (NMDevice *dev);
+NMDhcpConfig *  nm_device_get_dhcp_config       (NMDevice *dev, int addr_family);
 NMIP4Config *   nm_device_get_ip4_config        (NMDevice *dev);
 void            nm_device_replace_vpn4_config   (NMDevice *dev,
                                                  NMIP4Config *old,
@@ -882,5 +883,7 @@ struct _NMBtVTableNetworkServer {
 
 const char *nm_device_state_to_str (NMDeviceState state);
 const char *nm_device_state_reason_to_str (NMDeviceStateReason reason);
+
+gboolean nm_device_is_vpn (NMDevice *self);
 
 #endif /* __NETWORKMANAGER_DEVICE_H__ */

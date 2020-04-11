@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-2.1+
+
 libnm_inc = include_directories('.')
 
 libnm_nm_default_dep = declare_dependency(
@@ -39,6 +41,7 @@ libnm_headers = files(
   'nm-device-team.h',
   'nm-device-tun.h',
   'nm-device-vlan.h',
+  'nm-device-vrf.h',
   'nm-device-vxlan.h',
   'nm-device-wifi-p2p.h',
   'nm-device-wifi.h',
@@ -104,6 +107,7 @@ libnm_sources = files(
   'nm-device-team.c',
   'nm-device-tun.c',
   'nm-device-vlan.c',
+  'nm-device-vrf.c',
   'nm-device-vxlan.c',
   'nm-device-wifi-p2p.c',
   'nm-device-wifi.c',
@@ -278,3 +282,22 @@ endif
 if enable_tests
   subdir('tests')
 endif
+
+libnm_libnm_aux = static_library(
+  'nm-libnm-aux',
+  sources: nm_libnm_aux_source,
+  c_args: [
+    '-DG_LOG_DOMAIN="@0@"'.format('libnmc'),
+    '-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_CLIENT',
+  ],
+  dependencies: [
+    libnm_core_nm_default_dep,
+    libnm_libnm_core_intern_dep,
+    libnm_dep,
+  ],
+)
+
+libnm_libnm_aux_dep = declare_dependency(
+  include_directories: [shared_inc],
+  link_with: [libnm_libnm_aux],
+)

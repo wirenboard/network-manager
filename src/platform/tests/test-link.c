@@ -1144,7 +1144,7 @@ test_software_detect (gconstpointer user_data)
 		break;
 	}
 	case NM_LINK_TYPE_MACVTAP: {
-		NMPlatformLnkMacvtap lnk_macvtap = { };
+		NMPlatformLnkMacvlan lnk_macvtap = { };
 
 		lnk_macvtap.mode = MACVLAN_MODE_PRIVATE;
 		lnk_macvtap.no_promisc = FALSE;
@@ -1182,6 +1182,21 @@ test_software_detect (gconstpointer user_data)
 	case NM_LINK_TYPE_VLAN:
 		nmtstp_run_command_check ("ip link add name %s link %s type vlan id 1242", DEVICE_NAME, PARENT_NAME);
 		break;
+	case NM_LINK_TYPE_VRF: {
+		NMPlatformLnkVrf lnk_vrf = { };
+		gboolean not_supported;
+
+		lnk_vrf.table = 9876;
+
+		if (!nmtstp_link_vrf_add (NULL, ext, DEVICE_NAME, &lnk_vrf, &not_supported)) {
+			if (not_supported) {
+				g_test_skip ("Cannot create VRF interface because of missing kernel support");
+				goto out_delete_parent;
+			}
+			g_error ("Failed adding VRF interface");
+		}
+		break;
+	}
 	case NM_LINK_TYPE_VXLAN: {
 		NMPlatformLnkVxlan lnk_vxlan = { };
 
@@ -1389,7 +1404,7 @@ test_software_detect (gconstpointer user_data)
 			break;
 		}
 		case NM_LINK_TYPE_MACVTAP: {
-			const NMPlatformLnkMacvtap *plnk = &lnk->lnk_macvlan;
+			const NMPlatformLnkMacvlan *plnk = &lnk->lnk_macvlan;
 
 			g_assert (plnk == nm_platform_link_get_lnk_macvtap (NM_PLATFORM_GET, ifindex, NULL));
 			g_assert_cmpint (plnk->no_promisc, ==, FALSE);
@@ -1442,6 +1457,13 @@ test_software_detect (gconstpointer user_data)
 
 			g_assert (plnk == nm_platform_link_get_lnk_vlan (NM_PLATFORM_GET, ifindex, NULL));
 			g_assert_cmpint (plnk->id, ==, 1242);
+			break;
+		}
+		case NM_LINK_TYPE_VRF: {
+			const NMPlatformLnkVrf *plnk = &lnk->lnk_vrf;
+
+			g_assert (plnk == nm_platform_link_get_lnk_vrf (NM_PLATFORM_GET, ifindex, NULL));
+			g_assert_cmpint (plnk->table, ==, 9876);
 			break;
 		}
 		case NM_LINK_TYPE_VXLAN: {
@@ -2095,7 +2117,7 @@ test_vlan_set_xgress (void)
 static void
 test_create_many_links_do (guint n_devices)
 {
-	gint64 time, start_time = nm_utils_get_monotonic_timestamp_ns ();
+	gint64 time, start_time = nm_utils_get_monotonic_timestamp_nsec ();
 	guint i;
 	char name[64];
 	const NMPlatformLink *pllink;
@@ -2149,8 +2171,8 @@ test_create_many_links_do (guint n_devices)
 	_LOGI (">>> process events after deleting devices...");
 	nm_platform_process_events (NM_PLATFORM_GET);
 
-	time = nm_utils_get_monotonic_timestamp_ns () - start_time;
-	_LOGI (">>> finished in %ld.%09ld seconds", (long) (time / NM_UTILS_NS_PER_SECOND), (long) (time % NM_UTILS_NS_PER_SECOND));
+	time = nm_utils_get_monotonic_timestamp_nsec () - start_time;
+	_LOGI (">>> finished in %ld.%09ld seconds", (long) (time / NM_UTILS_NSEC_PER_SEC), (long) (time % NM_UTILS_NSEC_PER_SEC));
 }
 
 static void
@@ -3313,6 +3335,7 @@ _nmtstp_setup_tests (void)
 		test_software_detect_add ("/link/software/detect/sit", NM_LINK_TYPE_SIT, 0);
 		test_software_detect_add ("/link/software/detect/tun", NM_LINK_TYPE_TUN, 0);
 		test_software_detect_add ("/link/software/detect/vlan", NM_LINK_TYPE_VLAN, 0);
+		test_software_detect_add ("/link/software/detect/vrf", NM_LINK_TYPE_VRF, 0);
 		test_software_detect_add ("/link/software/detect/vxlan/0", NM_LINK_TYPE_VXLAN, 0);
 		test_software_detect_add ("/link/software/detect/vxlan/1", NM_LINK_TYPE_VXLAN, 1);
 		test_software_detect_add ("/link/software/detect/wireguard/0", NM_LINK_TYPE_WIREGUARD, 0);

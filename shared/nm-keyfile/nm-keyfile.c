@@ -248,7 +248,7 @@ build_route (KeyfileReaderInfo *info,
 
 	/* Next hop */
 	if (gateway_str && gateway_str[0]) {
-		if (!nm_utils_ipaddr_valid (family, gateway_str)) {
+		if (!nm_utils_ipaddr_is_valid (family, gateway_str)) {
 			/* Try workaround for routes written by broken keyfile writer.
 			 * Due to bug bgo#719851, an older version of writer would have
 			 * written "a:b:c:d::/plen,metric" if the gateway was ::, instead
@@ -966,10 +966,10 @@ mac_address_parser (KeyfileReaderInfo *info, NMSetting *setting, const char *key
 			buf_len = i + 1;
 			buf_arr = g_new (guint8, buf_len);
 			if (!nm_utils_hwaddr_aton (tmp_string, buf_arr, buf_len))
-				g_clear_pointer (&buf_arr, g_free);
+				nm_clear_g_free (&buf_arr);
 		}
 	}
-	g_clear_pointer (&tmp_string, g_free);
+	nm_clear_g_free (&tmp_string);
 
 	if (!buf_arr) {
 		gs_free int *tmp_list = NULL;
@@ -2407,7 +2407,7 @@ cert_writer_default (NMConnection *connection,
 		 * for example if the path is longer then 500 chars. */
 		tmp = nm_keyfile_detect_unqualified_path_scheme (base_dir, path, -1, FALSE, NULL);
 		if (tmp)
-			g_clear_pointer (&tmp, g_free);
+			nm_clear_g_free (&tmp);
 		else {
 			tmp = g_strconcat (NM_KEYFILE_CERT_SCHEME_PREFIX_PATH, path, NULL);
 			path = tmp;
