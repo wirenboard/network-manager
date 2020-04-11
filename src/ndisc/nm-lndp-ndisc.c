@@ -24,9 +24,7 @@
 
 typedef struct {
 	struct ndp *ndp;
-
-	GIOChannel *event_channel;
-	guint event_id;
+	GSource *event_source;
 } NMLndpNDiscPrivate;
 
 /*****************************************************************************/
@@ -44,14 +42,14 @@ struct _NMLndpNDiscClass {
 
 G_DEFINE_TYPE (NMLndpNDisc, nm_lndp_ndisc, NM_TYPE_NDISC)
 
-#define NM_LNDP_NDISC_GET_PRIVATE(self) _NM_GET_PRIVATE(self, NMLndpNDisc, NM_IS_LNDP_NDISC)
+#define NM_LNDP_NDISC_GET_PRIVATE(self) _NM_GET_PRIVATE(self, NMLndpNDisc, NM_IS_LNDP_NDISC, NMNDisc)
 
 /*****************************************************************************/
 
 static gboolean
 send_rs (NMNDisc *ndisc, GError **error)
 {
-	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE ((NMLndpNDisc *) ndisc);
+	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE (ndisc);
 	struct ndp_msg *msg;
 	int errsv;
 
@@ -99,10 +97,12 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 	NMNDiscConfigMap changed = 0;
 	struct ndp_msgra *msgra = ndp_msgra (msg);
 	struct in6_addr gateway_addr;
-	gint32 now = nm_utils_get_monotonic_timestamp_s ();
+	gint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	int offset;
 	int hop_limit;
 	guint32 val;
+	guint32 clamp_pltime;
+	guint32 clamp_vltime;
 
 	/* Router discovery is subject to the following RFC documents:
 	 *
@@ -167,7 +167,22 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 			changed |= NM_NDISC_CONFIG_GATEWAYS;
 	}
 
-	/* Addresses & Routes */
+	/* Addresses & Routes
+	 *
+	 * The Preferred Lifetime and Valid Lifetime of PIOs are capped to Router Lifetime
+	 * and NM_NDISC_VLTIME_MULT * Preferred Lifetime, respectively.
+	 *
+	 * The Lifetime of RIOs is capped to the Router Lifetime (there is no point in
+	 * maintaining a route if it employs a dead router).
+	 *
+	 * See draft-gont-6man-slaac-renum
+	 */
+	#define NM_NDISC_VLTIME_MULT ((guint32) 48)
+	clamp_pltime = ndp_msgra_router_lifetime (msgra);
+	clamp_vltime =   (clamp_pltime < G_MAXUINT32 / NM_NDISC_VLTIME_MULT)
+	               ? clamp_pltime * NM_NDISC_VLTIME_MULT
+	               : G_MAXUINT32;
+
 	ndp_msg_opt_for_each_offset (offset, msg, NDP_MSG_OPT_PREFIX) {
 		guint8 r_plen;
 		struct in6_addr r_network;
@@ -188,7 +203,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 				.network = r_network,
 				.plen = r_plen,
 				.timestamp = now,
-				.lifetime = ndp_msg_opt_prefix_valid_time (msg, offset),
+				.lifetime = NM_MIN (ndp_msg_opt_prefix_valid_time (msg, offset), clamp_vltime),
 			};
 
 			if (nm_ndisc_add_route (ndisc, &route))
@@ -201,8 +216,8 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 			NMNDiscAddress address = {
 				.address = r_network,
 				.timestamp = now,
-				.lifetime = ndp_msg_opt_prefix_valid_time (msg, offset),
-				.preferred = ndp_msg_opt_prefix_preferred_time (msg, offset),
+				.lifetime = NM_MIN (ndp_msg_opt_prefix_valid_time (msg, offset), clamp_vltime),
+				.preferred = NM_MIN (ndp_msg_opt_prefix_preferred_time (msg, offset), clamp_pltime),
 			};
 
 			if (address.preferred <= address.lifetime) {
@@ -216,7 +231,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 			.gateway = gateway_addr,
 			.plen = ndp_msg_opt_route_prefix_len (msg, offset),
 			.timestamp = now,
-			.lifetime = ndp_msg_opt_route_lifetime (msg, offset),
+			.lifetime = NM_MIN (ndp_msg_opt_route_lifetime (msg, offset), clamp_pltime),
 			.preference = _route_preference_coerce (ndp_msg_opt_route_preference (msg, offset)),
 		};
 
@@ -231,7 +246,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 
 	/* DNS information */
 	ndp_msg_opt_for_each_offset(offset, msg, NDP_MSG_OPT_RDNSS) {
-		static struct in6_addr *addr;
+		struct in6_addr *addr;
 		int addr_index;
 
 		ndp_msg_opt_rdnss_for_each_addr (addr, addr_index, msg, offset) {
@@ -260,7 +275,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 			NMNDiscDNSDomain dns_domain = {
 				.domain = domain,
 				.timestamp = now,
-				.lifetime = ndp_msg_opt_rdnss_lifetime (msg, offset),
+				.lifetime = ndp_msg_opt_dnssl_lifetime (msg, offset),
 			};
 
 			/* Pad the lifetime somewhat to give a bit of slack in cases
@@ -346,9 +361,9 @@ typedef struct {
 static gboolean
 send_ra (NMNDisc *ndisc, GError **error)
 {
-	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE ((NMLndpNDisc *) ndisc);
+	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE (ndisc);
 	NMNDiscDataInternal *rdata = ndisc->rdata;
-	gint32 now = nm_utils_get_monotonic_timestamp_s ();
+	gint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	int errsv;
 	struct in6_addr *addr;
 	struct ndp_msg *msg;
@@ -484,17 +499,19 @@ receive_rs (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 }
 
 static gboolean
-event_ready (GIOChannel *source, GIOCondition condition, NMNDisc *ndisc)
+event_ready (int fd,
+             GIOCondition condition,
+             gpointer user_data)
 {
-	_nm_unused gs_unref_object NMNDisc *ndisc_keep_alive = g_object_ref (ndisc);
+	gs_unref_object NMNDisc *ndisc = g_object_ref (NM_NDISC (user_data));
 	nm_auto_pop_netns NMPNetns *netns = NULL;
-	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE ((NMLndpNDisc *) ndisc);
+	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE (ndisc);
 
 	_LOGD ("processing libndp events");
 
 	if (!nm_ndisc_netns_push (ndisc, &netns)) {
 		/* something is very wrong. Stop handling events. */
-		priv->event_id = 0;
+		nm_clear_g_source_inst (&priv->event_source);
 		return G_SOURCE_REMOVE;
 	}
 
@@ -505,17 +522,23 @@ event_ready (GIOChannel *source, GIOCondition condition, NMNDisc *ndisc)
 static void
 start (NMNDisc *ndisc)
 {
-	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE ((NMLndpNDisc *) ndisc);
-	int fd = ndp_get_eventfd (priv->ndp);
+	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE (ndisc);
+	int fd;
 
-	g_return_if_fail (!priv->event_channel);
-	g_return_if_fail (!priv->event_id);
+	g_return_if_fail (!priv->event_source);
 
-	priv->event_channel = g_io_channel_unix_new (fd);
-	priv->event_id = g_io_add_watch (priv->event_channel, G_IO_IN, (GIOFunc) event_ready, ndisc);
+	fd = ndp_get_eventfd (priv->ndp);
+
+	priv->event_source = nm_g_unix_fd_source_new (fd,
+	                                              G_IO_IN,
+	                                              G_PRIORITY_DEFAULT,
+	                                              event_ready,
+	                                              ndisc,
+	                                              NULL);
+	g_source_attach (priv->event_source, NULL);
 
 	/* Flush any pending messages to avoid using obsolete information */
-	event_ready (priv->event_channel, 0, ndisc);
+	event_ready (fd, 0, ndisc);
 
 	switch (nm_ndisc_get_node_type (ndisc)) {
 	case NM_NDISC_NODE_TYPE_HOST:
@@ -592,7 +615,7 @@ nm_lndp_ndisc_new (NMPlatform *platform,
 	                                                                              1, G_MAXINT32, NM_NDISC_ROUTER_SOLICITATION_INTERVAL_DEFAULT),
 	                      NULL);
 
-	priv = NM_LNDP_NDISC_GET_PRIVATE ((NMLndpNDisc *) ndisc);
+	priv = NM_LNDP_NDISC_GET_PRIVATE (ndisc);
 
 	errsv = ndp_open (&priv->ndp);
 
@@ -610,11 +633,10 @@ nm_lndp_ndisc_new (NMPlatform *platform,
 static void
 dispose (GObject *object)
 {
-	NMNDisc *ndisc = (NMNDisc *) object;
-	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE ((NMLndpNDisc *) ndisc);
+	NMNDisc *ndisc = NM_NDISC (object);
+	NMLndpNDiscPrivate *priv = NM_LNDP_NDISC_GET_PRIVATE (ndisc);
 
-	nm_clear_g_source (&priv->event_id);
-	g_clear_pointer (&priv->event_channel, g_io_channel_unref);
+	nm_clear_g_source_inst (&priv->event_source);
 
 	if (priv->ndp) {
 		switch (nm_ndisc_get_node_type (ndisc)) {

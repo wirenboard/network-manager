@@ -157,7 +157,7 @@ static void
 test_simple (void)
 {
 	NMFakeNDisc *ndisc = ndisc_new ();
-	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	guint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	TestData data = { g_main_loop_new (NULL, FALSE), 0, 0, now };
 	guint id;
 
@@ -217,9 +217,8 @@ test_everything_changed (NMNDisc *ndisc, const NMNDiscData *rdata, guint changed
 
 		g_assert_cmpint (rdata->gateways_n, ==, 1);
 		match_gateway (rdata, 0, "fe80::2", data->timestamp1, 10, NM_ICMPV6_ROUTER_PREF_MEDIUM);
-		g_assert_cmpint (rdata->addresses_n, ==, 2);
-		match_address (rdata, 0, "2001:db8:a:a::1", data->timestamp1, 10, 0);
-		match_address (rdata, 1, "2001:db8:a:b::1", data->timestamp1, 10, 10);
+		g_assert_cmpint (rdata->addresses_n, ==, 1);
+		match_address (rdata, 0, "2001:db8:a:b::1", data->timestamp1, 10, 10);
 		g_assert_cmpint (rdata->routes_n, ==, 1);
 		match_route (rdata, 0, "2001:db8:a:b::", 64, "fe80::2", data->timestamp1, 10, 10);
 		g_assert_cmpint (rdata->dns_servers_n, ==, 1);
@@ -239,7 +238,7 @@ static void
 test_everything (void)
 {
 	NMFakeNDisc *ndisc = ndisc_new ();
-	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	guint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	TestData data = { g_main_loop_new (NULL, FALSE), 0, 0, now };
 	guint id;
 
@@ -313,7 +312,7 @@ static void
 test_preference_order (void)
 {
 	NMFakeNDisc *ndisc = ndisc_new ();
-	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	guint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	TestData data = { g_main_loop_new (NULL, FALSE), 0, 0, now };
 	guint id;
 
@@ -386,7 +385,7 @@ static void
 test_preference_changed (void)
 {
 	NMFakeNDisc *ndisc = ndisc_new ();
-	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	guint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	TestData data = { g_main_loop_new (NULL, FALSE), 0, 0, now };
 	guint id;
 
@@ -440,7 +439,7 @@ success_timeout (TestData *data)
 static void
 test_dns_solicit_loop_rs_sent (NMFakeNDisc *ndisc, TestData *data)
 {
-	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	guint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	guint id;
 
 	if (data->rs_counter > 0 && data->rs_counter < 6) {
@@ -472,7 +471,7 @@ static void
 test_dns_solicit_loop (void)
 {
 	NMFakeNDisc *ndisc = ndisc_new ();
-	guint32 now = nm_utils_get_monotonic_timestamp_s ();
+	guint32 now = nm_utils_get_monotonic_timestamp_sec ();
 	TestData data = { g_main_loop_new (NULL, FALSE), 0, 0, now, 0 };
 	guint id;
 
