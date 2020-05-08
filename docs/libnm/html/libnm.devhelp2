@@ -1450,6 +1450,8 @@
     <keyword type="macro" name="NM_SETTING_DNS_OPTION_SINGLE_REQUEST_REOPEN" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-SINGLE-REQUEST-REOPEN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_DNS_OPTION_NO_TLD_QUERY" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-NO-TLD-QUERY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_DNS_OPTION_USE_VC" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-USE-VC:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_DNS_OPTION_NO_RELOAD" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-NO-RELOAD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_DNS_OPTION_TRUST_AD" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-TRUST-AD:CAPS"/>
     <keyword type="struct" name="NMSettingIPConfig" link="NMSettingIPConfig.html#NMSettingIPConfig-struct"/>
     <keyword type="enum" name="enum NMDhcpHostnameFlags" link="NMSettingIPConfig.html#NMDhcpHostnameFlags" since="1.22"/>
     <keyword type="property" name="The “addresses” property" link="NMSettingIPConfig.html#NMSettingIPConfig--addresses"/>

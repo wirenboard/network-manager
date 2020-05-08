@@ -154,6 +154,9 @@ typedef struct _NMSupplicantInterfacePrivate {
 	bool           is_ready_main:1;
 	bool           is_ready_p2p_device:1;
 
+	bool           prop_scan_active:1;
+	bool           prop_scan_ssid:1;
+
 } NMSupplicantInterfacePrivate;
 
 struct _NMSupplicantInterfaceClass {
@@ -1123,7 +1126,7 @@ set_state (NMSupplicantInterface *self, NMSupplicantInterfaceState new_state)
 	if (new_state == priv->state)
 		return;
 
-	_LOGT ("set state \"%s\" (was \"%s\")",
+	_LOGT ("state: set state \"%s\" (was \"%s\")",
 	       nm_supplicant_interface_state_to_string (new_state),
 	       nm_supplicant_interface_state_to_string (priv->state));
 
@@ -1167,10 +1170,11 @@ static void
 parse_capabilities (NMSupplicantInterface *self, GVariant *capabilities)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	gboolean have_active = FALSE;
-	gboolean have_ssid = FALSE;
+	const gboolean old_prop_scan_active = priv->prop_scan_active;
+	const gboolean old_prop_scan_ssid = priv->prop_scan_ssid;
+	const guint32 old_max_scan_ssids = priv->max_scan_ssids;
 	gboolean have_ft = FALSE;
-	gint32 max_scan_ssids = -1;
+	gint32 max_scan_ssids;
 	const char **array;
 
 	nm_assert (capabilities && g_variant_is_of_type (capabilities, G_VARIANT_TYPE_VARDICT));
@@ -1195,23 +1199,37 @@ parse_capabilities (NMSupplicantInterface *self, GVariant *capabilities)
 	}
 
 	if (g_variant_lookup (capabilities, "Scan", "^a&s", &array)) {
-		if (g_strv_contains (array, "active"))
-			have_active = TRUE;
-		if (g_strv_contains (array, "ssid"))
-			have_ssid = TRUE;
+		const char **a;
+
+		priv->prop_scan_active = FALSE;
+		priv->prop_scan_ssid = FALSE;
+		for (a = array; *a; a++) {
+			if (nm_streq (*a, "active"))
+				priv->prop_scan_active = TRUE;
+			else if (nm_streq (*a, "ssid"))
+				priv->prop_scan_ssid = TRUE;
+		}
 		g_free (array);
 	}
 
 	if (g_variant_lookup (capabilities, "MaxScanSSID", "i", &max_scan_ssids)) {
-		/* We need active scan and SSID probe capabilities to care about MaxScanSSIDs */
-		if (max_scan_ssids > 0 && have_active && have_ssid) {
-			/* wpa_supplicant's NM_WPAS_MAX_SCAN_SSIDS value is 16, but for speed
-			 * and to ensure we don't disclose too many SSIDs from the hidden
-			 * list, we'll limit to 5.
-			 */
-			priv->max_scan_ssids = CLAMP (max_scan_ssids, 0, 5);
-			_LOGD ("supports %d scan SSIDs", priv->max_scan_ssids);
-		}
+		const gint32 WPAS_MAX_SCAN_SSIDS = 16;
+
+		/* Even if supplicant claims that 20 SSIDs are supported, the Scan request
+		 * still only accepts WPAS_MAX_SCAN_SSIDS SSIDs. Otherwise the D-Bus
+		 * request will be rejected with "fi.w1.wpa_supplicant1.InvalidArgs"
+		 * Body: ('Did not receive correct message arguments.', 'Too many ssids specified. Specify at most four')
+		 * */
+		priv->max_scan_ssids = CLAMP (max_scan_ssids, 0, WPAS_MAX_SCAN_SSIDS);
+	}
+
+	if (   old_max_scan_ssids != priv->max_scan_ssids
+	    || old_prop_scan_active != priv->prop_scan_active
+	    || old_prop_scan_ssid != priv->prop_scan_ssid) {
+		_LOGD ("supports %u scan SSIDs (scan: %cactive %cssid)",
+		       (guint32) priv->max_scan_ssids,
+		       priv->prop_scan_active ? '+' : '-',
+		       priv->prop_scan_ssid ? '+' : '-');
 	}
 }
 
@@ -1789,8 +1807,12 @@ _properties_changed_main (NMSupplicantInterface *self,
 		g_variant_unref (v_v);
 	}
 
-	if (nm_g_variant_lookup (properties, "Scanning", "b", &v_b))
-		priv->scanning_property = v_b;
+	if (nm_g_variant_lookup (properties, "Scanning", "b", &v_b)) {
+		if (priv->scanning_property != (!!v_b)) {
+			_LOGT ("scanning: %s (plain property)", v_b ? "yes" : "no");
+			priv->scanning_property = v_b;
+		}
+	}
 
 	if (nm_g_variant_lookup (properties, "Ifname", "&s", &v_s)) {
 		if (nm_utils_strdup_reset (&priv->ifname, v_s))
@@ -1816,8 +1838,13 @@ _properties_changed_main (NMSupplicantInterface *self,
 
 		state = wpas_state_string_to_enum (v_s);
 		if (state == NM_SUPPLICANT_INTERFACE_STATE_INVALID)
-			_LOGT ("ignore unknown supplicant state '%s'", v_s);
+			_LOGT ("state: ignore unknown supplicant state '%s' (is %s, plain property)",
+			       v_s,
+			       nm_supplicant_interface_state_to_string (priv->supp_state));
 		else if (priv->supp_state != state) {
+			_LOGT ("state: %s (was %s, plain property)",
+			       nm_supplicant_interface_state_to_string (state),
+			       nm_supplicant_interface_state_to_string (priv->supp_state));
 			priv->supp_state = state;
 			if (priv->state > NM_SUPPLICANT_INTERFACE_STATE_STARTING) {
 				/* Only transition to actual wpa_supplicant interface states (ie,
@@ -2328,39 +2355,81 @@ nm_supplicant_interface_assoc (NMSupplicantInterface *self,
 
 /*****************************************************************************/
 
+typedef struct {
+	NMSupplicantInterface *self;
+	GCancellable *cancellable;
+	NMSupplicantInterfaceRequestScanCallback callback;
+	gpointer user_data;
+} ScanRequestData;
+
 static void
 scan_request_cb (GObject *source, GAsyncResult *result, gpointer user_data)
 {
+	gs_unref_object NMSupplicantInterface *self_keep_alive = NULL;
 	NMSupplicantInterface *self;
 	gs_unref_variant GVariant *res = NULL;
 	gs_free_error GError *error = NULL;
+	ScanRequestData *data = user_data;
+	gboolean cancelled = FALSE;
 
 	res = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), result, &error);
-	if (nm_utils_error_is_cancelled (error))
-		return;
-
-	self = NM_SUPPLICANT_INTERFACE (user_data);
-	if (error) {
-		if (_nm_dbus_error_has_name (error, "fi.w1.wpa_supplicant1.Interface.ScanError"))
-			_LOGD ("request-scan: could not get scan request result: %s", error->message);
-		else {
-			g_dbus_error_strip_remote_error (error);
-			_LOGW ("request-scan: could not get scan request result: %s", error->message);
+	if (nm_utils_error_is_cancelled (error)) {
+		if (!data->callback) {
+			/* the self instance was not kept alive. We also must not touch it. Return. */
+			nm_g_object_unref (data->cancellable);
+			nm_g_slice_free (data);
+			return;
 		}
-	} else
-		_LOGT ("request-scan: request scanning success");
+		cancelled = TRUE;
+	}
+
+	self = data->self;
+	if (data->callback) {
+		/* the self instance was kept alive. Balance the reference count. */
+		self_keep_alive = self;
+	}
+
+	/* we don't propagate the error/success. That is, because either answer is not
+	 * reliable. What is important to us is whether the request completed, and
+	 * the current nm_supplicant_interface_get_scanning() state. */
+	if (cancelled)
+		_LOGD ("request-scan: request cancelled");
+	else {
+		if (error) {
+			if (_nm_dbus_error_has_name (error, "fi.w1.wpa_supplicant1.Interface.ScanError"))
+				_LOGD ("request-scan: could not get scan request result: %s", error->message);
+			else {
+				g_dbus_error_strip_remote_error (error);
+				_LOGW ("request-scan: could not get scan request result: %s", error->message);
+			}
+		} else
+			_LOGT ("request-scan: request scanning success");
+	}
+
+	if (data->callback)
+		data->callback (self, data->cancellable, data->user_data);
+
+	nm_g_object_unref (data->cancellable);
+	nm_g_slice_free (data);
 }
 
 void
 nm_supplicant_interface_request_scan (NMSupplicantInterface *self,
                                       GBytes *const*ssids,
-                                      guint ssids_len)
+                                      guint ssids_len,
+                                      GCancellable *cancellable,
+                                      NMSupplicantInterfaceRequestScanCallback callback,
+                                      gpointer user_data)
 {
 	NMSupplicantInterfacePrivate *priv;
 	GVariantBuilder builder;
+	ScanRequestData *data;
 	guint i;
 
 	g_return_if_fail (NM_IS_SUPPLICANT_INTERFACE (self));
+
+	nm_assert (   (!cancellable && !callback)
+	           || (G_IS_CANCELLABLE (cancellable) && callback));
 
 	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 
@@ -2381,6 +2450,26 @@ nm_supplicant_interface_request_scan (NMSupplicantInterface *self,
 		g_variant_builder_add (&builder, "{sv}", "SSIDs", g_variant_builder_end (&ssids_builder));
 	}
 
+	data = g_slice_new (ScanRequestData);
+	*data = (ScanRequestData) {
+		.self            = self,
+		.callback        = callback,
+		.user_data       = user_data,
+		.cancellable     = nm_g_object_ref (cancellable),
+	};
+
+	if (callback) {
+		/* A callback was provided. This keeps @self alive. The caller
+		 * must provide a cancellable as the caller must never leave an asynchronous
+		 * operation pending indefinitely. */
+		nm_assert (G_IS_CANCELLABLE (cancellable));
+		g_object_ref (self);
+	} else {
+		/* We don't keep @self alive, and we don't accept a cancellable either. */
+		nm_assert (!cancellable);
+		cancellable = priv->main_cancellable;
+	}
+
 	_dbus_connection_call (self,
 	                       NM_WPAS_DBUS_IFACE_INTERFACE,
 	                       "Scan",
@@ -2388,9 +2477,9 @@ nm_supplicant_interface_request_scan (NMSupplicantInterface *self,
 	                       G_VARIANT_TYPE ("()"),
 	                       G_DBUS_CALL_FLAGS_NONE,
 	                       DBUS_TIMEOUT_MSEC,
-	                       priv->main_cancellable,
+	                       cancellable,
 	                       scan_request_cb,
-	                       self);
+	                       data);
 }
 
 /*****************************************************************************/
@@ -2438,9 +2527,14 @@ nm_supplicant_interface_get_ifname (NMSupplicantInterface *self)
 guint
 nm_supplicant_interface_get_max_scan_ssids (NMSupplicantInterface *self)
 {
+	NMSupplicantInterfacePrivate *priv;
+
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), 0);
 
-	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->max_scan_ssids;
+	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+	return   priv->prop_scan_active && priv->prop_scan_ssid
+	       ? priv->max_scan_ssids
+	       : 0u;
 }
 
 /*****************************************************************************/
@@ -2504,7 +2598,7 @@ nm_supplicant_interface_p2p_connect (NMSupplicantInterface *self,
 	                              NM_WPAS_DBUS_IFACE_INTERFACE_P2P_DEVICE,
 	                              "Connect",
 	                              g_variant_new ("(a{sv})", &builder),
-	                              G_VARIANT_TYPE ("()"),
+	                              G_VARIANT_TYPE ("(s)"),
 	                              "p2p-connect");
 }
 

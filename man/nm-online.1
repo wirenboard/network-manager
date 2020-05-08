@@ -2,12 +2,12 @@
 .\"     Title: nm-online
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 04/10/2020
+.\"      Date: 05/08/2020
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.23.90
+.\"    Source: NetworkManager 1.24.0
 .\"  Language: English
 .\"
-.TH "NM\-ONLINE" "1" "" "NetworkManager 1\&.23\&.90" "General Commands Manual"
+.TH "NM\-ONLINE" "1" "" "NetworkManager 1\&.24\&.0" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,6 +50,18 @@ directly\&. Instead if necessary, order your services after
 network\-online\&.target\&. Even better is to have your services react to network changes dynamically and don\*(Aqt order them with respect to
 network\-online\&.target
 at all\&.
+.PP
+By default, connections have the
+ipv4\&.may\-fail
+and
+ipv6\&.may\-fail
+properties set to
+yes; this means that NetworkManager waits for one of the two address families to complete configuration before considering the connection activated\&. If you need a specific address family configured before
+network\-online\&.target
+is reached, set the corresponding
+may\-fail
+property to
+no\&.
 .SH "OPTIONS"
 .PP
 \fB\-h\fR | \fB\-\-help\fR
@@ -86,7 +98,9 @@ to fail\&.
 .PP
 \fB\-t\fR | \fB\-\-timeout\fR \fIseconds\fR
 .RS 4
-Time to wait for a connection, in seconds\&. If the option is not provided, the default timeout is 30 seconds\&.
+Time to wait for a connection, in seconds\&. If the option is not provided, the environment variable
+NM_ONLINE_TIMEOUT
+is honored\&. The default timeout is 30 seconds\&.
 .RE
 .PP
 \fB\-x\fR | \fB\-\-exit\fR

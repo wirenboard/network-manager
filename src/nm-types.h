@@ -40,6 +40,12 @@ typedef struct _NMSleepMonitor       NMSleepMonitor;
 typedef struct _NMLldpListener       NMLldpListener;
 typedef struct _NMConfigDeviceStateData NMConfigDeviceStateData;
 
+typedef void (*NMManagerDeviceAuthRequestFunc) (NMDevice *device,
+                                                GDBusMethodInvocation *context,
+                                                NMAuthSubject *subject,
+                                                GError *error,
+                                                gpointer user_data);
+
 struct _NMDedupMultiIndex;
 
 typedef struct _NMRefString NMRefString;
@@ -233,7 +239,9 @@ typedef enum {
  * NMIPConfigMergeFlags:
  * @NM_IP_CONFIG_MERGE_DEFAULT: no flags set
  * @NM_IP_CONFIG_MERGE_NO_ROUTES: don't merge routes
- * @NM_IP_CONFIG_MERGE_NO_DEFAULT_ROUTES: don't merge default routes
+ * @NM_IP_CONFIG_MERGE_NO_DEFAULT_ROUTES: don't merge default routes.
+ *   Note that if the source IP config has NM_IP_CONFIG_FLAGS_IGNORE_MERGE_NO_DEFAULT_ROUTES
+ *   set, this flag gets ignored during merge.
  * @NM_IP_CONFIG_MERGE_NO_DNS: don't merge DNS information
  * @NM_IP_CONFIG_MERGE_EXTERNAL: mark new addresses as external
  */

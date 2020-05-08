@@ -1709,8 +1709,10 @@ clients_common_tests_test_libnm_core_aux_LINK = $(LIBTOOL) $(AM_V_lt) \
 	-o $@
 clients_nm_online_SOURCES = clients/nm-online.c
 clients_nm_online_OBJECTS = clients/nm_online-nm-online.$(OBJEXT)
-clients_nm_online_DEPENDENCIES =  \
-	shared/nm-libnm-aux/libnm-libnm-aux.la libnm/libnm.la \
+clients_nm_online_DEPENDENCIES = libnm/libnm.la \
+	shared/nm-libnm-aux/libnm-libnm-aux.la \
+	shared/nm-glib-aux/libnm-glib-aux.la \
+	shared/nm-std-aux/libnm-std-aux.la shared/libcsiphash.la \
 	$(am__DEPENDENCIES_1)
 clients_nm_online_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -7386,9 +7388,13 @@ clients_nm_online_LDFLAGS = \
 	-Wl,--version-script="$(srcdir)/linker-script-binary.ver"
 
 clients_nm_online_LDADD = \
-	shared/nm-libnm-aux/libnm-libnm-aux.la \
 	libnm/libnm.la \
-	$(GLIB_LIBS)
+	shared/nm-libnm-aux/libnm-libnm-aux.la \
+	shared/nm-glib-aux/libnm-glib-aux.la \
+	shared/nm-std-aux/libnm-std-aux.la \
+	shared/libcsiphash.la \
+	$(GLIB_LIBS) \
+	$(NULL)
 
 
 ###############################################################################
@@ -20004,7 +20010,7 @@ check-local-clients-tests-test-client: clients/cli/nmcli clients/tests/test-clie
 	"$(PYTHON)" \
 	$(srcdir)/clients/tests/test-client.py -v &> "$(builddir)/clients/tests/test-client.log" && r=ok; \
 	cat "$(builddir)/clients/tests/test-client.log"; \
-	test "$$r" == ok
+	test "$$r" = ok
 
 @HAVE_SYSTEMD_TRUE@data/NetworkManager.service: $(srcdir)/data/NetworkManager.service.in
 @HAVE_SYSTEMD_TRUE@	$(AM_V_GEN) $(data_edit) $< >$@

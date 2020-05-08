@@ -191,7 +191,6 @@ typedef struct {
 enum {
 	STATE_CHANGED,
 	AUTOCONNECT_ALLOWED,
-	AUTH_REQUEST,
 	IP4_CONFIG_CHANGED,
 	IP6_CONFIG_CHANGED,
 	IP6_PREFIX_DELEGATED,
@@ -577,6 +576,7 @@ typedef struct _NMDevicePrivate {
 	NMMetered       metered;
 
 	NMSettings *settings;
+	NMManager *manager;
 
 	NMNetns *netns;
 
@@ -910,6 +910,12 @@ NMSettings *
 nm_device_get_settings (NMDevice *self)
 {
 	return NM_DEVICE_GET_PRIVATE (self)->settings;
+}
+
+NMManager *
+nm_device_get_manager (NMDevice *self)
+{
+	return NM_DEVICE_GET_PRIVATE (self)->manager;
 }
 
 NMNetns *
@@ -6257,6 +6263,27 @@ dnsmasq_state_changed_cb (NMDnsMasqManager *manager, guint32 status, gpointer us
 	}
 }
 
+void
+nm_device_auth_request (NMDevice *self,
+                        GDBusMethodInvocation *context,
+                        NMConnection *connection,
+                        const char *permission,
+                        gboolean allow_interaction,
+                        GCancellable *cancellable,
+                        NMManagerDeviceAuthRequestFunc callback,
+                        gpointer user_data)
+{
+	nm_manager_device_auth_request (nm_device_get_manager (self),
+	                                self,
+	                                context,
+	                                connection,
+	                                permission,
+	                                allow_interaction,
+	                                cancellable,
+	                                callback,
+	                                user_data);
+}
+
 /*****************************************************************************/
 
 static void
@@ -10557,6 +10584,8 @@ act_stage3_ip_config_start (NMDevice *self,
 	} else {
 		NMSettingIP6ConfigPrivacy ip6_privacy = NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN;
 		const char *ip6_privacy_str = "0";
+		NMPlatform *platform;
+		int ifindex;
 
 		if (nm_streq (method, NM_SETTING_IP6_CONFIG_METHOD_DISABLED)) {
 			nm_device_sysctl_ip_conf_set (self, AF_INET6, "disable_ipv6", "1");
@@ -10564,18 +10593,35 @@ act_stage3_ip_config_start (NMDevice *self,
 		}
 
 		if (nm_streq (method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE)) {
-			if (   !priv->master
-			    && !nm_device_sys_iface_state_is_external (self)) {
-				gboolean ipv6ll_handle_old = priv->ipv6ll_handle;
+			if (!nm_device_sys_iface_state_is_external (self)) {
+				if (priv->master) {
+					/* If a device only has an IPv6 link-local address,
+					 * we don't generate an assumed connection. Therefore,
+					 * when a new slave connection (without IP configuration)
+					 * is activated on the device, the link-local address
+					 * remains configured. The IP configuration of an activated
+					 * slave should not depend on the previous state. Flush
+					 * addresses and routes on activation.
+					 */
+					ifindex = nm_device_get_ip_ifindex (self);
+					platform = nm_device_get_platform (self);
 
-				/* When activating an IPv6 'ignore' connection we need to revert back
-				 * to kernel IPv6LL, but the kernel won't actually assign an address
-				 * to the interface until disable_ipv6 is bounced.
-				 */
-				set_nm_ipv6ll (self, FALSE);
-				if (ipv6ll_handle_old)
-					nm_device_sysctl_ip_conf_set (self, AF_INET6, "disable_ipv6", "1");
-				restore_ip6_properties (self);
+					if (ifindex > 0) {
+						nm_platform_ip_route_flush (platform, AF_INET6, ifindex);
+						nm_platform_ip_address_flush (platform, AF_INET6, ifindex);
+					}
+				} else {
+					gboolean ipv6ll_handle_old = priv->ipv6ll_handle;
+
+					/* When activating an IPv6 'ignore' connection we need to revert back
+					 * to kernel IPv6LL, but the kernel won't actually assign an address
+					 * to the interface until disable_ipv6 is bounced.
+					 */
+					set_nm_ipv6ll (self, FALSE);
+					if (ipv6ll_handle_old)
+						nm_device_sysctl_ip_conf_set (self, AF_INET6, "disable_ipv6", "1");
+					restore_ip6_properties (self);
+				}
 			}
 			return NM_ACT_STAGE_RETURN_IP_DONE;
 		}
@@ -12234,13 +12280,14 @@ impl_device_reapply (NMDBusObject *obj,
 	} else
 		reapply_data = NULL;
 
-	g_signal_emit (self, signals[AUTH_REQUEST], 0,
-	               invocation,
-	               nm_device_get_applied_connection (self),
-	               NM_AUTH_PERMISSION_NETWORK_CONTROL,
-	               TRUE,
-	               reapply_cb,
-	               reapply_data);
+	nm_device_auth_request (self,
+	                        invocation,
+	                        nm_device_get_applied_connection (self),
+	                        NM_AUTH_PERMISSION_NETWORK_CONTROL,
+	                        TRUE,
+	                        NULL,
+	                        reapply_cb,
+	                        reapply_data);
 }
 
 /*****************************************************************************/
@@ -12277,13 +12324,14 @@ get_applied_connection_cb (NMDevice *self,
 
 	if (applied_connection != user_data) {
 		/* The applied connection changed due to a race. Reauthenticate. */
-		g_signal_emit (self, signals[AUTH_REQUEST], 0,
-		               context,
-		               applied_connection,
-		               NM_AUTH_PERMISSION_NETWORK_CONTROL,
-		               TRUE,
-		               get_applied_connection_cb,
-		               applied_connection /* no need take a ref. We will not dereference this pointer. */);
+		nm_device_auth_request (self,
+		                        context,
+		                        applied_connection,
+		                        NM_AUTH_PERMISSION_NETWORK_CONTROL,
+		                        TRUE,
+		                        NULL,
+		                        get_applied_connection_cb,
+		                        applied_connection /* no need take a ref. We will not dereference this pointer. */);
 		return;
 	}
 
@@ -12330,13 +12378,14 @@ impl_device_get_applied_connection (NMDBusObject *obj,
 		return;
 	}
 
-	g_signal_emit (self, signals[AUTH_REQUEST], 0,
-	               invocation,
-	               applied_connection,
-	               NM_AUTH_PERMISSION_NETWORK_CONTROL,
-	               TRUE,
-	               get_applied_connection_cb,
-	               applied_connection /* no need take a ref. We will not dereference this pointer. */);
+	nm_device_auth_request (self,
+	                        invocation,
+	                        applied_connection,
+	                        NM_AUTH_PERMISSION_NETWORK_CONTROL,
+	                        TRUE,
+	                        NULL,
+	                        get_applied_connection_cb,
+	                        applied_connection /* no need take a ref. We will not dereference this pointer. */);
 }
 
 /*****************************************************************************/
@@ -12504,13 +12553,14 @@ impl_device_disconnect (NMDBusObject *obj,
 	connection = nm_device_get_applied_connection (self);
 	nm_assert (connection);
 
-	g_signal_emit (self, signals[AUTH_REQUEST], 0,
-	               invocation,
-	               connection,
-	               NM_AUTH_PERMISSION_NETWORK_CONTROL,
-	               TRUE,
-	               disconnect_cb,
-	               NULL);
+	nm_device_auth_request (self,
+	                        invocation,
+	                        connection,
+	                        NM_AUTH_PERMISSION_NETWORK_CONTROL,
+	                        TRUE,
+	                        NULL,
+	                        disconnect_cb,
+	                        NULL);
 }
 
 static void
@@ -12556,13 +12606,14 @@ impl_device_delete (NMDBusObject *obj,
 		return;
 	}
 
-	g_signal_emit (self, signals[AUTH_REQUEST], 0,
-	               invocation,
-	               NULL,
-	               NM_AUTH_PERMISSION_NETWORK_CONTROL,
-	               TRUE,
-	               delete_cb,
-	               NULL);
+	nm_device_auth_request (self,
+	                        invocation,
+	                        NULL,
+	                        NM_AUTH_PERMISSION_NETWORK_CONTROL,
+	                        TRUE,
+	                        NULL,
+	                        delete_cb,
+	                        NULL);
 }
 
 static void
@@ -17390,8 +17441,8 @@ constructed (GObject *object)
 	g_signal_connect (platform, NM_PLATFORM_SIGNAL_IP6_ROUTE_CHANGED, G_CALLBACK (device_ipx_changed), self);
 	g_signal_connect (platform, NM_PLATFORM_SIGNAL_LINK_CHANGED, G_CALLBACK (link_changed_cb), self);
 
+	priv->manager = g_object_ref (NM_MANAGER_GET);
 	priv->settings = g_object_ref (NM_SETTINGS_GET);
-	g_assert (priv->settings);
 
 	g_signal_connect (priv->settings,
 	                  NM_SETTINGS_SIGNAL_CONNECTION_ADDED,
@@ -17548,6 +17599,7 @@ finalize (GObject *object)
 	/* for testing, NMDeviceTest does not invoke NMDevice::constructed,
 	 * and thus @settings might be unset. */
 	nm_g_object_unref (priv->settings);
+	nm_g_object_unref (priv->manager);
 
 	nm_g_object_unref (priv->concheck_mgr);
 
@@ -17943,14 +17995,6 @@ nm_device_class_init (NMDeviceClass *klass)
 	                  0,
 	                  autoconnect_allowed_accumulator, NULL, NULL,
 	                  G_TYPE_BOOLEAN, 0);
-
-	signals[AUTH_REQUEST] =
-	    g_signal_new (NM_DEVICE_AUTH_REQUEST,
-	                  G_OBJECT_CLASS_TYPE (object_class),
-	                  G_SIGNAL_RUN_FIRST,
-	                  0, NULL, NULL, NULL,
-	                  /* context, connection, permission, allow_interaction, callback, user_data */
-	                  G_TYPE_NONE, 6, G_TYPE_DBUS_METHOD_INVOCATION, NM_TYPE_CONNECTION, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_POINTER, G_TYPE_POINTER);
 
 	signals[IP4_CONFIG_CHANGED] =
 	    g_signal_new (NM_DEVICE_IP4_CONFIG_CHANGED,

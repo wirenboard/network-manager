@@ -280,6 +280,14 @@ gboolean nm_utils_ipaddr_is_normalized (int addr_family,
             return (_a < _b) ? -1 : 1; \
     } G_STMT_END
 
+/* In the general case, direct pointer comparison is undefined behavior in C.
+ * Avoid that by casting pointers to void* and then to uintptr_t. This comparison
+ * is not really meaningful, except that it provides some kind of stable sort order
+ * between pointers (that can otherwise not be compared). */
+#define NM_CMP_DIRECT_PTR(a, b) \
+	NM_CMP_DIRECT ((uintptr_t) ((void *) (a)), \
+	               (uintptr_t) ((void *) (b)))
+
 #define NM_CMP_DIRECT_MEMCMP(a, b, size) \
     NM_CMP_RETURN (memcmp ((a), (b), (size)))
 
@@ -380,6 +388,8 @@ nm_utils_is_separator (const char c)
 }
 
 /*****************************************************************************/
+
+GBytes *nm_gbytes_get_empty (void);
 
 static inline gboolean
 nm_gbytes_equal0 (GBytes *a, GBytes *b)
@@ -1621,12 +1631,17 @@ void _nm_utils_user_data_unpack (gpointer user_data, int nargs, ...);
 
 /*****************************************************************************/
 
-typedef void (*NMUtilsInvokeOnIdleCallback) (gpointer callback_user_data,
+typedef void (*NMUtilsInvokeOnIdleCallback) (gpointer user_data,
                                              GCancellable *cancellable);
 
-void nm_utils_invoke_on_idle (NMUtilsInvokeOnIdleCallback callback,
-                              gpointer callback_user_data,
-                              GCancellable *cancellable);
+void nm_utils_invoke_on_idle (GCancellable *cancellable,
+                              NMUtilsInvokeOnIdleCallback callback,
+                              gpointer callback_user_data);
+
+void nm_utils_invoke_on_timeout (guint timeout_msec,
+                                 GCancellable *cancellable,
+                                 NMUtilsInvokeOnIdleCallback callback,
+                                 gpointer callback_user_data);
 
 /*****************************************************************************/
 

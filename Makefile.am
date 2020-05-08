@@ -4285,9 +4285,13 @@ clients_nm_online_LDFLAGS = \
 	-Wl,--version-script="$(srcdir)/linker-script-binary.ver"
 
 clients_nm_online_LDADD = \
-	shared/nm-libnm-aux/libnm-libnm-aux.la \
 	libnm/libnm.la \
-	$(GLIB_LIBS)
+	shared/nm-libnm-aux/libnm-libnm-aux.la \
+	shared/nm-glib-aux/libnm-glib-aux.la \
+	shared/nm-std-aux/libnm-std-aux.la \
+	shared/libcsiphash.la \
+	$(GLIB_LIBS) \
+	$(NULL)
 
 $(clients_nm_online_OBJECTS): $(libnm_core_lib_h_pub_mkenums)
 $(clients_nm_online_OBJECTS): $(libnm_lib_h_pub_mkenums)
@@ -4833,7 +4837,7 @@ check-local-clients-tests-test-client: clients/cli/nmcli clients/tests/test-clie
 	"$(PYTHON)" \
 	$(srcdir)/clients/tests/test-client.py -v &> "$(builddir)/clients/tests/test-client.log" && r=ok; \
 	cat "$(builddir)/clients/tests/test-client.log"; \
-	test "$$r" == ok
+	test "$$r" = ok
 
 check_local += check-local-clients-tests-test-client
 

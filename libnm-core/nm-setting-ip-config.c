@@ -47,6 +47,8 @@ const NMUtilsDNSOptionDesc _nm_utils_dns_option_descs[] = {
 	{ NM_SETTING_DNS_OPTION_SINGLE_REQUEST_REOPEN, FALSE,   FALSE },
 	{ NM_SETTING_DNS_OPTION_NO_TLD_QUERY,          FALSE,   FALSE },
 	{ NM_SETTING_DNS_OPTION_USE_VC,                FALSE,   FALSE },
+	{ NM_SETTING_DNS_OPTION_NO_RELOAD,             FALSE,   FALSE },
+	{ NM_SETTING_DNS_OPTION_TRUST_AD,              FALSE,   FALSE },
 	{ NULL,                                        FALSE,   FALSE }
 };
 
@@ -5602,6 +5604,15 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *klass)
 	 * In this case NetworkManager will use default options. This is
 	 * distinct from an empty list of properties.
 	 *
+	 * The currently supported options are "attempts", "debug", "edns0",
+	 * "inet6", "ip6-bytestring", "ip6-dotint", "ndots", "no-check-names",
+	 * "no-ip6-dotint", "no-reload", "no-tld-query", "rotate", "single-request",
+	 * "single-request-reopen", "timeout", "trust-ad", "use-vc".
+	 *
+	 * The "trust-ad" setting is only honored if the profile contributes
+	 * name servers to resolv.conf, and if all contributing profiles have
+	 * "trust-ad" enabled.
+	 *
 	 * Since: 1.2
 	 **/
 	obj_properties[PROP_DNS_OPTIONS] =
@@ -5674,6 +5685,13 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *klass)
 	 *
 	 * The gateway associated with this configuration. This is only meaningful
 	 * if #NMSettingIPConfig:addresses is also set.
+	 *
+	 * The gateway's main purpose is to control the next hop of the standard default route on the device.
+	 * Hence, the gateway property conflicts with #NMSettingIPConfig:never-default and will be
+	 * automatically dropped if the IP configuration is set to never-default.
+	 *
+	 * As an alternative to set the gateway, configure a static default route with /0 as prefix
+	 * length.
 	 **/
 	obj_properties[PROP_GATEWAY] =
 	    g_param_spec_string (NM_SETTING_IP_CONFIG_GATEWAY, "", "",
