@@ -8,7 +8,7 @@
 <link rel="up" href="manpages.html" title="Part I. Manual Pages">
 <link rel="prev" href="nmtui.html" title="nmtui">
 <link rel="next" href="nm-settings-keyfile.html" title="nm-settings-keyfile">
-<meta name="generator" content="GTK-Doc V1.32.1 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.32 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -1517,7 +1517,7 @@
 <a name="nm-settings.property.ipv4.dns-options"></a>dns-options</td>
 <td align="left">array of string</td>
 <td align="left"> </td>
-<td>Array of DNS options as described in man 5 resolv.conf. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
+<td>Array of DNS options as described in man 5 resolv.conf. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties. The currently supported options are "attempts", "debug", "edns0", "inet6", "ip6-bytestring", "ip6-dotint", "ndots", "no-check-names", "no-ip6-dotint", "no-reload", "no-tld-query", "rotate", "single-request", "single-request-reopen", "timeout", "trust-ad", "use-vc". The "trust-ad" setting is only honored if the profile contributes name servers to resolv.conf, and if all contributing profiles have "trust-ad" enabled.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1538,7 +1538,7 @@
 <a name="nm-settings.property.ipv4.gateway"></a>gateway</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The gateway associated with this configuration. This is only meaningful if "addresses" is also set.</td>
+<td>The gateway associated with this configuration. This is only meaningful if "addresses" is also set. The gateway's main purpose is to control the next hop of the standard default route on the device. Hence, the gateway property conflicts with "never-default" and will be automatically dropped if the IP configuration is set to never-default. As an alternative to set the gateway, configure a static default route with /0 as prefix length.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1706,7 +1706,7 @@
 <a name="nm-settings.property.ipv6.dns-options"></a>dns-options</td>
 <td align="left">array of string</td>
 <td align="left"> </td>
-<td>Array of DNS options as described in man 5 resolv.conf. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
+<td>Array of DNS options as described in man 5 resolv.conf. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties. The currently supported options are "attempts", "debug", "edns0", "inet6", "ip6-bytestring", "ip6-dotint", "ndots", "no-check-names", "no-ip6-dotint", "no-reload", "no-tld-query", "rotate", "single-request", "single-request-reopen", "timeout", "trust-ad", "use-vc". The "trust-ad" setting is only honored if the profile contributes name servers to resolv.conf, and if all contributing profiles have "trust-ad" enabled.</td>
 </tr>
 <tr>
 <td align="left">
@@ -1727,7 +1727,7 @@
 <a name="nm-settings.property.ipv6.gateway"></a>gateway</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The gateway associated with this configuration. This is only meaningful if "addresses" is also set.</td>
+<td>The gateway associated with this configuration. This is only meaningful if "addresses" is also set. The gateway's main purpose is to control the next hop of the standard default route on the device. Hence, the gateway property conflicts with "never-default" and will be automatically dropped if the IP configuration is set to never-default. As an alternative to set the gateway, configure a static default route with /0 as prefix length.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3528,7 +3528,7 @@
 <a name="nm-settings.property.wireguard.ip4-auto-default-route"></a>ip4-auto-default-route</td>
 <td align="left">NMTernary (int32)</td>
 <td align="left"> </td>
-<td>Whether to enable special handling of the IPv4 default route. If enabled, the IPv4 default route will be placed to a dedicated routing-table and two policy routing rules will be added. The fwmark number is also used as routing-table for the default-route, and if fwmark is zero, a unused fwmark/table is chosen automatically. This corresponds to what wg-quick does with Table=auto. Leaving this at the default will enable this option automatically if ipv4.never-default is not set and there are any peers that use a default-route as allowed-ips.</td>
+<td>Whether to enable special handling of the IPv4 default route. If enabled, the IPv4 default route from wireguard.peer-routes will be placed to a dedicated routing-table and two policy routing rules will be added. The fwmark number is also used as routing-table for the default-route, and if fwmark is zero, an unused fwmark/table is chosen automatically. This corresponds to what wg-quick does with Table=auto and what WireGuard calls "Improved Rule-based Routing". Note that for this automatism to work, you usually don't want to set ipv4.gateway, because that will result in a conflicting default route. Leaving this at the default will enable this option automatically if ipv4.never-default is not set and there are any peers that use a default-route as allowed-ips.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3556,7 +3556,7 @@
 <a name="nm-settings.property.wireguard.peer-routes"></a>peer-routes</td>
 <td align="left">boolean</td>
 <td align="left">TRUE</td>
-<td>Whether to automatically add routes for the AllowedIPs ranges of the peers. If TRUE (the default), NetworkManager will automatically add routes in the routing tables according to ipv4.route-table and ipv6.route-table. If FALSE, no such routes are added automatically. In this case, the user may want to configure static routes in ipv4.routes and ipv6.routes, respectively.</td>
+<td>Whether to automatically add routes for the AllowedIPs ranges of the peers. If TRUE (the default), NetworkManager will automatically add routes in the routing tables according to ipv4.route-table and ipv6.route-table. Usually you want this automatism enabled. If FALSE, no such routes are added automatically. In this case, the user may want to configure static routes in ipv4.routes and ipv6.routes, respectively. Note that if the peer's AllowedIPs is "0.0.0.0/0" or "::/0" and the profile's ipv4.never-default or ipv6.never-default setting is enabled, the peer route for this peer won't be added automatically.</td>
 </tr>
 <tr>
 <td align="left">
@@ -3991,6 +3991,6 @@
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.32.1</div>
+<hr>Generated by GTK-Doc V1.32</div>
 </body>
 </html>
