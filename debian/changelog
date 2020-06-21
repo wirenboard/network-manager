@@ -1,8 +1,13 @@
-network-manager (1.24.2-1) UNRELEASED; urgency=medium
+network-manager (1.24.2-1) unstable; urgency=medium
 
+  [ Michael Biebl ]
   * New upstream version 1.24.2
+  * Install firewalld zone for connection sharing
 
- -- Michael Biebl <biebl@debian.org>  Sat, 30 May 2020 00:24:48 +0200
+  [ Sebastien Bacher ]
+  * The iptables binary is now installed in /usr/sbin/
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 21 Jun 2020 13:44:56 +0200
 
 network-manager (1.24.0-1) unstable; urgency=medium
 
