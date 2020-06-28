@@ -69,6 +69,8 @@ typedef gboolean (*NMPObjectPredicateFunc) (const NMPObject *obj,
 #define NM_GRE_KEY      0x2000
 
 typedef enum {
+	NMP_NLM_FLAG_F_ECHO         = 0x08, /* NLM_F_ECHO, Echo this request */
+
 	/* use our own platform enum for the nlmsg-flags. Otherwise, we'd have
 	 * to include <linux/netlink.h> */
 	NMP_NLM_FLAG_F_REPLACE      = 0x100, /* NLM_F_REPLACE, Override existing */
@@ -628,6 +630,22 @@ typedef struct {
 } NMPlatformQdiscFqCodel;
 
 typedef struct {
+	unsigned quantum;
+	int perturb_period;
+	guint32 limit;
+	unsigned divisor;
+	unsigned flows;
+	unsigned depth;
+} NMPlatformQdiscSfq;
+
+typedef struct {
+	guint64 rate;
+	guint32 burst;
+	guint32 limit;
+	guint32 latency;
+} NMPlatformQdiscTbf;
+
+typedef struct {
 	__NMPlatformObjWithIfindex_COMMON;
 
 	/* beware, kind is embedded in an NMPObject, hence you must
@@ -640,6 +658,8 @@ typedef struct {
 	guint32 info;
 	union {
 		NMPlatformQdiscFqCodel fq_codel;
+		NMPlatformQdiscSfq sfq;
+		NMPlatformQdiscTbf tbf;
 	};
 } NMPlatformQdisc;
 
@@ -989,9 +1009,6 @@ typedef struct {
 	gboolean (*link_set_down) (NMPlatform *self, int ifindex);
 	gboolean (*link_set_arp) (NMPlatform *self, int ifindex);
 	gboolean (*link_set_noarp) (NMPlatform *self, int ifindex);
-
-	const char *(*link_get_udi) (NMPlatform *self, int ifindex);
-	struct udev_device *(*link_get_udev_device) (NMPlatform *self, int ifindex);
 
 	int (*link_set_user_ipv6ll_enabled) (NMPlatform *self, int ifindex, gboolean enabled);
 	gboolean (*link_set_token) (NMPlatform *self, int ifindex, NMUtilsIPv6IfaceId iid);
@@ -1613,6 +1630,7 @@ gboolean nm_platform_link_set_arp (NMPlatform *self, int ifindex);
 gboolean nm_platform_link_set_noarp (NMPlatform *self, int ifindex);
 
 const char *nm_platform_link_get_udi (NMPlatform *self, int ifindex);
+const char *nm_platform_link_get_path (NMPlatform *self, int ifindex);
 
 struct udev_device *nm_platform_link_get_udev_device (NMPlatform *self, int ifindex);
 
@@ -1907,6 +1925,9 @@ nm_platform_routing_rule_cmp_full (const NMPlatformRoutingRule *a, const NMPlatf
 }
 
 int nm_platform_qdisc_cmp (const NMPlatformQdisc *a, const NMPlatformQdisc *b);
+int nm_platform_qdisc_cmp_full (const NMPlatformQdisc *a,
+                                const NMPlatformQdisc *b,
+                                gboolean compare_handle);
 int nm_platform_tfilter_cmp (const NMPlatformTfilter *a, const NMPlatformTfilter *b);
 
 void nm_platform_link_hash_update (const NMPlatformLink *obj, NMHashState *h);
@@ -1953,6 +1974,26 @@ gboolean nm_platform_ethtool_set_features (NMPlatform *self,
                                            const NMEthtoolFeatureStates *features,
                                            const NMTernary *requested /* indexed by NMEthtoolID - _NM_ETHTOOL_ID_FEATURE_FIRST */,
                                            gboolean do_set /* or reset */);
+
+typedef struct _NMEthtoolCoalesceState NMEthtoolCoalesceState;
+
+gboolean nm_platform_ethtool_get_link_coalesce (NMPlatform *self,
+                                                int ifindex,
+                                                NMEthtoolCoalesceState *coalesce);
+
+gboolean nm_platform_ethtool_set_coalesce (NMPlatform *self,
+                                           int ifindex,
+                                           const NMEthtoolCoalesceState *coalesce);
+
+typedef struct _NMEthtoolRingState NMEthtoolRingState;
+
+gboolean nm_platform_ethtool_get_link_ring (NMPlatform *self,
+                                            int ifindex,
+                                            NMEthtoolRingState *ring);
+
+gboolean nm_platform_ethtool_set_ring (NMPlatform *self,
+                                       int ifindex,
+                                       const NMEthtoolRingState *ring);
 
 const char * nm_platform_link_duplex_type_to_string (NMPlatformLinkDuplexType duplex);
 

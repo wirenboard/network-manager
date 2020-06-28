@@ -1703,11 +1703,13 @@ nm_wildcard_match_check (const char *str,
                          const char *const *patterns,
                          guint num_patterns)
 {
-	guint i, neg = 0;
+	gsize i, neg = 0;
 
 	for (i = 0; i < num_patterns; i++) {
 		if (patterns[i][0] == '!') {
 			neg++;
+			if (!str)
+				continue;
 			if (!fnmatch (patterns[i] + 1, str, 0))
 				return FALSE;
 		}
@@ -1716,10 +1718,12 @@ nm_wildcard_match_check (const char *str,
 	if (neg == num_patterns)
 		return TRUE;
 
-	for (i = 0; i < num_patterns; i++) {
-		if (   patterns[i][0] != '!'
-		    && !fnmatch (patterns[i], str, 0))
-			return TRUE;
+	if (str) {
+		for (i = 0; i < num_patterns; i++) {
+			if (   patterns[i][0] != '!'
+			    && !fnmatch (patterns[i], str, 0))
+				return TRUE;
+		}
 	}
 
 	return FALSE;
@@ -2776,7 +2780,7 @@ again:
 	if (G_UNLIKELY (!proc_cmdline)) {
 		gs_free const char **split = NULL;
 
-		/* TODO: support quotation, like systemd's proc_cmdline_extract_first().
+		/* FIXME(release-blocker): support quotation, like systemd's proc_cmdline_extract_first().
 		 * For that, add a new NMUtilsStrsplitSetFlags flag. */
 		split = nm_utils_strsplit_set_full (nm_utils_proc_cmdline (),
 		                                    NM_ASCII_WHITESPACES,
@@ -4442,21 +4446,18 @@ nm_wifi_utils_parse_ies (const guint8 *bytes,
 			}
 			break;
 		case WLAN_EID_VENDOR_SPECIFIC:
-			if (out_metered) {
-				if (   len == 8
-				    && bytes[0] == 0x00            /* OUI: Microsoft */
-				    && bytes[1] == 0x50
-				    && bytes[2] == 0xf2
-				    && bytes[3] == 0x11)           /* OUI type: Network cost */
-					*out_metered = (bytes[7] > 1); /* Cost level > 1 */
-			}
-			if (   out_owe_transition_mode
-			    && elem_len >= 10
+			if (   len == 8
+			    && bytes[0] == 0x00            /* OUI: Microsoft */
+			    && bytes[1] == 0x50
+			    && bytes[2] == 0xf2
+			    && bytes[3] == 0x11)           /* OUI type: Network cost */
+				NM_SET_OUT (out_metered, (bytes[7] > 1)); /* Cost level > 1 */
+			if (   elem_len >= 10
 			    && bytes[0] == 0x50            /* OUI: WiFi Alliance */
 			    && bytes[1] == 0x6f
 			    && bytes[2] == 0x9a
 			    && bytes[3] == 0x1c)           /* OUI type: OWE Transition Mode */
-				*out_owe_transition_mode = TRUE;
+				NM_SET_OUT (out_owe_transition_mode, TRUE);
 			break;
 		}
 
