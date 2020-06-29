@@ -1470,6 +1470,7 @@
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_SRC" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-SRC:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_TABLE" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-TABLE:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_TOS" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-TOS:CAPS"/>
+    <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_TYPE" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-TYPE:CAPS"/>
     <keyword type="macro" name="NM_IP_ROUTE_ATTRIBUTE_WINDOW" link="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-WINDOW:CAPS"/>
     <keyword type="enum" name="enum NMIPRoutingRuleAsStringFlags" link="NMSettingIPConfig.html#NMIPRoutingRuleAsStringFlags" since="1.18"/>
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DAD-TIMEOUT-MAX:CAPS"/>

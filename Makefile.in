@@ -1681,12 +1681,15 @@ am__clients_cloud_setup_nm_cloud_setup_SOURCES_DIST =  \
 	clients/cloud-setup/nmcs-provider.c \
 	clients/cloud-setup/nmcs-provider.h \
 	clients/cloud-setup/nmcs-provider-ec2.c \
-	clients/cloud-setup/nmcs-provider-ec2.h
+	clients/cloud-setup/nmcs-provider-ec2.h \
+	clients/cloud-setup/nmcs-provider-gcp.c \
+	clients/cloud-setup/nmcs-provider-gcp.h
 @BUILD_NM_CLOUD_SETUP_TRUE@am_clients_cloud_setup_nm_cloud_setup_OBJECTS = clients/cloud-setup/nm_cloud_setup-main.$(OBJEXT) \
 @BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nm_cloud_setup-nm-cloud-setup-utils.$(OBJEXT) \
 @BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nm_cloud_setup-nm-http-client.$(OBJEXT) \
 @BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nm_cloud_setup-nmcs-provider.$(OBJEXT) \
-@BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nm_cloud_setup-nmcs-provider-ec2.$(OBJEXT)
+@BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nm_cloud_setup-nmcs-provider-ec2.$(OBJEXT) \
+@BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.$(OBJEXT)
 clients_cloud_setup_nm_cloud_setup_OBJECTS =  \
 	$(am_clients_cloud_setup_nm_cloud_setup_OBJECTS)
 @BUILD_NM_CLOUD_SETUP_TRUE@clients_cloud_setup_nm_cloud_setup_DEPENDENCIES = libnm/nm-libnm-aux/libnm-libnm-aux.la \
@@ -2560,6 +2563,7 @@ am__depfiles_remade = clients/$(DEPDIR)/nm_online-nm-online.Po \
 	clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-cloud-setup-utils.Po \
 	clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-http-client.Po \
 	clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-ec2.Po \
+	clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Po \
 	clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider.Po \
 	clients/common/$(DEPDIR)/libnmc_base_la-nm-client-utils.Plo \
 	clients/common/$(DEPDIR)/libnmc_base_la-nm-polkit-listener.Plo \
@@ -7839,6 +7843,8 @@ clients_cli_generate_docs_nm_settings_nmcli_LDFLAGS = \
 @BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nmcs-provider.h \
 @BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nmcs-provider-ec2.c \
 @BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nmcs-provider-ec2.h \
+@BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nmcs-provider-gcp.c \
+@BUILD_NM_CLOUD_SETUP_TRUE@	clients/cloud-setup/nmcs-provider-gcp.h \
 @BUILD_NM_CLOUD_SETUP_TRUE@	$(NULL)
 
 @BUILD_NM_CLOUD_SETUP_TRUE@clients_cloud_setup_nm_cloud_setup_CPPFLAGS = \
@@ -10084,6 +10090,9 @@ clients/cloud-setup/nm_cloud_setup-nmcs-provider.$(OBJEXT):  \
 clients/cloud-setup/nm_cloud_setup-nmcs-provider-ec2.$(OBJEXT):  \
 	clients/cloud-setup/$(am__dirstamp) \
 	clients/cloud-setup/$(DEPDIR)/$(am__dirstamp)
+clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.$(OBJEXT):  \
+	clients/cloud-setup/$(am__dirstamp) \
+	clients/cloud-setup/$(DEPDIR)/$(am__dirstamp)
 
 clients/cloud-setup/nm-cloud-setup$(EXEEXT): $(clients_cloud_setup_nm_cloud_setup_OBJECTS) $(clients_cloud_setup_nm_cloud_setup_DEPENDENCIES) $(EXTRA_clients_cloud_setup_nm_cloud_setup_DEPENDENCIES) clients/cloud-setup/$(am__dirstamp)
 	@rm -f clients/cloud-setup/nm-cloud-setup$(EXEEXT)
@@ -11038,6 +11047,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-cloud-setup-utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-http-client.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-ec2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@clients/common/$(DEPDIR)/libnmc_base_la-nm-client-utils.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@clients/common/$(DEPDIR)/libnmc_base_la-nm-polkit-listener.Plo@am__quote@ # am--include-marker
@@ -15139,6 +15149,20 @@ clients/cloud-setup/nm_cloud_setup-nmcs-provider-ec2.obj: clients/cloud-setup/nm
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(clients_cloud_setup_nm_cloud_setup_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o clients/cloud-setup/nm_cloud_setup-nmcs-provider-ec2.obj `if test -f 'clients/cloud-setup/nmcs-provider-ec2.c'; then $(CYGPATH_W) 'clients/cloud-setup/nmcs-provider-ec2.c'; else $(CYGPATH_W) '$(srcdir)/clients/cloud-setup/nmcs-provider-ec2.c'; fi`
 
+clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.o: clients/cloud-setup/nmcs-provider-gcp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(clients_cloud_setup_nm_cloud_setup_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.o -MD -MP -MF clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Tpo -c -o clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.o `test -f 'clients/cloud-setup/nmcs-provider-gcp.c' || echo '$(srcdir)/'`clients/cloud-setup/nmcs-provider-gcp.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Tpo clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='clients/cloud-setup/nmcs-provider-gcp.c' object='clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(clients_cloud_setup_nm_cloud_setup_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.o `test -f 'clients/cloud-setup/nmcs-provider-gcp.c' || echo '$(srcdir)/'`clients/cloud-setup/nmcs-provider-gcp.c
+
+clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.obj: clients/cloud-setup/nmcs-provider-gcp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(clients_cloud_setup_nm_cloud_setup_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.obj -MD -MP -MF clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Tpo -c -o clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.obj `if test -f 'clients/cloud-setup/nmcs-provider-gcp.c'; then $(CYGPATH_W) 'clients/cloud-setup/nmcs-provider-gcp.c'; else $(CYGPATH_W) '$(srcdir)/clients/cloud-setup/nmcs-provider-gcp.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Tpo clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='clients/cloud-setup/nmcs-provider-gcp.c' object='clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(clients_cloud_setup_nm_cloud_setup_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o clients/cloud-setup/nm_cloud_setup-nmcs-provider-gcp.obj `if test -f 'clients/cloud-setup/nmcs-provider-gcp.c'; then $(CYGPATH_W) 'clients/cloud-setup/nmcs-provider-gcp.c'; else $(CYGPATH_W) '$(srcdir)/clients/cloud-setup/nmcs-provider-gcp.c'; fi`
+
 clients/common/tests/test_clients_common-test-clients-common.o: clients/common/tests/test-clients-common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(clients_common_tests_test_clients_common_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT clients/common/tests/test_clients_common-test-clients-common.o -MD -MP -MF clients/common/tests/$(DEPDIR)/test_clients_common-test-clients-common.Tpo -c -o clients/common/tests/test_clients_common-test-clients-common.o `test -f 'clients/common/tests/test-clients-common.c' || echo '$(srcdir)/'`clients/common/tests/test-clients-common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) clients/common/tests/$(DEPDIR)/test_clients_common-test-clients-common.Tpo clients/common/tests/$(DEPDIR)/test_clients_common-test-clients-common.Po
@@ -18478,6 +18502,7 @@ distclean: distclean-recursive
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-cloud-setup-utils.Po
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-http-client.Po
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-ec2.Po
+	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Po
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider.Po
 	-rm -f clients/common/$(DEPDIR)/libnmc_base_la-nm-client-utils.Plo
 	-rm -f clients/common/$(DEPDIR)/libnmc_base_la-nm-polkit-listener.Plo
@@ -19122,6 +19147,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-cloud-setup-utils.Po
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nm-http-client.Po
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-ec2.Po
+	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider-gcp.Po
 	-rm -f clients/cloud-setup/$(DEPDIR)/nm_cloud_setup-nmcs-provider.Po
 	-rm -f clients/common/$(DEPDIR)/libnmc_base_la-nm-client-utils.Plo
 	-rm -f clients/common/$(DEPDIR)/libnmc_base_la-nm-polkit-listener.Plo

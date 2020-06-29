@@ -1069,6 +1069,47 @@ nm_utils_parse_inaddr_prefix (int addr_family,
 	return TRUE;
 }
 
+gboolean
+nm_utils_parse_next_line (const char **inout_ptr,
+                          gsize *inout_len,
+                          const char **out_line,
+                          gsize *out_line_len)
+{
+	const char *line_start;
+	const char *line_end;
+
+	g_return_val_if_fail (inout_ptr, FALSE);
+	g_return_val_if_fail (inout_len, FALSE);
+	g_return_val_if_fail (out_line, FALSE);
+
+	if (*inout_len <= 0)
+		goto error;
+
+	line_start = *inout_ptr;
+	line_end = memchr (line_start, '\n', *inout_len);
+	if (!line_end)
+		line_end = memchr (line_start, '\0', *inout_len);
+	if (!line_end) {
+		line_end = line_start + *inout_len;
+		NM_SET_OUT (inout_len, 0);
+	} else
+		NM_SET_OUT (inout_len, *inout_len - (line_end - line_start) - 1);
+
+	NM_SET_OUT (out_line, line_start);
+	NM_SET_OUT (out_line_len, (gsize) (line_end - line_start));
+
+	if (*inout_len > 0)
+		NM_SET_OUT (inout_ptr, line_end + 1);
+	else
+		NM_SET_OUT (inout_ptr, NULL);
+	return TRUE;
+
+error:
+	NM_SET_OUT (out_line, NULL);
+	NM_SET_OUT (out_line_len, 0);
+	return FALSE;
+}
+
 /*****************************************************************************/
 
 gboolean
@@ -2016,6 +2057,100 @@ nm_utils_escaped_tokens_options_split (char *str,
 
 	*out_key = str;
 	*out_val = val;
+}
+
+/*****************************************************************************/
+
+/**
+ * nm_utils_strsplit_quoted:
+ * @str: the string to split (e.g. from /proc/cmdline).
+ *
+ * This basically does that systemd's extract_first_word() does
+ * with the flags "EXTRACT_UNQUOTE | EXTRACT_RELAX". This is what
+ * systemd uses to parse /proc/cmdline, and we do too.
+ *
+ * Splits the string. We have nm_utils_strsplit_set() which
+ * supports a variety of flags. However, extending that already
+ * complex code to also support quotation and escaping is hard.
+ * Instead, add a naive implementation.
+ *
+ * Returns: (transfer full): the split string.
+ */
+char **
+nm_utils_strsplit_quoted (const char *str)
+{
+	gs_unref_ptrarray GPtrArray *arr = NULL;
+	gs_free char *str_out = NULL;
+	guint8 ch_lookup[256];
+
+	nm_assert (str);
+
+	_char_lookup_table_init (ch_lookup, NM_ASCII_WHITESPACES);
+
+	for (;;) {
+		char quote;
+		gsize j;
+
+		while (_char_lookup_has (ch_lookup, str[0]))
+			str++;
+
+		if (str[0] == '\0')
+			break;
+
+		if (!str_out)
+			str_out = g_new (char, strlen (str) + 1);
+
+		quote = '\0';
+		j = 0;
+		for (;;) {
+			if (str[0] == '\\') {
+				str++;
+				if (str[0] == '\0')
+					break;
+				str_out[j++] = str[0];
+				str++;
+				continue;
+			}
+			if (quote) {
+				if (str[0] == '\0')
+					break;
+				if (str[0] == quote) {
+					quote = '\0';
+					str++;
+					continue;
+				}
+				str_out[j++] = str[0];
+				str++;
+				continue;
+			}
+			if (str[0] == '\0')
+				break;
+			if (NM_IN_SET (str[0], '\'', '"')) {
+				quote = str[0];
+				str++;
+				continue;
+			}
+			if (_char_lookup_has (ch_lookup, str[0])) {
+				str++;
+				break;
+			}
+			str_out[j++] = str[0];
+			str++;
+		}
+
+		if (!arr)
+			arr = g_ptr_array_new ();
+		g_ptr_array_add (arr, g_strndup (str_out, j));
+	}
+
+	if (!arr)
+		return g_new0 (char *, 1);
+
+	g_ptr_array_add (arr, NULL);
+
+	/* We want to return an optimally sized strv array, with no excess
+	 * memory allocated. Hence, clone once more. */
+	return nm_memdup (arr->pdata, sizeof (char *) * arr->len);
 }
 
 /*****************************************************************************/
@@ -4841,6 +4976,8 @@ nm_str_buf_append_printf (NMStrBuf *strbuf,
 
 	available = strbuf->_priv_allocated - strbuf->_priv_len;
 
+	nm_assert (available < G_MAXULONG);
+
 	va_start (args, format);
 	l = g_vsnprintf (&strbuf->_priv_str[strbuf->_priv_len],
 	                 available,
@@ -4851,8 +4988,13 @@ nm_str_buf_append_printf (NMStrBuf *strbuf,
 	nm_assert (l >= 0);
 	nm_assert (l < G_MAXINT);
 
-	if ((gsize) l > available) {
-		gsize l2 = ((gsize) l) + 1u;
+	if ((gsize) l >= available) {
+		gsize l2;
+
+		if (l == 0)
+			return;
+
+		l2 = ((gsize) l) + 1u;
 
 		nm_str_buf_maybe_expand (strbuf, l2, FALSE);
 
