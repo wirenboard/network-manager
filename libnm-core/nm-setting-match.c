@@ -659,16 +659,16 @@ get_property (GObject *object, guint prop_id,
 
 	switch (prop_id) {
 	case PROP_INTERFACE_NAME:
-		g_value_set_boxed (value, nm_strvarray_get_strv (&self->interface_name, NULL));
+		g_value_set_boxed (value, nm_strvarray_get_strv_non_empty (self->interface_name, NULL));
 		break;
 	case PROP_KERNEL_COMMAND_LINE:
-		g_value_set_boxed (value, nm_strvarray_get_strv (&self->kernel_command_line, NULL));
+		g_value_set_boxed (value, nm_strvarray_get_strv_non_empty (self->kernel_command_line, NULL));
 		break;
 	case PROP_DRIVER:
-		g_value_set_boxed (value, nm_strvarray_get_strv (&self->driver, NULL));
+		g_value_set_boxed (value, nm_strvarray_get_strv_non_empty (self->driver, NULL));
 		break;
 	case PROP_PATH:
-		g_value_set_boxed (value, nm_strvarray_get_strv (&self->path, NULL));
+		g_value_set_boxed (value, nm_strvarray_get_strv_non_empty (self->path, NULL));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -796,6 +796,7 @@ finalize (GObject *object)
 	nm_clear_pointer (&self->interface_name, g_array_unref);
 	nm_clear_pointer (&self->kernel_command_line, g_array_unref);
 	nm_clear_pointer (&self->driver, g_array_unref);
+	nm_clear_pointer (&self->path, g_array_unref);
 
 	G_OBJECT_CLASS (nm_setting_match_parent_class)->finalize (object);
 }
@@ -816,13 +817,19 @@ nm_setting_match_class_init (NMSettingMatchClass *klass)
 	 * NMSettingMatch:interface-name
 	 *
 	 * A list of interface names to match. Each element is a shell wildcard
-	 * pattern.  When an element is prefixed with exclamation mark (!) the
-	 * condition is inverted.
+	 * pattern.
 	 *
-	 * A candidate interface name is considered matching when both these
-	 * conditions are satisfied: (a) any of the elements not prefixed with '!'
-	 * matches or there aren't such elements; (b) none of the elements
-	 * prefixed with '!' match.
+	 * An element can be prefixed with a pipe symbol (|) or an ampersand (&).
+	 * The former means that the element is optional and the latter means that
+	 * it is mandatory. If there are any optional elements, than the match
+	 * evaluates to true if at least one of the optional element matches
+	 * (logical OR). If there are any mandatory elements, then they all
+	 * must match (logical AND). By default, an element is optional. This means
+	 * that an element "foo" behaves the same as "|foo". An element can also be inverted
+	 * with exclamation mark (!) between the pipe symbol (or the ampersand) and before
+	 * the pattern. Note that "!foo" is a shortcut for the mandatory match "&!foo". Finally,
+	 * a backslash can be used at the beginning of the element (after the optional special characters)
+	 * to escape the start of the pattern. For example, "&\\!a" is an mandatory match for literally "!a".
 	 *
 	 * Since: 1.14
 	 **/
@@ -844,6 +851,10 @@ nm_setting_match_class_init (NMSettingMatchClass *klass)
 	 * of an assignment. In the latter case, the exact assignment is looked for
 	 * with right and left hand side matching.
 	 *
+	 * See NMSettingMatch:interface-name for how special characters '|', '&',
+	 * '!' and '\\' are used for optional and mandatory matches and inverting the
+	 * pattern.
+	 *
 	 * Since: 1.26
 	 **/
 	obj_properties[PROP_KERNEL_COMMAND_LINE] =
@@ -857,11 +868,10 @@ nm_setting_match_class_init (NMSettingMatchClass *klass)
 	 * NMSettingMatch:driver
 	 *
 	 * A list of driver names to match. Each element is a shell wildcard pattern.
-	 * When an element is prefixed with exclamation mark (!) the condition is
-	 * inverted. A candidate driver name is considered matching when both these
-	 * conditions are satisfied: (a) any of the elements not prefixed with '!'
-	 * matches or there aren't such elements; (b) none of the elements prefixed
-	 * with '!' match.
+	 *
+	 * See NMSettingMatch:interface-name for how special characters '|', '&',
+	 * '!' and '\\' are used for optional and mandatory matches and inverting the
+	 * pattern.
 	 *
 	 * Since: 1.26
 	 **/
@@ -871,7 +881,6 @@ nm_setting_match_class_init (NMSettingMatchClass *klass)
 	                        NM_SETTING_PARAM_FUZZY_IGNORE |
 	                        G_PARAM_READWRITE |
 	                        G_PARAM_STATIC_STRINGS);
-
 
 	/**
 	 * NMSettingMatch:path
@@ -890,14 +899,11 @@ nm_setting_match_class_init (NMSettingMatchClass *klass)
 	 * property exported by NetworkManager ("nmcli -f general.path device
 	 * show $dev").
 	 *
-	 * Each element of the list is a shell wildcard pattern. When an
-	 * element is prefixed with exclamation mark (!) the condition is
-	 * inverted.
+	 * Each element of the list is a shell wildcard pattern.
 	 *
-	 * A candidate path is considered matching when both these
-	 * conditions are satisfied: (a) any of the elements not prefixed with '!'
-	 * matches or there aren't such elements; (b) none of the elements
-	 * prefixed with '!' match.
+	 * See NMSettingMatch:interface-name for how special characters '|', '&',
+	 * '!' and '\\' are used for optional and mandatory matches and inverting the
+	 * pattern.
 	 *
 	 * Since: 1.26
 	 **/

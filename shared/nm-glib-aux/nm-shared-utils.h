@@ -680,6 +680,10 @@ nm_utils_escaped_tokens_escape_gstr (const char *str,
 
 /*****************************************************************************/
 
+char **nm_utils_strsplit_quoted (const char *str);
+
+/*****************************************************************************/
+
 static inline const char **
 nm_utils_escaped_tokens_options_split_list (const char *str)
 {
@@ -802,6 +806,11 @@ gboolean nm_utils_parse_inaddr_prefix (int addr_family,
                                        const char *text,
                                        char **out_addr,
                                        int *out_prefix);
+
+gboolean nm_utils_parse_next_line (const char **inout_ptr,
+                                   gsize *inout_len,
+                                   const char **out_line,
+                                   gsize *out_line_len);
 
 gint64 nm_g_ascii_strtoll (const char *nptr,
                            char **endptr,
@@ -2021,6 +2030,18 @@ nm_strvarray_add (GArray *array, const char *str)
 
 	s = g_strdup (str);
 	g_array_append_val (array, s);
+}
+
+static inline const char *const*
+nm_strvarray_get_strv_non_empty (GArray *arr, guint *length)
+{
+	if (!arr || arr->len == 0) {
+		NM_SET_OUT (length, 0);
+		return NULL;
+	}
+
+	NM_SET_OUT (length, arr->len);
+	return &g_array_index (arr, const char *, 0);
 }
 
 static inline const char *const*
