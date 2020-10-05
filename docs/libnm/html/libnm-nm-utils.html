@@ -2117,7 +2117,7 @@ the functionality are encouraged to make their implementations instead.</p>
 nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> type</code></em>);</pre>
 <p>Returns the length in octets of a hardware address of type <em class="parameter"><code>type</code></em>
 .</p>
-<p>It is an error to call this function with any value other than
+<p>Before 1.28, it was an error to call this function with any value other than
 <code class="literal">ARPHRD_ETHER</code> or <code class="literal">ARPHRD_INFINIBAND</code>.</p>
 <div class="refsect3">
 <a name="nm-utils-hwaddr-len.parameters"></a><h4>Parameters</h4>
@@ -2137,7 +2137,7 @@ nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> t
 </div>
 <div class="refsect3">
 <a name="nm-utils-hwaddr-len.returns"></a><h4>Returns</h4>
-<p> the length.</p>
+<p> the length or zero if the type is unrecognized.</p>
 </div>
 </div>
 <hr>
@@ -2228,7 +2228,7 @@ nm_utils_hwaddr_aton (<em class="parameter"><code>const <span class="type">char<
  and converts it to binary form in <em class="parameter"><code>buffer</code></em>
 .
 Bytes in <em class="parameter"><code>asc</code></em>
- can be sepatared by colons (:), or hyphens (-), but not mixed.</p>
+ can be separated by colons (:), or hyphens (-), but not mixed.</p>
 <div class="refsect3">
 <a name="nm-utils-hwaddr-aton.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -2643,8 +2643,9 @@ characters. If set to <a href="https://developer.gnome.org/glib/unstable/glib-St
 buffer (shared with <a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a>).  Beware, that the internal
 buffer will be overwritten with ever new call of <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="nm_utils_inet4_ntop ()"><code class="function">nm_utils_inet4_ntop()</code></a> or
 <a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a> that does not provide its own <em class="parameter"><code>dst</code></em>
-buffer. Also,
-using the internal buffer is not thread safe. When in doubt, pass your own
+buffer. Since
+1.28, the internal buffer is thread local and thus thread safe. Before
+it was not thread safe. When in doubt, pass your own
 <em class="parameter"><code>dst</code></em>
 buffer to avoid these issues.</p></td>
 <td class="parameter_annotations"> </td>
@@ -2689,8 +2690,9 @@ characters. If set to <a href="https://developer.gnome.org/glib/unstable/glib-St
 buffer (shared with <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="nm_utils_inet4_ntop ()"><code class="function">nm_utils_inet4_ntop()</code></a>).  Beware, that the internal
 buffer will be overwritten with ever new call of <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="nm_utils_inet4_ntop ()"><code class="function">nm_utils_inet4_ntop()</code></a> or
 <a class="link" href="libnm-nm-utils.html#nm-utils-inet6-ntop" title="nm_utils_inet6_ntop ()"><code class="function">nm_utils_inet6_ntop()</code></a> that does not provide its own <em class="parameter"><code>dst</code></em>
-buffer. Also,
-using the internal buffer is not thread safe. When in doubt, pass your own
+buffer. Since
+1.28, the internal buffer is thread local and thus thread safe. Before
+it was not thread safe. When in doubt, pass your own
 <em class="parameter"><code>dst</code></em>
 buffer to avoid these issues.</p></td>
 <td class="parameter_annotations"> </td>
@@ -3530,7 +3532,7 @@ generating the dynamic WEP keys automatically</p>
 <hr>
 <div class="refsect2">
 <a name="NM-UTILS-INET-ADDRSTRLEN:CAPS"></a><h3>NM_UTILS_INET_ADDRSTRLEN</h3>
-<pre class="programlisting">#define NM_UTILS_INET_ADDRSTRLEN     INET6_ADDRSTRLEN
+<pre class="programlisting">#define NM_UTILS_INET_ADDRSTRLEN INET6_ADDRSTRLEN
 </pre>
 <p>Defines the minimal length for a char buffer that is suitable as <em class="parameter"><code>dst</code></em>
  argument

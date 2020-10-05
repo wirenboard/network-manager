@@ -71,28 +71,28 @@
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMIPConfig.html#nm-ip-config-get-nameservers" title="nm_ip_config_get_nameservers ()">nm_ip_config_get_nameservers</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMIPConfig.html#nm-ip-config-get-domains" title="nm_ip_config_get_domains ()">nm_ip_config_get_domains</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMIPConfig.html#nm-ip-config-get-searches" title="nm_ip_config_get_searches ()">nm_ip_config_get_searches</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMIPConfig.html#nm-ip-config-get-wins-servers" title="nm_ip_config_get_wins_servers ()">nm_ip_config_get_wins_servers</a> <span class="c_punctuation">()</span>
@@ -265,7 +265,7 @@ safe for callers to reference and keep using it. </p>
 <hr>
 <div class="refsect2">
 <a name="nm-ip-config-get-nameservers"></a><h3>nm_ip_config_get_nameservers ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_ip_config_get_nameservers (<em class="parameter"><code><a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *config</code></em>);</pre>
 <p>Gets the domain name servers (DNS).</p>
 <div class="refsect3">
@@ -292,7 +292,7 @@ nm_ip_config_get_nameservers (<em class="parameter"><code><a class="link" href="
 <hr>
 <div class="refsect2">
 <a name="nm-ip-config-get-domains"></a><h3>nm_ip_config_get_domains ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_ip_config_get_domains (<em class="parameter"><code><a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *config</code></em>);</pre>
 <p>Gets the domain names.</p>
 <div class="refsect3">
@@ -320,7 +320,7 @@ nm_ip_config_get_domains (<em class="parameter"><code><a class="link" href="NMIP
 <hr>
 <div class="refsect2">
 <a name="nm-ip-config-get-searches"></a><h3>nm_ip_config_get_searches ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_ip_config_get_searches (<em class="parameter"><code><a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *config</code></em>);</pre>
 <p>Gets the DNS searches.</p>
 <div class="refsect3">
@@ -348,7 +348,7 @@ nm_ip_config_get_searches (<em class="parameter"><code><a class="link" href="NMI
 <hr>
 <div class="refsect2">
 <a name="nm-ip-config-get-wins-servers"></a><h3>nm_ip_config_get_wins_servers ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_ip_config_get_wins_servers (<em class="parameter"><code><a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *config</code></em>);</pre>
 <p>Gets the Windows Internet Name Service servers (WINS).</p>
 <div class="refsect3">
@@ -378,43 +378,43 @@ nm_ip_config_get_wins_servers (<em class="parameter"><code><a class="link" href=
 <a name="NMIPConfig.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-FAMILY:CAPS"></a><h3>NM_IP_CONFIG_FAMILY</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_FAMILY "family"
+<pre class="programlisting">#define NM_IP_CONFIG_FAMILY       "family"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-GATEWAY:CAPS"></a><h3>NM_IP_CONFIG_GATEWAY</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_GATEWAY "gateway"
+<pre class="programlisting">#define NM_IP_CONFIG_GATEWAY      "gateway"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-ADDRESSES:CAPS"></a><h3>NM_IP_CONFIG_ADDRESSES</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_ADDRESSES "addresses"
+<pre class="programlisting">#define NM_IP_CONFIG_ADDRESSES    "addresses"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-ROUTES:CAPS"></a><h3>NM_IP_CONFIG_ROUTES</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_ROUTES "routes"
+<pre class="programlisting">#define NM_IP_CONFIG_ROUTES       "routes"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-NAMESERVERS:CAPS"></a><h3>NM_IP_CONFIG_NAMESERVERS</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_NAMESERVERS "nameservers"
+<pre class="programlisting">#define NM_IP_CONFIG_NAMESERVERS  "nameservers"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-DOMAINS:CAPS"></a><h3>NM_IP_CONFIG_DOMAINS</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_DOMAINS "domains"
+<pre class="programlisting">#define NM_IP_CONFIG_DOMAINS      "domains"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-SEARCHES:CAPS"></a><h3>NM_IP_CONFIG_SEARCHES</h3>
-<pre class="programlisting">#define NM_IP_CONFIG_SEARCHES "searches"
+<pre class="programlisting">#define NM_IP_CONFIG_SEARCHES     "searches"
 </pre>
 </div>
 <hr>

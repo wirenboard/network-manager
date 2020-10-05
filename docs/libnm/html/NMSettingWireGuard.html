@@ -531,7 +531,7 @@ the reference count.</p>
 nm_wireguard_peer_unref (<em class="parameter"><code><a class="link" href="NMSettingWireGuard.html#NMWireGuardPeer"><span class="type">NMWireGuardPeer</span></a> *self</code></em>);</pre>
 <p>Drop a reference to <em class="parameter"><code>self</code></em>
 . If the last reference is dropped,
-the instance is freed and all accociate data released.</p>
+the instance is freed and all associate data released.</p>
 <p>This is not thread-safe.</p>
 <div class="refsect3">
 <a name="nm-wireguard-peer-unref.parameters"></a><h4>Parameters</h4>
@@ -1174,13 +1174,13 @@ nm_wireguard_peer_is_valid (<em class="parameter"><code>const <a class="link" hr
 <tr>
 <td class="parameter_name"><p>check_secrets</p></td>
 <td class="parameter_description"><p>if <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, non-secret properties are validated.
-Otherwise they are ignored for this purpose.</p></td>
+Otherwise, they are ignored for this purpose.</p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
 <td class="parameter_name"><p>check_non_secrets</p></td>
 <td class="parameter_description"><p>if <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, secret properties are validated.
-Otherwise they are ignored for this purpose.</p></td>
+Otherwise, they are ignored for this purpose.</p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -1720,13 +1720,13 @@ nm_setting_wireguard_get_ip6_auto_default_route
 <a name="NMSettingWireGuard.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="NM-WIREGUARD-PUBLIC-KEY-LEN:CAPS"></a><h3>NM_WIREGUARD_PUBLIC_KEY_LEN</h3>
-<pre class="programlisting">#define NM_WIREGUARD_PUBLIC_KEY_LEN     32
+<pre class="programlisting">#define NM_WIREGUARD_PUBLIC_KEY_LEN    32
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-WIREGUARD-SYMMETRIC-KEY-LEN:CAPS"></a><h3>NM_WIREGUARD_SYMMETRIC_KEY_LEN</h3>
-<pre class="programlisting">#define NM_WIREGUARD_SYMMETRIC_KEY_LEN  32
+<pre class="programlisting">#define NM_WIREGUARD_SYMMETRIC_KEY_LEN 32
 </pre>
 </div>
 <hr>
@@ -1762,19 +1762,19 @@ nm_setting_wireguard_get_ip6_auto_default_route
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIREGUARD-PEERS:CAPS"></a><h3>NM_SETTING_WIREGUARD_PEERS</h3>
-<pre class="programlisting">#define NM_SETTING_WIREGUARD_PEERS             "peers"
+<pre class="programlisting">#define NM_SETTING_WIREGUARD_PEERS "peers"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIREGUARD-MTU:CAPS"></a><h3>NM_SETTING_WIREGUARD_MTU</h3>
-<pre class="programlisting">#define NM_SETTING_WIREGUARD_MTU               "mtu"
+<pre class="programlisting">#define NM_SETTING_WIREGUARD_MTU                    "mtu"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIREGUARD-PEER-ROUTES:CAPS"></a><h3>NM_SETTING_WIREGUARD_PEER_ROUTES</h3>
-<pre class="programlisting">#define NM_SETTING_WIREGUARD_PEER_ROUTES       "peer-routes"
+<pre class="programlisting">#define NM_SETTING_WIREGUARD_PEER_ROUTES            "peer-routes"
 </pre>
 </div>
 <hr>

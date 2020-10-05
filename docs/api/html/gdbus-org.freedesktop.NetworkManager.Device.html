@@ -132,7 +132,7 @@ Reapply (IN  a{sa{sv}} connection,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">IN a{sa{sv}} <em class="parameter"><code>connection</code></em></code>:</span></p></td>
-<td><p>The optional connection settings that will be reapplied on the device. If empty, the currently active settings-connection will be used. The connection cannot arbitrarly differ from the current applied-connection otherwise the call will fail. Only certain changes are supported, like adding or removing IP addresses.</p></td>
+<td><p>The optional connection settings that will be reapplied on the device. If empty, the currently active settings-connection will be used. The connection cannot arbitrarily differ from the current applied-connection otherwise the call will fail. Only certain changes are supported, like adding or removing IP addresses.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">IN t <em class="parameter"><code>version_id</code></em></code>:</span></p></td>
@@ -349,7 +349,7 @@ Capabilities  readable   u
 Ip4Address  readable   u
 </pre>
 <p>        DEPRECATED; use the 'Addresses' property of the 'Ip4Config' object
-        instead.
+        instead. This property always returns 0.0.0.0 (numeric 0) as address.
 </p>
 </div>
 <hr>

@@ -1001,7 +1001,8 @@ of this setting.</p>
 </tr>
 <tr>
 <td class="parameter_name"><p>out_ptype</p></td>
-<td class="parameter_description"><p>on return, the permission type (at this time, always "user")</p></td>
+<td class="parameter_description"><p>on return, the permission type. This is currently always "user",
+unless the entry is invalid, in which case it returns "invalid".</p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -1137,8 +1138,10 @@ the "user" permission type is supported, and <em class="parameter"><code>pitem</
 <p> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the permission was unique and was successfully added to the
 list, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if <em class="parameter"><code>ptype</code></em>
 or <em class="parameter"><code>pitem</code></em>
-was invalid or it the permission was already
-present in the list</p>
+was invalid.
+If the permission was already present in the list, it will not be added
+a second time but <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> will be returned. Note that before 1.28, in this
+case <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> would be returned.</p>
 </div>
 </div>
 <hr>
@@ -1444,7 +1447,7 @@ was already present</p>
 nm_setting_connection_remove_secondary
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>,
                                 <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> idx</code></em>);</pre>
-<p>Removes the secondary coonnection UUID at index <em class="parameter"><code>idx</code></em>
+<p>Removes the secondary connection UUID at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
 <a name="nm-setting-connection-remove-secondary.parameters"></a><h4>Parameters</h4>
@@ -1476,7 +1479,7 @@ nm_setting_connection_remove_secondary
 nm_setting_connection_remove_secondary_by_value
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>,
                                 <em class="parameter"><code>const <span class="type">char</span> *sec_uuid</code></em>);</pre>
-<p>Removes the secondary coonnection UUID <em class="parameter"><code>sec_uuid</code></em>
+<p>Removes the secondary connection UUID <em class="parameter"><code>sec_uuid</code></em>
 .</p>
 <div class="refsect3">
 <a name="nm-setting-connection-remove-secondary-by-value.parameters"></a><h4>Parameters</h4>
@@ -1730,13 +1733,13 @@ property.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MIN:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN -999
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN     -999
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MAX:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX 999
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX     999
 </pre>
 </div>
 <hr>
@@ -1748,37 +1751,37 @@ property.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-ID:CAPS"></a><h3>NM_SETTING_CONNECTION_ID</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_ID             "id"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_ID                   "id"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-UUID:CAPS"></a><h3>NM_SETTING_CONNECTION_UUID</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_UUID           "uuid"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_UUID                 "uuid"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-STABLE-ID:CAPS"></a><h3>NM_SETTING_CONNECTION_STABLE_ID</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_STABLE_ID      "stable-id"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_STABLE_ID            "stable-id"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-INTERFACE-NAME:CAPS"></a><h3>NM_SETTING_CONNECTION_INTERFACE_NAME</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_INTERFACE_NAME "interface-name"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_INTERFACE_NAME       "interface-name"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-TYPE:CAPS"></a><h3>NM_SETTING_CONNECTION_TYPE</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_TYPE           "type"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_TYPE                 "type"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT    "autoconnect"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT          "autoconnect"
 </pre>
 </div>
 <hr>
@@ -1790,61 +1793,61 @@ property.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-RETRIES:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES "autoconnect-retries"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_RETRIES  "autoconnect-retries"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-MULTI-CONNECT:CAPS"></a><h3>NM_SETTING_CONNECTION_MULTI_CONNECT</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_MULTI_CONNECT  "multi-connect"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_MULTI_CONNECT        "multi-connect"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-TIMESTAMP:CAPS"></a><h3>NM_SETTING_CONNECTION_TIMESTAMP</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_TIMESTAMP      "timestamp"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_TIMESTAMP            "timestamp"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-READ-ONLY:CAPS"></a><h3>NM_SETTING_CONNECTION_READ_ONLY</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_READ_ONLY      "read-only"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_READ_ONLY            "read-only"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-PERMISSIONS:CAPS"></a><h3>NM_SETTING_CONNECTION_PERMISSIONS</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_PERMISSIONS    "permissions"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_PERMISSIONS          "permissions"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-ZONE:CAPS"></a><h3>NM_SETTING_CONNECTION_ZONE</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_ZONE           "zone"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_ZONE                 "zone"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-MASTER:CAPS"></a><h3>NM_SETTING_CONNECTION_MASTER</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_MASTER         "master"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_MASTER               "master"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-SLAVE-TYPE:CAPS"></a><h3>NM_SETTING_CONNECTION_SLAVE_TYPE</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_SLAVE_TYPE     "slave-type"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_SLAVE_TYPE           "slave-type"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES "autoconnect-slaves"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES   "autoconnect-slaves"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-SECONDARIES:CAPS"></a><h3>NM_SETTING_CONNECTION_SECONDARIES</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_SECONDARIES    "secondaries"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_SECONDARIES          "secondaries"
 </pre>
 </div>
 <hr>
@@ -1856,43 +1859,43 @@ property.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-METERED:CAPS"></a><h3>NM_SETTING_CONNECTION_METERED</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_METERED        "metered"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_METERED              "metered"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-LLDP:CAPS"></a><h3>NM_SETTING_CONNECTION_LLDP</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_LLDP           "lldp"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_LLDP                 "lldp"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTH-RETRIES:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTH_RETRIES</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTH_RETRIES   "auth-retries"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTH_RETRIES         "auth-retries"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-MDNS:CAPS"></a><h3>NM_SETTING_CONNECTION_MDNS</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_MDNS           "mdns"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_MDNS                 "mdns"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-LLMNR:CAPS"></a><h3>NM_SETTING_CONNECTION_LLMNR</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_LLMNR          "llmnr"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_LLMNR                "llmnr"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-WAIT-DEVICE-TIMEOUT:CAPS"></a><h3>NM_SETTING_CONNECTION_WAIT_DEVICE_TIMEOUT</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_WAIT_DEVICE_TIMEOUT "wait-device-timeout"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_WAIT_DEVICE_TIMEOUT  "wait-device-timeout"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-MUD-URL:CAPS"></a><h3>NM_SETTING_CONNECTION_MUD_URL</h3>
-<pre class="programlisting">#define NM_SETTING_CONNECTION_MUD_URL        "mud-url"
+<pre class="programlisting">#define NM_SETTING_CONNECTION_MUD_URL              "mud-url"
 </pre>
 </div>
 <hr>
@@ -2081,7 +2084,7 @@ master is activated</p>
 <p>The number of retries for the authentication. Zero means to try indefinitely; -1 means
 to use a global default. If the global default is not set, the authentication
 retries for 3 times before failing the connection.</p>
-<p>Currently this only applies to 802-1x authentication.</p>
+<p>Currently, this only applies to 802-1x authentication.</p>
 <p>Owner: NMSettingConnection</p>
 <p>Flags: Read / Write</p>
 <p>Allowed values: &gt;= -1</p>
@@ -2208,7 +2211,7 @@ for the connection, "no" (0) disable LLMNR for the interface, "resolve"
 (1) do not register hostname but allow resolving of LLMNR host names
 If unspecified, "default" ultimately depends on the DNS plugin (which
 for systemd-resolved currently means "yes").</p>
-<p>This feature requires a plugin which supports LLMNR. Otherwise the
+<p>This feature requires a plugin which supports LLMNR. Otherwise, the
 setting has no effect. One such plugin is dns-systemd-resolved.</p>
 <p>Owner: NMSettingConnection</p>
 <p>Flags: Read / Write</p>
@@ -2235,7 +2238,7 @@ for the connection, "no" (0) disable mDNS for the interface, "resolve"
 and "default" (-1) to allow lookup of a global default in NetworkManager.conf.
 If unspecified, "default" ultimately depends on the DNS plugin (which
 for systemd-resolved currently means "no").</p>
-<p>This feature requires a plugin which supports mDNS. Otherwise the
+<p>This feature requires a plugin which supports mDNS. Otherwise, the
 setting has no effect. One such plugin is dns-systemd-resolved.</p>
 <p>Owner: NMSettingConnection</p>
 <p>Flags: Read / Write</p>
@@ -2314,7 +2317,7 @@ connection is read-only and cannot be modified.</p>
 <a name="NMSettingConnection--secondaries"></a><h3>The <code class="literal">“secondaries”</code> property</h3>
 <pre class="programlisting">  “secondaries”              <a href="https://developer.gnome.org/glib/unstable/glib-String-Utility-Functions.html#GStrv"><span class="type">GStrv</span></a></pre>
 <p>List of connection UUIDs that should be activated when the base
-connection itself is activated. Currently only VPN connections are
+connection itself is activated. Currently, only VPN connections are
 supported.</p>
 <p>Owner: NMSettingConnection</p>
 <p>Flags: Read / Write</p>
@@ -2348,9 +2351,10 @@ DUID with ipv6.dhcp-duid=stable-[llt,ll,uuid].</p>
 also seeded into the generation algorithm. For example, a per-host key
 is commonly also included, so that different systems end up generating
 different IDs. Or with ipv6.addr-gen-mode=stable-privacy, also the device's
-name is included, so that different interfaces yield different addresses.</p>
+name is included, so that different interfaces yield different addresses.
+The per-host key is the identity of your machine and stored in /var/lib/NetworkManager/secret-key.</p>
 <p>The '$' character is treated special to perform dynamic substitutions
-at runtime. Currently supported are "${CONNECTION}", "${DEVICE}", "${MAC}",
+at runtime. Currently, supported are "${CONNECTION}", "${DEVICE}", "${MAC}",
 "${BOOT}", "${RANDOM}".
 These effectively create unique IDs per-connection, per-device, per-boot,
 or every time. Note that "${DEVICE}" corresponds to the interface name of the
@@ -2410,7 +2414,7 @@ provider, or <a class="link" href="NMSettingConnection.html#NMSettingConnection-
 <p>The UUID must be in the format "2815492f-7e56-435e-b2e9-246bd7cdc664"
 (ie, contains only hexadecimal characters and "-").  A suitable UUID may
 be generated by <a class="link" href="libnm-nm-utils.html#nm-utils-uuid-generate" title="nm_utils_uuid_generate ()"><code class="function">nm_utils_uuid_generate()</code></a> or
-<a href="/usr/share/gtk-doc/html/libnm-util/libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string"><code class="function">nm_utils_uuid_generate_from_string()</code></a>.</p>
+<code class="function">nm_utils_uuid_generate_from_string()</code>.</p>
 <p>Owner: NMSettingConnection</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>

@@ -54,6 +54,12 @@
 </tr></thead>
 <tbody>
 <tr>
+<td><pre class="screen">ap-isolation</pre></td>
+<td><pre class="screen">NMTernary (int32)</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Configures AP isolation, which prevents communication between wireless devices connected to this AP. This property can be set to a value different from NM_TERNARY_DEFAULT (-1) only when the interface is configured in AP mode. If set to NM_TERNARY_TRUE (1), devices are not able to communicate with each other. This increases security because it protects devices against attacks from other clients in the network. At the same time, it prevents devices to access resources on the same wireless networks as file shares, printers, etc. If set to NM_TERNARY_FALSE (0), devices can talk to each other. When set to NM_TERNARY_DEFAULT (-1), the global default is used; in case the global default is unspecified it is assumed to be NM_TERNARY_FALSE (0).</td>
+</tr>
+<tr>
 <td><pre class="screen">assigned-mac-address</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>

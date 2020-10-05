@@ -115,17 +115,15 @@ nm_vpn_editor_update_connection (<em class="parameter"><code><a class="link" hre
 <div class="refsect2">
 <a name="NMVpnEditorInterface"></a><h3>NMVpnEditorInterface</h3>
 <pre class="programlisting">typedef struct {
-	GTypeInterface g_iface;
+    GTypeInterface g_iface;
 
-	GObject * (*get_widget) (NMVpnEditor *editor);
+    GObject *(*get_widget)(NMVpnEditor *editor);
 
-	void (*placeholder) (void);
+    void (*placeholder)(void);
 
-	gboolean (*update_connection) (NMVpnEditor *editor,
-	                               NMConnection *connection,
-	                               GError **error);
+    gboolean (*update_connection)(NMVpnEditor *editor, NMConnection *connection, GError **error);
 
-	void (*changed) (NMVpnEditor *editor);
+    void (*changed)(NMVpnEditor *editor);
 } NMVpnEditorInterface;
 </pre>
 <p>Interface for editing a specific <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a></p>

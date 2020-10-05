@@ -1499,7 +1499,7 @@ nm_device_is_real (<em class="parameter"><code><a class="link" href="NMDevice.ht
 <a name="nm-device-is-real.returns"></a><h4>Returns</h4>
 <p> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the device exists, or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it is a placeholder device
 that could be automatically created by NetworkManager if one of its
-<a href="/usr/share/gtk-doc/html/libnm-glib/NMDevice.html#NMDevice--available-connections"><span class="type">“available-connections”</span></a> was activated.</p>
+<span class="type">“available-connections”</span> was activated.</p>
 </div>
 <p class="since">Since: 1.2</p>
 </div>
@@ -1947,7 +1947,7 @@ nm_device_get_applied_connection (<em class="parameter"><code><a class="link" hr
 </tr>
 <tr>
 <td class="parameter_name"><p>flags</p></td>
-<td class="parameter_description"><p>the flags argument. Currently this value must always be zero.</p></td>
+<td class="parameter_description"><p>the flags argument. Currently, this value must always be zero.</p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -2006,7 +2006,7 @@ nm_device_get_applied_connection_async
 </tr>
 <tr>
 <td class="parameter_name"><p>flags</p></td>
-<td class="parameter_description"><p>the flags argument. Currently this value must always be zero.</p></td>
+<td class="parameter_description"><p>the flags argument. Currently, this value must always be zero.</p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -2378,7 +2378,7 @@ incompatible with the device. To get the full list of connections see
 </tr>
 <tr>
 <td class="parameter_name"><p>connections</p></td>
-<td class="parameter_description"><p>an array of <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct"><span class="type">NMConnections</span></a> to filter. </p></td>
+<td class="parameter_description"><p>an array of <span class="type">NMConnections</span> to filter. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span></td>
 </tr>
 </tbody>
@@ -2387,7 +2387,7 @@ incompatible with the device. To get the full list of connections see
 <div class="refsect3">
 <a name="nm-device-filter-connections.returns"></a><h4>Returns</h4>
 <p>an array of
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct"><span class="type">NMConnections</span></a> that could be activated with the given <em class="parameter"><code>device</code></em>
+<span class="type">NMConnections</span> that could be activated with the given <em class="parameter"><code>device</code></em>
 .  The array
 should be freed with <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#g-ptr-array-unref"><code class="function">g_ptr_array_unref()</code></a> when it is no longer required. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span></p>
@@ -2778,43 +2778,43 @@ not found. </p>
 <a name="NMDevice.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="NM-DEVICE-DEVICE-TYPE:CAPS"></a><h3>NM_DEVICE_DEVICE_TYPE</h3>
-<pre class="programlisting">#define NM_DEVICE_DEVICE_TYPE "device-type"
+<pre class="programlisting">#define NM_DEVICE_DEVICE_TYPE      "device-type"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-UDI:CAPS"></a><h3>NM_DEVICE_UDI</h3>
-<pre class="programlisting">#define NM_DEVICE_UDI "udi"
+<pre class="programlisting">#define NM_DEVICE_UDI              "udi"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-PATH:CAPS"></a><h3>NM_DEVICE_PATH</h3>
-<pre class="programlisting">#define NM_DEVICE_PATH "path"
+<pre class="programlisting">#define NM_DEVICE_PATH             "path"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-INTERFACE:CAPS"></a><h3>NM_DEVICE_INTERFACE</h3>
-<pre class="programlisting">#define NM_DEVICE_INTERFACE "interface"
+<pre class="programlisting">#define NM_DEVICE_INTERFACE        "interface"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-IP-INTERFACE:CAPS"></a><h3>NM_DEVICE_IP_INTERFACE</h3>
-<pre class="programlisting">#define NM_DEVICE_IP_INTERFACE "ip-interface"
+<pre class="programlisting">#define NM_DEVICE_IP_INTERFACE     "ip-interface"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-DRIVER:CAPS"></a><h3>NM_DEVICE_DRIVER</h3>
-<pre class="programlisting">#define NM_DEVICE_DRIVER "driver"
+<pre class="programlisting">#define NM_DEVICE_DRIVER           "driver"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-DRIVER-VERSION:CAPS"></a><h3>NM_DEVICE_DRIVER_VERSION</h3>
-<pre class="programlisting">#define NM_DEVICE_DRIVER_VERSION "driver-version"
+<pre class="programlisting">#define NM_DEVICE_DRIVER_VERSION   "driver-version"
 </pre>
 </div>
 <hr>
@@ -2826,19 +2826,19 @@ not found. </p>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-CAPABILITIES:CAPS"></a><h3>NM_DEVICE_CAPABILITIES</h3>
-<pre class="programlisting">#define NM_DEVICE_CAPABILITIES "capabilities"
+<pre class="programlisting">#define NM_DEVICE_CAPABILITIES     "capabilities"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-REAL:CAPS"></a><h3>NM_DEVICE_REAL</h3>
-<pre class="programlisting">#define NM_DEVICE_REAL "real"
+<pre class="programlisting">#define NM_DEVICE_REAL             "real"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-MANAGED:CAPS"></a><h3>NM_DEVICE_MANAGED</h3>
-<pre class="programlisting">#define NM_DEVICE_MANAGED "managed"
+<pre class="programlisting">#define NM_DEVICE_MANAGED          "managed"
 </pre>
 </div>
 <hr>
@@ -2851,55 +2851,55 @@ not found. </p>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-FIRMWARE-MISSING:CAPS"></a><h3>NM_DEVICE_FIRMWARE_MISSING</h3>
-<pre class="programlisting">#define NM_DEVICE_FIRMWARE_MISSING "firmware-missing"
+<pre class="programlisting">#define NM_DEVICE_FIRMWARE_MISSING      "firmware-missing"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-NM-PLUGIN-MISSING:CAPS"></a><h3>NM_DEVICE_NM_PLUGIN_MISSING</h3>
-<pre class="programlisting">#define NM_DEVICE_NM_PLUGIN_MISSING "nm-plugin-missing"
+<pre class="programlisting">#define NM_DEVICE_NM_PLUGIN_MISSING     "nm-plugin-missing"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-IP4-CONFIG:CAPS"></a><h3>NM_DEVICE_IP4_CONFIG</h3>
-<pre class="programlisting">#define NM_DEVICE_IP4_CONFIG "ip4-config"
+<pre class="programlisting">#define NM_DEVICE_IP4_CONFIG            "ip4-config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-DHCP4-CONFIG:CAPS"></a><h3>NM_DEVICE_DHCP4_CONFIG</h3>
-<pre class="programlisting">#define NM_DEVICE_DHCP4_CONFIG "dhcp4-config"
+<pre class="programlisting">#define NM_DEVICE_DHCP4_CONFIG          "dhcp4-config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-IP6-CONFIG:CAPS"></a><h3>NM_DEVICE_IP6_CONFIG</h3>
-<pre class="programlisting">#define NM_DEVICE_IP6_CONFIG "ip6-config"
+<pre class="programlisting">#define NM_DEVICE_IP6_CONFIG            "ip6-config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-DHCP6-CONFIG:CAPS"></a><h3>NM_DEVICE_DHCP6_CONFIG</h3>
-<pre class="programlisting">#define NM_DEVICE_DHCP6_CONFIG "dhcp6-config"
+<pre class="programlisting">#define NM_DEVICE_DHCP6_CONFIG          "dhcp6-config"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-STATE:CAPS"></a><h3>NM_DEVICE_STATE</h3>
-<pre class="programlisting">#define NM_DEVICE_STATE "state"
+<pre class="programlisting">#define NM_DEVICE_STATE                 "state"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-STATE-REASON:CAPS"></a><h3>NM_DEVICE_STATE_REASON</h3>
-<pre class="programlisting">#define NM_DEVICE_STATE_REASON "state-reason"
+<pre class="programlisting">#define NM_DEVICE_STATE_REASON          "state-reason"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-ACTIVE-CONNECTION:CAPS"></a><h3>NM_DEVICE_ACTIVE_CONNECTION</h3>
-<pre class="programlisting">#define NM_DEVICE_ACTIVE_CONNECTION "active-connection"
+<pre class="programlisting">#define NM_DEVICE_ACTIVE_CONNECTION     "active-connection"
 </pre>
 </div>
 <hr>
@@ -2911,61 +2911,61 @@ not found. </p>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-VENDOR:CAPS"></a><h3>NM_DEVICE_VENDOR</h3>
-<pre class="programlisting">#define NM_DEVICE_VENDOR "vendor"
+<pre class="programlisting">#define NM_DEVICE_VENDOR                "vendor"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-PRODUCT:CAPS"></a><h3>NM_DEVICE_PRODUCT</h3>
-<pre class="programlisting">#define NM_DEVICE_PRODUCT "product"
+<pre class="programlisting">#define NM_DEVICE_PRODUCT               "product"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-PHYSICAL-PORT-ID:CAPS"></a><h3>NM_DEVICE_PHYSICAL_PORT_ID</h3>
-<pre class="programlisting">#define NM_DEVICE_PHYSICAL_PORT_ID "physical-port-id"
+<pre class="programlisting">#define NM_DEVICE_PHYSICAL_PORT_ID      "physical-port-id"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-MTU:CAPS"></a><h3>NM_DEVICE_MTU</h3>
-<pre class="programlisting">#define NM_DEVICE_MTU "mtu"
+<pre class="programlisting">#define NM_DEVICE_MTU                   "mtu"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-METERED:CAPS"></a><h3>NM_DEVICE_METERED</h3>
-<pre class="programlisting">#define NM_DEVICE_METERED "metered"
+<pre class="programlisting">#define NM_DEVICE_METERED               "metered"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-LLDP-NEIGHBORS:CAPS"></a><h3>NM_DEVICE_LLDP_NEIGHBORS</h3>
-<pre class="programlisting">#define NM_DEVICE_LLDP_NEIGHBORS "lldp-neighbors"
+<pre class="programlisting">#define NM_DEVICE_LLDP_NEIGHBORS        "lldp-neighbors"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-IP4-CONNECTIVITY:CAPS"></a><h3>NM_DEVICE_IP4_CONNECTIVITY</h3>
-<pre class="programlisting">#define NM_DEVICE_IP4_CONNECTIVITY "ip4-connectivity"
+<pre class="programlisting">#define NM_DEVICE_IP4_CONNECTIVITY      "ip4-connectivity"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-IP6-CONNECTIVITY:CAPS"></a><h3>NM_DEVICE_IP6_CONNECTIVITY</h3>
-<pre class="programlisting">#define NM_DEVICE_IP6_CONNECTIVITY "ip6-connectivity"
+<pre class="programlisting">#define NM_DEVICE_IP6_CONNECTIVITY      "ip6-connectivity"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-INTERFACE-FLAGS:CAPS"></a><h3>NM_DEVICE_INTERFACE_FLAGS</h3>
-<pre class="programlisting">#define NM_DEVICE_INTERFACE_FLAGS "interface-flags"
+<pre class="programlisting">#define NM_DEVICE_INTERFACE_FLAGS       "interface-flags"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_HW_ADDRESS</h3>
-<pre class="programlisting">#define NM_DEVICE_HW_ADDRESS "hw-address"
+<pre class="programlisting">#define NM_DEVICE_HW_ADDRESS            "hw-address"
 </pre>
 </div>
 </div>
