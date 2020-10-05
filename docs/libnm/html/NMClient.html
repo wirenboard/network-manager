@@ -64,14 +64,14 @@
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMClient.html#nm-dns-entry-get-nameservers" title="nm_dns_entry_get_nameservers ()">nm_dns_entry_get_nameservers</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMClient.html#nm-dns-entry-get-domains" title="nm_dns_entry_get_domains ()">nm_dns_entry_get_domains</a> <span class="c_punctuation">()</span>
@@ -1067,7 +1067,7 @@ nm_dns_entry_get_interface (<em class="parameter"><code><a class="link" href="NM
 <hr>
 <div class="refsect2">
 <a name="nm-dns-entry-get-nameservers"></a><h3>nm_dns_entry_get_nameservers ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_dns_entry_get_nameservers (<em class="parameter"><code><a class="link" href="NMClient.html#NMDnsEntry"><span class="type">NMDnsEntry</span></a> *entry</code></em>);</pre>
 <p>Gets the list of name servers for this entry.</p>
 <div class="refsect3">
@@ -1095,7 +1095,7 @@ nm_dns_entry_get_nameservers (<em class="parameter"><code><a class="link" href="
 <hr>
 <div class="refsect2">
 <a name="nm-dns-entry-get-domains"></a><h3>nm_dns_entry_get_domains ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_dns_entry_get_domains (<em class="parameter"><code><a class="link" href="NMClient.html#NMDnsEntry"><span class="type">NMDnsEntry</span></a> *entry</code></em>);</pre>
 <p>Gets the list of DNS domains.</p>
 <div class="refsect3">
@@ -2290,7 +2290,7 @@ nm_client_get_permissions_state (<em class="parameter"><code><a class="link" hre
 means that no permissions result was yet received. All permissions
 are unknown. <a class="link" href="libnm-nm-dbus-interface.html#NM-TERNARY-TRUE:CAPS"><code class="literal">NM_TERNARY_TRUE</code></a> means that the permissions got received
 and are cached. %<a class="link" href="libnm-nm-dbus-interface.html#NM-TERNARY-FALSE:CAPS"><code class="literal">NM_TERNARY_FALSE</code></a> means that permissions are cached,
-but they are invalided as as "CheckPermissions" signal was received
+but they are invalided as "CheckPermissions" signal was received
 in the meantime.</p>
 </div>
 <p class="since">Since: 1.24</p>
@@ -2816,7 +2816,7 @@ any. </p>
 nm_client_get_activating_connection (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>);</pre>
 <p>Gets the <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> corresponding to a
 currently-activating connection that is expected to become the new
-<a href="/usr/share/gtk-doc/html/libnm-glib/NMClient.html#NMClient--primary-connection"><span class="type">“primary-connection”</span></a> upon successful activation.</p>
+<span class="type">“primary-connection”</span> upon successful activation.</p>
 <div class="refsect3">
 <a name="nm-client-get-activating-connection.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -2866,7 +2866,7 @@ in <em class="parameter"><code>connection</code></em>
 picks the best available connection for the device and activates it.</p>
 <p>Note that the callback is invoked when NetworkManager has started activating
 the new connection, not when it finishes. You can use the returned
-<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object (in particular, <a href="/usr/share/gtk-doc/html/libnm-glib/NMActiveConnection.html#NMActiveConnection--state"><span class="type">“state”</span></a>) to
+<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object (in particular, <span class="type">“state”</span>) to
 track the activation to its completion.</p>
 <div class="refsect3">
 <a name="nm-client-activate-connection-async.parameters"></a><h4>Parameters</h4>
@@ -2986,7 +2986,7 @@ activated as with <a class="link" href="NMClient.html#nm-client-activate-connect
 VPN connections at this time.</p>
 <p>Note that the callback is invoked when NetworkManager has started activating
 the new connection, not when it finishes. You can used the returned
-<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object (in particular, <a href="/usr/share/gtk-doc/html/libnm-glib/NMActiveConnection.html#NMActiveConnection--state"><span class="type">“state”</span></a>) to
+<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object (in particular, <span class="type">“state”</span>) to
 track the activation to its completion.</p>
 <div class="refsect3">
 <a name="nm-client-add-and-activate-connection-async.parameters"></a><h4>Parameters</h4>
@@ -3115,11 +3115,11 @@ activated as with <a class="link" href="NMClient.html#nm-client-activate-connect
 VPN connections at this time.</p>
 <p>Note that the callback is invoked when NetworkManager has started activating
 the new connection, not when it finishes. You can used the returned
-<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object (in particular, <a href="/usr/share/gtk-doc/html/libnm-glib/NMActiveConnection.html#NMActiveConnection--state"><span class="type">“state”</span></a>) to
+<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object (in particular, <span class="type">“state”</span>) to
 track the activation to its completion.</p>
 <p>This is identical to <a class="link" href="NMClient.html#nm-client-add-and-activate-connection-async" title="nm_client_add_and_activate_connection_async ()"><code class="function">nm_client_add_and_activate_connection_async()</code></a> but takes
 a further <em class="parameter"><code>options</code></em>
- parameter. Currently the following options are supported
+ parameter. Currently, the following options are supported
 by the daemon:</p>
 <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; ">
 <li class="listitem"><p>"persist": A string describing how the connection should be stored.
@@ -3235,7 +3235,7 @@ nm_client_add_and_activate_connection2_finish
 <tr>
 <td class="parameter_name"><p>out_result</p></td>
 <td class="parameter_description"><p>the output result
-of type "a{sv}" returned by D-Bus' AddAndActivate2 call. Currently no
+of type "a{sv}" returned by D-Bus' AddAndActivate2 call. Currently, no
 output is implemented yet. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></td>
 </tr>
@@ -5074,31 +5074,31 @@ to know whether the permissions are up to date.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-WWAN-HARDWARE-ENABLED:CAPS"></a><h3>NM_CLIENT_WWAN_HARDWARE_ENABLED</h3>
-<pre class="programlisting">#define NM_CLIENT_WWAN_HARDWARE_ENABLED "wwan-hardware-enabled"
+<pre class="programlisting">#define NM_CLIENT_WWAN_HARDWARE_ENABLED     "wwan-hardware-enabled"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-WIMAX-HARDWARE-ENABLED:CAPS"></a><h3>NM_CLIENT_WIMAX_HARDWARE_ENABLED</h3>
-<pre class="programlisting">#define NM_CLIENT_WIMAX_HARDWARE_ENABLED "wimax-hardware-enabled"
+<pre class="programlisting">#define NM_CLIENT_WIMAX_HARDWARE_ENABLED    "wimax-hardware-enabled"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-ACTIVE-CONNECTIONS:CAPS"></a><h3>NM_CLIENT_ACTIVE_CONNECTIONS</h3>
-<pre class="programlisting">#define NM_CLIENT_ACTIVE_CONNECTIONS "active-connections"
+<pre class="programlisting">#define NM_CLIENT_ACTIVE_CONNECTIONS           "active-connections"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CONNECTIVITY:CAPS"></a><h3>NM_CLIENT_CONNECTIVITY</h3>
-<pre class="programlisting">#define NM_CLIENT_CONNECTIVITY "connectivity"
+<pre class="programlisting">#define NM_CLIENT_CONNECTIVITY                 "connectivity"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CONNECTIVITY-CHECK-URI:CAPS"></a><h3>NM_CLIENT_CONNECTIVITY_CHECK_URI</h3>
-<pre class="programlisting">#define NM_CLIENT_CONNECTIVITY_CHECK_URI "connectivity-check-uri"
+<pre class="programlisting">#define NM_CLIENT_CONNECTIVITY_CHECK_URI       "connectivity-check-uri"
 </pre>
 </div>
 <hr>
@@ -5117,7 +5117,7 @@ to know whether the permissions are up to date.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-PRIMARY-CONNECTION:CAPS"></a><h3>NM_CLIENT_PRIMARY_CONNECTION</h3>
-<pre class="programlisting">#define NM_CLIENT_PRIMARY_CONNECTION "primary-connection"
+<pre class="programlisting">#define NM_CLIENT_PRIMARY_CONNECTION    "primary-connection"
 </pre>
 </div>
 <hr>
@@ -5129,121 +5129,121 @@ to know whether the permissions are up to date.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-DEVICES:CAPS"></a><h3>NM_CLIENT_DEVICES</h3>
-<pre class="programlisting">#define NM_CLIENT_DEVICES "devices"
+<pre class="programlisting">#define NM_CLIENT_DEVICES               "devices"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-ALL-DEVICES:CAPS"></a><h3>NM_CLIENT_ALL_DEVICES</h3>
-<pre class="programlisting">#define NM_CLIENT_ALL_DEVICES "all-devices"
+<pre class="programlisting">#define NM_CLIENT_ALL_DEVICES           "all-devices"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CONNECTIONS:CAPS"></a><h3>NM_CLIENT_CONNECTIONS</h3>
-<pre class="programlisting">#define NM_CLIENT_CONNECTIONS "connections"
+<pre class="programlisting">#define NM_CLIENT_CONNECTIONS           "connections"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-HOSTNAME:CAPS"></a><h3>NM_CLIENT_HOSTNAME</h3>
-<pre class="programlisting">#define NM_CLIENT_HOSTNAME "hostname"
+<pre class="programlisting">#define NM_CLIENT_HOSTNAME              "hostname"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CAN-MODIFY:CAPS"></a><h3>NM_CLIENT_CAN_MODIFY</h3>
-<pre class="programlisting">#define NM_CLIENT_CAN_MODIFY "can-modify"
+<pre class="programlisting">#define NM_CLIENT_CAN_MODIFY            "can-modify"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-METERED:CAPS"></a><h3>NM_CLIENT_METERED</h3>
-<pre class="programlisting">#define NM_CLIENT_METERED "metered"
+<pre class="programlisting">#define NM_CLIENT_METERED               "metered"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-DNS-MODE:CAPS"></a><h3>NM_CLIENT_DNS_MODE</h3>
-<pre class="programlisting">#define NM_CLIENT_DNS_MODE "dns-mode"
+<pre class="programlisting">#define NM_CLIENT_DNS_MODE              "dns-mode"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-DNS-RC-MANAGER:CAPS"></a><h3>NM_CLIENT_DNS_RC_MANAGER</h3>
-<pre class="programlisting">#define NM_CLIENT_DNS_RC_MANAGER "dns-rc-manager"
+<pre class="programlisting">#define NM_CLIENT_DNS_RC_MANAGER        "dns-rc-manager"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-DNS-CONFIGURATION:CAPS"></a><h3>NM_CLIENT_DNS_CONFIGURATION</h3>
-<pre class="programlisting">#define NM_CLIENT_DNS_CONFIGURATION "dns-configuration"
+<pre class="programlisting">#define NM_CLIENT_DNS_CONFIGURATION     "dns-configuration"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CHECKPOINTS:CAPS"></a><h3>NM_CLIENT_CHECKPOINTS</h3>
-<pre class="programlisting">#define NM_CLIENT_CHECKPOINTS "checkpoints"
+<pre class="programlisting">#define NM_CLIENT_CHECKPOINTS           "checkpoints"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CAPABILITIES:CAPS"></a><h3>NM_CLIENT_CAPABILITIES</h3>
-<pre class="programlisting">#define NM_CLIENT_CAPABILITIES "capabilities"
+<pre class="programlisting">#define NM_CLIENT_CAPABILITIES          "capabilities"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-PERMISSIONS-STATE:CAPS"></a><h3>NM_CLIENT_PERMISSIONS_STATE</h3>
-<pre class="programlisting">#define NM_CLIENT_PERMISSIONS_STATE "permissions-state"
+<pre class="programlisting">#define NM_CLIENT_PERMISSIONS_STATE     "permissions-state"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-DEVICE-ADDED:CAPS"></a><h3>NM_CLIENT_DEVICE_ADDED</h3>
-<pre class="programlisting">#define NM_CLIENT_DEVICE_ADDED "device-added"
+<pre class="programlisting">#define NM_CLIENT_DEVICE_ADDED              "device-added"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-DEVICE-REMOVED:CAPS"></a><h3>NM_CLIENT_DEVICE_REMOVED</h3>
-<pre class="programlisting">#define NM_CLIENT_DEVICE_REMOVED "device-removed"
+<pre class="programlisting">#define NM_CLIENT_DEVICE_REMOVED            "device-removed"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-ANY-DEVICE-ADDED:CAPS"></a><h3>NM_CLIENT_ANY_DEVICE_ADDED</h3>
-<pre class="programlisting">#define NM_CLIENT_ANY_DEVICE_ADDED "any-device-added"
+<pre class="programlisting">#define NM_CLIENT_ANY_DEVICE_ADDED          "any-device-added"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-ANY-DEVICE-REMOVED:CAPS"></a><h3>NM_CLIENT_ANY_DEVICE_REMOVED</h3>
-<pre class="programlisting">#define NM_CLIENT_ANY_DEVICE_REMOVED "any-device-removed"
+<pre class="programlisting">#define NM_CLIENT_ANY_DEVICE_REMOVED        "any-device-removed"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-PERMISSION-CHANGED:CAPS"></a><h3>NM_CLIENT_PERMISSION_CHANGED</h3>
-<pre class="programlisting">#define NM_CLIENT_PERMISSION_CHANGED "permission-changed"
+<pre class="programlisting">#define NM_CLIENT_PERMISSION_CHANGED        "permission-changed"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CONNECTION-ADDED:CAPS"></a><h3>NM_CLIENT_CONNECTION_ADDED</h3>
-<pre class="programlisting">#define NM_CLIENT_CONNECTION_ADDED "connection-added"
+<pre class="programlisting">#define NM_CLIENT_CONNECTION_ADDED          "connection-added"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-CONNECTION-REMOVED:CAPS"></a><h3>NM_CLIENT_CONNECTION_REMOVED</h3>
-<pre class="programlisting">#define NM_CLIENT_CONNECTION_REMOVED "connection-removed"
+<pre class="programlisting">#define NM_CLIENT_CONNECTION_REMOVED        "connection-removed"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-ACTIVE-CONNECTION-ADDED:CAPS"></a><h3>NM_CLIENT_ACTIVE_CONNECTION_ADDED</h3>
-<pre class="programlisting">#define NM_CLIENT_ACTIVE_CONNECTION_ADDED "active-connection-added"
+<pre class="programlisting">#define NM_CLIENT_ACTIVE_CONNECTION_ADDED   "active-connection-added"
 </pre>
 </div>
 <hr>
@@ -5299,7 +5299,7 @@ operation succeeded, but the object that was allegedly created (eg,
 <hr>
 <div class="refsect2">
 <a name="NM-CLIENT-ERROR:CAPS"></a><h3>NM_CLIENT_ERROR</h3>
-<pre class="programlisting">#define NM_CLIENT_ERROR nm_client_error_quark ()
+<pre class="programlisting">#define NM_CLIENT_ERROR nm_client_error_quark()
 </pre>
 </div>
 </div>

@@ -101,7 +101,7 @@
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMSettingWired.html#nm-setting-wired-get-mac-address-blacklist" title="nm_setting_wired_get_mac_address_blacklist ()">nm_setting_wired_get_mac_address_blacklist</a> <span class="c_punctuation">()</span>
@@ -163,7 +163,7 @@
 </td>
 </tr>
 <tr>
-<td class="function_type">const <span class="returnvalue">char</span> * const *
+<td class="function_type">const <span class="returnvalue">char</span> *const *
 </td>
 <td class="function_name">
 <a class="link" href="NMSettingWired.html#nm-setting-wired-get-s390-subchannels" title="nm_setting_wired_get_s390_subchannels ()">nm_setting_wired_get_s390_subchannels</a> <span class="c_punctuation">()</span>
@@ -617,7 +617,7 @@ nm_setting_wired_get_generate_mac_address_mask
 <hr>
 <div class="refsect2">
 <a name="nm-setting-wired-get-mac-address-blacklist"></a><h3>nm_setting_wired_get_mac_address_blacklist ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_setting_wired_get_mac_address_blacklist
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
@@ -858,7 +858,7 @@ nm_setting_wired_get_mtu (<em class="parameter"><code><a class="link" href="NMSe
 <hr>
 <div class="refsect2">
 <a name="nm-setting-wired-get-s390-subchannels"></a><h3>nm_setting_wired_get_s390_subchannels ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> * const *
+<pre class="programlisting">const <span class="returnvalue">char</span> *const *
 nm_setting_wired_get_s390_subchannels (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <p>Return the list of s390 subchannels that identify the device that this
 connection is applicable to.  The connection should only be used in
@@ -1314,37 +1314,37 @@ incompatible with other flags</p>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-PORT:CAPS"></a><h3>NM_SETTING_WIRED_PORT</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_PORT "port"
+<pre class="programlisting">#define NM_SETTING_WIRED_PORT                      "port"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-SPEED:CAPS"></a><h3>NM_SETTING_WIRED_SPEED</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_SPEED "speed"
+<pre class="programlisting">#define NM_SETTING_WIRED_SPEED                     "speed"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-DUPLEX:CAPS"></a><h3>NM_SETTING_WIRED_DUPLEX</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_DUPLEX "duplex"
+<pre class="programlisting">#define NM_SETTING_WIRED_DUPLEX                    "duplex"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS"></a><h3>NM_SETTING_WIRED_AUTO_NEGOTIATE</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_AUTO_NEGOTIATE "auto-negotiate"
+<pre class="programlisting">#define NM_SETTING_WIRED_AUTO_NEGOTIATE            "auto-negotiate"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-MAC-ADDRESS:CAPS"></a><h3>NM_SETTING_WIRED_MAC_ADDRESS</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_MAC_ADDRESS "mac-address"
+<pre class="programlisting">#define NM_SETTING_WIRED_MAC_ADDRESS               "mac-address"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS"></a><h3>NM_SETTING_WIRED_CLONED_MAC_ADDRESS</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_CLONED_MAC_ADDRESS "cloned-mac-address"
+<pre class="programlisting">#define NM_SETTING_WIRED_CLONED_MAC_ADDRESS        "cloned-mac-address"
 </pre>
 </div>
 <hr>
@@ -1356,43 +1356,43 @@ incompatible with other flags</p>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-MAC-ADDRESS-BLACKLIST:CAPS"></a><h3>NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST "mac-address-blacklist"
+<pre class="programlisting">#define NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST     "mac-address-blacklist"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-MTU:CAPS"></a><h3>NM_SETTING_WIRED_MTU</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_MTU "mtu"
+<pre class="programlisting">#define NM_SETTING_WIRED_MTU                       "mtu"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS"></a><h3>NM_SETTING_WIRED_S390_SUBCHANNELS</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_S390_SUBCHANNELS "s390-subchannels"
+<pre class="programlisting">#define NM_SETTING_WIRED_S390_SUBCHANNELS          "s390-subchannels"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-S390-NETTYPE:CAPS"></a><h3>NM_SETTING_WIRED_S390_NETTYPE</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_S390_NETTYPE "s390-nettype"
+<pre class="programlisting">#define NM_SETTING_WIRED_S390_NETTYPE              "s390-nettype"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-S390-OPTIONS:CAPS"></a><h3>NM_SETTING_WIRED_S390_OPTIONS</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_S390_OPTIONS "s390-options"
+<pre class="programlisting">#define NM_SETTING_WIRED_S390_OPTIONS              "s390-options"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-WAKE-ON-LAN:CAPS"></a><h3>NM_SETTING_WIRED_WAKE_ON_LAN</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_WAKE_ON_LAN "wake-on-lan"
+<pre class="programlisting">#define NM_SETTING_WIRED_WAKE_ON_LAN               "wake-on-lan"
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-WAKE-ON-LAN-PASSWORD:CAPS"></a><h3>NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD</h3>
-<pre class="programlisting">#define NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD "wake-on-lan-password"
+<pre class="programlisting">#define NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD      "wake-on-lan-password"
 </pre>
 </div>
 <hr>

@@ -701,30 +701,24 @@ reference as the plugin-info might also reference the editor-plugin.</p>
 <div class="refsect2">
 <a name="NMVpnEditorPluginInterface"></a><h3>NMVpnEditorPluginInterface</h3>
 <pre class="programlisting">typedef struct {
-	GTypeInterface g_iface;
+    GTypeInterface g_iface;
 
-	NMVpnEditor * (*get_editor) (NMVpnEditorPlugin *plugin,
-	                             NMConnection *connection,
-	                             GError **error);
+    NMVpnEditor *(*get_editor)(NMVpnEditorPlugin *plugin, NMConnection *connection, GError **error);
 
-	NMVpnEditorPluginCapability (*get_capabilities) (NMVpnEditorPlugin *plugin);
+    NMVpnEditorPluginCapability (*get_capabilities)(NMVpnEditorPlugin *plugin);
 
-	NMConnection * (*import_from_file) (NMVpnEditorPlugin *plugin,
-	                                    const char *path,
-	                                    GError **error);
+    NMConnection *(*import_from_file)(NMVpnEditorPlugin *plugin, const char *path, GError **error);
 
-	gboolean (*export_to_file) (NMVpnEditorPlugin *plugin,
-	                            const char *path,
-	                            NMConnection *connection,
-	                            GError **error);
+    gboolean (*export_to_file)(NMVpnEditorPlugin *plugin,
+                               const char *       path,
+                               NMConnection *     connection,
+                               GError **          error);
 
-	char * (*get_suggested_filename) (NMVpnEditorPlugin *plugin, NMConnection *connection);
+    char *(*get_suggested_filename)(NMVpnEditorPlugin *plugin, NMConnection *connection);
 
-	void (*notify_plugin_info_set) (NMVpnEditorPlugin *plugin,
-	                                NMVpnPluginInfo *plugin_info);
+    void (*notify_plugin_info_set)(NMVpnEditorPlugin *plugin, NMVpnPluginInfo *plugin_info);
 
-	const NMVpnEditorPluginVT *(*get_vt) (NMVpnEditorPlugin *plugin,
-	                                      gsize *out_vt_size);
+    const NMVpnEditorPluginVT *(*get_vt)(NMVpnEditorPlugin *plugin, gsize *out_vt_size);
 } NMVpnEditorPluginInterface;
 </pre>
 <p>Interface for VPN editor plugins.</p>
