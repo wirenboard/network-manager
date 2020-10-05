@@ -1,8 +1,12 @@
-network-manager (1.27.90-1) UNRELEASED; urgency=medium
+network-manager (1.27.90-1) unstable; urgency=medium
 
   * New upstream version 1.27.90 (1.28 rc1)
+    - Fix generated XML syntax in tools/generate-docs-nm-settings-docs-gir.py
+      (Closes: #971144)
+  * Rebase patches
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Mon, 05 Oct 2020 22:28:28 +0200
+ -- Michael Biebl <biebl@debian.org>  Mon, 05 Oct 2020 23:34:33 +0200
 
 network-manager (1.26.2-1) unstable; urgency=medium
 
