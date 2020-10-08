@@ -1,0 +1,63 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Wed, 7 Oct 2020 17:44:05 +0200
+Subject: systemd: basic/missing_syscall: fix syscall numbers for mips*
+
+Thanks Christian Brauner @brauner
+
+https://github.com/systemd/systemd/commit/cd2065989163a5b6f71c8f1e4a8d73f1be63a52b
+
+https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/545
+(cherry picked from commit e9c6561ffade614e9341769b5e37a9d0436e693b)
+(cherry picked from commit dfd54b7f2eb65f9d4909d501c1ec9ff5333e170e)
+---
+ shared/systemd/src/basic/missing_syscall.h | 28 ++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/shared/systemd/src/basic/missing_syscall.h b/shared/systemd/src/basic/missing_syscall.h
+index 4aed6e7..d11a77d 100644
+--- a/shared/systemd/src/basic/missing_syscall.h
++++ b/shared/systemd/src/basic/missing_syscall.h
+@@ -632,8 +632,20 @@ static inline long missing_get_mempolicy(int *mode, unsigned long *nodemask,
+ /* ======================================================================= */
+ 
+ /* should be always defined, see kernel 39036cd2727395c3369b1051005da74059a85317 */
+-#if defined(__alpha__)
++#if defined __alpha__
+ #  define systemd_NR_pidfd_send_signal 534
++#elif defined _MIPS_SIM
++#  if _MIPS_SIM == _MIPS_SIM_ABI32	/* o32 */
++#    define systemd_NR_pidfd_send_signal (424 + 4000)
++#  endif
++#  if _MIPS_SIM == _MIPS_SIM_NABI32	/* n32 */
++#    define systemd_NR_pidfd_send_signal (424 + 6000)
++#  endif
++#  if _MIPS_SIM == _MIPS_SIM_ABI64	/* n64 */
++#    define systemd_NR_pidfd_send_signal (424 + 5000)
++#  endif
++#elif defined __ia64__
++#  define systemd_NR_pidfd_send_signal (424 + 1024)
+ #else
+ #  define systemd_NR_pidfd_send_signal 424
+ #endif
+@@ -664,8 +676,20 @@ static inline int missing_pidfd_send_signal(int fd, int sig, siginfo_t *info, un
+ #endif
+ 
+ /* should be always defined, see kernel 7615d9e1780e26e0178c93c55b73309a5dc093d7 */
+-#if defined(__alpha__)
++#if defined __alpha__
+ #  define systemd_NR_pidfd_open 544
++#elif defined _MIPS_SIM
++#  if _MIPS_SIM == _MIPS_SIM_ABI32	/* o32 */
++#    define systemd_NR_pidfd_open (434 + 4000)
++#  endif
++#  if _MIPS_SIM == _MIPS_SIM_NABI32	/* n32 */
++#    define systemd_NR_pidfd_open (434 + 6000)
++#  endif
++#  if _MIPS_SIM == _MIPS_SIM_ABI64	/* n64 */
++#    define systemd_NR_pidfd_open (434 + 5000)
++#  endif
++#elif defined __ia64__
++#  define systemd_NR_pidfd_open (434 + 1024)
+ #else
+ #  define systemd_NR_pidfd_open 434
+ #endif

@@ -1,0 +1,92 @@
+From: David Rheinsberg <david.rheinsberg@gmail.com>
+Date: Wed, 7 Oct 2020 15:54:15 +0200
+Subject: c-rbtree: reduce alignment constraints
+
+There are some Debian-supported architectures where `max_align_t` is
+only aligned to 4-bytes. This is unfortunate and breaks our assumptions.
+While glibc-malloc still guarantees 8 / 16 bytes alignment, this is not
+necessarily guaranteed by the C standard (and alternative allocators
+will deviate (see jemalloc, for instance)).
+
+Fortunately, we only need 2 flags, so a 4-byte alignment is more than
+enough.
+
+Reported-by: Thomas Haller
+Signed-off-by: David Rheinsberg <david.rheinsberg@gmail.com>
+
+https://github.com/c-util/c-rbtree/pull/4
+(cherry picked from commit 1554936e33718c1a4deea590217e2c19ea6f80de)
+(cherry picked from commit 282fac4afbe2ebdf95a9f0210aa8bd745061e8d2)
+---
+ shared/c-rbtree/src/c-rbtree.c | 14 ++++++++------
+ shared/c-rbtree/src/c-rbtree.h |  8 +++-----
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/shared/c-rbtree/src/c-rbtree.c b/shared/c-rbtree/src/c-rbtree.c
+index aacdcc2..2f0e608 100644
+--- a/shared/c-rbtree/src/c-rbtree.c
++++ b/shared/c-rbtree/src/c-rbtree.c
+@@ -31,15 +31,17 @@
+ #include "c-rbtree-private.h"
+ 
+ /*
+- * We use alignas(8) to enforce 64bit alignment of structure fields. This is
+- * according to ISO-C11, so we rely on the compiler to implement this. However,
+- * at the same time we don't want to exceed native malloc() alignment on target
+- * platforms. Hence, we also verify against max_align_t.
++ * We use the lower 2 bits of CRBNode pointers to store flags. Make sure
++ * CRBNode is 4-byte aligned, so the lower 2 bits are actually unused. We also
++ * sometimes store a pointer to the root-node, so make sure this one is also 4
++ * byte aligned.
++ * Note that there are actually some architectures where `max_align_t` is 4, so
++ * we do not have much wiggle-room to extend this flag-set.
+  */
+ static_assert(alignof(CRBNode) <= alignof(max_align_t), "Invalid RBNode alignment");
+-static_assert(alignof(CRBNode) >= 8, "Invalid CRBNode alignment");
++static_assert(alignof(CRBNode) >= 4, "Invalid CRBNode alignment");
+ static_assert(alignof(CRBTree) <= alignof(max_align_t), "Invalid RBTree alignment");
+-static_assert(alignof(CRBTree) >= 8, "Invalid CRBTree alignment");
++static_assert(alignof(CRBTree) >= 4, "Invalid CRBTree alignment");
+ 
+ /**
+  * c_rbnode_leftmost() - return leftmost child
+diff --git a/shared/c-rbtree/src/c-rbtree.h b/shared/c-rbtree/src/c-rbtree.h
+index cb33fcf..a9bbce5 100644
+--- a/shared/c-rbtree/src/c-rbtree.h
++++ b/shared/c-rbtree/src/c-rbtree.h
+@@ -27,7 +27,6 @@ extern "C" {
+ #endif
+ 
+ #include <assert.h>
+-#include <stdalign.h>
+ #include <stddef.h>
+ 
+ typedef struct CRBNode CRBNode;
+@@ -36,8 +35,7 @@ typedef struct CRBTree CRBTree;
+ /* implementation detail */
+ #define C_RBNODE_RED                    (0x1UL)
+ #define C_RBNODE_ROOT                   (0x2UL)
+-#define C_RBNODE_UNUSED3                (0x4UL)
+-#define C_RBNODE_FLAG_MASK              (0x7UL)
++#define C_RBNODE_FLAG_MASK              (0x3UL)
+ 
+ /**
+  * struct CRBNode - Node of a Red-Black Tree
+@@ -60,7 +58,7 @@ typedef struct CRBTree CRBTree;
+  * C_RBNODE_INIT.
+  */
+ struct CRBNode {
+-        alignas(8) unsigned long __parent_and_flags;
++        unsigned long __parent_and_flags;
+         CRBNode *left;
+         CRBNode *right;
+ };
+@@ -90,7 +88,7 @@ void c_rbnode_unlink_stale(CRBNode *n);
+  * To initialize an RB-Tree, set it to NULL / all zero.
+  */
+ struct CRBTree {
+-        alignas(8) CRBNode *root;
++        CRBNode *root;
+ };
+ 
+ #define C_RBTREE_INIT {}
