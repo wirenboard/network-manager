@@ -4,3 +4,4 @@ platform-tests-print-details-about-test-failure-for-test_.patch
 platform-tests-skip-test_platform_ip_address_pretty_sort_.patch
 c-rbtree-reduce-alignment-constraints.patch
 systemd-basic-missing_syscall-fix-syscall-numbers-for-mip.patch
+systemd-basic-missing_syscall-fix-syscall-numbers-for-x32.patch
