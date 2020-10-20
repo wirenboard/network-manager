@@ -555,6 +555,20 @@ test_platform_ip_address_pretty_sort_cmp(gconstpointer test_data)
     gs_free guint64 *rand_map    = NULL;
     gsize            i, j;
 
+#if !defined(__amd64__)
+    /* The test generates a random array of NMPlatformIPXAddress (by crudely randomizing the memory,
+     * not the structures themself) and then compares the sorted result with the expected output.
+     * The sole purpose is to ensure that the sorting order stays stable.
+     *
+     * This only works on an architecture for which the test was made, otherwise
+     * the expected data does not match (due to different layout of the structures
+     * in memory).
+     *
+     * That's fine. Skip the test. */
+    g_test_skip("skip test on non-amd64 architecture");
+    return;
+#endif
+
     /*
      * First we create a list of addresses filled with (stable) random bytes.
      * We tweak some fields explicitly (stable randomly), so that we cover all
@@ -692,14 +706,16 @@ test_platform_ip_address_pretty_sort_cmp(gconstpointer test_data)
     }
 
     if (PRINT_RESULT) {
-        g_print("\n\n\t\t[%d] = (\n", TEST_DATA_I);
+        g_print("\n        [%d] = (", TEST_DATA_I);
         for (i = 0; i < ELM_SIZE * N_ADDRESSES;) {
-            g_print("\t\t\t\"");
+            if (i > 0)
+                g_print("\n               ");
+            g_print("\"");
             for (j = 0; j < 40 && i < ELM_SIZE * N_ADDRESSES; j++, i++)
                 g_print("%02x", addresses[i]);
-            g_print("\"\n");
+            g_print("\"");
         }
-        g_print("\t\t),\n\n");
+        g_print("),\n");
         return;
     }
 
@@ -713,6 +729,19 @@ test_platform_ip_address_pretty_sort_cmp(gconstpointer test_data)
                                             NULL,
                                             0,
                                             &bin_len);
+
+        if (bin_len != ELM_SIZE * N_ADDRESSES || memcmp(addresses, bin_arr, bin_len) != 0) {
+            char *addresses_str = nm_utils_bin2hexstr(addresses, ELM_SIZE * N_ADDRESSES, -1);
+
+            g_error(">>> test_platform_ip_address_pretty_sort_cmp() will fail:\n"
+                    ">>> addresses[%zu]: %s\n"
+                    ">>> expected [%zu]: %s\n",
+                    ELM_SIZE * N_ADDRESSES,
+                    addresses_str,
+                    bin_len,
+                    EXPECTED_BUFFER[TEST_DATA_I]);
+        }
+
         g_assert_cmpmem(addresses, ELM_SIZE * N_ADDRESSES, bin_arr, bin_len);
     }
 }
