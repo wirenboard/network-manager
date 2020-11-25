@@ -1,3 +1,9 @@
+network-manager (1.27.91-2) unstable; urgency=medium
+
+  * Revert "dns: change default DNS priority of VPNs to -50" (Closes: #972688)
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 25 Nov 2020 14:59:00 +0100
+
 network-manager (1.27.91-1) unstable; urgency=medium
 
   * New upstream version 1.27.91 (1.28 rc2)
