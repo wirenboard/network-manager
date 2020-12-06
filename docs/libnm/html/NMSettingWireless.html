@@ -8,7 +8,7 @@
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">
 <link rel="next" href="NMSettingWpan.html" title="NMSettingWpan">
-<meta name="generator" content="GTK-Doc V1.32 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.33.1 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -275,13 +275,13 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">char</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--band" title="The “band” property">band</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">char</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--bssid" title="The “bssid” property">bssid</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -292,13 +292,13 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">char</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--cloned-mac-address" title="The “cloned-mac-address” property">cloned-mac-address</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">char</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--generate-mac-address-mask" title="The “generate-mac-address-mask” property">generate-mac-address-mask</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -309,7 +309,7 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">char</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--mac-address" title="The “mac-address” property">mac-address</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -325,7 +325,7 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">char</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--mode" title="The “mode” property">mode</a></td>
 <td class="property_flags">Read / Write</td>
 </tr>
@@ -509,7 +509,7 @@ nm_setting_wireless_new (<em class="parameter"><code><span class="type">void</sp
 <div class="refsect3">
 <a name="nm-setting-wireless-new.returns"></a><h4>Returns</h4>
 <p>the new empty <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> object. </p>
-<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+<p><span class="annotation">[<acronym title="The caller owns the data, and is responsible for free it."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
 </div>
 <hr>
@@ -535,7 +535,7 @@ nm_setting_wireless_get_ssid (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="nm-setting-wireless-get-ssid.returns"></a><h4>Returns</h4>
 <p>the <a class="link" href="NMSettingWireless.html#NMSettingWireless--ssid" title="The “ssid” property"><span class="type">“ssid”</span></a> property of the setting. </p>
-<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
+<p><span class="annotation">[<acronym title="The data is owned by the callee, which is responsible of freeing it."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
 </div>
 <hr>
@@ -1652,7 +1652,7 @@ case the global default is unspecified it is assumed to be
 <hr>
 <div class="refsect2">
 <a name="NMSettingWireless--band"></a><h3>The <code class="literal">“band”</code> property</h3>
-<pre class="programlisting">  “band”                     <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “band”                     <span class="type">char</span> *</pre>
 <p>802.11 frequency band of the network.  One of "a" for 5GHz 802.11a or
 "bg" for 2.4GHz 802.11.  This will lock associations to the Wi-Fi network
 to the specific band, i.e. if "a" is specified, the device will not
@@ -1666,7 +1666,7 @@ capability and may not work with all drivers.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingWireless--bssid"></a><h3>The <code class="literal">“bssid”</code> property</h3>
-<pre class="programlisting">  “bssid”                    <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “bssid”                    <span class="type">char</span> *</pre>
 <p>If specified, directs the device to only associate with the given access
 point.  This capability is highly driver dependent and not supported by
 all devices.  Note: this property does not control the BSSID used when
@@ -1690,7 +1690,7 @@ also requires the "band" property to be set.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingWireless--cloned-mac-address"></a><h3>The <code class="literal">“cloned-mac-address”</code> property</h3>
-<pre class="programlisting">  “cloned-mac-address”       <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “cloned-mac-address”       <span class="type">char</span> *</pre>
 <p>If specified, request that the device use this MAC address instead.
 This is known as MAC cloning or spoofing.</p>
 <p>Beside explicitly specifying a MAC address, the special values "preserve", "permanent",
@@ -1712,7 +1712,7 @@ of NetworkManager.conf. If still unspecified, it defaults to "preserve"
 <hr>
 <div class="refsect2">
 <a name="NMSettingWireless--generate-mac-address-mask"></a><h3>The <code class="literal">“generate-mac-address-mask”</code> property</h3>
-<pre class="programlisting">  “generate-mac-address-mask” <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “generate-mac-address-mask” <span class="type">char</span> *</pre>
 <p>With <a class="link" href="NMSettingWireless.html#NMSettingWireless--cloned-mac-address" title="The “cloned-mac-address” property"><span class="type">“cloned-mac-address”</span></a> setting "random" or "stable",
 by default all bits of the MAC address are scrambled and a locally-administered,
 unicast MAC address is created. This property allows to specify that certain bits
@@ -1762,7 +1762,7 @@ probe-scans are distinctly recognizable on the air.</p>
 <hr>
 <div class="refsect2">
 <a name="NMSettingWireless--mac-address"></a><h3>The <code class="literal">“mac-address”</code> property</h3>
-<pre class="programlisting">  “mac-address”              <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “mac-address”              <span class="type">char</span> *</pre>
 <p>If specified, this connection will only apply to the Wi-Fi device whose
 permanent MAC address matches. This property does not change the MAC
 address of the device (i.e. MAC spoofing).</p>
@@ -1802,7 +1802,7 @@ randomize the MAC address), or <a class="link" href="NMSetting.html#NM-SETTING-M
 <hr>
 <div class="refsect2">
 <a name="NMSettingWireless--mode"></a><h3>The <code class="literal">“mode”</code> property</h3>
-<pre class="programlisting">  “mode”                     <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “mode”                     <span class="type">char</span> *</pre>
 <p>Wi-Fi network mode; one of "infrastructure", "mesh", "adhoc" or "ap".  If blank,
 infrastructure is assumed.</p>
 <p>Owner: NMSettingWireless</p>
@@ -1901,6 +1901,6 @@ NetworkManager).</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.32</div>
+<hr>Generated by GTK-Doc V1.33.1</div>
 </body>
 </html>

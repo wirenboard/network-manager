@@ -80,6 +80,116 @@ test_auto(void)
 }
 
 static void
+test_dhcp_with_hostname(void)
+{
+    gs_unref_hashtable GHashTable *connections = NULL;
+    const char *const *            ARGV        = NM_MAKE_STRV("ip=::::host1::dhcp");
+    NMConnection *                 connection;
+    NMSettingConnection *          s_con;
+    NMSettingWired *               s_wired;
+    NMSettingIPConfig *            s_ip4;
+    NMSettingIPConfig *            s_ip6;
+    gs_free char *                 hostname = NULL;
+
+    connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV, &hostname);
+    g_assert(connections);
+    g_assert_cmpint(g_hash_table_size(connections), ==, 1);
+    g_assert_cmpstr(hostname, ==, "host1");
+
+    connection = g_hash_table_lookup(connections, "default_connection");
+    g_assert(connection);
+    nmtst_assert_connection_verifies_without_normalization(connection);
+
+    g_assert(!nm_connection_get_setting_vlan(connection));
+
+    s_con = nm_connection_get_setting_connection(connection);
+    g_assert(s_con);
+    g_assert_cmpstr(nm_setting_connection_get_connection_type(s_con),
+                    ==,
+                    NM_SETTING_WIRED_SETTING_NAME);
+    g_assert_cmpstr(nm_setting_connection_get_id(s_con), ==, "Wired Connection");
+    g_assert_cmpint(nm_setting_connection_get_timestamp(s_con), ==, 0);
+    g_assert_cmpint(nm_setting_connection_get_multi_connect(s_con),
+                    ==,
+                    NM_CONNECTION_MULTI_CONNECT_MULTIPLE);
+    g_assert_cmpint(nm_setting_connection_get_wait_device_timeout(s_con), ==, -1);
+
+    g_assert(nm_setting_connection_get_autoconnect(s_con));
+
+    s_wired = nm_connection_get_setting_wired(connection);
+    g_assert(s_wired);
+    g_assert(!nm_setting_wired_get_mac_address(s_wired));
+    g_assert_cmpint(nm_setting_wired_get_mtu(s_wired), ==, 0);
+
+    s_ip4 = nm_connection_get_setting_ip4_config(connection);
+    g_assert(s_ip4);
+    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4), ==, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+    s_ip6 = nm_connection_get_setting_ip6_config(connection);
+    g_assert(s_ip6);
+    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6), ==, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+}
+
+static void
+test_dhcp_with_mtu(void)
+{
+    const char *const *ARGV0  = NM_MAKE_STRV("ip=:dhcp:1499");
+    const char *const *ARGV1  = NM_MAKE_STRV("ip=::::::dhcp:1499");
+    const char *const *ARGV[] = {ARGV0, ARGV1};
+    guint              i;
+
+    for (i = 0; i < G_N_ELEMENTS(ARGV); i++) {
+        gs_unref_hashtable GHashTable *connections = NULL;
+        NMConnection *                 connection;
+        NMSettingConnection *          s_con;
+        NMSettingWired *               s_wired;
+        NMSettingIPConfig *            s_ip4;
+        NMSettingIPConfig *            s_ip6;
+        gs_free char *                 hostname = NULL;
+
+        connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV[i], &hostname);
+        g_assert(connections);
+        g_assert_cmpint(g_hash_table_size(connections), ==, 1);
+        g_assert_cmpstr(hostname, ==, NULL);
+
+        connection = g_hash_table_lookup(connections, "default_connection");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+
+        s_con = nm_connection_get_setting_connection(connection);
+        g_assert(s_con);
+        g_assert_cmpstr(nm_setting_connection_get_connection_type(s_con),
+                        ==,
+                        NM_SETTING_WIRED_SETTING_NAME);
+        g_assert_cmpstr(nm_setting_connection_get_id(s_con), ==, "Wired Connection");
+        g_assert_cmpint(nm_setting_connection_get_timestamp(s_con), ==, 0);
+        g_assert_cmpint(nm_setting_connection_get_multi_connect(s_con),
+                        ==,
+                        NM_CONNECTION_MULTI_CONNECT_MULTIPLE);
+        g_assert_cmpint(nm_setting_connection_get_wait_device_timeout(s_con), ==, -1);
+
+        g_assert(nm_setting_connection_get_autoconnect(s_con));
+
+        s_wired = nm_connection_get_setting_wired(connection);
+        g_assert(s_wired);
+        g_assert(!nm_setting_wired_get_mac_address(s_wired));
+        g_assert_cmpint(nm_setting_wired_get_mtu(s_wired), ==, 1499);
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+    }
+}
+
+static void
 test_if_auto_with_mtu(void)
 {
     gs_unref_hashtable GHashTable *connections = NULL;
@@ -235,7 +345,9 @@ test_if_ip4_manual(void)
 
     s_ip6 = nm_connection_get_setting_ip6_config(connection);
     g_assert(s_ip6);
-    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6), ==, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                    ==,
+                    NM_SETTING_IP6_CONFIG_METHOD_DISABLED);
     g_assert(nm_setting_ip_config_get_may_fail(s_ip6));
 
     connection = g_hash_table_lookup(connections, "eth4");
@@ -305,6 +417,52 @@ test_if_ip6_manual(void)
 }
 
 static void
+test_if_off(void)
+{
+    gs_unref_hashtable GHashTable *connections = NULL;
+    const char *const *            ARGV        = NM_MAKE_STRV("ip=off",
+                                           "ip=ens3:off",
+                                           "ip=10.0.0.8:::::ens4:off",
+                                           "ip=[2001:DB8::8]:::::ens5:off");
+    NMConnection *                 connection;
+    NMSettingIPConfig *            s_ip4;
+    NMSettingIPConfig *            s_ip6;
+    gs_free char *                 hostname = NULL;
+    struct {
+        const char name[32];
+        const char ipv4_method[32];
+        const char ipv6_method[32];
+
+    } conn_expected[] = {
+        {"default_connection",
+         NM_SETTING_IP4_CONFIG_METHOD_DISABLED,
+         NM_SETTING_IP6_CONFIG_METHOD_DISABLED},
+        {"ens3", NM_SETTING_IP4_CONFIG_METHOD_DISABLED, NM_SETTING_IP6_CONFIG_METHOD_DISABLED},
+        {"ens4", NM_SETTING_IP4_CONFIG_METHOD_MANUAL, NM_SETTING_IP6_CONFIG_METHOD_DISABLED},
+        {"ens5", NM_SETTING_IP4_CONFIG_METHOD_DISABLED, NM_SETTING_IP6_CONFIG_METHOD_MANUAL},
+    };
+
+    connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV, &hostname);
+    g_assert(connections);
+    g_assert_cmpint(g_hash_table_size(connections), ==, G_N_ELEMENTS(conn_expected));
+    g_assert_cmpstr(hostname, ==, NULL);
+
+    for (int i = 0; i < G_N_ELEMENTS(conn_expected); ++i) {
+        connection = g_hash_table_lookup(connections, conn_expected[i].name);
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4), ==, conn_expected[i].ipv4_method);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6), ==, conn_expected[i].ipv6_method);
+    }
+}
+
+static void
 test_if_mac_ifname(void)
 {
     gs_unref_hashtable GHashTable *connections = NULL;
@@ -353,8 +511,9 @@ static void
 test_multiple_merge(void)
 {
     gs_unref_hashtable GHashTable *connections = NULL;
-    const char *const *ARGV = NM_MAKE_STRV("ip=192.0.2.2:::::eth0", "ip=[2001:db8::2]:::56::eth0");
-    NMConnection *     connection;
+    const char *const *            ARGV =
+        NM_MAKE_STRV("ip=192.0.2.2/16:::::eth0", "ip=[2001:db8::2]:::56::eth0");
+    NMConnection *       connection;
     NMSettingConnection *s_con;
     NMSettingWired *     s_wired;
     NMSettingIPConfig *  s_ip4;
@@ -389,6 +548,7 @@ test_multiple_merge(void)
     ip_addr = nm_setting_ip_config_get_address(s_ip4, 0);
     g_assert(ip_addr);
     g_assert_cmpstr(nm_ip_address_get_address(ip_addr), ==, "192.0.2.2");
+    g_assert_cmpint(nm_ip_address_get_prefix(ip_addr), ==, 16);
 
     s_ip6 = nm_connection_get_setting_ip6_config(connection);
     g_assert(s_ip6);
@@ -454,7 +614,7 @@ test_bootdev(void)
 
     connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV, &hostname);
     g_assert(connections);
-    g_assert_cmpint(g_hash_table_size(connections), ==, 2);
+    g_assert_cmpint(g_hash_table_size(connections), ==, 3);
     g_assert_cmpstr(hostname, ==, NULL);
 
     connection = g_hash_table_lookup(connections, "ens3");
@@ -483,6 +643,18 @@ test_bootdev(void)
                     NM_SETTING_VLAN_SETTING_NAME);
     g_assert_cmpstr(nm_setting_connection_get_id(s_con), ==, "vlan2");
     g_assert_cmpstr(nm_setting_connection_get_interface_name(s_con), ==, "vlan2");
+
+    connection = g_hash_table_lookup(connections, "ens5");
+    g_assert(connection);
+    nmtst_assert_connection_verifies_without_normalization(connection);
+
+    s_con = nm_connection_get_setting_connection(connection);
+    g_assert(s_con);
+    g_assert_cmpstr(nm_setting_connection_get_connection_type(s_con),
+                    ==,
+                    NM_SETTING_WIRED_SETTING_NAME);
+    g_assert_cmpstr(nm_setting_connection_get_id(s_con), ==, "ens5");
+    g_assert_cmpstr(nm_setting_connection_get_interface_name(s_con), ==, "ens5");
 }
 
 static void
@@ -729,7 +901,9 @@ test_bond_ip(void)
 
     s_ip6 = nm_connection_get_setting_ip6_config(connection);
     g_assert(s_ip6);
-    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6), ==, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                    ==,
+                    NM_SETTING_IP6_CONFIG_METHOD_DISABLED);
     g_assert(!nm_setting_ip_config_get_ignore_auto_dns(s_ip6));
     g_assert_cmpint(nm_setting_ip_config_get_num_dns(s_ip6), ==, 0);
     g_assert(!nm_setting_ip_config_get_gateway(s_ip6));
@@ -1165,6 +1339,229 @@ test_team(void)
     g_assert_cmpint(nm_setting_connection_get_multi_connect(s_con),
                     ==,
                     NM_CONNECTION_MULTI_CONNECT_SINGLE);
+}
+
+static void
+test_vlan(void)
+{
+    const char *const *ARGV0  = NM_MAKE_STRV("ip=eth0.100:dhcp", "vlan=eth0.100:eth0");
+    const char *const *ARGV1  = NM_MAKE_STRV("vlan=eth0.100:eth0", "ip=eth0.100:dhcp");
+    const char *const *ARGV[] = {ARGV0, ARGV1};
+    guint              i;
+
+    for (i = 0; i < G_N_ELEMENTS(ARGV); i++) {
+        gs_unref_hashtable GHashTable *connections = NULL;
+        NMConnection *                 connection;
+        NMSettingIPConfig *            s_ip4;
+        NMSettingIPConfig *            s_ip6;
+        NMSettingVlan *                s_vlan;
+        gs_free char *                 hostname = NULL;
+
+        connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV[i], &hostname);
+        g_assert(connections);
+        g_assert_cmpint(g_hash_table_size(connections), ==, 2);
+        g_assert_cmpstr(hostname, ==, NULL);
+
+        /* VLAN eth0.100 */
+        connection = g_hash_table_lookup(connections, "eth0.100");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+        g_assert_cmpstr(nm_connection_get_connection_type(connection),
+                        ==,
+                        NM_SETTING_VLAN_SETTING_NAME);
+        g_assert_cmpstr(nm_connection_get_id(connection), ==, "eth0.100");
+
+        s_vlan = nm_connection_get_setting_vlan(connection);
+        g_assert(s_vlan);
+        g_assert_cmpstr(nm_setting_vlan_get_parent(s_vlan), ==, "eth0");
+        g_assert_cmpint(nm_setting_vlan_get_id(s_vlan), ==, 100);
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+
+        /* Ethernet eth0 */
+        connection = g_hash_table_lookup(connections, "eth0");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+        g_assert_cmpstr(nm_connection_get_connection_type(connection),
+                        ==,
+                        NM_SETTING_WIRED_SETTING_NAME);
+        g_assert_cmpstr(nm_connection_get_id(connection), ==, "eth0");
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_DISABLED);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_DISABLED);
+    }
+}
+
+static void
+test_vlan_with_dhcp_on_parent(void)
+{
+    const char *const *ARGV0  = NM_MAKE_STRV("vlan=eth0.100:eth0", "ip=eth0:dhcp");
+    const char *const *ARGV1  = NM_MAKE_STRV("ip=eth0:dhcp", "vlan=eth0.100:eth0");
+    const char *const *ARGV[] = {ARGV0, ARGV1};
+    guint              i;
+
+    for (i = 0; i < G_N_ELEMENTS(ARGV); i++) {
+        gs_unref_hashtable GHashTable *connections = NULL;
+        NMConnection *                 connection;
+        NMSettingIPConfig *            s_ip4;
+        NMSettingIPConfig *            s_ip6;
+        NMSettingVlan *                s_vlan;
+        gs_free char *                 hostname = NULL;
+
+        connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV[i], &hostname);
+        g_assert(connections);
+        g_assert_cmpint(g_hash_table_size(connections), ==, 2);
+        g_assert_cmpstr(hostname, ==, NULL);
+
+        /* VLAN eth0.100 */
+        connection = g_hash_table_lookup(connections, "eth0.100");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+        g_assert_cmpstr(nm_connection_get_connection_type(connection),
+                        ==,
+                        NM_SETTING_VLAN_SETTING_NAME);
+        g_assert_cmpstr(nm_connection_get_id(connection), ==, "eth0.100");
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+
+        s_vlan = nm_connection_get_setting_vlan(connection);
+        g_assert(s_vlan);
+        g_assert_cmpstr(nm_setting_vlan_get_parent(s_vlan), ==, "eth0");
+        g_assert_cmpint(nm_setting_vlan_get_id(s_vlan), ==, 100);
+
+        /* Ethernet eth0 */
+        connection = g_hash_table_lookup(connections, "eth0");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+        g_assert_cmpstr(nm_connection_get_connection_type(connection),
+                        ==,
+                        NM_SETTING_WIRED_SETTING_NAME);
+        g_assert_cmpstr(nm_connection_get_id(connection), ==, "eth0");
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+    }
+}
+
+static void
+test_vlan_over_bond(void)
+{
+    const char *const *ARGV0  = NM_MAKE_STRV("ip=1.2.3.4:::24::vlan1:none",
+                                            "bond=bond2:ens3,ens4:mode=active-backup",
+                                            "vlan=vlan1:bond2");
+    const char *const *ARGV1  = NM_MAKE_STRV("vlan=vlan1:bond2",
+                                            "ip=1.2.3.4:::24::vlan1:none",
+                                            "bond=bond2:ens3,ens4:mode=active-backup");
+    const char *const *ARGV2  = NM_MAKE_STRV("bond=bond2:ens3,ens4:mode=active-backup",
+                                            "ip=1.2.3.4:::24::vlan1:none",
+                                            "vlan=vlan1:bond2");
+    const char *const *ARGV[] = {ARGV0, ARGV1, ARGV2};
+    guint              i;
+
+    for (i = 0; i < G_N_ELEMENTS(ARGV); i++) {
+        gs_unref_hashtable GHashTable *connections = NULL;
+        NMConnection *                 connection;
+        NMSettingIPConfig *            s_ip4;
+        NMSettingIPConfig *            s_ip6;
+        NMSettingVlan *                s_vlan;
+        gs_free char *                 hostname = NULL;
+
+        connections = nmi_cmdline_reader_parse(TEST_INITRD_DIR "/sysfs", ARGV[i], &hostname);
+        g_assert(connections);
+        g_assert_cmpint(g_hash_table_size(connections), ==, 4);
+        g_assert_cmpstr(hostname, ==, NULL);
+
+        /* VLAN vlan1 */
+        connection = g_hash_table_lookup(connections, "vlan1");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+        g_assert_cmpstr(nm_connection_get_connection_type(connection),
+                        ==,
+                        NM_SETTING_VLAN_SETTING_NAME);
+        g_assert_cmpstr(nm_connection_get_id(connection), ==, "vlan1");
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_MANUAL);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_DISABLED);
+
+        s_vlan = nm_connection_get_setting_vlan(connection);
+        g_assert(s_vlan);
+        g_assert_cmpstr(nm_setting_vlan_get_parent(s_vlan), ==, "bond2");
+        g_assert_cmpint(nm_setting_vlan_get_id(s_vlan), ==, 1);
+
+        /* Bond bond2 */
+        connection = g_hash_table_lookup(connections, "bond2");
+        g_assert(connection);
+        nmtst_assert_connection_verifies_without_normalization(connection);
+        g_assert_cmpstr(nm_connection_get_connection_type(connection),
+                        ==,
+                        NM_SETTING_BOND_SETTING_NAME);
+        g_assert_cmpstr(nm_connection_get_id(connection), ==, "bond2");
+
+        s_ip4 = nm_connection_get_setting_ip4_config(connection);
+        g_assert(s_ip4);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                        ==,
+                        NM_SETTING_IP4_CONFIG_METHOD_DISABLED);
+
+        s_ip6 = nm_connection_get_setting_ip6_config(connection);
+        g_assert(s_ip6);
+        g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6),
+                        ==,
+                        NM_SETTING_IP6_CONFIG_METHOD_DISABLED);
+
+        /* Ethernet ens3 and ens4 */
+        connection = g_hash_table_lookup(connections, "ens3");
+        g_assert(connection);
+        connection = g_hash_table_lookup(connections, "ens4");
+        g_assert(connection);
+    }
 }
 
 static void
@@ -1784,12 +2181,15 @@ main(int argc, char **argv)
     nmtst_init_assert_logging(&argc, &argv, "INFO", "DEFAULT");
 
     g_test_add_func("/initrd/cmdline/auto", test_auto);
+    g_test_add_func("/initrd/cmdline/dhcp_with_hostname", test_dhcp_with_hostname);
+    g_test_add_func("/initrd/cmdline/dhcp_with_mtu", test_dhcp_with_mtu);
     g_test_add_func("/initrd/cmdline/if_auto_with_mtu", test_if_auto_with_mtu);
     g_test_add_func("/initrd/cmdline/if_dhcp6", test_if_dhcp6);
     g_test_add_func("/initrd/cmdline/if_auto_with_mtu_and_mac", test_if_auto_with_mtu_and_mac);
     g_test_add_func("/initrd/cmdline/if_ip4_manual", test_if_ip4_manual);
     g_test_add_func("/initrd/cmdline/if_ip6_manual", test_if_ip6_manual);
     g_test_add_func("/initrd/cmdline/if_mac_ifname", test_if_mac_ifname);
+    g_test_add_func("/initrd/cmdline/if_off", test_if_off);
     g_test_add_func("/initrd/cmdline/multiple/merge", test_multiple_merge);
     g_test_add_func("/initrd/cmdline/multiple/bootdev", test_multiple_bootdev);
     g_test_add_func("/initrd/cmdline/nameserver", test_nameserver);
@@ -1799,6 +2199,9 @@ main(int argc, char **argv)
     g_test_add_func("/initrd/cmdline/bond/ip", test_bond_ip);
     g_test_add_func("/initrd/cmdline/bond/default", test_bond_default);
     g_test_add_func("/initrd/cmdline/team", test_team);
+    g_test_add_func("/initrd/cmdline/vlan", test_vlan);
+    g_test_add_func("/initrd/cmdline/vlan/dhcp-on-parent", test_vlan_with_dhcp_on_parent);
+    g_test_add_func("/initrd/cmdline/vlan/over-bond", test_vlan_over_bond);
     g_test_add_func("/initrd/cmdline/bridge", test_bridge);
     g_test_add_func("/initrd/cmdline/bridge/default", test_bridge_default);
     g_test_add_func("/initrd/cmdline/bridge/ip", test_bridge_ip);
