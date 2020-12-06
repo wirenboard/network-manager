@@ -6,7 +6,7 @@ project(
 #  - add corresponding NM_VERSION_x_y_z macros in
 #    "shared/nm-version-macros.h.in"
 #  - update number in configure.ac
-  version: '1.27.91',
+  version: '1.28.0',
   license: 'GPL2+',
   default_options: [
     'buildtype=debugoptimized',
@@ -56,6 +56,8 @@ nm_pkgstatedir = join_paths(nm_localstatedir, 'lib', nm_name)
 nm_vpndir = join_paths(nm_libdir, nm_name)
 nm_plugindir = join_paths(nm_libdir, nm_name, dist_version)
 
+introspection_extra_cflags = ['-Wno-incompatible-pointer-types-discards-qualifiers']
+
 libnm_name = 'libnm'
 
 current = 1
@@ -64,8 +66,6 @@ age = 1
 libnm_version = '@0@.@1@.@2@'.format(current - age, age, revision)
 
 libnm_pkgincludedir = join_paths(nm_includedir, libnm_name)
-
-nm_debug = get_option('buildtype').contains('debug')
 
 gnome = import('gnome')
 i18n = import('i18n')
@@ -173,67 +173,64 @@ if enable_lto
   common_ldflags += lto_flag
 endif
 
-if nm_debug
-  common_flags += cc.get_supported_arguments([
-    '-Wall',
-    '-Wextra',
-    '-Wdeclaration-after-statement',
-    '-Wfloat-equal',
-    '-Wformat-nonliteral',
-    '-Wformat-security',
-    '-Wimplicit-function-declaration',
-    '-Winit-self',
-    '-Wlogical-op',
-    '-Wmissing-declarations',
-    '-Wmissing-include-dirs',
-    '-Wmissing-prototypes',
-    '-Wpointer-arith',
-    '-Wshadow',
-    '-Wshift-negative-value',
-    '-Wstrict-prototypes',
-    '-Wundef',
-    '-Wvla',
-    '-Wno-duplicate-decl-specifier',
-    '-Wno-format-truncation',
-    '-Wno-format-y2k',
-    '-Wno-gnu-variable-sized-type-not-at-end',
-    '-Wno-missing-field-initializers',
-    '-Wno-pragmas',
-    '-Wno-sign-compare',
-    '-Wno-tautological-constant-out-of-range-compare',
-    '-Wno-unknown-pragmas',
-    '-Wno-unused-parameter',
-    '-Wparentheses-equality',
-    '-Wpointer-arith',
-    '-Wshadow',
-    '-Wstrict-prototypes',
-    '-Wtypedef-redefinition',
-    '-Wundef',
-    '-Wunknown-attributes',
-    '-fno-strict-aliasing',
-  ])
+common_flags += cc.get_supported_arguments([
+  '-Wall',
+  '-Wextra',
+  '-Wdeclaration-after-statement',
+  '-Wfloat-equal',
+  '-Wformat-nonliteral',
+  '-Wformat-security',
+  '-Wimplicit-function-declaration',
+  '-Winit-self',
+  '-Wlogical-op',
+  '-Wmissing-declarations',
+  '-Wmissing-include-dirs',
+  '-Wmissing-prototypes',
+  '-Wpointer-arith',
+  '-Wshadow',
+  '-Wshift-negative-value',
+  '-Wstrict-prototypes',
+  '-Wundef',
+  '-Wvla',
+  '-Wno-duplicate-decl-specifier',
+  '-Wno-format-truncation',
+  '-Wno-format-y2k',
+  '-Wno-gnu-variable-sized-type-not-at-end',
+  '-Wno-missing-field-initializers',
+  '-Wno-pragmas',
+  '-Wno-sign-compare',
+  '-Wno-tautological-constant-out-of-range-compare',
+  '-Wno-unknown-pragmas',
+  '-Wno-unused-parameter',
+  '-Wparentheses-equality',
+  '-Wpointer-arith',
+  '-Wshadow',
+  '-Wstrict-prototypes',
+  '-Wtypedef-redefinition',
+  '-Wundef',
+  '-Wunknown-attributes',
+  '-fno-strict-aliasing',
+])
 
-  if cc.has_argument('-Wimplicit-fallthrough')
-    if cc.compiles('''
-                   int main(int argc, char **argv) {
-                       int r = 0;
-                       switch (argc) {
-                       case 0:
-                           r++;
-                           /* fall-through */
-                       case 1:
-                           r++;
-                           break;
-                       }
-                       return r;
-                   }
-                   ''',
-                   args: '-Werror=implicit-fallthrough',
-                   name: '-Werror=implicit-fallthrough')
-      common_flags += '-Wimplicit-fallthrough'
-    endif
+if cc.has_argument('-Wimplicit-fallthrough')
+  if cc.compiles('''
+                 int main(int argc, char **argv) {
+                     int r = 0;
+                     switch (argc) {
+                     case 0:
+                         r++;
+                         /* fall-through */
+                     case 1:
+                         r++;
+                         break;
+                     }
+                     return r;
+                 }
+                 ''',
+                 args: '-Werror=implicit-fallthrough',
+                 name: '-Werror=implicit-fallthrough')
+    common_flags += '-Wimplicit-fallthrough'
   endif
-
 endif
 
 add_project_arguments(common_flags, language: 'c')
