@@ -1,3 +1,15 @@
+network-manager (1.28.0-2) unstable; urgency=medium
+
+  * Demote libpam-systemd to Recommends.
+    This allows users to use and experiment with other init systems. Such a
+    setup is neither tested nor fully supported and users need to be aware
+    that some functionality might be broken. (Closes: #921012)
+  * Recommend wireless-regdb instead of crda.
+    CRDA is no longer needed as of Linux kernel v4.15. (Closes: #973241)
+  * Bump Standards-Version to 4.5.1
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 31 Dec 2020 21:38:43 +0100
+
 network-manager (1.28.0-1) unstable; urgency=medium
 
   * New upstream version 1.28.0
