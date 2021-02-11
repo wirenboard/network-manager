@@ -1,0 +1,25 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Thu, 11 Feb 2021 19:21:46 +0100
+Subject: Fix polkit-agent-helper-1 path
+
+Use /usr/lib/policykit-1/polkit-agent-helper-1, as this path also works
+on buster, i.e. the current stable release.
+It should eventually be updated to use /usr/libexec once bullseye has
+been released.
+---
+ clients/common/nm-polkit-listener.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/clients/common/nm-polkit-listener.c b/clients/common/nm-polkit-listener.c
+index db21abf..204d734 100644
+--- a/clients/common/nm-polkit-listener.c
++++ b/clients/common/nm-polkit-listener.c
+@@ -501,7 +501,7 @@ begin_authentication(AuthRequest *request)
+ {
+     int         fd_flags;
+     const char *helper_argv[] = {
+-        POLKIT_PACKAGE_PREFIX "/lib/polkit-1/polkit-agent-helper-1",
++        "/usr/lib/policykit-1/polkit-agent-helper-1",
+         request->username,
+         NULL,
+     };
