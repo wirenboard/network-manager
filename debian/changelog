@@ -1,8 +1,15 @@
-network-manager (1.29.90-1) UNRELEASED; urgency=medium
+network-manager (1.29.90-1) unstable; urgency=medium
 
+  [ Michael Biebl ]
   * New upstream version 1.29.90 (1.30 rc1)
+  * Rebase patches
+  * Update symbols file for libnm0
+  * Fix polkit-agent-helper-1 path
 
- -- Michael Biebl <biebl@debian.org>  Thu, 11 Feb 2021 18:12:50 +0100
+  [ Helmut Grohne ]
+  * Drop unused Build-Depends (Closes: #979378)
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 11 Feb 2021 20:09:16 +0100
 
 network-manager (1.28.0-2) unstable; urgency=medium
 
