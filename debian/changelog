@@ -1,3 +1,14 @@
+network-manager (1.29.90-2) unstable; urgency=medium
+
+  * Add iproute2 to Build-Depends.
+    Required by the test suite. Mark as <!nocheck> accordingly.
+  * Cherry-pick fixes from upstream nm-1-30 branch
+    - Fixes assertion when running the python-dbusmock test suite
+      (Closes: #982613)
+    - Replaces our custom polkit-agent-helper-1 patch
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 16 Feb 2021 22:54:54 +0100
+
 network-manager (1.29.90-1) unstable; urgency=medium
 
   [ Michael Biebl ]
