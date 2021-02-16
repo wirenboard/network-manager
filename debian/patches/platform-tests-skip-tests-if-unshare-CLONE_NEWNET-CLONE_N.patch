@@ -1,0 +1,42 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Mon, 15 Feb 2021 20:36:53 +0100
+Subject: platform/tests: skip tests if "unshare(CLONE_NEWNET|CLONE_NEWNS)"
+ fails
+
+Inside a podman container (without `--priviledged`) we don't have
+permissions for "unshare(CLONE_NEWNET|CLONE_NEWNS)".
+
+It's not useful to fail tests in environments where they cannot run.
+Skip them.
+
+(cherry picked from commit ecdbb1ab8458b7a373038a2abd8cabd56e664ceb)
+---
+ src/core/platform/tests/test-common.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/platform/tests/test-common.c b/src/core/platform/tests/test-common.c
+index 87e5329..4a117d5 100644
+--- a/src/core/platform/tests/test-common.c
++++ b/src/core/platform/tests/test-common.c
+@@ -2563,7 +2563,20 @@ main(int argc, char **argv)
+ 
+         if (unshare(CLONE_NEWNET | CLONE_NEWNS) != 0) {
+             errsv = errno;
+-            g_error("unshare(CLONE_NEWNET|CLONE_NEWNS) failed with %s (%d)",
++            if (errsv == EPERM) {
++#ifdef REQUIRE_ROOT_TESTS
++                g_print("Fail test: unshare(CLONE_NEWNET|CLONE_NEWNS) failed with %s (%d)\n",
++                        nm_strerror_native(errsv),
++                        errsv);
++                return EXIT_FAILURE;
++#else
++                g_print("Skipping test: unshare(CLONE_NEWNET|CLONE_NEWNS) failed with %s (%d)\n",
++                        nm_strerror_native(errsv),
++                        errsv);
++                return g_test_run();
++#endif
++            }
++            g_error("Fail test: unshare(CLONE_NEWNET|CLONE_NEWNS) failed with %s (%d)",
+                     nm_strerror_native(errsv),
+                     errsv);
+         }

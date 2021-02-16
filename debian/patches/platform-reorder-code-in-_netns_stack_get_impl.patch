@@ -1,0 +1,51 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Mon, 15 Feb 2021 20:45:21 +0100
+Subject: platform: reorder code in _netns_stack_get_impl()
+
+We should always register the GArray stack with pthread
+for cleanup the thread local storage. Do that first, before
+creating the NMPNetns instance at the bottom of the stack.
+
+(cherry picked from commit f9636080ace7d7834083dcb1a3300e08368ee4eb)
+---
+ shared/nm-platform/nmp-netns.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/shared/nm-platform/nmp-netns.c b/shared/nm-platform/nmp-netns.c
+index c7cb617..0828f4a 100644
+--- a/shared/nm-platform/nmp-netns.c
++++ b/shared/nm-platform/nmp-netns.c
+@@ -158,9 +158,18 @@ _netns_stack_get_impl(void)
+     g_array_set_clear_func(s, _netns_stack_clear_cb);
+     _netns_stack = s;
+ 
++    /* register a destructor function to cleanup the array. If we fail
++     * to do so, we will leak NMPNetns instances (and their file descriptor) when the
++     * thread exits. */
++    if (pthread_key_create(&key, (void (*)(void *)) g_array_unref) != 0)
++        _LOGE(NULL, "failure to initialize thread-local storage");
++    else if (pthread_setspecific(key, s) != 0)
++        _LOGE(NULL, "failure to set thread-local storage");
++
+     /* at the bottom of the stack we must try to create a netns instance
+      * that we never pop. It's the base to which we need to return. */
+     netns = _netns_new(&error);
++
+     if (!netns) {
+         _LOGE(NULL, "failed to create initial netns: %s", error->message);
+         return s;
+@@ -169,14 +178,6 @@ _netns_stack_get_impl(void)
+     /* we leak this instance inside the stack. */
+     _stack_push(s, netns, _CLONE_NS_ALL);
+ 
+-    /* finally, register a destructor function to cleanup the array. If we fail
+-     * to do so, we will leak NMPNetns instances (and their file descriptor) when the
+-     * thread exits. */
+-    if (pthread_key_create(&key, (void (*)(void *)) g_array_unref) != 0)
+-        _LOGE(NULL, "failure to initialize thread-local storage");
+-    else if (pthread_setspecific(key, s) != 0)
+-        _LOGE(NULL, "failure to set thread-local storage");
+-
+     return s;
+ }
+ 

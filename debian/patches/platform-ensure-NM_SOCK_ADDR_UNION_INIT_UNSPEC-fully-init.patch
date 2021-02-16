@@ -1,0 +1,35 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Sat, 13 Feb 2021 15:45:44 +0100
+Subject: platform: ensure NM_SOCK_ADDR_UNION_INIT_UNSPEC() fully initializes
+ union
+
+In C, initialization of a union does not define that excess memory
+is initialized. Ensure that, by initializing the largest member of the
+NMSockAddrUnion union.
+
+(cherry picked from commit 7bf2ddf73f8d8c2d882c4932e88b76eef337cd0a)
+---
+ src/core/platform/nmp-object.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/platform/nmp-object.h b/src/core/platform/nmp-object.h
+index dc2cc86..19f6bcd 100644
+--- a/src/core/platform/nmp-object.h
++++ b/src/core/platform/nmp-object.h
+@@ -34,10 +34,14 @@ typedef union {
+     struct sockaddr_in6 in6;
+ } NMSockAddrUnion;
+ 
++G_STATIC_ASSERT(sizeof(NMSockAddrUnion) == sizeof(((NMSockAddrUnion *) NULL)->in6));
++
++/* we initialize the largest union member, to ensure that all fields are initialized. */
++
+ #define NM_SOCK_ADDR_UNION_INIT_UNSPEC \
+     {                                  \
+-        .sa = {                        \
+-            .sa_family = AF_UNSPEC,    \
++        .in6 = {                       \
++            .sin6_family = AF_UNSPEC,  \
+         },                             \
+     }
+ 
