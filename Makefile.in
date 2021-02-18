@@ -3966,8 +3966,6 @@ PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-POLKIT_CFLAGS = @POLKIT_CFLAGS@
-POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
@@ -4242,8 +4240,10 @@ EXTRA_DIST = shared/c-stdaux/src/c-stdaux.h $(NULL) \
 	libnm-core/tests/certs/test-tpm2wrapped-key.pem \
 	libnm-core/tests/nm-core-tests-enum-types.c.template \
 	libnm-core/tests/nm-core-tests-enum-types.h.template \
-	libnm-core/tests/meson.build libnm/libnm.pc.in libnm/libnm.ver \
-	$(am__append_11) tools/generate-docs-nm-property-infos.pl \
+	libnm-core/tests/meson.build libnm/nm-enum-types.c.template \
+	libnm/nm-enum-types.h.template libnm/libnm.pc.in \
+	libnm/libnm.ver $(am__append_11) \
+	tools/generate-docs-nm-property-infos.pl \
 	tools/generate-docs-nm-settings-docs-merge.py \
 	tools/generate-docs-nm-settings-docs-gir.py libnm/meson.build \
 	$(NULL) libnm/tests/meson.build src/core/systemd/meson.build \
