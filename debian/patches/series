@@ -1,15 +1,1 @@
 Force-online-state-with-unmanaged-devices.patch
-build-make-path-to-polkit-agent-helper-1-binary-configura.patch
-iwd-Fix-the-leaks-in-get_agent_request_network_path.patch
-libnm-log-PID-in-LIBNM_CLIENT_DEBUG-debug-logging.patch
-libnm-avoid-assertion-failure-in-_dbus_handle_properties_.patch
-libnm-fix-tracking-object-state-in-NMClient-cache.patch
-libnm-add-assertion-in-_dbus_handle_properties_changed.patch
-shared-refactor-nm_assert-for-NMRefString.patch
-tests-add-bin-sbin-to-PATH-for-unit-tests.patch
-platform-tests-skip-tests-if-unshare-CLONE_NEWNET-CLONE_N.patch
-platform-reorder-code-in-_netns_stack_get_impl.patch
-platform-downgrade-severity-of-message-for-failure-to-cre.patch
-platform-ensure-NM_SOCK_ADDR_UNION_INIT_UNSPEC-fully-init.patch
-wireguard-prefer-last-resolved-IP-from-resolving-endpoint.patch
-build-rename-build-option-with-polkit-agent-helper-1-path.patch
