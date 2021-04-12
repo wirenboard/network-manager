@@ -1,3 +1,10 @@
+network-manager (1.30.0-2) unstable; urgency=medium
+
+  * core: fix crash in nm_wildcard_match_check()
+    (CVE-2021-20297, Closes: #986809)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 12 Apr 2021 21:15:36 +0200
+
 network-manager (1.30.0-1) unstable; urgency=medium
 
   * New upstream version 1.30.0
