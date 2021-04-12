@@ -65,7 +65,7 @@ Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
- available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ available. It manages ethernet, Wi-Fi, mobile broadband (WWAN), and PPPoE
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
@@ -100,7 +100,7 @@ Depends: ${shlibs:Depends},
 Description: GObject-based client library for NetworkManager
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
- available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ available. It manages ethernet, Wi-Fi, mobile broadband (WWAN), and PPPoE
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
@@ -118,7 +118,7 @@ Depends: ${misc:Depends},
 Description: GObject-based client library for NetworkManager (development files)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
- available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ available. It manages ethernet, Wi-Fi, mobile broadband (WWAN), and PPPoE
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
@@ -136,7 +136,7 @@ Replaces: gir1.2-networkmanager-1.0 (<< 1.8.0-2)
 Description: GObject introspection data for the libnm library
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
- available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ available. It manages ethernet, Wi-Fi, mobile broadband (WWAN), and PPPoE
  devices, and provides VPN integration with a variety of different VPN
  services.
  .
