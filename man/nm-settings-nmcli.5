@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 02/18/2021
+.\"      Date: 07/16/2021
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.30.0
+.\"    Source: NetworkManager 1.30.6
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-NMCLI" "5" "" "NetworkManager 1\&.30\&.0" "Configuration"
+.TH "NM\-SETTINGS\-NMCLI" "5" "" "NetworkManager 1\&.30\&.6" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -2703,14 +2703,14 @@ Properties:
 .PP
 \fBqdiscs\fR
 .RS 4
-Array of TC queueing disciplines\&.
+Array of TC queueing disciplines\&. When the "tc" setting is present, qdiscs from this property are applied upon activation\&. If the property is empty, all qdiscs are removed and the device will only have the default qdisc assigned by kernel according to the "net\&.core\&.default_qdisc" sysctl\&. If the "tc" setting is not present, NetworkManager doesn\*(Aqt touch the qdiscs present on the interface\&.
 .sp
 Format: array of vardict
 .RE
 .PP
 \fBtfilters\fR
 .RS 4
-Array of TC traffic filters\&.
+Array of TC traffic filters\&. When the "tc" setting is present, filters from this property are applied upon activation\&. If the property is empty, NetworkManager removes all the filters\&. If the "tc" setting is not present, NetworkManager doesn\*(Aqt touch the filters present on the interface\&.
 .sp
 Format: array of vardict
 .RE

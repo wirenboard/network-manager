@@ -8,7 +8,7 @@ dnl    "shared/nm-version-macros.h.in"
 dnl  - update number in meson.build
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [30])
-m4_define([nm_micro_version], [0])
+m4_define([nm_micro_version], [6])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -1229,9 +1229,13 @@ else
 fi
 AC_SUBST(NM_LOG_COMPILER, 'LOG_COMPILER = "$(top_srcdir)/tools/run-nm-test.sh" --called-from-make "$(abs_top_builddir)" "$(LIBTOOL)" "$(with_valgrind)" "'"$with_valgrind_suppressions"'" --launch-dbus=auto')
 
-AM_PATH_PYTHON([3], [], [PYTHON=])
-if test -z "$PYTHON"; then
-	AM_PATH_PYTHON([], [], [PYTHON=python])
+if test -n "$PYTHON" ; then
+    AM_PATH_PYTHON([], [], [])
+else
+    AM_PATH_PYTHON([3], [], [PYTHON=])
+    if test -z "$PYTHON"; then
+        AM_PATH_PYTHON([], [], [])
+    fi
 fi
 AC_SUBST(PYTHON, [$PYTHON])
 AC_DEFINE_UNQUOTED(TEST_NM_PYTHON, "$PYTHON", [Define python path for test binary])

@@ -74,6 +74,7 @@ static const char *const valid_options_lst[] = {
     NM_SETTING_BOND_OPTION_PACKETS_PER_SLAVE,
     NM_SETTING_BOND_OPTION_TLB_DYNAMIC_LB,
     NM_SETTING_BOND_OPTION_LP_INTERVAL,
+    NM_SETTING_BOND_OPTION_PEER_NOTIF_DELAY,
     NULL,
 };
 
@@ -191,6 +192,7 @@ static NM_UTILS_STRING_TABLE_LOOKUP_STRUCT_DEFINE(
     {NM_SETTING_BOND_OPTION_NUM_GRAT_ARP, {"1", NM_BOND_OPTION_TYPE_INT, 0, 255}},
     {NM_SETTING_BOND_OPTION_NUM_UNSOL_NA, {"1", NM_BOND_OPTION_TYPE_INT, 0, 255}},
     {NM_SETTING_BOND_OPTION_PACKETS_PER_SLAVE, {"1", NM_BOND_OPTION_TYPE_INT, 0, 65535}},
+    {NM_SETTING_BOND_OPTION_PEER_NOTIF_DELAY, {"0", NM_BOND_OPTION_TYPE_INT, 0, G_MAXINT}},
     {NM_SETTING_BOND_OPTION_PRIMARY, {"", NM_BOND_OPTION_TYPE_IFNAME}},
     {NM_SETTING_BOND_OPTION_PRIMARY_RESELECT,
      {"always", NM_BOND_OPTION_TYPE_BOTH, 0, 2, _option_default_strv_primary_reselect}},
@@ -225,7 +227,7 @@ static NM_UTILS_STRING_TABLE_LOOKUP_DEFINE(
     {NM_SETTING_BOND_OPTION_PACKETS_PER_SLAVE, ~(BIT(NM_BOND_MODE_ROUNDROBIN))},
     {NM_SETTING_BOND_OPTION_PRIMARY,
      ~(BIT(NM_BOND_MODE_ACTIVEBACKUP) | BIT(NM_BOND_MODE_TLB) | BIT(NM_BOND_MODE_ALB))},
-    {NM_SETTING_BOND_OPTION_TLB_DYNAMIC_LB, ~(BIT(NM_BOND_MODE_TLB))}, );
+    {NM_SETTING_BOND_OPTION_TLB_DYNAMIC_LB, ~(BIT(NM_BOND_MODE_TLB) | BIT(NM_BOND_MODE_ALB))}, );
 
 gboolean
 _nm_setting_bond_option_supported(const char *option, NMBondMode mode)
@@ -337,7 +339,7 @@ _bond_get_option_normalized(NMSettingBond *self, const char *option, gboolean ge
     if (nm_streq(option, NM_SETTING_BOND_OPTION_AD_ACTOR_SYSTEM)) {
         /* The default value depends on the current mode */
         if (mode == NM_BOND_MODE_8023AD)
-            return "00:00:00:00:00:00";
+            return NM_BOND_AD_ACTOR_SYSTEM_DEFAULT;
         return "";
     }
 
@@ -766,6 +768,7 @@ verify(NMSetting *setting, NMConnection *connection, GError **error)
     int                      arp_interval;
     int                      num_grat_arp;
     int                      num_unsol_na;
+    int                      peer_notif_delay;
     const char *             mode_str;
     const char *             arp_ip_target = NULL;
     const char *             lacp_rate;
@@ -794,6 +797,8 @@ verify(NMSetting *setting, NMConnection *connection, GError **error)
     arp_interval = _atoi(_bond_get_option_or_default(self, NM_SETTING_BOND_OPTION_ARP_INTERVAL));
     num_grat_arp = _atoi(_bond_get_option_or_default(self, NM_SETTING_BOND_OPTION_NUM_GRAT_ARP));
     num_unsol_na = _atoi(_bond_get_option_or_default(self, NM_SETTING_BOND_OPTION_NUM_UNSOL_NA));
+    peer_notif_delay =
+        _atoi(_bond_get_option_or_default(self, NM_SETTING_BOND_OPTION_PEER_NOTIF_DELAY));
 
     /* Option restrictions:
      *
@@ -802,6 +807,8 @@ verify(NMSetting *setting, NMConnection *connection, GError **error)
      * arp_validate does not work with [ BOND_MODE_8023AD, BOND_MODE_TLB, BOND_MODE_ALB ]
      * downdelay needs miimon
      * updelay needs miimon
+     * peer_notif_delay needs miimon enabled
+     * peer_notif_delay must be a miimon multiple
      * primary needs [ active-backup, tlb, alb ]
      */
 
@@ -904,6 +911,36 @@ verify(NMSetting *setting, NMConnection *connection, GError **error)
                         NM_CONNECTION_ERROR_INVALID_PROPERTY,
                         _("'%s' option requires '%s' option to be enabled"),
                         NM_SETTING_BOND_OPTION_DOWNDELAY,
+                        NM_SETTING_BOND_OPTION_MIIMON);
+            g_prefix_error(error, "%s.%s: ", NM_SETTING_BOND_SETTING_NAME, NM_SETTING_BOND_OPTIONS);
+            return FALSE;
+        }
+    }
+
+    if (peer_notif_delay) {
+        if (miimon == 0) {
+            g_set_error(error,
+                        NM_CONNECTION_ERROR,
+                        NM_CONNECTION_ERROR_INVALID_PROPERTY,
+                        _("'%s' option requires '%s' option to be enabled"),
+                        NM_SETTING_BOND_OPTION_PEER_NOTIF_DELAY,
+                        NM_SETTING_BOND_OPTION_MIIMON);
+            g_prefix_error(error, "%s.%s: ", NM_SETTING_BOND_SETTING_NAME, NM_SETTING_BOND_OPTIONS);
+            return FALSE;
+        }
+
+        /* The code disables miimon when arp is set, so they never occur together.
+         * But this occurs after this verification, so this check can occur in
+         * an invalid state, when both arp and miimon are enabled. To assure not
+         * dealing with an invalid state, this arp_interval == 0 condition,
+         * that is implicit, was made explicit.
+         */
+        if ((peer_notif_delay % miimon) && (arp_interval == 0)) {
+            g_set_error(error,
+                        NM_CONNECTION_ERROR,
+                        NM_CONNECTION_ERROR_INVALID_PROPERTY,
+                        _("'%s' option needs to be a value multiple of '%s' value"),
+                        NM_SETTING_BOND_OPTION_PEER_NOTIF_DELAY,
                         NM_SETTING_BOND_OPTION_MIIMON);
             g_prefix_error(error, "%s.%s: ", NM_SETTING_BOND_SETTING_NAME, NM_SETTING_BOND_OPTIONS);
             return FALSE;

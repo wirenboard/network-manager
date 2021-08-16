@@ -456,6 +456,46 @@ test_if_ip4_manual(void)
 }
 
 static void
+test_if_ip4_manual_no_dev(void)
+{
+    const char *const *  ARGV = NM_MAKE_STRV("ip=192.0.2.2::192.0.2.1:24:::");
+    NMConnection *       connection;
+    NMSettingConnection *s_con;
+    NMSettingIPConfig *  s_ip4;
+    NMSettingIPConfig *  s_ip6;
+    NMIPAddress *        ip_addr;
+
+    connection = _parse_con(ARGV, "default_connection");
+    g_assert_cmpstr(nm_connection_get_id(connection), ==, "Wired Connection");
+
+    s_con = nm_connection_get_setting_connection(connection);
+    g_assert(s_con);
+    g_assert_cmpint(nm_setting_connection_get_wait_device_timeout(s_con), ==, -1);
+    g_assert_cmpint(nm_setting_connection_get_multi_connect(s_con),
+                    ==,
+                    NM_CONNECTION_MULTI_CONNECT_SINGLE);
+
+    s_ip4 = nm_connection_get_setting_ip4_config(connection);
+    g_assert(s_ip4);
+    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip4),
+                    ==,
+                    NM_SETTING_IP4_CONFIG_METHOD_MANUAL);
+    g_assert(!nm_setting_ip_config_get_ignore_auto_dns(s_ip4));
+    g_assert_cmpint(nm_setting_ip_config_get_num_routes(s_ip4), ==, 0);
+    g_assert_cmpint(nm_setting_ip_config_get_num_addresses(s_ip4), ==, 1);
+    ip_addr = nm_setting_ip_config_get_address(s_ip4, 0);
+    g_assert(ip_addr);
+    g_assert_cmpstr(nm_ip_address_get_address(ip_addr), ==, "192.0.2.2");
+    g_assert_cmpint(nm_ip_address_get_prefix(ip_addr), ==, 24);
+    g_assert_cmpstr(nm_setting_ip_config_get_gateway(s_ip4), ==, "192.0.2.1");
+
+    s_ip6 = nm_connection_get_setting_ip6_config(connection);
+    g_assert(s_ip6);
+    g_assert_cmpstr(nm_setting_ip_config_get_method(s_ip6), ==, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+    g_assert(nm_setting_ip_config_get_may_fail(s_ip6));
+}
+
+static void
 test_if_ip6_manual(void)
 {
     gs_unref_hashtable GHashTable *connections = NULL;
@@ -825,13 +865,14 @@ test_bond(void)
 {
     gs_unref_hashtable GHashTable *connections = NULL;
     const char *const *            ARGV        = NM_MAKE_STRV("rd.route=192.0.2.53::bong0",
-                                           "bond=bong0:eth0,eth1:mode=balance-rr",
+                                           "bond=bong0:eth0,eth1:mode=balance-rr:9000",
                                            "nameserver=203.0.113.53");
     NMConnection *                 connection;
     NMSettingConnection *          s_con;
     NMSettingIPConfig *            s_ip4;
     NMSettingIPConfig *            s_ip6;
     NMSettingBond *                s_bond;
+    NMSettingWired *               s_wired;
     NMIPRoute *                    ip_route;
     const char *                   master_uuid;
 
@@ -846,6 +887,10 @@ test_bond(void)
     g_assert_cmpstr(nm_connection_get_id(connection), ==, "bong0");
     master_uuid = nm_connection_get_uuid(connection);
     g_assert(master_uuid);
+
+    s_wired = nm_connection_get_setting_wired(connection);
+    g_assert(s_wired);
+    g_assert_cmpint(nm_setting_wired_get_mtu(s_wired), ==, 9000);
 
     s_ip4 = nm_connection_get_setting_ip4_config(connection);
     g_assert(s_ip4);
@@ -1811,6 +1856,24 @@ test_rd_znet_no_ip(void)
 }
 
 static void
+test_rd_znet_malformed(void)
+{
+    const char *const *const ARGV0  = NM_MAKE_STRV("rd.znet=");
+    const char *const *const ARGV1  = NM_MAKE_STRV("rd.znet=,");
+    const char *const *const ARGV2  = NM_MAKE_STRV("rd.znet=foobar");
+    const char *const *const ARGV3  = NM_MAKE_STRV("rd.znet=qeth,0.0.0800,,,layer2=0,portno=1");
+    const char *const *const ARGV[] = {ARGV0, ARGV1, ARGV2, ARGV3};
+    guint                    i;
+
+    for (i = 0; i < G_N_ELEMENTS(ARGV); i++) {
+        gs_unref_hashtable GHashTable *connections = NULL;
+
+        connections = _parse_cons(ARGV[i]);
+        g_assert_cmpint(g_hash_table_size(connections), ==, 0);
+    }
+}
+
+static void
 test_bootif_ip(void)
 {
     const char *const *ARGV                  = NM_MAKE_STRV("BOOTIF=00:53:AB:cd:02:03", "ip=dhcp");
@@ -2142,6 +2205,7 @@ main(int argc, char **argv)
     g_test_add_func("/initrd/cmdline/if_dhcp6", test_if_dhcp6);
     g_test_add_func("/initrd/cmdline/if_auto_with_mtu_and_mac", test_if_auto_with_mtu_and_mac);
     g_test_add_func("/initrd/cmdline/if_ip4_manual", test_if_ip4_manual);
+    g_test_add_func("/initrd/cmdline/if_ip4_manual_no_dev", test_if_ip4_manual_no_dev);
     g_test_add_func("/initrd/cmdline/if_ip6_manual", test_if_ip6_manual);
     g_test_add_func("/initrd/cmdline/if_mac_ifname", test_if_mac_ifname);
     g_test_add_func("/initrd/cmdline/if_off", test_if_off);
@@ -2168,6 +2232,7 @@ main(int argc, char **argv)
     g_test_add_func("/initrd/cmdline/rd_znet", test_rd_znet);
     g_test_add_func("/initrd/cmdline/rd_znet/legacy", test_rd_znet_legacy);
     g_test_add_func("/initrd/cmdline/rd_znet/no_ip", test_rd_znet_no_ip);
+    g_test_add_func("/initrd/cmdline/rd_znet/empty", test_rd_znet_malformed);
     g_test_add_func("/initrd/cmdline/bootif/ip", test_bootif_ip);
     g_test_add_func("/initrd/cmdline/bootif/no_ip", test_bootif_no_ip);
     g_test_add_func("/initrd/cmdline/bootif/hwtype", test_bootif_hwtype);
