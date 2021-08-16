@@ -309,8 +309,14 @@ proxy configuration, or set the PAC file via PAC_URL or PAC_SCRIPT."/>
 <property name="autoprobe-drivers" variable="SRIOV_AUTOPROBE_DRIVERS(+)" format="" values="" default="missing variable means global default" example="SRIOV_AUTOPROBE_DRIVERS=0,1" description="Whether to autoprobe virtual functions by a compatible driver"/>
 </setting>
 <setting name="tc">
-<property name="qdiscs" variable="QDISC1(+), QDISC2(+), ..." format="" values="" default="" example="QDISC1=ingress, QDISC2=&quot;root handle 1234: fq_codel&quot;" description="Queueing disciplines"/>
-<property name="qdiscs" variable="FILTER1(+), FILTER2(+), ..." format="" values="" default="" example="FILTER1=&quot;parent ffff: matchall action simple sdata Input&quot;, ..." description="Traffic filters"/>
+<property name="qdiscs" variable="QDISC1(+), QDISC2(+), ..., TC_COMMIT(+)" format="" values="" default="" example="QDISC1=ingress, QDISC2=&quot;root handle 1234: fq_codel&quot;" description="Queueing disciplines to set on the interface. When no
+QDISC1, QDISC2, ..., FILTER1, FILTER2, ... keys are present,
+NetworkManager doesn&apos;t touch qdiscs and filters present on the
+interface, unless TC_COMMIT is set to &apos;yes&apos;."/>
+<property name="qdiscs" variable="FILTER1(+), FILTER2(+), ..., TC_COMMIT(+)" format="" values="" default="" example="FILTER1=&quot;parent ffff: matchall action simple sdata Input&quot;, ..." description="Traffic filters to set on the interface. When no
+QDISC1, QDISC2, ..., FILTER1, FILTER2, ... keys are present,
+NetworkManager doesn&apos;t touch qdiscs and filters present on the
+interface, unless TC_COMMIT is set to &apos;yes&apos;."/>
 </setting>
 <setting name="team-port">
 <property name="config" variable="TEAM_PORT_CONFIG" format="" values="" default="" example="" description="Team port configuration in JSON. See man teamd.conf for details."/>

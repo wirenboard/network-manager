@@ -363,6 +363,7 @@ static NMActiveConnection *active_connection_find(NMManager *             self,
                                                   NMSettingsConnection *  sett_conn,
                                                   const char *            uuid,
                                                   NMActiveConnectionState max_state,
+                                                  gboolean                also_waiting_auth,
                                                   GPtrArray **            out_all_matching);
 
 static NMConnectivity *concheck_get_mgr(NMManager *self);
@@ -833,6 +834,7 @@ _delete_volatile_connection_do(NMManager *self, NMSettingsConnection *connection
                                connection,
                                NULL,
                                NM_ACTIVE_CONNECTION_STATE_DEACTIVATED,
+                               TRUE,
                                NULL))
         return;
 
@@ -978,6 +980,7 @@ active_connection_find(
     NMSettingsConnection *  sett_conn,
     const char *            uuid,
     NMActiveConnectionState max_state /* candidates in state @max_state will be found */,
+    gboolean                also_waiting_auth /* return also ACs waiting authorization */,
     GPtrArray **            out_all_matching)
 {
     NMManagerPrivate *  priv = NM_MANAGER_GET_PRIVATE(self);
@@ -1017,11 +1020,14 @@ active_connection_find(
     if (!best_ac) {
         AsyncOpData *async_op_data;
 
+        if (!also_waiting_auth)
+            return NULL;
+
         c_list_for_each_entry (async_op_data, &priv->async_op_lst_head, async_op_lst) {
             NMSettingsConnection *ac_conn;
 
             ac      = async_op_data->ac_auth.active;
-            ac_conn = nm_active_connection_get_settings_connection(ac);
+            ac_conn = _nm_active_connection_get_settings_connection(ac);
             if (sett_conn && sett_conn != ac_conn)
                 continue;
             if (uuid && !nm_streq0(uuid, nm_settings_connection_get_uuid(ac_conn)))
@@ -1078,6 +1084,7 @@ active_connection_find_by_connection(NMManager *             self,
                                   sett_conn,
                                   sett_conn ? NULL : nm_connection_get_uuid(connection),
                                   max_state,
+                                  FALSE,
                                   out_all_matching);
 }
 
@@ -1112,6 +1119,7 @@ _get_activatable_connections_filter(NMSettings *          settings,
                                    sett_conn,
                                    NULL,
                                    NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+                                   FALSE,
                                    NULL);
 }
 
@@ -2245,6 +2253,7 @@ connection_flags_changed(NMSettings *settings, NMSettingsConnection *connection,
                                connection,
                                NULL,
                                NM_ACTIVE_CONNECTION_STATE_DEACTIVATED,
+                               FALSE,
                                NULL)) {
         /* the connection still has an active-connection. It will be purged
          * when the active connection(s) get(s) removed. */
@@ -2564,6 +2573,7 @@ new_activation_allowed_for_connection(NMManager *self, NMSettingsConnection *con
                                    connection,
                                    NULL,
                                    NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+                                   FALSE,
                                    NULL);
 }
 
@@ -2839,14 +2849,16 @@ recheck_assume_connection(NMManager *self, NMDevice *device)
     g_return_val_if_fail(NM_IS_DEVICE(device), FALSE);
 
     if (!nm_device_get_managed(device, FALSE)) {
-        nm_device_assume_state_reset(device);
+        /* If the device is only unmanaged by NM_UNMANAGED_PLATFORM_INIT,
+         * don't reset the state now but wait until it becomes managed. */
+        if (nm_device_get_unmanaged_flags(device, NM_UNMANAGED_ALL) != NM_UNMANAGED_PLATFORM_INIT)
+            nm_device_assume_state_reset(device);
         _LOG2D(LOGD_DEVICE, device, "assume: don't assume because %s", "not managed");
         return FALSE;
     }
 
     state = nm_device_get_state(device);
     if (state > NM_DEVICE_STATE_DISCONNECTED) {
-        nm_device_assume_state_reset(device);
         _LOG2D(LOGD_DEVICE,
                device,
                "assume: don't assume due to device state %s",
@@ -3161,7 +3173,10 @@ _device_realize_finish(NMManager *self, NMDevice *device, const NMPlatformLink *
     nm_device_realize_finish(device, plink);
 
     if (!nm_device_get_managed(device, FALSE)) {
-        nm_device_assume_state_reset(device);
+        /* If the device is only unmanaged by NM_UNMANAGED_PLATFORM_INIT,
+         * don't reset the state now but wait until it becomes managed. */
+        if (nm_device_get_unmanaged_flags(device, NM_UNMANAGED_ALL) != NM_UNMANAGED_PLATFORM_INIT)
+            nm_device_assume_state_reset(device);
         return;
     }
 
@@ -3510,6 +3525,45 @@ typedef struct {
 } PlatformLinkCbData;
 
 static gboolean
+_check_remove_dev_on_link_deleted(NMManager *self, NMDevice *device)
+{
+    NMManagerPrivate *           priv  = NM_MANAGER_GET_PRIVATE(self);
+    NMSettingsConnection *const *scons = NULL;
+    NMConnection *               con;
+    guint                        i;
+
+    nm_assert(nm_device_is_software(device));
+
+    /* In general, software devices stick around as unrealized
+     * until their connection is removed. However, we don't want
+     * that a NM-generated connection keeps the device alive.
+     * If there are no other compatible connections, the device
+     * should be also removed.
+     */
+
+    scons = nm_settings_get_connections(priv->settings, NULL);
+
+    for (i = 0; scons[i]; i++) {
+        con = nm_settings_connection_get_connection(scons[i]);
+        if (!nm_connection_is_virtual(con))
+            continue;
+
+        if (NM_FLAGS_HAS(nm_settings_connection_get_flags(scons[i]),
+                         NM_SETTINGS_CONNECTION_INT_FLAGS_NM_GENERATED))
+            continue;
+
+        if (!nm_device_check_connection_compatible(device, con, NULL))
+            continue;
+
+        /* Found a virtual connection compatible, the device must
+         * stay around unrealized. */
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static gboolean
 _platform_link_cb_idle(PlatformLinkCbData *data)
 {
     int                   ifindex = data->ifindex;
@@ -3534,13 +3588,15 @@ _platform_link_cb_idle(PlatformLinkCbData *data)
         if (device) {
             if (nm_device_is_software(device)) {
                 nm_device_sys_iface_state_set(device, NM_DEVICE_SYS_IFACE_STATE_REMOVED);
-                /* Our software devices stick around until their connection is removed */
                 if (!nm_device_unrealize(device, FALSE, &error)) {
                     _LOG2W(LOGD_DEVICE, device, "failed to unrealize: %s", error->message);
                     g_clear_error(&error);
                     remove_device(self, device, FALSE);
                 } else {
-                    nm_device_update_from_platform_link(device, NULL);
+                    if (_check_remove_dev_on_link_deleted(self, device))
+                        remove_device(self, device, FALSE);
+                    else
+                        nm_device_update_from_platform_link(device, NULL);
                 }
             } else {
                 /* Hardware and external devices always get removed when their kernel link is gone */
@@ -4134,6 +4190,7 @@ find_master(NMManager *            self,
                                                 master_connection,
                                                 NULL,
                                                 NM_ACTIVE_CONNECTION_STATE_DEACTIVATING,
+                                                FALSE,
                                                 NULL);
     }
 
@@ -4985,6 +5042,7 @@ _internal_activate_device(NMManager *self, NMActiveConnection *active, GError **
                                     sett_conn,
                                     NULL,
                                     NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+                                    FALSE,
                                     &all_ac_arr);
         if (ac) {
             n_all = all_ac_arr ? all_ac_arr->len : ((guint) 1);

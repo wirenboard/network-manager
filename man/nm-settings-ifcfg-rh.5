@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 02/18/2021
+.\"      Date: 07/16/2021
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.30.0
+.\"    Source: NetworkManager 1.30.6
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.30\&.0" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\-RH" "5" "" "NetworkManager 1\&.30\&.6" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -2707,22 +2707,22 @@ l l l l.
 T{
 qdiscs
 T}:T{
-QDISC1\fI(+)\fR, QDISC2\fI(+)\fR, \&.\&.\&.
+QDISC1\fI(+)\fR, QDISC2\fI(+)\fR, \&.\&.\&., TC_COMMIT\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
-Queueing disciplines\fB
+Queueing disciplines to set on the interface\&. When no QDISC1, QDISC2, \&.\&.\&., FILTER1, FILTER2, \&.\&.\&. keys are present, NetworkManager doesn\*(Aqt touch qdiscs and filters present on the interface, unless TC_COMMIT is set to \*(Aqyes\*(Aq\&.\fB
 
 Example: \fRQDISC1=ingress, QDISC2="root handle 1234: fq_codel"
 T}
 T{
 qdiscs
 T}:T{
-FILTER1\fI(+)\fR, FILTER2\fI(+)\fR, \&.\&.\&.
+FILTER1\fI(+)\fR, FILTER2\fI(+)\fR, \&.\&.\&., TC_COMMIT\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
-Traffic filters\fB
+Traffic filters to set on the interface\&. When no QDISC1, QDISC2, \&.\&.\&., FILTER1, FILTER2, \&.\&.\&. keys are present, NetworkManager doesn\*(Aqt touch qdiscs and filters present on the interface, unless TC_COMMIT is set to \*(Aqyes\*(Aq\&.\fB
 
 Example: \fRFILTER1="parent ffff: matchall action simple sdata Input", \&.\&.\&.
 T}

@@ -121,14 +121,6 @@ _nm_auto_free_gstring(GString **str)
 }
 #define nm_auto_free_gstring nm_auto(_nm_auto_free_gstring)
 
-static inline void
-_nm_auto_protect_errno(int *p_saved_errno)
-{
-    errno = *p_saved_errno;
-}
-#define NM_AUTO_PROTECT_ERRNO(errsv_saved) \
-    nm_auto(_nm_auto_protect_errno) _nm_unused const int errsv_saved = (errno)
-
 NM_AUTO_DEFINE_FCN0(GSource *, _nm_auto_unref_gsource, g_source_unref);
 #define nm_auto_unref_gsource nm_auto(_nm_auto_unref_gsource)
 
@@ -1112,6 +1104,18 @@ nm_clear_g_variant(GVariant **variant)
 }
 
 static inline gboolean
+nm_clear_g_string(GString **ptr)
+{
+    GString *s;
+
+    if (ptr && (s = *ptr)) {
+        *ptr = NULL;
+        g_string_free(s, TRUE);
+    };
+    return FALSE;
+}
+
+static inline gboolean
 nm_clear_g_cancellable(GCancellable **cancellable)
 {
     GCancellable *v;
@@ -1805,8 +1809,13 @@ NM_AUTO_DEFINE_FCN_VOID0(GMutex *, _nm_auto_unlock_g_mutex, g_mutex_unlock);
 
 #define nm_auto_unlock_g_mutex nm_auto(_nm_auto_unlock_g_mutex)
 
-#define _NM_G_MUTEX_LOCKED(lock, uniq) \
-    nm_auto_unlock_g_mutex GMutex *NM_UNIQ_T(nm_lock, uniq) = (lock)
+#define _NM_G_MUTEX_LOCKED(lock, uniq)                                      \
+    _nm_unused nm_auto_unlock_g_mutex GMutex *NM_UNIQ_T(nm_lock, uniq) = ({ \
+        GMutex *const _lock = (lock);                                       \
+                                                                            \
+        g_mutex_lock(_lock);                                                \
+        _lock;                                                              \
+    })
 
 #define NM_G_MUTEX_LOCKED(lock) _NM_G_MUTEX_LOCKED(lock, NM_UNIQ)
 

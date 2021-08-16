@@ -125,7 +125,6 @@ typedef struct {
 typedef struct {
     NMDevice *device;
     guint     idle_add_id;
-    int       ifindex;
 } DeleteOnDeactivateData;
 
 typedef struct {
@@ -4703,10 +4702,6 @@ nm_device_master_enslave_slave(NMDevice *self, NMDevice *slave, NMConnection *co
      */
     nm_device_update_hw_address(self);
 
-    /* Send ARP announcements if did not yet and have addresses. */
-    if (priv->ip_state_4 == NM_DEVICE_IP_STATE_DONE && !priv->acd.announcing)
-        nm_device_arp_announce(self);
-
     /* Restart IP configuration if we're waiting for slaves.  Do this
      * after updating the hardware address as IP config may need the
      * new address.
@@ -5053,6 +5048,10 @@ nm_device_set_carrier(NMDevice *self, gboolean carrier)
             nm_device_remove_pending_action(self, NM_PENDING_ACTION_CARRIER_WAIT, FALSE);
             _carrier_wait_check_queued_act_request(self);
         }
+
+        /* Send ARP announcements if did not yet and have carrier. */
+        if (priv->ip_state_4 == NM_DEVICE_IP_STATE_DONE && !priv->acd.announcing)
+            nm_device_arp_announce(self);
     } else {
         if (priv->carrier_wait_id)
             nm_device_add_pending_action(self, NM_PENDING_ACTION_CARRIER_WAIT, FALSE);
@@ -5415,11 +5414,11 @@ device_link_changed(NMDevice *self)
                 /* Ensure the assume check is queued before any queued state changes
                  * from the transition to UNAVAILABLE.
                  */
-                nm_device_queue_recheck_assume(self);
                 reason = NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED;
             }
         }
 
+        nm_device_queue_recheck_assume(self);
         nm_device_set_unmanaged_by_flags(self, NM_UNMANAGED_PLATFORM_INIT, FALSE, reason);
     }
 
@@ -8362,26 +8361,23 @@ _routing_rules_sync(NMDevice *self, NMTernary set_mode)
 static gboolean
 tc_commit(NMDevice *self)
 {
-    NMConnection *    connection          = NULL;
     gs_unref_ptrarray GPtrArray *qdiscs   = NULL;
     gs_unref_ptrarray GPtrArray *tfilters = NULL;
-    NMSettingTCConfig *          s_tc     = NULL;
+    NMSettingTCConfig *          s_tc;
     NMPlatform *                 platform;
     int                          ip_ifindex;
 
-    platform   = nm_device_get_platform(self);
-    connection = nm_device_get_applied_connection(self);
-    if (connection)
-        s_tc = nm_connection_get_setting_tc_config(connection);
+    s_tc = nm_device_get_applied_setting(self, NM_TYPE_SETTING_TC_CONFIG);
+    if (!s_tc)
+        return TRUE;
 
     ip_ifindex = nm_device_get_ip_ifindex(self);
     if (!ip_ifindex)
-        return s_tc == NULL;
+        return FALSE;
 
-    if (s_tc) {
-        qdiscs   = nm_utils_qdiscs_from_tc_setting(platform, s_tc, ip_ifindex);
-        tfilters = nm_utils_tfilters_from_tc_setting(platform, s_tc, ip_ifindex);
-    }
+    platform = nm_device_get_platform(self);
+    qdiscs   = nm_utils_qdiscs_from_tc_setting(platform, s_tc, ip_ifindex);
+    tfilters = nm_utils_tfilters_from_tc_setting(platform, s_tc, ip_ifindex);
 
     if (!nm_platform_qdisc_sync(platform, ip_ifindex, qdiscs))
         return FALSE;
@@ -9980,7 +9976,9 @@ nm_device_request_ip6_prefixes(NMDevice *self, int needed_prefixes)
         _LOGD(LOGD_IP6, "ipv6-pd: asking DHCPv6 for %d prefixes", needed_prefixes);
         nm_device_dhcp6_renew(self, FALSE);
     } else {
-        _LOGI(LOGD_IP6, "ipv6-pd: device doesn't use DHCPv6, can't request prefixes");
+        priv->dhcp6.mode = NM_NDISC_DHCP_LEVEL_OTHERCONF;
+        _LOGD(LOGD_DEVICE | LOGD_DHCP6, "ipv6-pd: starting DHCPv6 to request a prefix");
+        dhcp6_start(self, FALSE);
     }
 }
 
@@ -11679,8 +11677,6 @@ start_sharing(NMDevice *self, NMIP4Config *config, GError **error)
 
     nm_utils_share_rules_add_all_rules(share_rules, ip_iface, ip4_addr->address, ip4_addr->plen);
 
-    nm_utils_share_rules_apply(share_rules, TRUE);
-
     nm_act_request_set_shared(req, share_rules);
 
     conn  = nm_act_request_get_applied_connection(req);
@@ -11792,7 +11788,6 @@ activate_stage5_ip_config_result_x(NMDevice *self, int addr_family)
     const char *     method;
     int              ip_ifindex;
     int              errsv;
-    gboolean         do_announce = FALSE;
 
     req = nm_device_get_act_request(self);
     g_assert(req);
@@ -11918,31 +11913,13 @@ activate_stage5_ip_config_result_x(NMDevice *self, int addr_family)
         }
     }
 
-    if (IS_IPv4) {
-        /* Send ARP announcements */
-
-        if (nm_device_is_master(self)) {
-            CList *    iter;
-            SlaveInfo *info;
-
-            /* Skip announcement if there are no device enslaved, for two reasons:
-             * 1) the master has a temporary MAC address until the first slave comes
-             * 2) announcements are going to be dropped anyway without slaves
-             */
-            do_announce = FALSE;
-
-            c_list_for_each (iter, &priv->slaves) {
-                info = c_list_entry(iter, SlaveInfo, lst_slave);
-                if (info->slave_is_enslaved) {
-                    do_announce = TRUE;
-                    break;
-                }
-            }
-        } else
-            do_announce = TRUE;
-
-        if (do_announce)
-            nm_device_arp_announce(self);
+    if (IS_IPv4 && priv->carrier) {
+        /* We send ARP announcements only when the link gets carrier,
+         * otherwise the announcements would be lost. Furthermore, for
+         * controllers having carrier implies that there is at least one
+         * port and therefore the MAC address is the correct one.
+         */
+        nm_device_arp_announce(self);
     }
 
     if (IS_IPv4) {
@@ -12141,28 +12118,19 @@ nm_device_is_nm_owned(NMDevice *self)
 static gboolean
 delete_on_deactivate_link_delete(gpointer user_data)
 {
-    DeleteOnDeactivateData *data = user_data;
-    NMDevice *              self = data->device;
+    DeleteOnDeactivateData *data        = user_data;
+    nm_auto_unref_object NMDevice *self = data->device;
+    NMDevicePrivate *              priv = NM_DEVICE_GET_PRIVATE(self);
+    gs_free_error GError *error         = NULL;
 
     _LOGD(LOGD_DEVICE,
-          "delete_on_deactivate: cleanup and delete virtual link #%d (id=%u)",
-          data->ifindex,
+          "delete_on_deactivate: cleanup and delete virtual link (id=%u)",
           data->idle_add_id);
 
-    if (data->device) {
-        NMDevicePrivate *priv       = NM_DEVICE_GET_PRIVATE(data->device);
-        gs_free_error GError *error = NULL;
+    priv->delete_on_deactivate_data = NULL;
 
-        g_object_remove_weak_pointer(G_OBJECT(data->device), (void **) &data->device);
-        priv->delete_on_deactivate_data = NULL;
-
-        if (!nm_device_unrealize(data->device, TRUE, &error))
-            _LOGD(LOGD_DEVICE,
-                  "delete_on_deactivate: unrealizing %d failed (%s)",
-                  data->ifindex,
-                  error->message);
-    } else if (data->ifindex > 0)
-        nm_platform_link_delete(nm_device_get_platform(self), data->ifindex);
+    if (!nm_device_unrealize(self, TRUE, &error))
+        _LOGD(LOGD_DEVICE, "delete_on_deactivate: unrealizing failed (%s)", error->message);
 
     nm_device_emit_recheck_auto_activate(self);
 
@@ -12181,17 +12149,16 @@ delete_on_deactivate_unschedule(NMDevice *self)
         priv->delete_on_deactivate_data = NULL;
 
         g_source_remove(data->idle_add_id);
-        g_object_remove_weak_pointer(G_OBJECT(self), (void **) &data->device);
         _LOGD(LOGD_DEVICE,
-              "delete_on_deactivate: cancel cleanup and delete virtual link #%d (id=%u)",
-              data->ifindex,
+              "delete_on_deactivate: cancel cleanup and delete virtual link (id=%u)",
               data->idle_add_id);
+        g_object_unref(data->device);
         g_free(data);
     }
 }
 
 static void
-delete_on_deactivate_check_and_schedule(NMDevice *self, int ifindex)
+delete_on_deactivate_check_and_schedule(NMDevice *self)
 {
     NMDevicePrivate *       priv = NM_DEVICE_GET_PRIVATE(self);
     DeleteOnDeactivateData *data;
@@ -12208,16 +12175,13 @@ delete_on_deactivate_check_and_schedule(NMDevice *self, int ifindex)
         return;
     delete_on_deactivate_unschedule(self); /* always cancel and reschedule */
 
-    data = g_new(DeleteOnDeactivateData, 1);
-    g_object_add_weak_pointer(G_OBJECT(self), (void **) &data->device);
-    data->device                    = self;
-    data->ifindex                   = ifindex;
+    data                            = g_new(DeleteOnDeactivateData, 1);
+    data->device                    = g_object_ref(self);
     data->idle_add_id               = g_idle_add(delete_on_deactivate_link_delete, data);
     priv->delete_on_deactivate_data = data;
 
     _LOGD(LOGD_DEVICE,
-          "delete_on_deactivate: schedule cleanup and delete virtual link #%d (id=%u)",
-          ifindex,
+          "delete_on_deactivate: schedule cleanup and delete virtual link (id=%u)",
           data->idle_add_id);
 }
 
@@ -13478,12 +13442,13 @@ nm_device_set_ip_config(NMDevice *  self,
                         gboolean    commit,
                         GPtrArray * ip4_dev_route_blacklist)
 {
-    NMDevicePrivate *     priv    = NM_DEVICE_GET_PRIVATE(self);
-    const int             IS_IPv4 = NM_IS_IPv4(addr_family);
-    NMIPConfig *          old_config;
-    gboolean              has_changes = FALSE;
-    gboolean              success     = TRUE;
-    NMSettingsConnection *settings_connection;
+    NMDevicePrivate *      priv    = NM_DEVICE_GET_PRIVATE(self);
+    const int              IS_IPv4 = NM_IS_IPv4(addr_family);
+    NMIPConfig *           old_config;
+    gboolean               has_changes = FALSE;
+    gboolean               success     = TRUE;
+    NMSettingsConnection * settings_connection;
+    NMIPRouteTableSyncMode route_table_sync_mode;
 
     nm_assert_addr_family(addr_family);
     nm_assert(!new_config || nm_ip_config_get_addr_family(new_config) == addr_family);
@@ -13495,11 +13460,18 @@ nm_device_set_ip_config(NMDevice *  self,
                   })));
     nm_assert(IS_IPv4 || !ip4_dev_route_blacklist);
 
+    if (commit && new_config)
+        route_table_sync_mode = _get_route_table_sync_mode_stateful(self, addr_family);
+    else
+        route_table_sync_mode = NM_IP_ROUTE_TABLE_SYNC_MODE_NONE;
+
     _LOGD(LOGD_IPX(IS_IPv4),
-          "ip%c-config: update (commit=%d, new-config=%p)",
+          "ip%c-config: update (commit=%d, new-config=" NM_HASH_OBFUSCATE_PTR_FMT
+          ", route-table-sync-mode=%d)",
           nm_utils_addr_family_to_char(addr_family),
           commit,
-          new_config);
+          NM_HASH_OBFUSCATE_PTR(new_config),
+          (int) route_table_sync_mode);
 
     /* Always commit to nm-platform to update lifetimes */
     if (commit && new_config) {
@@ -13508,7 +13480,7 @@ nm_device_set_ip_config(NMDevice *  self,
         if (IS_IPv4) {
             success = nm_ip4_config_commit(NM_IP4_CONFIG(new_config),
                                            nm_device_get_platform(self),
-                                           _get_route_table_sync_mode_stateful(self, AF_INET));
+                                           route_table_sync_mode);
             nm_platform_ip4_dev_route_blacklist_set(nm_device_get_platform(self),
                                                     nm_ip_config_get_ifindex(new_config),
                                                     ip4_dev_route_blacklist);
@@ -13517,7 +13489,7 @@ nm_device_set_ip_config(NMDevice *  self,
 
             success = nm_ip6_config_commit(NM_IP6_CONFIG(new_config),
                                            nm_device_get_platform(self),
-                                           _get_route_table_sync_mode_stateful(self, AF_INET6),
+                                           route_table_sync_mode,
                                            &temporary_not_available);
 
             if (!_rt6_temporary_not_available_set(self, temporary_not_available))
@@ -15846,7 +15818,7 @@ _cleanup_generic_post(NMDevice *self, CleanupType cleanup_type)
         /* Check if the device was deactivated, and if so, delete_link.
          * Don't call delete_link synchronously because we are currently
          * handling a state change -- which is not reentrant. */
-        delete_on_deactivate_check_and_schedule(self, nm_device_get_ip_ifindex(self));
+        delete_on_deactivate_check_and_schedule(self);
     }
 
     /* ip_iface should be cleared after flushing all routes and addresses, since
@@ -15906,9 +15878,12 @@ nm_device_cleanup(NMDevice *self, NMDeviceStateReason reason, CleanupType cleanu
 
             nm_platform_ip_route_flush(platform, AF_UNSPEC, ifindex);
             nm_platform_ip_address_flush(platform, AF_UNSPEC, ifindex);
-            nm_platform_tfilter_sync(platform, ifindex, NULL);
-            nm_platform_qdisc_sync(platform, ifindex, NULL);
             set_ipv6_token(self, iid, "::");
+
+            if (nm_device_get_applied_setting(self, NM_TYPE_SETTING_TC_CONFIG)) {
+                nm_platform_tfilter_sync(platform, ifindex, NULL);
+                nm_platform_qdisc_sync(platform, ifindex, NULL);
+            }
         }
     }
 

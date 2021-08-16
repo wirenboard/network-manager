@@ -949,6 +949,7 @@
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_PACKETS_PER_SLAVE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-PACKETS-PER-SLAVE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_TLB_DYNAMIC_LB" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-TLB-DYNAMIC-LB:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_LP_INTERVAL" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-LP-INTERVAL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_PEER_NOTIF_DELAY" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-PEER-NOTIF-DELAY:CAPS"/>
     <keyword type="struct" name="NMSettingBond" link="NMSettingBond.html#NMSettingBond-struct"/>
     <keyword type="property" name="The “options” property" link="NMSettingBond.html#NMSettingBond--options"/>
     <keyword type="function" name="nm_setting_bridge_port_new ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-new"/>
