@@ -15,54 +15,7 @@
 #include "nm-connection.h"
 #include "nm-rfkill-manager.h"
 #include "NetworkManagerUtils.h"
-
-typedef enum _nm_packed {
-    NM_DEVICE_SYS_IFACE_STATE_EXTERNAL,
-    NM_DEVICE_SYS_IFACE_STATE_ASSUME,
-    NM_DEVICE_SYS_IFACE_STATE_MANAGED,
-
-    /* the REMOVED state applies when the device is manually set to unmanaged
-     * or the link was externally removed. In both cases, we move the device
-     * to UNMANAGED state, without touching the link -- be it, because the link
-     * is already gone or because we want to release it (give it up).
-     */
-    NM_DEVICE_SYS_IFACE_STATE_REMOVED,
-} NMDeviceSysIfaceState;
-
-typedef enum {
-    NM_DEVICE_MTU_SOURCE_NONE,
-    NM_DEVICE_MTU_SOURCE_PARENT,
-    NM_DEVICE_MTU_SOURCE_IP_CONFIG,
-    NM_DEVICE_MTU_SOURCE_CONNECTION,
-} NMDeviceMtuSource;
-
-static inline NMDeviceStateReason
-nm_device_state_reason_check(NMDeviceStateReason reason)
-{
-    /* the device-state-reason serves mostly informational purpose during a state
-     * change. In some cases however, decisions are made based on the reason.
-     * I tend to think that interpreting the state reason to derive some behaviors
-     * is confusing, because the cause and effect are so far apart.
-     *
-     * This function is here to mark source that inspects the reason to make
-     * a decision -- contrary to places that set the reason. Thus, by grepping
-     * for nm_device_state_reason_check() you can find the "effect" to a certain
-     * reason.
-     */
-    return reason;
-}
-
-#define NM_PENDING_ACTION_AUTOACTIVATE           "autoactivate"
-#define NM_PENDING_ACTION_IN_STATE_CHANGE        "in-state-change"
-#define NM_PENDING_ACTION_RECHECK_AVAILABLE      "recheck-available"
-#define NM_PENDING_ACTION_CARRIER_WAIT           "carrier-wait"
-#define NM_PENDING_ACTION_WAITING_FOR_SUPPLICANT "waiting-for-supplicant"
-#define NM_PENDING_ACTION_WIFI_SCAN              "wifi-scan"
-#define NM_PENDING_ACTION_WAITING_FOR_COMPANION  "waiting-for-companion"
-#define NM_PENDING_ACTION_LINK_INIT              "link-init"
-
-#define NM_PENDING_ACTIONPREFIX_QUEUED_STATE_CHANGE "queued-state-change-"
-#define NM_PENDING_ACTIONPREFIX_ACTIVATION          "activation-"
+#include "nm-device-utils.h"
 
 /* Properties */
 #define NM_DEVICE_UDI                   "udi"
@@ -109,10 +62,10 @@ nm_device_state_reason_check(NMDeviceStateReason reason)
  * NMDeviceOvsBridge and NMDeviceOvsPort. */
 #define NM_DEVICE_SLAVES "slaves" /* partially internal */
 
-#define NM_DEVICE_TYPE_DESC          "type-desc" /* Internal only */
-#define NM_DEVICE_RFKILL_TYPE        "rfkill-type" /* Internal only */
-#define NM_DEVICE_IFINDEX            "ifindex" /* Internal only */
-#define NM_DEVICE_MASTER             "master" /* Internal only */
+#define NM_DEVICE_TYPE_DESC          "type-desc"          /* Internal only */
+#define NM_DEVICE_RFKILL_TYPE        "rfkill-type"        /* Internal only */
+#define NM_DEVICE_IFINDEX            "ifindex"            /* Internal only */
+#define NM_DEVICE_MASTER             "master"             /* Internal only */
 #define NM_DEVICE_HAS_PENDING_ACTION "has-pending-action" /* Internal only */
 
 /* Internal signals */
@@ -459,6 +412,8 @@ typedef struct _NMDeviceClass {
 
     gboolean (*set_platform_mtu)(NMDevice *self, guint32 mtu);
 
+    const char *(*get_dhcp_anycast_address)(NMDevice *self);
+
 } NMDeviceClass;
 
 GType nm_device_get_type(void);
@@ -572,6 +527,7 @@ nm_device_check_connection_compatible(NMDevice *device, NMConnection *connection
 
 gboolean nm_device_check_slave_connection_compatible(NMDevice *device, NMConnection *connection);
 
+gboolean nm_device_can_assume_connections(NMDevice *self);
 gboolean nm_device_unmanage_on_quit(NMDevice *self);
 
 gboolean nm_device_spec_match_list(NMDevice *device, const GSList *specs);
@@ -861,9 +817,6 @@ struct _NMBtVTableNetworkServer {
                                 GError **                      error);
     gboolean (*unregister_bridge)(const NMBtVTableNetworkServer *vtable, NMDevice *device);
 };
-
-const char *nm_device_state_to_str(NMDeviceState state);
-const char *nm_device_state_reason_to_str(NMDeviceStateReason reason);
 
 gboolean nm_device_is_vpn(NMDevice *self);
 

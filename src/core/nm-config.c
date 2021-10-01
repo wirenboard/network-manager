@@ -13,9 +13,9 @@
 #include "nm-utils.h"
 #include "devices/nm-device.h"
 #include "NetworkManagerUtils.h"
-#include "nm-core-internal.h"
-#include "nm-keyfile-internal.h"
-#include "nm-keyfile-utils.h"
+#include "libnm-core-intern/nm-core-internal.h"
+#include "libnm-core-intern/nm-keyfile-internal.h"
+#include "libnm-core-intern/nm-keyfile-utils.h"
 
 #define DEFAULT_CONFIG_MAIN_FILE     NMCONFDIR "/NetworkManager.conf"
 #define DEFAULT_CONFIG_DIR           NMCONFDIR "/conf.d"
@@ -433,13 +433,7 @@ nm_config_set_no_auto_default_for_device(NMConfig *self, NMDevice *device)
 
     len = NM_PTRARRAY_LEN(no_auto_default_current);
 
-    idx = nm_utils_ptrarray_find_binary_search((gconstpointer *) no_auto_default_current,
-                                               len,
-                                               spec,
-                                               nm_strcmp_with_data,
-                                               NULL,
-                                               NULL,
-                                               NULL);
+    idx = nm_utils_strv_find_binary_search(no_auto_default_current, len, spec);
     if (idx >= 0) {
         /* @spec is already blocked. We don't have to update our in-memory representation.
          * Maybe we should write to no_auto_default_file anew, but let's save that too. */
@@ -802,6 +796,7 @@ static gboolean
 _setting_is_device_spec(const char *group, const char *key)
 {
 #define _IS(group_v, key_v) (nm_streq(group, "" group_v "") && nm_streq(key, "" key_v ""))
+
     return _IS(NM_CONFIG_KEYFILE_GROUP_MAIN, NM_CONFIG_KEYFILE_KEY_MAIN_NO_AUTO_DEFAULT)
            || _IS(NM_CONFIG_KEYFILE_GROUP_MAIN, NM_CONFIG_KEYFILE_KEY_MAIN_IGNORE_CARRIER)
            || _IS(NM_CONFIG_KEYFILE_GROUP_MAIN, NM_CONFIG_KEYFILE_KEY_MAIN_ASSUME_IPV6LL_ONLY)
@@ -810,6 +805,13 @@ _setting_is_device_spec(const char *group, const char *key)
                && nm_streq(key, NM_CONFIG_KEYFILE_KEY_MATCH_DEVICE))
            || (NM_STR_HAS_PREFIX(group, NM_CONFIG_KEYFILE_GROUPPREFIX_DEVICE)
                && nm_streq(key, NM_CONFIG_KEYFILE_KEY_MATCH_DEVICE));
+}
+
+static gboolean
+_setting_is_connection_spec(const char *group, const char *key)
+{
+    return NM_STR_HAS_PREFIX(group, NM_CONFIG_KEYFILE_GROUPPREFIX_DEVICE)
+           && nm_streq(key, NM_CONFIG_KEYFILE_KEY_DEVICE_ALLOWED_CONNECTIONS);
 }
 
 static gboolean
@@ -842,8 +844,10 @@ static const ConfigGroup config_groups[] = {
                              NM_CONFIG_KEYFILE_KEY_MAIN_DEBUG,
                              NM_CONFIG_KEYFILE_KEY_MAIN_DHCP,
                              NM_CONFIG_KEYFILE_KEY_MAIN_DNS,
+                             NM_CONFIG_KEYFILE_KEY_MAIN_FIREWALL_BACKEND,
                              NM_CONFIG_KEYFILE_KEY_MAIN_HOSTNAME_MODE,
                              NM_CONFIG_KEYFILE_KEY_MAIN_IGNORE_CARRIER,
+                             NM_CONFIG_KEYFILE_KEY_MAIN_IWD_CONFIG_PATH,
                              NM_CONFIG_KEYFILE_KEY_MAIN_MONITOR_CONNECTION_FILES,
                              NM_CONFIG_KEYFILE_KEY_MAIN_NO_AUTO_DEFAULT,
                              NM_CONFIG_KEYFILE_KEY_MAIN_PLUGINS,
@@ -882,6 +886,8 @@ static const ConfigGroup config_groups[] = {
                              NM_CONFIG_KEYFILE_KEY_DEVICE_IGNORE_CARRIER,
                              NM_CONFIG_KEYFILE_KEY_DEVICE_MANAGED,
                              NM_CONFIG_KEYFILE_KEY_DEVICE_SRIOV_NUM_VFS,
+                             NM_CONFIG_KEYFILE_KEY_DEVICE_KEEP_CONFIGURATION,
+                             NM_CONFIG_KEYFILE_KEY_DEVICE_ALLOWED_CONNECTIONS,
                              NM_CONFIG_KEYFILE_KEY_DEVICE_WIFI_BACKEND,
                              NM_CONFIG_KEYFILE_KEY_DEVICE_WIFI_SCAN_RAND_MAC_ADDRESS,
                              NM_CONFIG_KEYFILE_KEY_DEVICE_WIFI_SCAN_GENERATE_MAC_ADDRESS_MASK,
@@ -1063,7 +1069,8 @@ read_config(GKeyFile *  keyfile,
 
                 is_string_list = _setting_is_string_list(group, base_key);
 
-                if (is_string_list || _setting_is_device_spec(group, base_key)) {
+                if (is_string_list || _setting_is_device_spec(group, base_key)
+                    || _setting_is_connection_spec(group, base_key)) {
                     gs_unref_ptrarray  GPtrArray *new = g_ptr_array_new_with_free_func(g_free);
                     char **            iter_val;
                     gs_strfreev char **old_val = NULL;
@@ -2115,7 +2122,7 @@ nm_config_set_values(NMConfig *self,
                                  "");
     }
 
-    if (!_nm_keyfile_equals(keyfile_intern_current, keyfile_new, TRUE))
+    if (!_nm_keyfile_equal(keyfile_intern_current, keyfile_new, TRUE))
         new_data = nm_config_data_new_update_keyfile_intern(priv->config_data, keyfile_new);
 
     _LOGD("set values(): %s", new_data ? "has changes" : "no changes");
@@ -2347,8 +2354,9 @@ _nm_config_state_set(NMConfig *self, gboolean allow_persist, gboolean force_pers
     "route-metric-default-aspired"
 #define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_ROUTE_METRIC_DEFAULT_EFFECTIVE \
     "route-metric-default-effective"
-#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_ROOT_PATH   "root-path"
-#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_NEXT_SERVER "next-server"
+#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_ROOT_PATH     "root-path"
+#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_NEXT_SERVER   "next-server"
+#define DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_DHCP_BOOTFILE "dhcp-bootfile"
 
 static NM_UTILS_LOOKUP_STR_DEFINE(
     _device_state_managed_type_to_str,
@@ -2569,7 +2577,8 @@ nm_config_device_state_write(int                            ifindex,
                              guint32                        route_metric_default_aspired,
                              guint32                        route_metric_default_effective,
                              const char *                   next_server,
-                             const char *                   root_path)
+                             const char *                   root_path,
+                             const char *                   dhcp_bootfile)
 {
     char    path[NM_STRLEN(NM_CONFIG_DEVICE_STATE_DIR "/") + DEVICE_STATE_FILENAME_LEN_MAX + 1];
     GError *local                      = NULL;
@@ -2636,6 +2645,12 @@ nm_config_device_state_write(int                            ifindex,
                               DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_ROOT_PATH,
                               root_path);
     }
+    if (dhcp_bootfile) {
+        g_key_file_set_string(kf,
+                              DEVICE_RUN_STATE_KEYFILE_GROUP_DEVICE,
+                              DEVICE_RUN_STATE_KEYFILE_KEY_DEVICE_DHCP_BOOTFILE,
+                              dhcp_bootfile);
+    }
 
     if (!g_key_file_save_to_file(kf, path, &local)) {
         _LOGW("device-state: write #%d (%s) failed: %s", ifindex, path, local->message);
@@ -2643,7 +2658,9 @@ nm_config_device_state_write(int                            ifindex,
         return FALSE;
     }
     _LOGT("device-state: write #%d (%s); managed=%s%s%s%s%s%s%s, "
-          "route-metric-default=%" G_GUINT32_FORMAT "-%" G_GUINT32_FORMAT "%s%s%s%s%s%s",
+          "route-metric-default=%" G_GUINT32_FORMAT "-%" G_GUINT32_FORMAT "%s%s%s"
+          "%s%s%s"
+          "%s%s%s",
           ifindex,
           path,
           _device_state_managed_type_to_str(managed),
@@ -2652,7 +2669,8 @@ nm_config_device_state_write(int                            ifindex,
           route_metric_default_aspired,
           route_metric_default_effective,
           NM_PRINT_FMT_QUOTED(next_server, ", next-server=", next_server, "", ""),
-          NM_PRINT_FMT_QUOTED(root_path, ", root-path=", root_path, "", ""));
+          NM_PRINT_FMT_QUOTED(root_path, ", root-path=", root_path, "", ""),
+          NM_PRINT_FMT_QUOTED(dhcp_bootfile, ", dhcp-bootfile=", dhcp_bootfile, "", ""));
     return TRUE;
 }
 
@@ -3149,7 +3167,7 @@ nm_config_class_init(NMConfigClass *config_class)
                      NM_TYPE_CONFIG_DATA);
 
     G_STATIC_ASSERT_EXPR(sizeof(guint) == sizeof(NMConfigChangeFlags));
-    G_STATIC_ASSERT_EXPR(((gint64)((NMConfigChangeFlags) -1)) > ((gint64) 0));
+    G_STATIC_ASSERT_EXPR(((gint64) ((NMConfigChangeFlags) -1)) > ((gint64) 0));
 }
 
 static void
