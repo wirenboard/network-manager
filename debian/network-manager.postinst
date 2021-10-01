@@ -41,13 +41,6 @@ case "$1" in
             fi
         fi
 
-        # Fix up existing /etc/resolv.conf symlinks after the migration to /run
-        if dpkg --compare-versions "$2" lt-nl "1.8.0-4"; then
-            if [ "$(readlink /etc/resolv.conf)" = /var/run/NetworkManager/resolv.conf ] ; then
-                ln -sf  /run/NetworkManager/resolv.conf /etc/resolv.conf
-            fi
-        fi
-
         if dpkg --compare-versions "$2" lt-nl "1.20.4-2"; then
             if [ -f /var/lib/NetworkManager/secret_key ]; then
                 chmod 0600 /var/lib/NetworkManager/secret_key
