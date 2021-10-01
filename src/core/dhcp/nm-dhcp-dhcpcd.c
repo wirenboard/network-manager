@@ -65,10 +65,7 @@ nm_dhcp_dhcpcd_get_path(void)
 }
 
 static gboolean
-ip4_start(NMDhcpClient *client,
-          const char *  dhcp_anycast_addr,
-          const char *  last_ip4_address,
-          GError **     error)
+ip4_start(NMDhcpClient *client, const char *last_ip4_address, GError **error)
 {
     NMDhcpDhcpcd *    self            = NM_DHCP_DHCPCD(client);
     gs_unref_ptrarray GPtrArray *argv = NULL;
@@ -122,7 +119,7 @@ ip4_start(NMDhcpClient *client,
     hostname = nm_dhcp_client_get_hostname(client);
 
     if (hostname) {
-        if (nm_dhcp_client_get_use_fqdn(client)) {
+        if (NM_FLAGS_HAS(nm_dhcp_client_get_client_flags(client), NM_DHCP_CLIENT_FLAGS_USE_FQDN)) {
             g_ptr_array_add(argv, (gpointer) "-h");
             g_ptr_array_add(argv, (gpointer) hostname);
             g_ptr_array_add(argv, (gpointer) "-F");

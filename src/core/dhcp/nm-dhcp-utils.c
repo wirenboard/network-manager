@@ -8,18 +8,18 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include "nm-std-aux/unaligned.h"
-#include "nm-glib-aux/nm-dedup-multi.h"
-#include "nm-glib-aux/nm-str-buf.h"
-#include "systemd/nm-sd-utils-shared.h"
+#include "libnm-std-aux/unaligned.h"
+#include "libnm-glib-aux/nm-dedup-multi.h"
+#include "libnm-glib-aux/nm-str-buf.h"
+#include "libnm-systemd-shared/nm-sd-utils-shared.h"
 
 #include "nm-dhcp-utils.h"
 #include "nm-utils.h"
 #include "nm-config.h"
 #include "NetworkManagerUtils.h"
-#include "platform/nm-platform.h"
+#include "libnm-platform/nm-platform.h"
 #include "nm-dhcp-client-logging.h"
-#include "nm-core-internal.h"
+#include "libnm-core-intern/nm-core-internal.h"
 
 /*****************************************************************************/
 
@@ -989,7 +989,7 @@ lease_option_print_label(NMStrBuf *sbuf, size_t n_label, const uint8_t **datap, 
             break;
         case '.':
         case '\\':
-            nm_str_buf_append_c2(sbuf, '\\', c);
+            nm_str_buf_append_c(sbuf, '\\', c);
             break;
         default:
             nm_str_buf_append_printf(sbuf, "\\%3d", c);

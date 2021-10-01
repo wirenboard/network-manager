@@ -86,6 +86,12 @@
     Certain settings from the configuration can be reloaded at runtime either by sending SIGHUP signal or via
     D-Bus' Reload call.
     </para>
+    <para>
+    NetworkManager does not require any configuration in <literal>NetworkManager.conf</literal>. Depending
+    on your use case, you may remove all files to restore the default configuration (factory reset). But
+    note that your distribution or other packages may drop configuration snippets for NetworkManager, such
+    that they are part of the factory default.
+    </para>
 
   </refsect1>
 
@@ -107,7 +113,7 @@
       below.
     </para>
     <para>
-      Minimal system settings configuration file looks like this:
+      A simple configuration file looks like this:
       <programlisting>
 [main]
 plugins=keyfile
@@ -313,10 +319,12 @@ no-auto-default=*
         <filename>/usr/lib/systemd/resolv.conf</filename>.
         In that case, <literal>systemd-resolved</literal> is chosen automatically.
         </para>
+
         <para><literal>default</literal>: NetworkManager will update
         <filename>/etc/resolv.conf</filename> to reflect the nameservers
         provided by currently active connections. The <literal>rc-manager</literal>
         setting (below) controls how this is done.</para>
+
         <para><literal>dnsmasq</literal>: NetworkManager will run
         dnsmasq as a local caching nameserver, using "Conditional Forwarding"
         if you are connected to a VPN, and then update
@@ -330,12 +338,17 @@ no-auto-default=*
         after some time. This behavior can be modified passing the
         'all-servers' or 'strict-order' options to dnsmasq (see the
         manual page for more details).</para>
+
         <para><literal>systemd-resolved</literal>: NetworkManager will
         push the DNS configuration to systemd-resolved</para>
+
         <para><literal>unbound</literal>: NetworkManager will talk
         to unbound and dnssec-triggerd, using "Conditional Forwarding"
         with DNSSEC support. <filename>/etc/resolv.conf</filename>
-        will be managed by dnssec-trigger daemon.</para>
+        will be managed by dnssec-trigger daemon. This option is
+        deprecated. Note that dnssec-trigger ships a NetworkManager dispatcher
+        script so this DNS plugin is not necessary.</para>
+
         <para><literal>none</literal>: NetworkManager will not
         modify resolv.conf. This implies
         <literal>rc-manager</literal>&nbsp;<literal>unmanaged</literal></para>
@@ -474,6 +487,51 @@ no-auto-default=*
           </para>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term><varname>firewall-backend</varname></term>
+        <listitem>
+          <para>
+            The firewall backend for configuring masquerading
+            with shared mode.
+            Set to either <literal>iptables</literal>, <literal>nftables</literal>
+            or <literal>none</literal>.
+            <literal>iptables</literal> and <literal>nftables</literal>
+            require <literal>iptables</literal> and <literal>nft</literal>
+            application, respectively.
+            <literal>none</literal> means to skip firewall configuration if
+            the users wish to manage firewall themselves.
+            If unspecified, it will be auto detected.
+          </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><varname>iwd-config-path</varname></term>
+        <listitem>
+          <para>
+            If the value is "auto" (the default), IWD is queried for its
+            current state directory when it appears on D-Bus -- the
+            directory where IWD keeps its network configuration files --
+            usually /var/lib/iwd.  NetworkManager will then attempt to
+            write copies of new or modified Wi-Fi connection profiles,
+            converted into the IWD format, into this directory thus making
+            IWD connection properties editable.  NM will overwrite existing
+            files without preserving their contents.
+          </para>
+          <para>
+            The path can also be overriden by pointing to a specific
+            existing and writable directory.  On the other hand setting
+            this to an empty string or any other value disables the
+            profile conversion mechanism.
+          </para>
+          <para>
+            This mechanism allows editing connection profile settings such
+            as the 802.1x configuration using NetworkManager clients.
+            Without it such changes have no effect in IWD.
+          </para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -502,19 +560,29 @@ no-auto-default=*
         </varlistentry>
         <varlistentry>
           <term><varname>unmanaged-devices</varname></term>
-          <listitem><para>Set devices that should be ignored by
-           NetworkManager.
-          </para>
-          <para>See <xref linkend="device-spec"/> for the syntax on how to
-           specify a device.
-          </para>
-          <para>
-            Example:
-            <programlisting>
+          <listitem>
+            <para>Set devices that should be ignored by NetworkManager.
+            </para>
+            <para>
+              A device unmanaged due to this option is strictly
+              unmanaged and cannot be overruled by using the API like
+              <command>nmcli device set $IFNAME managed yes</command>.
+              Also, a device that is unmanaged for other reasons, like
+              an udev rule, cannot be made managed with this option (e.g. by
+              using an <literal>except:</literal> specifier).
+              These two points make it different from the <literal>device*.managed</literal>
+              option which for that reason may be a better choice.
+            </para>
+            <para>See <xref linkend="device-spec"/> for the syntax on how to
+              specify a device.
+            </para>
+            <para>
+              Example:
+              <programlisting>
 unmanaged-devices=interface-name:em4
 unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth2
 </programlisting>
-          </para>
+            </para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -801,6 +869,9 @@ ipv6.ip6-privacy=0
            and 100 for other profiles.</para></listitem>
         </varlistentry>
         <varlistentry>
+          <term><varname>ipv4.required-timeout</varname></term>
+        </varlistentry>
+        <varlistentry>
           <term><varname>ipv4.route-metric</varname></term>
         </varlistentry>
         <varlistentry>
@@ -841,6 +912,9 @@ ipv6.ip6-privacy=0
           <listitem><para>If <literal>ipv6.ip6-privacy</literal> is unset, use the content of
             "/proc/sys/net/ipv6/conf/default/use_tempaddr" as last fallback.
           </para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>ipv6.required-timeout</varname></term>
         </varlistentry>
         <varlistentry>
           <term><varname>ipv6.route-metric</varname></term>
@@ -1016,16 +1090,27 @@ managed=1
           <listitem>
             <para>
               Specify the timeout for waiting for carrier in milliseconds.
+              The default is 5000 milliseconds.
+              This setting exists because certain drivers/hardware can take
+              a long time to detect whether the cable is plugged in.
+            </para>
+            <para>
               When the device loses carrier, NetworkManager does not react
               immediately. Instead, it waits for this timeout before considering
-              the link lost. Also, on startup, NetworkManager considers the
+              the link lost.
+            </para>
+            <para>
+              Also, on startup, NetworkManager considers the
               device as busy for this time, as long as the device has no carrier.
               This delays startup-complete signal and NetworkManager-wait-online.
               Configuring this too high means to block NetworkManager-wait-online
-              longer then necessary. Configuring it too low, means that NetworkManager
-              will declare startup-complete, although carrier is about to come
-              and auto-activation to kick in.
-              The default is 5000 milliseconds.
+              longer than necessary when booting with cable unplugged. Configuring
+              it too low, means that NetworkManager will declare startup-complete too
+              soon, although carrier is about to come and auto-activation to kick in.
+              Note that if a profile only has static IP configuration or Layer 3 configuration
+              disabled, then it can already autoconnect without carrier on the device.
+              Once such a profile reaches full activated state, startup-complete
+              is considered as reached even if the device has no carrier yet.
             </para>
           </listitem>
         </varlistentry>
@@ -1062,6 +1147,63 @@ managed=1
             <para>
               This setting overwrites the deprecated <literal>main.ignore-carrier</literal>
               setting above.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="keep-configuration">
+         <term><varname>keep-configuration</varname></term>
+          <listitem>
+            <para>
+              On startup, NetworkManager tries to not interfere with
+              interfaces that are already configured. It does so by
+              generating a in-memory connection based on the interface
+              current configuration.
+            </para>
+            <para>
+              If this generated connection matches one of the existing
+              persistent connections, the persistent connection gets
+              activated. If there is no match, the generated
+              connection gets activated as "external", which means
+              that the connection is considered as active, but
+              NetworkManager doesn't actually touch the interface.
+            </para>
+            <para>
+              It is possible to disable this behavior by setting
+              <literal>keep-configuration</literal> to
+              <literal>no</literal>. In this way, on startup
+              NetworkManager always tries to activate the most
+              suitable persistent connection (the one with highest
+              autoconnect-priority or, in case of a tie, the one
+              activated most recently).
+            </para>
+            <para>
+              Note that when NetworkManager gets restarted, it stores
+              the previous state in
+              <filename>/run/NetworkManager</filename>; in particular
+              it saves the UUID of the connection that was previously
+              active so that it can be activated again after the
+              restart. Therefore,
+              <literal>keep-configuration</literal> does not have
+              any effect on service restart.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="allowed-connections">
+          <term><varname>allowed-connections</varname></term>
+          <listitem>
+            <para>
+              A list of connections that can be activated on the
+              device. See <xref linkend="connection-spec"/> for the
+              syntax to specify a connection. If this option is not
+              specified, all connections can be potentially activated
+              on the device, provided that the connection type and
+              other settings match.
+            </para>
+            <para>
+              A notable use case for this is to filter which
+              connections can be activated based on how they were
+              created; see the <literal>origin</literal> keyword in
+              <xref linkend="connection-spec"/>.
             </para>
           </listitem>
         </varlistentry>
@@ -1109,7 +1251,7 @@ managed=1
               If <literal>wifi.backend</literal> is <literal>iwd</literal>, setting this to
               <literal>false</literal> forces IWD's autoconnect mechanism to be disabled for
               this device and connections will only be initiated by NetworkManager whether
-              commaned by a client or automatically.  Leaving it <literal>true</literal> (default)
+              commanded by a client or automatically.  Leaving it <literal>true</literal> (default)
               stops NetworkManager from automatically initiating connections and allows
               IWD to use its network ranking and scanning logic to decide the best networks
               to autoconnect to next.  Connections' <literal>autoconnect-priority</literal>,
@@ -1562,6 +1704,55 @@ interface-name:vboxnet*,except:interface-name:vboxnet2
 </programlisting>
       </para>
     </refsect2>
+
+    <refsect2 id="connection-spec">
+      <title>Connection List Format</title>
+      <para>
+          Connections can be specified using the following format:
+      </para>
+      <para>
+      <variablelist>
+        <varlistentry>
+          <term>*</term>
+          <listitem><para>Matches every connection.</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>uuid:UUID</term>
+          <listitem><para>Match the connection by UUID, for example
+          <literal>"uuid:83037490-1d17-4986-a397-01f1db3a7fc2"</literal></para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>id=ID</term>
+          <listitem><para>Match the connection by name.</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>origin:ORIGIN</term>
+          <listitem><para>Match the connection by origin, stored in the
+          <literal>org.freedesktop.NetworkManager.origin</literal> tag of the user setting. For example, use
+          <literal>"except:origin:nm-initrd-generator"</literal> to forbid activation of connections created by the
+          initrd generator.</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>except:SPEC</term>
+          <listitem><para>Negative match of a connection. A negative match has higher priority then the positive
+          matches above.</para>
+          <para>If there is a list consisting only of negative matches, the behavior is the same as if there is also
+          match-all. That means, if none of all the negative matches is satisfied, the overall result is still a
+          positive match.</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>SPEC[,;]SPEC</term>
+          <listitem><para>Multiple specs can be concatenated with commas or semicolons. The order does not matter as
+          matches are either inclusive or negative (<literal>except:</literal>), with negative matches having higher
+          priority.</para>
+          <para>Backslash is supported to escape the separators ';' and ',', and to express special characters such as
+          newline ('\n'), tabulator ('\t'), whitespace ('\s') and backslash ('\\'). Whitespace is not a separator but
+          will be trimmed between two specs (unless escaped as '\s').</para></listitem>
+        </varlistentry>
+      </variablelist>
+      </para>
+    </refsect2>
+
   </refsect1>
 
   <refsect1>

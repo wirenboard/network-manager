@@ -16,15 +16,15 @@
 #include <sys/sendfile.h>
 #include <limits.h>
 
-#include "nm-glib-aux/nm-c-list.h"
+#include "libnm-glib-aux/nm-c-list.h"
 
-#include "nm-libnm-core-intern/nm-common-macros.h"
+#include "libnm-core-aux-intern/nm-common-macros.h"
 #include "nm-dbus-manager.h"
 #include "vpn/nm-vpn-manager.h"
 #include "devices/nm-device.h"
 #include "devices/nm-device-generic.h"
-#include "platform/nm-platform.h"
-#include "platform/nmp-object.h"
+#include "libnm-platform/nm-platform.h"
+#include "libnm-platform/nmp-object.h"
 #include "nm-hostname-manager.h"
 #include "nm-keep-alive.h"
 #include "nm-rfkill-manager.h"
@@ -40,10 +40,10 @@
 #include "nm-policy.h"
 #include "nm-session-monitor.h"
 #include "nm-act-request.h"
-#include "nm-core-internal.h"
+#include "libnm-core-intern/nm-core-internal.h"
 #include "nm-config.h"
 #include "nm-audit-manager.h"
-#include "nm-std-aux/nm-dbus-compat.h"
+#include "libnm-std-aux/nm-dbus-compat.h"
 #include "nm-checkpoint.h"
 #include "nm-checkpoint-manager.h"
 #include "nm-dbus-object.h"
@@ -1313,7 +1313,7 @@ find_device_by_permanent_hw_addr(NMManager *self, const char *hwaddr)
     NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE(self);
     NMDevice *        device;
     const char *      device_addr;
-    guint8            hwaddr_bin[NM_UTILS_HWADDR_LEN_MAX];
+    guint8            hwaddr_bin[_NM_UTILS_HWADDR_LEN_MAX];
     gsize             hwaddr_len;
 
     g_return_val_if_fail(hwaddr != NULL, NULL);
@@ -1999,16 +1999,16 @@ nm_manager_remove_device(NMManager *self, const char *ifname, NMDeviceType devic
 static NMDevice *
 system_create_virtual_device(NMManager *self, NMConnection *connection)
 {
-    NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE(self);
-    NMDeviceFactory * factory;
-    gs_free NMSettingsConnection **connections = NULL;
-    guint                          i;
-    gs_free char *                 iface = NULL;
-    const char *                   parent_spec;
-    NMDevice *                     device = NULL, *parent = NULL;
-    NMDevice *                     dev_candidate;
-    GError *                       error = NULL;
-    NMLogLevel                     log_level;
+    NMManagerPrivate *           priv = NM_MANAGER_GET_PRIVATE(self);
+    NMDeviceFactory *            factory;
+    NMSettingsConnection *const *connections;
+    guint                        i;
+    gs_free char *               iface = NULL;
+    const char *                 parent_spec;
+    NMDevice *                   device = NULL, *parent = NULL;
+    NMDevice *                   dev_candidate;
+    GError *                     error = NULL;
+    NMLogLevel                   log_level;
 
     g_return_val_if_fail(NM_IS_MANAGER(self), NULL);
     g_return_val_if_fail(NM_IS_CONNECTION(connection), NULL);
@@ -2091,13 +2091,7 @@ system_create_virtual_device(NMManager *self, NMConnection *connection)
     }
 
     /* Create backing resources if the device has any autoconnect connections */
-    connections = nm_settings_get_connections_clone(
-        priv->settings,
-        NULL,
-        NULL,
-        NULL,
-        nm_settings_connection_cmp_autoconnect_priority_p_with_data,
-        NULL);
+    connections = nm_settings_get_connections_sorted_by_autoconnect_priority(priv->settings, NULL);
     for (i = 0; connections[i]; i++) {
         NMConnection *       candidate = nm_settings_connection_get_connection(connections[i]);
         NMSettingConnection *s_con;
@@ -2136,19 +2130,13 @@ system_create_virtual_device(NMManager *self, NMConnection *connection)
 static void
 retry_connections_for_parent_device(NMManager *self, NMDevice *device)
 {
-    NMManagerPrivate *priv                     = NM_MANAGER_GET_PRIVATE(self);
-    gs_free NMSettingsConnection **connections = NULL;
-    guint                          i;
+    NMManagerPrivate *           priv = NM_MANAGER_GET_PRIVATE(self);
+    NMSettingsConnection *const *connections;
+    guint                        i;
 
     g_return_if_fail(device);
 
-    connections = nm_settings_get_connections_clone(
-        priv->settings,
-        NULL,
-        NULL,
-        NULL,
-        nm_settings_connection_cmp_autoconnect_priority_p_with_data,
-        NULL);
+    connections = nm_settings_get_connections_sorted_by_autoconnect_priority(priv->settings, NULL);
     for (i = 0; connections[i]; i++) {
         NMSettingsConnection *sett_conn  = connections[i];
         NMConnection *        connection = nm_settings_connection_get_connection(sett_conn);
@@ -2607,6 +2595,12 @@ get_existing_connection(NMManager *self, NMDevice *device, gboolean *out_generat
 
     nm_device_capture_initial_config(device);
 
+    if (!nm_device_can_assume_connections(device)) {
+        nm_device_assume_state_reset(device);
+        _LOG2D(LOGD_DEVICE, device, "assume: device cannot assume connection");
+        return NULL;
+    }
+
     if (ifindex) {
         int master_ifindex = nm_platform_link_get_master(priv->platform, ifindex);
 
@@ -2638,39 +2632,47 @@ get_existing_connection(NMManager *self, NMDevice *device, gboolean *out_generat
         }
     }
 
-    /* The core of the API is nm_device_generate_connection() function and
-     * update_connection() virtual method and the convenient connection_type
-     * class attribute. Subclasses supporting the new API must have
-     * update_connection() implemented, otherwise nm_device_generate_connection()
-     * returns NULL.
-     */
-    connection = nm_device_generate_connection(device, master, &maybe_later, &gen_error);
-    if (!connection) {
-        if (maybe_later) {
-            /* The device can generate a connection, but it failed for now.
-             * Give it a chance to match a connection from the state file. */
-            only_by_uuid = TRUE;
-        } else {
-            nm_device_assume_state_reset(device);
-            _LOG2D(LOGD_DEVICE,
-                   device,
-                   "assume: cannot generate connection: %s",
-                   gen_error->message);
-            return NULL;
+    if (nm_config_data_get_device_config_boolean(NM_CONFIG_GET_DATA,
+                                                 NM_CONFIG_KEYFILE_KEY_DEVICE_KEEP_CONFIGURATION,
+                                                 device,
+                                                 TRUE,
+                                                 TRUE)) {
+        /* The core of the API is nm_device_generate_connection() function, based on
+         * update_connection() virtual method and the @connection_type_supported
+         * class attribute. Devices that support assuming existing connections must
+         * have update_connection() implemented, otherwise
+         * nm_device_generate_connection() returns NULL. */
+        connection = nm_device_generate_connection(device, master, &maybe_later, &gen_error);
+        if (!connection) {
+            if (maybe_later) {
+                /* The device can potentially assume connections, but at this
+                 * time we can't generate a connection because no address is
+                 * configured. Allow the device to assume a connection indicated
+                 * in the state file by UUID. */
+                only_by_uuid = TRUE;
+            } else {
+                nm_device_assume_state_reset(device);
+                _LOG2D(LOGD_DEVICE,
+                       device,
+                       "assume: cannot generate connection: %s",
+                       gen_error->message);
+                return NULL;
+            }
         }
+    } else {
+        connection   = NULL;
+        only_by_uuid = TRUE;
+        g_set_error(&gen_error,
+                    NM_DEVICE_ERROR,
+                    NM_DEVICE_ERROR_FAILED,
+                    "device %s has 'keep-configuration=no'",
+                    nm_device_get_iface(device));
     }
 
     nm_device_assume_state_get(device, &assume_state_guess_assume, &assume_state_connection_uuid);
 
-    /* Now we need to compare the generated connection to each configured
-     * connection. The comparison function is the heart of the connection
-     * assumption implementation and it must compare the connections very
-     * carefully to sort out various corner cases. Also, the comparison is
-     * not entirely symmetric.
-     *
-     * When no configured connection matches the generated connection, we keep
-     * the generated connection instead.
-     */
+    /* If the device state file indicates a connection that was active before NM
+     * restarted, perform basic sanity checks on it. */
     if (assume_state_connection_uuid
         && (connection_checked =
                 nm_settings_get_connection_by_uuid(priv->settings, assume_state_connection_uuid))
@@ -2704,8 +2706,9 @@ get_existing_connection(NMManager *self, NMDevice *device, gboolean *out_generat
         gs_free NMSettingsConnection **sett_conns = NULL;
         guint                          len, i, j;
 
-        /* the state file doesn't indicate a connection UUID to assume. Search the
-         * persistent connections for a matching candidate. */
+        /* @assume_state_guess_assume=TRUE means this is the first start of NM
+         * and the state file contains no UUID. Search persistent connections
+         * for a matching candidate. */
         sett_conns = nm_manager_get_activatable_connections(self, FALSE, FALSE, &len);
         if (len > 0) {
             for (i = 0, j = 0; i < len; i++) {
@@ -2778,6 +2781,8 @@ get_existing_connection(NMManager *self, NMDevice *device, gboolean *out_generat
         return matched;
     }
 
+    /* When no configured connection matches the generated connection, we keep
+     * the generated connection instead. */
     _LOG2D(LOGD_DEVICE,
            device,
            "assume: generated connection '%s' (%s)",
@@ -2904,15 +2909,16 @@ recheck_assume_connection(NMManager *self, NMDevice *device)
                                                        NM_SETTING_IP4_CONFIG_METHOD_AUTO,
                                                        NULL));
 
-                nm_settings_connection_update(sett_conn,
-                                              con2,
-                                              NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP,
-                                              NM_SETTINGS_CONNECTION_INT_FLAGS_NONE,
-                                              NM_SETTINGS_CONNECTION_INT_FLAGS_VOLATILE
-                                                  | NM_SETTINGS_CONNECTION_INT_FLAGS_EXTERNAL,
-                                              NM_SETTINGS_CONNECTION_UPDATE_REASON_NONE,
-                                              "assume-initrd",
-                                              NULL);
+                nm_settings_connection_update(
+                    sett_conn,
+                    con2,
+                    NM_SETTINGS_CONNECTION_PERSIST_MODE_KEEP,
+                    NM_SETTINGS_CONNECTION_INT_FLAGS_NONE,
+                    NM_SETTINGS_CONNECTION_INT_FLAGS_VOLATILE
+                        | NM_SETTINGS_CONNECTION_INT_FLAGS_EXTERNAL,
+                    NM_SETTINGS_CONNECTION_UPDATE_REASON_UPDATE_NON_SECRET,
+                    "assume-initrd",
+                    NULL);
             }
         }
     }
@@ -4424,13 +4430,13 @@ find_slaves(NMManager *           manager,
             guint *               out_n_slaves,
             gboolean              for_user_request)
 {
-    NMManagerPrivate *priv                         = NM_MANAGER_GET_PRIVATE(manager);
-    gs_free NMSettingsConnection **all_connections = NULL;
-    guint                          n_all_connections;
-    guint                          i;
-    SlaveConnectionInfo *          slaves   = NULL;
-    guint                          n_slaves = 0;
-    NMSettingConnection *          s_con;
+    NMManagerPrivate *           priv            = NM_MANAGER_GET_PRIVATE(manager);
+    NMSettingsConnection *const *all_connections = NULL;
+    guint                        n_all_connections;
+    guint                        i;
+    SlaveConnectionInfo *        slaves   = NULL;
+    guint                        n_slaves = 0;
+    NMSettingConnection *        s_con;
     gs_unref_hashtable GHashTable *devices = NULL;
 
     nm_assert(out_n_slaves);
@@ -4444,13 +4450,9 @@ find_slaves(NMManager *           manager,
      * even if a slave was already active, it might be deactivated during
      * master reactivation.
      */
-    all_connections = nm_settings_get_connections_clone(
-        priv->settings,
-        &n_all_connections,
-        NULL,
-        NULL,
-        nm_settings_connection_cmp_autoconnect_priority_p_with_data,
-        NULL);
+    all_connections =
+        nm_settings_get_connections_sorted_by_autoconnect_priority(priv->settings,
+                                                                   &n_all_connections);
     for (i = 0; i < n_all_connections; i++) {
         NMSettingsConnection *master_connection = NULL;
         NMDevice *            master_device     = NULL, *slave_device;
@@ -5695,7 +5697,7 @@ activation_add_done(NMSettings *           settings,
         result_floating = g_variant_new("(oo@a{sv})",
                                         nm_dbus_object_get_path(NM_DBUS_OBJECT(new_connection)),
                                         nm_dbus_object_get_path(NM_DBUS_OBJECT(active)),
-                                        g_variant_new_array(G_VARIANT_TYPE("{sv}"), NULL, 0));
+                                        nm_g_variant_singleton_aLsvI());
     }
     g_dbus_method_invocation_return_value(context, result_floating);
 
@@ -6818,8 +6820,9 @@ nm_manager_write_device_state(NMManager *self, NMDevice *device, int *out_ifinde
     guint32                        route_metric_default_effective;
     NMTernary                      nm_owned;
     NMDhcpConfig *                 dhcp_config;
-    const char *                   next_server = NULL;
-    const char *                   root_path   = NULL;
+    const char *                   next_server   = NULL;
+    const char *                   root_path     = NULL;
+    const char *                   dhcp_bootfile = NULL;
 
     NM_SET_OUT(out_ifindex, 0);
 
@@ -6863,8 +6866,11 @@ nm_manager_write_device_state(NMManager *self, NMDevice *device, int *out_ifinde
 
     dhcp_config = nm_device_get_dhcp_config(device, AF_INET);
     if (dhcp_config) {
-        root_path   = nm_dhcp_config_get_option(dhcp_config, "root_path");
-        next_server = nm_dhcp_config_get_option(dhcp_config, "next_server");
+        root_path     = nm_dhcp_config_get_option(dhcp_config, "root_path");
+        next_server   = nm_dhcp_config_get_option(dhcp_config, "next_server");
+        dhcp_bootfile = nm_dhcp_config_get_option(dhcp_config, "filename");
+        if (!dhcp_bootfile)
+            dhcp_bootfile = nm_dhcp_config_get_option(dhcp_config, "bootfile_name");
     }
 
     if (!nm_config_device_state_write(ifindex,
@@ -6875,7 +6881,8 @@ nm_manager_write_device_state(NMManager *self, NMDevice *device, int *out_ifinde
                                       route_metric_default_aspired,
                                       route_metric_default_effective,
                                       next_server,
-                                      root_path))
+                                      root_path,
+                                      dhcp_bootfile))
         return FALSE;
 
     NM_SET_OUT(out_ifindex, ifindex);
@@ -6917,9 +6924,9 @@ devices_inited_cb(gpointer user_data)
 gboolean
 nm_manager_start(NMManager *self, GError **error)
 {
-    NMManagerPrivate *priv                     = NM_MANAGER_GET_PRIVATE(self);
-    gs_free NMSettingsConnection **connections = NULL;
-    guint                          i;
+    NMManagerPrivate *           priv = NM_MANAGER_GET_PRIVATE(self);
+    NMSettingsConnection *const *connections;
+    guint                        i;
 
     nm_device_factory_manager_load_factories(_register_device_factory, self);
 
@@ -6977,13 +6984,7 @@ nm_manager_start(NMManager *self, GError **error)
                      NM_SETTINGS_SIGNAL_CONNECTION_UPDATED,
                      G_CALLBACK(connection_updated_cb),
                      self);
-    connections = nm_settings_get_connections_clone(
-        priv->settings,
-        NULL,
-        NULL,
-        NULL,
-        nm_settings_connection_cmp_autoconnect_priority_p_with_data,
-        NULL);
+    connections = nm_settings_get_connections_sorted_by_autoconnect_priority(priv->settings, NULL);
     for (i = 0; connections[i]; i++)
         connection_changed(self, connections[i]);
 
@@ -7160,6 +7161,85 @@ typedef struct {
 
 #define NM_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
 
+static const char *
+_dbus_set_property_audit_log_get_args(NMDBusObject *obj,
+                                      const char *  property_name,
+                                      GVariant *    value,
+                                      char **       str_to_free)
+{
+    nm_assert(str_to_free && !*str_to_free);
+
+    /* We assert here that the property is one of the few expected ones.
+     *
+     * Future properties should not made writable! Add a D-Bus method instead,
+     * they are more flexible (for example, you can set multiple properties at
+     * once). */
+
+    if (NM_IS_DEVICE(obj)) {
+        nm_assert(NM_IN_STRSET(property_name,
+                               NM_DEVICE_MANAGED,
+                               NM_DEVICE_AUTOCONNECT,
+                               NM_DEVICE_STATISTICS_REFRESH_RATE_MS));
+        return (*str_to_free = g_variant_print(value, FALSE));
+    }
+
+    nm_assert(NM_IS_MANAGER(obj));
+    if (NM_IN_STRSET(property_name,
+                     NM_MANAGER_WIRELESS_ENABLED,
+                     NM_MANAGER_WWAN_ENABLED,
+                     NM_MANAGER_WIMAX_ENABLED,
+                     NM_MANAGER_CONNECTIVITY_CHECK_ENABLED)) {
+        return (*str_to_free = g_strdup_printf("%s:%s",
+                                               property_name,
+                                               g_variant_get_boolean(value) ? "on" : "off"));
+    }
+    if (NM_IN_STRSET(property_name, NM_MANAGER_GLOBAL_DNS_CONFIGURATION)) {
+        return NM_MANAGER_GLOBAL_DNS_CONFIGURATION;
+    }
+
+    return nm_assert_unreachable_val("???");
+}
+
+/* this is a macro to catch the caller's line number. */
+#define _dbus_set_property_audit_log(obj,                                                  \
+                                     audit_op,                                             \
+                                     auth_subject,                                         \
+                                     property_name,                                        \
+                                     value,                                                \
+                                     error_message)                                        \
+    G_STMT_START                                                                           \
+    {                                                                                      \
+        NMDBusObject *const  _obj           = (obj);                                       \
+        const char *const    _audit_op      = (audit_op);                                  \
+        NMAuthSubject *const _auth_subject  = (auth_subject);                              \
+        const char *const    _property_name = (property_name);                             \
+        GVariant *const      _value         = (value);                                     \
+        const char *const    _error_message = (error_message);                             \
+        gs_free char *       _args_to_free  = NULL;                                        \
+                                                                                           \
+        if (NM_IS_DEVICE(_obj)) {                                                          \
+            nm_audit_log_device_op(_audit_op,                                              \
+                                   NM_DEVICE(_obj),                                        \
+                                   !_error_message,                                        \
+                                   _dbus_set_property_audit_log_get_args(_obj,             \
+                                                                         _property_name,   \
+                                                                         _value,           \
+                                                                         &_args_to_free),  \
+                                   _auth_subject,                                          \
+                                   _error_message);                                        \
+        } else {                                                                           \
+            nm_audit_log_control_op(_audit_op,                                             \
+                                    _dbus_set_property_audit_log_get_args(_obj,            \
+                                                                          _property_name,  \
+                                                                          _value,          \
+                                                                          &_args_to_free), \
+                                    !_error_message,                                       \
+                                    _auth_subject,                                         \
+                                    _error_message);                                       \
+        }                                                                                  \
+    }                                                                                      \
+    G_STMT_END
+
 static void
 _dbus_set_property_auth_cb(NMAuthChain *          chain,
                            GDBusMethodInvocation *invocation,
@@ -7217,11 +7297,13 @@ _dbus_set_property_auth_cb(NMAuthChain *          chain,
     g_value_unset(&gvalue);
 
 out:
-    nm_audit_log_control_op(property_info->writable.audit_op,
-                            property_info->property_name,
-                            !error_message,
-                            nm_auth_chain_get_subject(chain),
-                            error_message);
+    _dbus_set_property_audit_log(obj,
+                                 property_info->writable.audit_op,
+                                 nm_auth_chain_get_subject(chain),
+                                 property_info->property_name,
+                                 value,
+                                 error_message);
+
     if (error_message)
         g_dbus_method_invocation_return_dbus_error(invocation, error_name, error_message);
     else
@@ -7245,10 +7327,27 @@ nm_manager_dbus_set_property_handle(NMDBusObject *                     obj,
     gs_unref_object NMAuthSubject *subject = NULL;
     DBusSetPropertyHandle *        handle_data;
 
+    /* we only have writable properties on Device or Manager. In the future,
+     * we probably should not add new API with writable properties. Add
+     * methods instead. Systemd also avoids writable properties. */
+    nm_assert(obj == (gpointer) self || NM_IS_DEVICE(obj));
+
     subject = nm_dbus_manager_new_auth_subject_from_context(invocation);
     if (!subject) {
         error_message = NM_UTILS_ERROR_MSG_REQ_UID_UKNOWN;
-        goto err;
+
+        _dbus_set_property_audit_log(obj,
+                                     property_info->writable.audit_op,
+                                     NULL,
+                                     property_info->property_name,
+                                     value,
+                                     error_message);
+
+        g_dbus_method_invocation_return_error_literal(invocation,
+                                                      G_DBUS_ERROR,
+                                                      G_DBUS_ERROR_AUTH_FAILED,
+                                                      error_message);
+        return;
     }
 
     handle_data                    = g_slice_new0(DBusSetPropertyHandle);
@@ -7262,18 +7361,6 @@ nm_manager_dbus_set_property_handle(NMDBusObject *                     obj,
     chain = nm_auth_chain_new_subject(subject, invocation, _dbus_set_property_auth_cb, handle_data);
     c_list_link_tail(&priv->auth_lst_head, nm_auth_chain_parent_lst_list(chain));
     nm_auth_chain_add_call_unsafe(chain, property_info->writable.permission, TRUE);
-    return;
-
-err:
-    nm_audit_log_control_op(property_info->writable.audit_op,
-                            property_info->property_name,
-                            FALSE,
-                            invocation,
-                            error_message);
-    g_dbus_method_invocation_return_error_literal(invocation,
-                                                  G_DBUS_ERROR,
-                                                  G_DBUS_ERROR_AUTH_FAILED,
-                                                  error_message);
 }
 
 /*****************************************************************************/
@@ -7912,10 +7999,8 @@ get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
         break;
     case PROP_CAPABILITIES:
         g_value_set_variant(value,
-                            g_variant_new_fixed_array(G_VARIANT_TYPE("u"),
-                                                      priv->capabilities->data,
-                                                      priv->capabilities->len,
-                                                      sizeof(guint32)));
+                            nm_g_variant_new_au((const guint32 *) priv->capabilities->data,
+                                                priv->capabilities->len));
         break;
     case PROP_STATE:
         g_value_set_uint(value, priv->state);
@@ -8355,76 +8440,74 @@ static const NMDBusInterfaceInfoExtended interface_info_manager = {
                         NM_DEFINE_GDBUS_ARG_INFO("checkpoint", "o"),
                         NM_DEFINE_GDBUS_ARG_INFO("add_timeout", "u"), ), ),
                 .handle = impl_manager_checkpoint_adjust_rollback_timeout, ), ),
-        .signals    = NM_DEFINE_GDBUS_SIGNAL_INFOS(&nm_signal_info_property_changed_legacy,
-                                                &signal_info_check_permissions,
+        .signals    = NM_DEFINE_GDBUS_SIGNAL_INFOS(&signal_info_check_permissions,
                                                 &signal_info_state_changed,
                                                 &signal_info_device_added,
                                                 &signal_info_device_removed, ),
         .properties = NM_DEFINE_GDBUS_PROPERTY_INFOS(
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Devices", "ao", NM_MANAGER_DEVICES),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("AllDevices",
-                                                             "ao",
-                                                             NM_MANAGER_ALL_DEVICES),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Checkpoints",
-                                                             "ao",
-                                                             NM_MANAGER_CHECKPOINTS),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("NetworkingEnabled",
-                                                             "b",
-                                                             NM_MANAGER_NETWORKING_ENABLED),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE_L(
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Devices", "ao", NM_MANAGER_DEVICES),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("AllDevices",
+                                                           "ao",
+                                                           NM_MANAGER_ALL_DEVICES),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Checkpoints",
+                                                           "ao",
+                                                           NM_MANAGER_CHECKPOINTS),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("NetworkingEnabled",
+                                                           "b",
+                                                           NM_MANAGER_NETWORKING_ENABLED),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE(
                 "WirelessEnabled",
                 "b",
                 NM_MANAGER_WIRELESS_ENABLED,
                 NM_AUTH_PERMISSION_ENABLE_DISABLE_WIFI,
                 NM_AUDIT_OP_RADIO_CONTROL),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("WirelessHardwareEnabled",
-                                                             "b",
-                                                             NM_MANAGER_WIRELESS_HARDWARE_ENABLED),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE_L(
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("WirelessHardwareEnabled",
+                                                           "b",
+                                                           NM_MANAGER_WIRELESS_HARDWARE_ENABLED),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE(
                 "WwanEnabled",
                 "b",
                 NM_MANAGER_WWAN_ENABLED,
                 NM_AUTH_PERMISSION_ENABLE_DISABLE_WWAN,
                 NM_AUDIT_OP_RADIO_CONTROL),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("WwanHardwareEnabled",
-                                                             "b",
-                                                             NM_MANAGER_WWAN_HARDWARE_ENABLED),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE_L(
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("WwanHardwareEnabled",
+                                                           "b",
+                                                           NM_MANAGER_WWAN_HARDWARE_ENABLED),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE(
                 "WimaxEnabled",
                 "b",
                 NM_MANAGER_WIMAX_ENABLED,
                 NM_AUTH_PERMISSION_ENABLE_DISABLE_WIMAX,
                 NM_AUDIT_OP_RADIO_CONTROL),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("WimaxHardwareEnabled",
-                                                             "b",
-                                                             NM_MANAGER_WIMAX_HARDWARE_ENABLED),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("ActiveConnections",
-                                                             "ao",
-                                                             NM_MANAGER_ACTIVE_CONNECTIONS),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("PrimaryConnection",
-                                                             "o",
-                                                             NM_MANAGER_PRIMARY_CONNECTION),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("PrimaryConnectionType",
-                                                             "s",
-                                                             NM_MANAGER_PRIMARY_CONNECTION_TYPE),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Metered", "u", NM_MANAGER_METERED),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("ActivatingConnection",
-                                                             "o",
-                                                             NM_MANAGER_ACTIVATING_CONNECTION),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Startup", "b", NM_MANAGER_STARTUP),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Version", "s", NM_MANAGER_VERSION),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Capabilities",
-                                                             "au",
-                                                             NM_MANAGER_CAPABILITIES),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("State", "u", NM_MANAGER_STATE),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("Connectivity",
-                                                             "u",
-                                                             NM_MANAGER_CONNECTIVITY),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L(
-                "ConnectivityCheckAvailable",
-                "b",
-                NM_MANAGER_CONNECTIVITY_CHECK_AVAILABLE),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE_L(
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("WimaxHardwareEnabled",
+                                                           "b",
+                                                           NM_MANAGER_WIMAX_HARDWARE_ENABLED),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("ActiveConnections",
+                                                           "ao",
+                                                           NM_MANAGER_ACTIVE_CONNECTIONS),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("PrimaryConnection",
+                                                           "o",
+                                                           NM_MANAGER_PRIMARY_CONNECTION),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("PrimaryConnectionType",
+                                                           "s",
+                                                           NM_MANAGER_PRIMARY_CONNECTION_TYPE),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Metered", "u", NM_MANAGER_METERED),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("ActivatingConnection",
+                                                           "o",
+                                                           NM_MANAGER_ACTIVATING_CONNECTION),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Startup", "b", NM_MANAGER_STARTUP),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Version", "s", NM_MANAGER_VERSION),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Capabilities",
+                                                           "au",
+                                                           NM_MANAGER_CAPABILITIES),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("State", "u", NM_MANAGER_STATE),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Connectivity",
+                                                           "u",
+                                                           NM_MANAGER_CONNECTIVITY),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("ConnectivityCheckAvailable",
+                                                           "b",
+                                                           NM_MANAGER_CONNECTIVITY_CHECK_AVAILABLE),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE(
                 "ConnectivityCheckEnabled",
                 "b",
                 NM_MANAGER_CONNECTIVITY_CHECK_ENABLED,
@@ -8433,13 +8516,12 @@ static const NMDBusInterfaceInfoExtended interface_info_manager = {
             NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("ConnectivityCheckUri",
                                                            "s",
                                                            NM_MANAGER_CONNECTIVITY_CHECK_URI),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE_L(
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READWRITABLE(
                 "GlobalDnsConfiguration",
                 "a{sv}",
                 NM_MANAGER_GLOBAL_DNS_CONFIGURATION,
                 NM_AUTH_PERMISSION_SETTINGS_MODIFY_GLOBAL_DNS,
                 NM_AUDIT_OP_NET_CONTROL), ), ),
-    .legacy_property_changed = TRUE,
 };
 
 static void

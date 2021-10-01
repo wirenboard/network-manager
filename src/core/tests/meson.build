@@ -37,11 +37,17 @@ exe = executable(
     src_inc,
   ],
   dependencies: [
-    libnm_systemd_core_dep,
-    libnm_systemd_shared_dep,
+    libnm_systemd_shared_dep_inc,
+    libnm_systemd_core_dep_inc,
+    glib_dep,
   ],
-  c_args: [
-    '-DG_LOG_DOMAIN="test"',
+  link_with: [
+    libnm_systemd_shared,
+    libnm_systemd_core,
+    libnm_glib_aux,
+    libnm_log_null,
+    libnm_std_aux,
+    libc_siphash,
   ],
 )
 

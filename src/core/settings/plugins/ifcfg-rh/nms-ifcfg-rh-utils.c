@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-#include "nm-core-internal.h"
+#include "libnm-core-intern/nm-core-internal.h"
 #include "NetworkManagerUtils.h"
 
 #include "nms-ifcfg-rh-common.h"
@@ -593,6 +593,9 @@ const char *const _nm_ethtool_ifcfg_names[] = {
     ETHT_NAME(NM_ETHTOOL_ID_FEATURE_TX_UDP_TNL_CSUM_SEGMENTATION, "tx-udp_tnl-csum-segmentation"),
     ETHT_NAME(NM_ETHTOOL_ID_FEATURE_TX_UDP_TNL_SEGMENTATION, "tx-udp_tnl-segmentation"),
     ETHT_NAME(NM_ETHTOOL_ID_FEATURE_TX_VLAN_STAG_HW_INSERT, "tx-vlan-stag-hw-insert"),
+    ETHT_NAME(NM_ETHTOOL_ID_PAUSE_AUTONEG, "pause-autoneg"),
+    ETHT_NAME(NM_ETHTOOL_ID_PAUSE_RX, "pause-rx"),
+    ETHT_NAME(NM_ETHTOOL_ID_PAUSE_TX, "pause-tx"),
     ETHT_NAME(NM_ETHTOOL_ID_RING_RX, "rx"),
     ETHT_NAME(NM_ETHTOOL_ID_RING_RX_JUMBO, "rx-jumbo"),
     ETHT_NAME(NM_ETHTOOL_ID_RING_RX_MINI, "rx-mini"),
@@ -722,6 +725,15 @@ static NM_UTILS_STRING_TABLE_LOOKUP_DEFINE(
     {"rx-mini", NM_ETHTOOL_ID_RING_RX_MINI},
     {"tx", NM_ETHTOOL_ID_RING_TX}, );
 
+static NM_UTILS_STRING_TABLE_LOOKUP_DEFINE(
+    _get_ethtoolid_pause_by_name,
+    NMEthtoolID,
+    { nm_assert(name); },
+    { return NM_ETHTOOL_ID_UNKNOWN; },
+    {"pause-autoneg", NM_ETHTOOL_ID_PAUSE_AUTONEG},
+    {"pause-rx", NM_ETHTOOL_ID_PAUSE_RX},
+    {"pause-tx", NM_ETHTOOL_ID_PAUSE_TX}, );
+
 const NMEthtoolData *
 nms_ifcfg_rh_utils_get_ethtool_by_name(const char *name, NMEthtoolType ethtool_type)
 {
@@ -736,6 +748,9 @@ nms_ifcfg_rh_utils_get_ethtool_by_name(const char *name, NMEthtoolType ethtool_t
         break;
     case NM_ETHTOOL_TYPE_RING:
         id = _get_ethtoolid_ring_by_name(name);
+        break;
+    case NM_ETHTOOL_TYPE_PAUSE:
+        id = _get_ethtoolid_pause_by_name(name);
         break;
     default:
         nm_assert_not_reached();
@@ -800,6 +815,7 @@ nms_ifcfg_rh_utils_is_numbered_tag_impl(const char *key,
     }
 
 const NMSIfcfgKeyTypeInfo nms_ifcfg_well_known_keys[] = {
+    _KEY_TYPE("ACCEPT_ALL_MAC_ADDRESSES", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("ACD_TIMEOUT", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("ADDRESS", NMS_IFCFG_KEY_TYPE_IS_NUMBERED),
     _KEY_TYPE("AP_ISOLATION", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
@@ -942,6 +958,7 @@ const NMSIfcfgKeyTypeInfo nms_ifcfg_well_known_keys[] = {
     _KEY_TYPE("IPV4_DHCP_TIMEOUT", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV4_DNS_PRIORITY", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV4_FAILURE_FATAL", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
+    _KEY_TYPE("IPV4_REQUIRED_TIMEOUT", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV4_ROUTE_METRIC", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV4_ROUTE_TABLE", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV6ADDR", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
@@ -964,6 +981,7 @@ const NMSIfcfgKeyTypeInfo nms_ifcfg_well_known_keys[] = {
     _KEY_TYPE("IPV6_PRIVACY", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV6_PRIVACY_PREFER_PUBLIC_IP", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV6_RA_TIMEOUT", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
+    _KEY_TYPE("IPV6_REQUIRED_TIMEOUT", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV6_RES_OPTIONS", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV6_ROUTE_METRIC", NMS_IFCFG_KEY_TYPE_IS_PLAIN),
     _KEY_TYPE("IPV6_ROUTE_TABLE", NMS_IFCFG_KEY_TYPE_IS_PLAIN),

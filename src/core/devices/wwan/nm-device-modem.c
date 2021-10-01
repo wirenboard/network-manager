@@ -14,7 +14,7 @@
 #include "settings/nm-settings-connection.h"
 #include "nm-modem-broadband.h"
 #include "NetworkManagerUtils.h"
-#include "nm-core-internal.h"
+#include "libnm-core-intern/nm-core-internal.h"
 
 #define _NMLOG_DEVICE_TYPE NMDeviceModem
 #include "devices/nm-device-logging.h"
@@ -193,15 +193,20 @@ modem_ip4_config_result(NMModem *modem, NMIP4Config *config, GError *error, gpoi
     NMDeviceModem *self   = NM_DEVICE_MODEM(user_data);
     NMDevice *     device = NM_DEVICE(self);
 
-    g_return_if_fail(nm_device_activate_ip4_state_in_conf(device) == TRUE);
+    if (!nm_device_activate_ip4_state_in_conf(device)) {
+        _LOGD(LOGD_MB | LOGD_IP4,
+              "retrieving IPv4 configuration while no longer in state IPv4 conf");
+        return;
+    }
 
     if (error) {
         _LOGW(LOGD_MB | LOGD_IP4, "retrieving IPv4 configuration failed: %s", error->message);
         nm_device_ip_method_failed(device, AF_INET, NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
-    } else {
-        nm_device_set_dev2_ip_config(device, AF_INET, NM_IP_CONFIG_CAST(config));
-        nm_device_activate_schedule_ip_config_result(device, AF_INET, NULL);
+        return;
     }
+
+    nm_device_set_dev2_ip_config(device, AF_INET, NM_IP_CONFIG_CAST(config));
+    nm_device_activate_schedule_ip_config_result(device, AF_INET, NULL);
 }
 
 static void
@@ -218,7 +223,11 @@ modem_ip6_config_result(NMModem *    modem,
     gs_unref_object NMIP6Config *ignored    = NULL;
     gboolean                     got_config = !!config;
 
-    g_return_if_fail(nm_device_activate_ip6_state_in_conf(device) == TRUE);
+    if (!nm_device_activate_ip6_state_in_conf(device)) {
+        _LOGD(LOGD_MB | LOGD_IP6,
+              "retrieving IPv6 configuration while no longer in state IPv6 conf");
+        return;
+    }
 
     if (error) {
         _LOGW(LOGD_MB | LOGD_IP6, "retrieving IPv6 configuration failed: %s", error->message);
@@ -357,7 +366,6 @@ modem_state_cb(NMModem *modem, int new_state_i, int old_state_i, gpointer user_d
         nm_device_state_changed(device,
                                 NM_DEVICE_STATE_FAILED,
                                 NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER);
-        return;
     }
 
     if (new_state > NM_MODEM_STATE_LOCKED && old_state == NM_MODEM_STATE_LOCKED) {
@@ -856,14 +864,13 @@ dispose(GObject *object)
 static const NMDBusInterfaceInfoExtended interface_info_device_modem = {
     .parent = NM_DEFINE_GDBUS_INTERFACE_INFO_INIT(
         NM_DBUS_INTERFACE_DEVICE_MODEM,
-        .signals    = NM_DEFINE_GDBUS_SIGNAL_INFOS(&nm_signal_info_property_changed_legacy, ),
         .properties = NM_DEFINE_GDBUS_PROPERTY_INFOS(
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("ModemCapabilities",
-                                                             "u",
-                                                             NM_DEVICE_MODEM_CAPABILITIES),
-            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE_L("CurrentCapabilities",
-                                                             "u",
-                                                             NM_DEVICE_MODEM_CURRENT_CAPABILITIES),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("ModemCapabilities",
+                                                           "u",
+                                                           NM_DEVICE_MODEM_CAPABILITIES),
+            NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("CurrentCapabilities",
+                                                           "u",
+                                                           NM_DEVICE_MODEM_CURRENT_CAPABILITIES),
             NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("DeviceId",
                                                            "s",
                                                            NM_DEVICE_MODEM_DEVICE_ID),
@@ -871,7 +878,6 @@ static const NMDBusInterfaceInfoExtended interface_info_device_modem = {
                                                            "s",
                                                            NM_DEVICE_MODEM_OPERATOR_CODE),
             NM_DEFINE_DBUS_PROPERTY_INFO_EXTENDED_READABLE("Apn", "s", NM_DEVICE_MODEM_APN), ), ),
-    .legacy_property_changed = TRUE,
 };
 
 static void

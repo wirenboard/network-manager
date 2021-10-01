@@ -18,7 +18,8 @@
 #include <linux/rtnetlink.h>
 #include <linux/if_ether.h>
 
-#include "nm-glib-aux/nm-secret-utils.h"
+#include "libnm-glib-aux/nm-uuid.h"
+#include "libnm-glib-aux/nm-secret-utils.h"
 #include "nm-connection.h"
 #include "nm-dbus-interface.h"
 #include "nm-setting-connection.h"
@@ -38,11 +39,11 @@
 #include "nm-setting-user.h"
 #include "nm-setting-proxy.h"
 #include "nm-setting-generic.h"
-#include "nm-core-internal.h"
+#include "libnm-core-intern/nm-core-internal.h"
 #include "nm-utils.h"
-#include "nm-base/nm-ethtool-base.h"
+#include "libnm-base/nm-ethtool-base.h"
 
-#include "platform/nm-platform.h"
+#include "libnm-platform/nm-platform.h"
 #include "NetworkManagerUtils.h"
 
 #include "nms-ifcfg-rh-common.h"
@@ -405,11 +406,9 @@ make_connection_setting(const char *file,
     /* Try for a UUID key before falling back to hashing the file name */
     uuid = svGetValueStr(ifcfg, "UUID", &uuid_free);
     if (!uuid) {
-        uuid_free = nm_utils_uuid_generate_from_string(svFileGetName(ifcfg),
-                                                       -1,
-                                                       NM_UTILS_UUID_TYPE_LEGACY,
-                                                       NULL);
-        uuid      = uuid_free;
+        uuid_free =
+            nm_uuid_generate_from_string_str(svFileGetName(ifcfg), -1, NM_UUID_TYPE_LEGACY, NULL);
+        uuid = uuid_free;
     }
 
     g_object_set(s_con,
@@ -1896,6 +1895,8 @@ make_ip4_setting(shvarFile *ifcfg,
                  svGetValueBoolean(ifcfg, "DHCP_SEND_HOSTNAME", TRUE),
                  NM_SETTING_IP_CONFIG_DHCP_TIMEOUT,
                  (int) svGetValueInt64(ifcfg, "IPV4_DHCP_TIMEOUT", 10, 0, G_MAXINT32, 0),
+                 NM_SETTING_IP_CONFIG_REQUIRED_TIMEOUT,
+                 (int) svGetValueInt64(ifcfg, "IPV4_REQUIRED_TIMEOUT", 10, 0, G_MAXINT32, -1),
                  NULL);
 
     nm_clear_g_free(&value);
@@ -1986,7 +1987,11 @@ make_ip4_setting(shvarFile *ifcfg,
                 } else if (nm_utils_ipaddr_is_valid(AF_INET6, v)) {
                     /* Ignore IPv6 addresses */
                 } else {
-                    PARSE_WARNING("invalid DNS server address %s", v);
+                    g_set_error(error,
+                                NM_SETTINGS_ERROR,
+                                NM_SETTINGS_ERROR_INVALID_CONNECTION,
+                                "Invalid DNS server address '%s'",
+                                v);
                     return NULL;
                 }
             }
@@ -2152,6 +2157,8 @@ read_aliases(NMSettingIPConfig *s_ip4, gboolean read_defroute, const char *filen
                 g_clear_error(&err);
                 continue;
             }
+
+            svWarnInvalid(parsed, "alias", _NMLOG_DOMAIN);
 
             device = svGetValueStr(parsed, "DEVICE", &device_value);
             if (!device) {
@@ -2404,6 +2411,8 @@ make_ip6_setting(shvarFile *ifcfg, shvarFile *network_ifcfg, gboolean routes_rea
                  svGetValueBoolean(ifcfg, "DHCPV6_SEND_HOSTNAME", TRUE),
                  NM_SETTING_IP_CONFIG_DHCP_TIMEOUT,
                  (int) svGetValueInt64(ifcfg, "IPV6_DHCP_TIMEOUT", 10, 0, G_MAXINT32, 0),
+                 NM_SETTING_IP_CONFIG_REQUIRED_TIMEOUT,
+                 (int) svGetValueInt64(ifcfg, "IPV6_REQUIRED_TIMEOUT", 10, 0, G_MAXINT32, -1),
                  NM_SETTING_IP6_CONFIG_RA_TIMEOUT,
                  (int) svGetValueInt64(ifcfg, "IPV6_RA_TIMEOUT", 10, 0, G_MAXINT32, 0),
                  NULL);
@@ -2505,7 +2514,11 @@ make_ip6_setting(shvarFile *ifcfg, shvarFile *network_ifcfg, gboolean routes_rea
         } else if (nm_utils_ipaddr_is_valid(AF_INET, v)) {
             /* Ignore IPv4 addresses */
         } else {
-            PARSE_WARNING("invalid DNS server address %s", v);
+            g_set_error(error,
+                        NM_SETTINGS_ERROR,
+                        NM_SETTINGS_ERROR_INVALID_CONNECTION,
+                        "Invalid DNS server address '%s'",
+                        v);
             return NULL;
         }
     }
@@ -4303,7 +4316,7 @@ make_wireless_setting(shvarFile *ifcfg, GError **error)
             bytes = g_bytes_new(value, value_len);
 
         ssid_len = g_bytes_get_size(bytes);
-        if (ssid_len > 32 || ssid_len == 0) {
+        if (ssid_len == 0 || ssid_len > NM_IW_ESSID_MAX_SIZE) {
             g_set_error(error,
                         NM_SETTINGS_ERROR,
                         NM_SETTINGS_ERROR_INVALID_CONNECTION,
@@ -4679,7 +4692,9 @@ static NM_UTILS_STRING_TABLE_LOOKUP_DEFINE(
     {"--coalesce", NM_ETHTOOL_TYPE_COALESCE},
     {"--features", NM_ETHTOOL_TYPE_FEATURE},
     {"--offload", NM_ETHTOOL_TYPE_FEATURE},
+    {"--pause", NM_ETHTOOL_TYPE_PAUSE},
     {"--set-ring", NM_ETHTOOL_TYPE_RING},
+    {"-A", NM_ETHTOOL_TYPE_PAUSE},
     {"-C", NM_ETHTOOL_TYPE_COALESCE},
     {"-G", NM_ETHTOOL_TYPE_RING},
     {"-K", NM_ETHTOOL_TYPE_FEATURE}, );
@@ -4719,7 +4734,7 @@ parse_ethtool_option(const char *             value,
         w_iter = &words[2];
 
         while (w_iter && *w_iter) {
-            if (ethtool_type == NM_ETHTOOL_TYPE_FEATURE) {
+            if (NM_IN_SET(ethtool_type, NM_ETHTOOL_TYPE_FEATURE, NM_ETHTOOL_TYPE_PAUSE)) {
                 w_iter = _next_ethtool_options_nmternary(w_iter, ethtool_type, &ifcfg_option);
 
                 if (ifcfg_option.has_value) {
@@ -5022,6 +5037,7 @@ make_wired_setting(shvarFile *ifcfg, const char *file, NMSetting8021x **s_8021x,
     const char *                    cvalue;
     gs_free char *                  value = NULL;
     gboolean                        found = FALSE;
+    NMTernary                       accept_all_mac_addresses;
 
     s_wired = NM_SETTING_WIRED(nm_setting_wired_new());
 
@@ -5119,15 +5135,15 @@ make_wired_setting(shvarFile *ifcfg, const char *file, NMSetting8021x **s_8021x,
         for (i = 0; options && options[i]; i++) {
             const char *line = options[i];
             const char *equals;
-            gboolean    valid = FALSE;
 
             equals = strchr(line, '=');
-            if (equals) {
-                ((char *) equals)[0] = '\0';
-                valid                = nm_setting_wired_add_s390_option(s_wired, line, equals + 1);
-            }
-            if (!valid)
-                PARSE_WARNING("invalid s390 OPTION '%s'", line);
+            if (!equals)
+                continue;
+
+            /* Here we don't verify the key/value further. If the file contains invalid keys,
+             * we will later reject the connection as invalid. */
+            ((char *) equals)[0] = '\0';
+            nm_setting_wired_add_s390_option(s_wired, line, equals + 1);
         }
         found = TRUE;
     }
@@ -5179,6 +5195,15 @@ make_wired_setting(shvarFile *ifcfg, const char *file, NMSetting8021x **s_8021x,
         }
     }
     nm_clear_g_free(&value);
+
+    accept_all_mac_addresses = svGetValueTernary(ifcfg, "ACCEPT_ALL_MAC_ADDRESSES");
+    if (accept_all_mac_addresses != NM_TERNARY_DEFAULT) {
+        g_object_set(s_wired,
+                     NM_SETTING_WIRED_ACCEPT_ALL_MAC_ADDRESSES,
+                     accept_all_mac_addresses,
+                     NULL);
+        found = TRUE;
+    }
 
     if (!found) {
         g_set_error(error,
@@ -6072,15 +6097,14 @@ make_vlan_setting(shvarFile *ifcfg, const char *file, GError **error)
                 v = iface_name + 4;
         }
 
-        if (v) {
-            int device_vlan_id;
-
-            /* Grab VLAN ID from interface name; this takes precedence over the
-             * separate VLAN_ID property for backwards compat.
+        if (vlan_id == -1 && v) {
+            /* Grab VLAN ID from interface name; The explicit VLAN_ID option takes precedence
+             * over detecting the ID based on PHYSDEV.
+             *
+             * Note that older versions of NetworkManager had a bug and this would overwrite the
+             * VLAN_ID in this case.
              */
-            device_vlan_id = _nm_utils_ascii_str_to_int64(v, 10, 0, 4095, -1);
-            if (device_vlan_id != -1)
-                vlan_id = device_vlan_id;
+            vlan_id = _nm_utils_ascii_str_to_int64(v, 10, 0, 4095, -1);
         }
     }
 
@@ -6288,6 +6312,7 @@ connection_from_file_full(const char *filename,
     NMSetting *                   s_ip4;
     NMSetting *                   s_ip6;
     const char *                  ifcfg_name       = NULL;
+    gs_free char *                s_tmp            = NULL;
     gboolean                      has_ip4_defroute = FALSE;
     gboolean                      has_complex_routes_v4;
     gboolean                      has_complex_routes_v6;
@@ -6315,8 +6340,6 @@ connection_from_file_full(const char *filename,
     if (!main_ifcfg)
         return NULL;
 
-    network_ifcfg = svOpenFile(network_file, NULL);
-
     if (!svGetValueBoolean(main_ifcfg, "NM_CONTROLLED", TRUE)) {
         connection = create_unhandled_connection(filename, main_ifcfg, "unmanaged", out_unhandled);
         if (!connection) {
@@ -6329,6 +6352,16 @@ connection_from_file_full(const char *filename,
         }
         return g_steal_pointer(&connection);
     }
+
+    if (NM_IN_STRSET(svGetValueStr(main_ifcfg, "DEVICE", &s_tmp), "lo")) {
+        /* "lo" is not handled by NetworkManager and we ignore it. */
+    } else
+        svWarnInvalid(main_ifcfg, "ifcfg", _NMLOG_DOMAIN);
+    nm_clear_g_free(&s_tmp);
+
+    network_ifcfg = svOpenFile(network_file, NULL);
+    /* we don't call svWarnInvalid(network_ifcfg), because we will load this file for
+     * every profile. So we would get a large number of duplicate warnings. */
 
     /* iBFT is handled by nm-initrd-generator during boot. */
     bootproto = svGetValueStr_cp(main_ifcfg, "BOOTPROTO");

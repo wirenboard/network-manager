@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 07/16/2021
+.\"      Date: 09/22/2021
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.30.6
+.\"    Source: NetworkManager 1.32.12
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-NMCLI" "5" "" "NetworkManager 1\&.30\&.6" "Configuration"
+.TH "NM\-SETTINGS\-NMCLI" "5" "" "NetworkManager 1\&.32\&.12" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1452,6 +1452,21 @@ Properties:
 .RS 4
 .RE
 .PP
+\fBpause\-autoneg\fR
+.RS 4
+Whether to automatically negotiate on pause frame of flow control mechanism defined by IEEE 802\&.3x standard\&.
+.RE
+.PP
+\fBpause\-rx\fR
+.RS 4
+Whether RX pause should be enabled\&. Only valid when automatic negotiation is disabled
+.RE
+.PP
+\fBpause\-tx\fR
+.RS 4
+Whether TX pause should be enabled\&. Only valid when automatic negotiation is disabled
+.RE
+.PP
 \fBring\-rx\fR
 .RS 4
 .RE
@@ -1640,9 +1655,9 @@ Properties:
 .RS 4
 Alias: ip4
 .sp
-Array of IP addresses\&.
+A list of IPv4 addresses and their prefix length\&. Multiple addresses can be separated by comma\&. For example "192\&.168\&.1\&.5/24, 10\&.1\&.0\&.5/24"\&. The addresses are listed in decreasing priority, meaning the first address will be the primary address\&.
 .sp
-Format: array of array of uint32
+Format: a comma separated list of addresses
 .RE
 .PP
 \fBdad\-timeout\fR
@@ -1787,6 +1802,13 @@ If TRUE, this connection will never be the default connection for this IP type, 
 Format: boolean
 .RE
 .PP
+\fBrequired\-timeout\fR
+.RS 4
+The minimum time interval in milliseconds for which dynamic IP configuration should be tried before the connection succeeds\&. This property is useful for example if both IPv4 and IPv6 are enabled and are allowed to fail\&. Normally the connection succeeds as soon as one of the two address families completes; by setting a required timeout for e\&.g\&. IPv4, one can ensure that even if IP6 succeeds earlier than IPv4, NetworkManager waits some time for IPv4 before the connection becomes active\&. Note that if "may\-fail" is FALSE for the same address family, this property has no effect as NetworkManager needs to wait for the full DHCP timeout\&. A zero value means that no required timeout is present, \-1 means the default value (either configuration ipvx\&.required\-timeout override or zero)\&.
+.sp
+Format: int32
+.RE
+.PP
 \fBroute\-metric\fR
 .RS 4
 The default metric for routes that don\*(Aqt explicitly specify a metric\&. The default value \-1 means that the metric is chosen automatically based on the device type\&. The metric applies to dynamic routes, manual (static) routes that don\*(Aqt have an explicit metric setting, address prefix routes, and the default route\&. Note that for IPv6, the kernel accepts zero (0) but coerces it to 1024 (user default)\&. Hence, setting this property to zero effectively mean setting it to 1024\&. For IPv4, zero is a regular value for the metric\&.
@@ -1803,9 +1825,9 @@ Format: uint32
 .PP
 \fBroutes\fR
 .RS 4
-Array of IP routes\&.
+A list of IPv4 destination addresses, prefix length, optional IPv4 next hop addresses, optional route metric, optional attribute\&. The valid syntax is: "ip[/prefix] [next\-hop] [metric] [attribute=val]\&.\&.\&.[,ip[/prefix]\&.\&.\&.]"\&. For example "192\&.0\&.2\&.0/24 10\&.1\&.1\&.1 77, 198\&.51\&.100\&.0/24"\&.
 .sp
-Format: array of array of uint32
+Format: a comma separated list of routes
 .RE
 .PP
 \fBrouting\-rules\fR
@@ -1828,9 +1850,9 @@ Format: int32
 .RS 4
 Alias: ip6
 .sp
-Array of IP addresses\&.
+A list of IPv6 addresses and their prefix length\&. Multiple addresses can be separated by comma\&. For example "2001:db8:85a3::8a2e:370:7334/64, 2001:db8:85a3::5/64"\&. The addresses are listed in increasing priority, meaning the last address will be the primary address\&.
 .sp
-Format: array of legacy IPv6 address struct
+Format: a comma separated list of addresses
 .RE
 .PP
 \fBdhcp\-duid\fR
@@ -1957,6 +1979,13 @@ Format: boolean
 \fBra\-timeout\fR
 .RS 4
 A timeout for waiting Router Advertisements in seconds\&. If zero (the default), a globally configured default is used\&. If still unspecified, the timeout depends on the sysctl settings of the device\&. Set to 2147483647 (MAXINT32) for infinity\&.
+.sp
+Format: int32
+.RE
+.PP
+\fBrequired\-timeout\fR
+.RS 4
+The minimum time interval in milliseconds for which dynamic IP configuration should be tried before the connection succeeds\&. This property is useful for example if both IPv4 and IPv6 are enabled and are allowed to fail\&. Normally the connection succeeds as soon as one of the two address families completes; by setting a required timeout for e\&.g\&. IPv4, one can ensure that even if IP6 succeeds earlier than IPv4, NetworkManager waits some time for IPv4 before the connection becomes active\&. Note that if "may\-fail" is FALSE for the same address family, this property has no effect as NetworkManager needs to wait for the full DHCP timeout\&. A zero value means that no required timeout is present, \-1 means the default value (either configuration ipvx\&.required\-timeout override or zero)\&.
 .sp
 Format: int32
 .RE
@@ -2239,7 +2268,7 @@ Format: array of string
 .PP
 \fBkernel\-command\-line\fR
 .RS 4
-A list of kernel command line arguments to match\&. This may be used to check whether a specific kernel command line option is set (or if prefixed with the exclamation mark unset)\&. The argument must either be a single word, or an assignment (i\&.e\&. two words, separated "=")\&. In the former case the kernel command line is searched for the word appearing as is, or as left hand side of an assignment\&. In the latter case, the exact assignment is looked for with right and left hand side matching\&. See NMSettingMatch:interface\-name for how special characters \*(Aq|\*(Aq, \*(Aq&\*(Aq, \*(Aq!\*(Aq and \*(Aq\e\*(Aq are used for optional and mandatory matches and inverting the pattern\&.
+A list of kernel command line arguments to match\&. This may be used to check whether a specific kernel command line option is set (or unset, if prefixed with the exclamation mark)\&. The argument must either be a single word, or an assignment (i\&.e\&. two words, joined by "=")\&. In the former case the kernel command line is searched for the word appearing as is, or as left hand side of an assignment\&. In the latter case, the exact assignment is looked for with right and left hand side matching\&. Wildcard patterns are not supported\&. See NMSettingMatch:interface\-name for how special characters \*(Aq|\*(Aq, \*(Aq&\*(Aq, \*(Aq!\*(Aq and \*(Aq\e\*(Aq are used for optional and mandatory matches and inverting the match\&.
 .sp
 Format: array of string
 .RE
@@ -2271,7 +2300,7 @@ Format: uint32
 .RS 4
 Alias: dhcp\-anycast
 .sp
-Anycast DHCP MAC address used when requesting an IP address via DHCP\&. The specific anycast address used determines which DHCP server class answers the request\&.
+Anycast DHCP MAC address used when requesting an IP address via DHCP\&. The specific anycast address used determines which DHCP server class answers the request\&. This is currently only implemented by dhclient DHCP plugin\&.
 .sp
 Format: byte array
 .RE
@@ -3253,6 +3282,13 @@ Wired Ethernet Settings\&.
 .PP
 Properties:
 .PP
+\fBaccept\-all\-mac\-addresses\fR
+.RS 4
+When TRUE, setup the interface to accept packets for all MAC addresses\&. This is enabling the kernel interface flag IFF_PROMISC\&. When FALSE, the interface will only accept the packets with the interface destination mac address or broadcast\&.
+.sp
+Format: NMTernary (int32)
+.RE
+.PP
 \fBauto\-negotiate\fR
 .RS 4
 When TRUE, enforce auto\-negotiation of speed and duplex mode\&. If "speed" and "duplex" properties are both specified, only that single mode will be advertised and accepted during the link auto\-negotiation process: this works only for BASE\-T 802\&.3 specifications and is useful for enforcing gigabits modes, as in these cases link negotiation is mandatory\&. When FALSE, "speed" and "duplex" properties should be both set or link configuration will be skipped\&.
@@ -3593,7 +3629,7 @@ Format: array of string
 .PP
 \fBkey\-mgmt\fR
 .RS 4
-Key management used for the connection\&. One of "none" (WEP), "ieee8021x" (Dynamic WEP), "wpa\-psk" (infrastructure WPA\-PSK), "sae" (SAE), "owe" (Opportunistic Wireless Encryption), "wpa\-eap" (WPA\-Enterprise) or "wpa\-eap\-suite\-b\-192" (WPA3\-Enterprise Suite B)\&. This property must be set for any Wi\-Fi connection that uses security\&.
+Key management used for the connection\&. One of "none" (WEP or no password protection), "ieee8021x" (Dynamic WEP), "owe" (Opportunistic Wireless Encryption), "wpa\-psk" (WPA2 + WPA3 personal), "sae" (WPA3 personal only), "wpa\-eap" (WPA2 + WPA3 enterprise) or "wpa\-eap\-suite\-b\-192" (WPA3 enterprise only)\&. This property must be set for any Wi\-Fi connection that uses security\&.
 .sp
 Format: string
 .RE
