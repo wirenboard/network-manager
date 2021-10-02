@@ -131,8 +131,6 @@ Multi-Arch: same
 Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends}
-Breaks: gir1.2-networkmanager-1.0 (<< 1.8.0-2)
-Replaces: gir1.2-networkmanager-1.0 (<< 1.8.0-2)
 Description: GObject introspection data for the libnm library
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
