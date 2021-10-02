@@ -1,8 +1,19 @@
-network-manager (1.32.12-1) UNRELEASED; urgency=medium
+network-manager (1.32.12-1) unstable; urgency=medium
 
   * New upstream version 1.32.12
+  * Rebase patches
+  * Update symbols file for libnm0
+  * Bump Standards-Version to 4.6.0
+  * Drop dh_missing override.
+    As --fail-missing is the default in compat 13, the override is no longer
+    necessary.
+  * Remove obsolete upgrade code
+  * Drop obsolete Breaks/Replaces
+  * Update debian/copyright
+  * Remove isc-dhcp-client from Suggests.
+    Unless explicitly configured otherwise the internal DHCP client is used.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 01 Oct 2021 23:13:42 +0200
+ -- Michael Biebl <biebl@debian.org>  Sat, 02 Oct 2021 09:42:17 +0200
 
 network-manager (1.30.6-1) unstable; urgency=medium
 
