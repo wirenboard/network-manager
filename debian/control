@@ -60,7 +60,6 @@ Recommends: ppp,
             wireless-regdb,
             libpam-systemd,
 Suggests: libteam-utils,
-          isc-dhcp-client,
 Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
