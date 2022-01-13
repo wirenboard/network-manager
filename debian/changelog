@@ -1,8 +1,11 @@
-network-manager (1.34.0-1) UNRELEASED; urgency=medium
+network-manager (1.34.0-1) unstable; urgency=medium
 
   * New upstream version 1.34.0
+  * Rebase patches
+  * Install nm-priv-helper service
+  * Update symbols file for libnm0
 
- -- Michael Biebl <biebl@debian.org>  Thu, 13 Jan 2022 22:37:27 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 14 Jan 2022 00:18:58 +0100
 
 network-manager (1.32.12-1) unstable; urgency=medium
 
