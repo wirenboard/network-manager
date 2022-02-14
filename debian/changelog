@@ -1,8 +1,14 @@
-network-manager (1.35.91-1) UNRELEASED; urgency=medium
+network-manager (1.35.91-1) unstable; urgency=medium
 
   * New upstream version 1.35.91 (1.36 rc2)
+  * Rebase patches
+  * Update debian/watch to version 4
+  * Update symbols file for libnm0
+  * Add lintian override for custom-library-search-path
+  * Enable all hardening build flags
+  * Clean up nm-priv-helper.service enablement state on upgrades
 
- -- Michael Biebl <biebl@debian.org>  Mon, 14 Feb 2022 19:24:55 +0100
+ -- Michael Biebl <biebl@debian.org>  Mon, 14 Feb 2022 22:24:06 +0100
 
 network-manager (1.34.0-2) unstable; urgency=medium
 
