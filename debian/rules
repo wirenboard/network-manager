@@ -25,9 +25,10 @@ override_dh_auto_configure:
 		--runstatedir=/run \
 		--with-pppd-plugin-dir=$(PPPD_PLUGIN_DIR) \
 		--with-pppd=/usr/sbin/pppd \
+		--with-nft=/usr/sbin/nft \
+		--with-iptables=/usr/sbin/iptables \
 		--with-resolvconf=/sbin/resolvconf \
 		--with-dhclient=/sbin/dhclient \
-		--with-iptables=/usr/sbin/iptables \
 		--with-dnsmasq=/usr/sbin/dnsmasq \
 		--with-dnssec-trigger=/usr/lib/dnssec-trigger/dnssec-trigger-script \
 		--with-polkit-agent-helper-1=/usr/lib/policykit-1/polkit-agent-helper-1 \
