@@ -54,12 +54,12 @@ Depends: ${shlibs:Depends},
          policykit-1
 Recommends: ppp,
             dnsmasq-base,
-            iptables,
             modemmanager,
             wireless-regdb,
             wpasupplicant,
             libpam-systemd,
 Suggests: libteam-utils,
+          iptables,
 Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
