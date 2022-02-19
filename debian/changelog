@@ -1,8 +1,11 @@
-network-manager (1.35.92-1) UNRELEASED; urgency=medium
+network-manager (1.35.92-1) unstable; urgency=medium
 
   * New upstream version 1.35.92 ((1.36 rc3)
+  * Rename polkit rules file to org.freedesktop.NetworkManager.rules
+  * Set path to nft binary
+  * Demote iptables to Suggests
 
- -- Michael Biebl <biebl@debian.org>  Sat, 19 Feb 2022 17:20:33 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 19 Feb 2022 21:50:39 +0100
 
 network-manager (1.35.91-1) unstable; urgency=medium
 
