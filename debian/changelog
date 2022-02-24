@@ -1,3 +1,9 @@
+network-manager (1.36.0-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.36.0
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 24 Feb 2022 19:35:18 +0100
+
 network-manager (1.35.92-1) unstable; urgency=medium
 
   * New upstream version 1.35.92 ((1.36 rc3)
