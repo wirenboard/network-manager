@@ -1,3 +1,9 @@
+network-manager (1.36.0-2) unstable; urgency=medium
+
+  * core: initialize l3cd dns-priority for ppp and wwan (Closes: #1006396)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 26 Feb 2022 10:57:32 +0100
+
 network-manager (1.36.0-1) unstable; urgency=medium
 
   * New upstream version 1.36.0
