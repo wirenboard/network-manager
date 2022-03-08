@@ -1,3 +1,9 @@
+network-manager (1.36.2-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.36.2
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 08 Mar 2022 09:13:17 +0100
+
 network-manager (1.36.0-2) unstable; urgency=medium
 
   * core: initialize l3cd dns-priority for ppp and wwan (Closes: #1006396)
