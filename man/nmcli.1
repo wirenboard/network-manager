@@ -2,12 +2,12 @@
 .\"     Title: nmcli
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 03/07/2022
+.\"      Date: 03/22/2022
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.36.2
+.\"    Source: NetworkManager 1.36.4
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.36\&.2" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.36\&.4" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1551,6 +1551,11 @@ Connection that is being activated\&.
 Connection that is being disconnected\&.
 .RE
 .PP
+\fBconnection\-external\fR
+.RS 4
+Connection representing configuration created externally to NetworkManager\&.
+.RE
+.PP
 \fBconnection\-invisible\fR
 .RS 4
 Connection whose details is the user not permitted to see\&.
@@ -1594,6 +1599,11 @@ Device that is being configured\&.
 \fBdevice\-disconnected\fR
 .RS 4
 Device that is not connected\&.
+.RE
+.PP
+\fBdevice\-external\fR
+.RS 4
+Device configured externally to NetworkManager\&.
 .RE
 .PP
 \fBdevice\-firmware\-missing\fR
