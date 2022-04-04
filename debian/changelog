@@ -1,3 +1,10 @@
+network-manager (1.36.4-2) unstable; urgency=medium
+
+  * supplicant: enable WPA3 transition mode only when interface supports PMF.
+    See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1003907
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 04 Apr 2022 11:39:20 +0200
+
 network-manager (1.36.4-1) unstable; urgency=medium
 
   * New upstream version 1.36.4
