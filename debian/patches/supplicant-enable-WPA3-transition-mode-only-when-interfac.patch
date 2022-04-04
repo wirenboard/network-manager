@@ -1,0 +1,58 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Fri, 1 Apr 2022 15:49:13 +0200
+Subject: supplicant: enable WPA3 transition mode only when interface supports
+ PMF
+
+We have some reports of APs that advertise WPA2/WPA3 with
+MFP-required=0/MFP-capable=0, and reject the association when the
+client doesn't support 802.11w.
+
+According to WPA3_Specification_v3.0 section 2.3, when operating in
+WPA3-Personal transition mode a STA:
+
+- should allow AKM suite selector: 00-0F-AC:6 (WPA-PSK-SHA256) to be
+  selected for an association;
+
+- shall negotiate PMF when associating to an AP using SAE.
+
+The first is guaranteed by capability PMF; the second by checking that
+the interface supports BIP ciphers suitable for PMF.
+
+https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/964
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1003907
+(cherry picked from commit 1a7db1d7f712d7696f64b089011bc45fc86e7924)
+(cherry picked from commit 4dbf7778acef65fb7f5258e5b69d321bc79a490e)
+---
+ src/core/supplicant/nm-supplicant-config.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/supplicant/nm-supplicant-config.c b/src/core/supplicant/nm-supplicant-config.c
+index 96c2357..8626042 100644
+--- a/src/core/supplicant/nm-supplicant-config.c
++++ b/src/core/supplicant/nm-supplicant-config.c
+@@ -854,7 +854,24 @@ nm_supplicant_config_add_setting_wireless_security(NMSupplicantConfig
+             g_string_append(key_mgmt_conf, " WPA-PSK-SHA256");
+         if (_get_capability(priv, NM_SUPPL_CAP_TYPE_FT))
+             g_string_append(key_mgmt_conf, " FT-PSK");
+-        if (_get_capability(priv, NM_SUPPL_CAP_TYPE_SAE)) {
++
++        /* For NM "key-mgmt=wpa-psk" doesn't strictly mean WPA1/wPA2 only,
++         * but also allows WPA3 (SAE), so that existing connections can
++         * benefit from the improved security when the AP gets upgraded.
++         *
++         * According to WPA3_Specification_v3.0 section 2.3, when operating
++         * in WPA3-Personal transition mode a STA:
++         *
++         * - should allow AKM suite selector: 00-0F-AC:6 (WPA-PSK-SHA256) to
++         *   be selected for an association;
++         * - shall negotiate PMF when associating to an AP using SAE.
++         *
++         * Those conditions are met when the interface has capabilities
++         * SAE, PMF, BIP.
++         */
++        if (_get_capability(priv, NM_SUPPL_CAP_TYPE_SAE)
++            && _get_capability(priv, NM_SUPPL_CAP_TYPE_PMF)
++            && _get_capability(priv, NM_SUPPL_CAP_TYPE_BIP)) {
+             g_string_append(key_mgmt_conf, " SAE");
+             if (_get_capability(priv, NM_SUPPL_CAP_TYPE_FT))
+                 g_string_append(key_mgmt_conf, " FT-SAE");
