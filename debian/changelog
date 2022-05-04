@@ -1,3 +1,9 @@
+network-manager (1.37.92-1) UNRELEASED; urgency=medium
+
+  * New upstream version 1.37.92 (1.38 rc3)
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 04 May 2022 15:38:10 +0200
+
 network-manager (1.36.4-2) unstable; urgency=medium
 
   * supplicant: enable WPA3 transition mode only when interface supports PMF.
@@ -35,7 +41,7 @@ network-manager (1.36.0-1) unstable; urgency=medium
 
 network-manager (1.35.92-1) unstable; urgency=medium
 
-  * New upstream version 1.35.92 ((1.36 rc3)
+  * New upstream version 1.35.92 (1.36 rc3)
   * Rename polkit rules file to org.freedesktop.NetworkManager.rules
   * Set path to nft binary
   * Demote iptables to Suggests
