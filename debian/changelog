@@ -1,3 +1,11 @@
+network-manager (1.38.0-2) unstable; urgency=medium
+
+  * Cherry-pick a couple of fixes from upstream nm-1-38 branch
+  * Install additional config examples found in examples/nm-conf.d/
+    (Closes: #1010889)
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 18 May 2022 23:05:00 +0200
+
 network-manager (1.38.0-1) unstable; urgency=medium
 
   * New upstream version 1.38.0
