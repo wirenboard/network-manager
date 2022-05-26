@@ -1439,7 +1439,7 @@ not part of an active connection. </p>
 <a name="nm-device-get-available-connections"></a><h3>nm_device_get_available_connections ()</h3>
 <pre class="programlisting">const <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *
 nm_device_get_available_connections (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
-<p>Gets the <span class="type">NMRemoteConnections</span> currently known to the daemon that could
+<p>Gets the <a href="NMRemoteConnection.html#NMRemoteConnection-struct"><span class="type">NMRemoteConnections</span></a> currently known to the daemon that could
 be activated on <em class="parameter"><code>device</code></em>
 .</p>
 <div class="refsect3">
@@ -1460,7 +1460,7 @@ be activated on <em class="parameter"><code>device</code></em>
 <div class="refsect3">
 <a name="nm-device-get-available-connections.returns"></a><h4>Returns</h4>
 <p>the <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a>
-containing <span class="type">NMRemoteConnections</span>. This is the internal copy used by
+containing <a href="NMRemoteConnection.html#NMRemoteConnection-struct"><span class="type">NMRemoteConnections</span></a>. This is the internal copy used by
 the connection, and must not be modified. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMRemoteConnection]</span></p>
 </div>
