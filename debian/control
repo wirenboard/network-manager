@@ -36,7 +36,7 @@ Build-Depends: debhelper-compat (= 13),
                dbus <!nocheck>,
                python3-dbus <!nocheck>,
                iproute2 <!nocheck>,
-Standards-Version: 4.6.0
+Standards-Version: 4.6.1
 Rules-Requires-Root: no
 Vcs-Git: https://salsa.debian.org/utopia-team/network-manager.git
 Vcs-Browser: https://salsa.debian.org/utopia-team/network-manager
