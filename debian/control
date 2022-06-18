@@ -6,6 +6,7 @@ Uploaders: Michael Biebl <biebl@debian.org>,
  Sjoerd Simons <sjoerd@debian.org>,
  Aron Xu <aron@debian.org>
 Build-Depends: debhelper-compat (= 13),
+               dh-sequence-gir,
                automake (>= 1.12),
                pkg-config,
                intltool,

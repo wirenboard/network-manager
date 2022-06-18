@@ -9,7 +9,7 @@ export PYTHON=/usr/bin/python3
 PPPD_PLUGIN_DIR := $(shell dh_ppp --plugin-dir)
 
 %:
-	dh $@ --with gir,ppp
+	dh $@ --with ppp
 
 autoreconf:
 	gtkdocize --copy
