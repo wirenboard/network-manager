@@ -1286,7 +1286,7 @@ out_fail:
               duid,
               duid_error);
 
-        nm_utils_random_bytes(&uuid, sizeof(uuid));
+        nm_random_get_bytes(&uuid, sizeof(uuid));
         duid_out = nm_utils_generate_duid_uuid(&uuid);
     }
 
@@ -2022,7 +2022,7 @@ out_fail:
           fail_reason);
     client_id_buf    = g_malloc(1 + 15);
     client_id_buf[0] = 0;
-    nm_utils_random_bytes(&client_id_buf[1], 15);
+    nm_random_get_bytes(&client_id_buf[1], 15);
     result = g_bytes_new_take(client_id_buf, 1 + 15);
 
 out_good:
@@ -7857,7 +7857,8 @@ nm_device_slave_notify_release(NMDevice *self, NMDeviceStateReason reason)
 void
 nm_device_removed(NMDevice *self, gboolean unconfigure_ip_config)
 {
-    NMDevicePrivate *priv;
+    NMDevicePrivate      *priv;
+    const NML3ConfigData *l3cd_old;
 
     g_return_if_fail(NM_IS_DEVICE(self));
 
@@ -7875,6 +7876,18 @@ nm_device_removed(NMDevice *self, gboolean unconfigure_ip_config)
     }
 
     _dev_l3_register_l3cds(self, priv->l3cfg, FALSE, unconfigure_ip_config);
+
+    /* _dev_l3_register_l3cds() schedules a commit, but if the device has
+     * commit type NONE, that doesn't emit a l3cd-changed. Do it manually,
+     * to ensure that entries are removed from the DNS manager. */
+    if (priv->l3cfg
+        && NM_IN_SET(priv->sys_iface_state,
+                     NM_DEVICE_SYS_IFACE_STATE_REMOVED,
+                     NM_DEVICE_SYS_IFACE_STATE_EXTERNAL)) {
+        l3cd_old = nm_l3cfg_get_combined_l3cd(priv->l3cfg, TRUE);
+        if (l3cd_old)
+            g_signal_emit(self, signals[L3CD_CHANGED], 0, l3cd_old, NULL);
+    }
 }
 
 static gboolean
@@ -11382,8 +11395,8 @@ _dev_ipac6_start(NMDevice *self)
 
     if (node_type == NM_NDISC_NODE_TYPE_ROUTER)
         _dev_ipac6_set_state(self, NM_DEVICE_IP_STATE_READY);
-    else
-        _dev_ipac6_grace_period_start(self, ra_timeout, TRUE);
+
+    _dev_ipac6_grace_period_start(self, ra_timeout, TRUE);
 
     nm_ndisc_start(priv->ipac6_data.ndisc);
 }
@@ -11623,7 +11636,7 @@ activate_stage3_ip_config_for_addr_family(NMDevice *self, int addr_family, const
         priv->ip_data_x[IS_IPv4].wait_for_ports = FALSE;
     }
 
-    if (klass->ready_for_ip_config && !klass->ready_for_ip_config(self))
+    if (klass->ready_for_ip_config && !klass->ready_for_ip_config(self, FALSE))
         goto out_devip;
 
     if (IS_IPv4) {
@@ -11887,7 +11900,7 @@ activate_stage3_ip_config(NMDevice *self)
     }
 
     if (!nm_device_sys_iface_state_is_external(self)
-        && (!klass->ready_for_ip_config || klass->ready_for_ip_config(self))) {
+        && (!klass->ready_for_ip_config || klass->ready_for_ip_config(self, TRUE))) {
         if (priv->ipmanual_data.state_6 == NM_DEVICE_IP_STATE_NONE
             && !NM_IN_STRSET(ipv6_method,
                              NM_SETTING_IP6_CONFIG_METHOD_DISABLED,
@@ -12681,6 +12694,16 @@ check_and_reapply_connection(NMDevice     *self,
             priv->ip_data_4.do_reapply = TRUE;
         if (nm_g_hash_table_lookup(diffs, NM_SETTING_IP6_CONFIG_SETTING_NAME))
             priv->ip_data_6.do_reapply = TRUE;
+
+        if (nm_g_hash_table_contains_any(
+                nm_g_hash_table_lookup(diffs, NM_SETTING_CONNECTION_SETTING_NAME),
+                NM_SETTING_CONNECTION_LLDP,
+                NM_SETTING_CONNECTION_MDNS,
+                NM_SETTING_CONNECTION_LLMNR,
+                NM_SETTING_CONNECTION_DNS_OVER_TLS)) {
+            priv->ip_data_4.do_reapply = TRUE;
+            priv->ip_data_6.do_reapply = TRUE;
+        }
 
         nm_device_activate_schedule_stage3_ip_config(self, FALSE);
 
