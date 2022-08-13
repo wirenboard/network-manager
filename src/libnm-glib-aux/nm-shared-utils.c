@@ -37,6 +37,13 @@ const void *const _NM_PTRARRAY_EMPTY[1] = {NULL};
 
 const NMIPAddr nm_ip_addr_zero = {};
 
+/* We use _nm_alignas(NMIPAddr) to ensure that fields for in_addr_t and
+ * struct in6_addr have all the same alignment. Ensure that this is suitable. */
+G_STATIC_ASSERT(_nm_alignof(in_addr_t) <= _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(struct in_addr) <= _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(struct in6_addr) <= _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(NMEtherAddr) <= _nm_alignof(NMIPAddr));
+
 /* this initializes a struct in_addr/in6_addr and allows for untrusted
  * arguments (like unsuitable @addr_family or @src_len). It's almost safe
  * in the sense that it verifies input arguments strictly. Also, it
@@ -126,6 +133,9 @@ nm_ip_addr_set_from_variant(int addr_family, gpointer dst, GVariant *variant, in
 
 G_STATIC_ASSERT(ETH_ALEN == sizeof(struct ether_addr));
 G_STATIC_ASSERT(ETH_ALEN == 6);
+G_STATIC_ASSERT(ETH_ALEN == sizeof(NMEtherAddr));
+
+G_STATIC_ASSERT(_nm_alignof(struct ether_addr) <= _nm_alignof(NMEtherAddr));
 
 /*****************************************************************************/
 
@@ -3337,6 +3347,8 @@ nm_utils_fd_wait_for_event(int fd, int event, gint64 timeout_nsec)
     struct timespec ts, *pts;
     int             r;
 
+    nm_assert(fd >= 0);
+
     if (timeout_nsec < 0)
         pts = NULL;
     else {
@@ -3350,6 +3362,13 @@ nm_utils_fd_wait_for_event(int fd, int event, gint64 timeout_nsec)
         return -NM_ERRNO_NATIVE(errno);
     if (r == 0)
         return 0;
+
+    nm_assert(r == 1);
+    nm_assert(pollfd.revents > 0);
+
+    if (pollfd.revents & POLLNVAL)
+        return nm_assert_unreachable_val(-EBADF);
+
     return pollfd.revents;
 }
 

@@ -23,10 +23,10 @@ G_STATIC_ASSERT(NM_AF_INET_SIZE == sizeof(in_addr_t));
 G_STATIC_ASSERT(NM_AF_INET_SIZE == sizeof(struct in_addr));
 G_STATIC_ASSERT(NM_AF_INET6_SIZE == sizeof(struct in6_addr));
 
-G_STATIC_ASSERT(4 == _nm_alignof(in_addr_t));
-G_STATIC_ASSERT(4 == _nm_alignof(struct in_addr));
-G_STATIC_ASSERT(4 == _nm_alignof(struct in6_addr));
-G_STATIC_ASSERT(4 == _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(in_addr_t) <= _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(struct in_addr) <= _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(struct in6_addr) <= _nm_alignof(NMIPAddr));
+G_STATIC_ASSERT(_nm_alignof(NMEtherAddr) <= _nm_alignof(NMIPAddr));
 
 /*****************************************************************************/
 
@@ -93,7 +93,7 @@ test_nmhash(void)
 {
     int rnd;
 
-    nm_utils_random_bytes(&rnd, sizeof(rnd));
+    nm_random_get_bytes(&rnd, sizeof(rnd));
 
     g_assert(nm_hash_val(555, 4) != 0);
 }

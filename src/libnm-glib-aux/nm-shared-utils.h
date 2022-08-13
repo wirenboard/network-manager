@@ -216,7 +216,7 @@ nm_ether_addr_equal(const NMEtherAddr *a, const NMEtherAddr *b)
 
 typedef struct {
     union {
-        guint8          addr_ptr[1];
+        guint8          addr_ptr[sizeof(struct in6_addr)];
         in_addr_t       addr4;
         struct in_addr  addr4_struct;
         struct in6_addr addr6;
@@ -619,6 +619,16 @@ static inline gboolean
 nm_utils_is_separator(const char c)
 {
     return NM_IN_SET(c, ' ', '\t');
+}
+
+/*****************************************************************************/
+
+static inline GBytes *
+nm_g_bytes_ref(GBytes *b)
+{
+    if (b)
+        g_bytes_ref(b);
+    return b;
 }
 
 /*****************************************************************************/
@@ -2310,6 +2320,25 @@ nm_g_hash_table_contains(GHashTable *hash, gconstpointer key)
 {
     return hash ? g_hash_table_contains(hash, key) : FALSE;
 }
+
+#define nm_g_hash_table_contains_any(hash, ...)                              \
+    ({                                                                       \
+        GHashTable *const   _hash   = (hash);                                \
+        gconstpointer const _keys[] = {__VA_ARGS__};                         \
+        int                 _i_key;                                          \
+        gboolean            _contains = FALSE;                               \
+                                                                             \
+        if (_hash) {                                                         \
+            for (_i_key = 0; _i_key < (int) G_N_ELEMENTS(_keys); _i_key++) { \
+                if (g_hash_table_contains(_hash, _keys[_i_key])) {           \
+                    _contains = TRUE;                                        \
+                    break;                                                   \
+                }                                                            \
+            }                                                                \
+        }                                                                    \
+                                                                             \
+        _contains;                                                           \
+    })
 
 static inline gboolean
 nm_g_hash_table_remove(GHashTable *hash, gconstpointer key)
