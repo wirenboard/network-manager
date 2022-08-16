@@ -1289,7 +1289,13 @@ nm_utils_ip4_netmask_to_prefix (<em class="parameter"><code><a href="https://dev
 </colgroup>
 <tbody><tr>
 <td class="parameter_name"><p>netmask</p></td>
-<td class="parameter_description"><p>an IPv4 netmask in network byte order</p></td>
+<td class="parameter_description"><p>an IPv4 netmask in network byte order.
+Usually the netmask has all leading bits up to the prefix
+set so that the netmask is identical to having the first
+prefix bits of the address set.
+If that is not the case and there are "holes" in the
+mask, the prefix is determined based on the lowest bit
+set.</p></td>
 <td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
@@ -1314,7 +1320,7 @@ nm_utils_ip4_prefix_to_netmask (<em class="parameter"><code><a href="https://dev
 </colgroup>
 <tbody><tr>
 <td class="parameter_name"><p>prefix</p></td>
-<td class="parameter_description"><p>a CIDR prefix</p></td>
+<td class="parameter_description"><p>a CIDR prefix, must be not larger than 32.</p></td>
 <td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
@@ -1706,7 +1712,7 @@ nm_utils_uuid_generate (<em class="parameter"><code><span class="type">void</spa
 <div class="refsect3">
 <a name="nm-utils-uuid-generate.returns"></a><h4>Returns</h4>
 <p> a newly allocated UUID suitable for use as the <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>
-object's <a href="/usr/share/gtk-doc/html/libnm-util/NMSettingConnection.html#NMSettingConnection--id"><span class="type">“id”</span></a>: property.  Should be freed with <a href="https://developer.gnome.org/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a></p>
+object's <span class="type">“id”</span>: property.  Should be freed with <a href="https://developer.gnome.org/glib/unstable/glib-Memory-Allocation.html#g-free"><code class="function">g_free()</code></a></p>
 </div>
 </div>
 <hr>

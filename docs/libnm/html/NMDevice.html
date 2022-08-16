@@ -16,7 +16,9 @@
 <td width="100%" align="left" class="shortcuts">
 <a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
                   <a href="#NMDevice.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
-                  <a href="#NMDevice.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+                  <a href="#NMDevice.object-hierarchy" class="shortcut">Object Hierarchy</a></span><span id="nav_properties">  <span class="dim">|</span> 
+                  <a href="#NMDevice.properties" class="shortcut">Properties</a></span><span id="nav_signals">  <span class="dim">|</span> 
+                  <a href="#NMDevice.signals" class="shortcut">Signals</a></span>
 </td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><a accesskey="u" href="ch04.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
@@ -523,6 +525,217 @@
 </tbody>
 </table></div>
 </div>
+<div class="refsect1">
+<a name="NMDevice.properties"></a><h2>Properties</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="properties_type">
+<col width="300px" class="properties_name">
+<col width="200px" class="properties_flags">
+</colgroup>
+<tbody>
+<tr>
+<td class="property_type">
+<a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--active-connection" title="The “active-connection” property">active-connection</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--autoconnect" title="The “autoconnect” property">autoconnect</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--available-connections" title="The “available-connections” property">available-connections</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="libnm-nm-dbus-interface.html#NMDeviceCapabilities" title="enum NMDeviceCapabilities"><span class="type">NMDeviceCapabilities</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--capabilities" title="The “capabilities” property">capabilities</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="libnm-nm-dbus-interface.html#NMDeviceType" title="enum NMDeviceType"><span class="type">NMDeviceType</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--device-type" title="The “device-type” property">device-type</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--dhcp4-config" title="The “dhcp4-config” property">dhcp4-config</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--dhcp6-config" title="The “dhcp6-config” property">dhcp6-config</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--driver" title="The “driver” property">driver</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--driver-version" title="The “driver-version” property">driver-version</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--firmware-missing" title="The “firmware-missing” property">firmware-missing</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--firmware-version" title="The “firmware-version” property">firmware-version</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--hw-address" title="The “hw-address” property">hw-address</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--interface" title="The “interface” property">interface</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--interface-flags" title="The “interface-flags” property">interface-flags</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--ip-interface" title="The “ip-interface” property">ip-interface</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--ip4-config" title="The “ip4-config” property">ip4-config</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="libnm-nm-dbus-interface.html#NMConnectivityState" title="enum NMConnectivityState"><span class="type">NMConnectivityState</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--ip4-connectivity" title="The “ip4-connectivity” property">ip4-connectivity</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--ip6-config" title="The “ip6-config” property">ip6-config</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="libnm-nm-dbus-interface.html#NMConnectivityState" title="enum NMConnectivityState"><span class="type">NMConnectivityState</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--ip6-connectivity" title="The “ip6-connectivity” property">ip6-connectivity</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--lldp-neighbors" title="The “lldp-neighbors” property">lldp-neighbors</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--managed" title="The “managed” property">managed</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--metered" title="The “metered” property">metered</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--mtu" title="The “mtu” property">mtu</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--nm-plugin-missing" title="The “nm-plugin-missing” property">nm-plugin-missing</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--path" title="The “path” property">path</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--physical-port-id" title="The “physical-port-id” property">physical-port-id</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--ports" title="The “ports” property">ports</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--product" title="The “product” property">product</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--real" title="The “real” property">real</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="libnm-nm-dbus-interface.html#NMDeviceState" title="enum NMDeviceState"><span class="type">NMDeviceState</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--state" title="The “state” property">state</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--state-reason" title="The “state-reason” property">state-reason</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--udi" title="The “udi” property">udi</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">char</span> *</td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--vendor" title="The “vendor” property">vendor</a></td>
+<td class="property_flags">Read</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect1">
+<a name="NMDevice.signals"></a><h2>Signals</h2>
+<div class="informaltable"><table class="informaltable" border="0">
+<colgroup>
+<col width="150px" class="signal_proto_type">
+<col width="300px" class="signal_proto_name">
+<col width="200px" class="signal_proto_flags">
+</colgroup>
+<tbody><tr>
+<td class="signal_type"><span class="returnvalue">void</span></td>
+<td class="signal_name"><a class="link" href="NMDevice.html#NMDevice-state-changed" title="The “state-changed” signal">state-changed</a></td>
+<td class="signal_flags"><a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+</tr></tbody>
+</table></div>
+</div>
 <a name="NMLldpNeighbor"></a><div class="refsect1">
 <a name="NMDevice.other"></a><h2>Types and Values</h2>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -665,6 +878,10 @@
 </tr>
 <tr>
 <td class="datatype_keyword"> </td>
+<td class="function_name"><a class="link" href="NMDevice.html#NMDevice-struct" title="NMDevice">NMDevice</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword"> </td>
 <td class="function_name"><a class="link" href="NMDevice.html#NMLldpNeighbor-struct" title="NMLldpNeighbor">NMLldpNeighbor</a></td>
 </tr>
 </tbody>
@@ -674,6 +891,37 @@
 <a name="NMDevice.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
     <span class="lineart">╰──</span> NMLldpNeighbor
+    <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject-struct">GObject</a>
+    <span class="lineart">╰──</span> <a class="link" href="NMObject.html" title="NMObject">NMObject</a>
+        <span class="lineart">╰──</span> NMDevice
+            <span class="lineart">├──</span> <a class="link" href="NMDevice6Lowpan.html" title="NMDevice6Lowpan">NMDevice6Lowpan</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceAdsl.html" title="NMDeviceAdsl">NMDeviceAdsl</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceBond.html" title="NMDeviceBond">NMDeviceBond</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceBridge.html" title="NMDeviceBridge">NMDeviceBridge</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceBt.html" title="NMDeviceBt">NMDeviceBt</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceDummy.html" title="NMDeviceDummy">NMDeviceDummy</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceEthernet.html" title="NMDeviceEthernet">NMDeviceEthernet</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceGeneric.html" title="NMDeviceGeneric">NMDeviceGeneric</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceInfiniband.html" title="NMDeviceInfiniband">NMDeviceInfiniband</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceMacvlan.html" title="NMDeviceMacvlan">NMDeviceMacvlan</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceModem.html" title="NMDeviceModem">NMDeviceModem</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceOlpcMesh.html" title="NMDeviceOlpcMesh">NMDeviceOlpcMesh</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceOvsBridge.html" title="NMDeviceOvsBridge">NMDeviceOvsBridge</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceOvsInterface.html" title="NMDeviceOvsInterface">NMDeviceOvsInterface</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceOvsPort.html" title="NMDeviceOvsPort">NMDeviceOvsPort</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDevicePpp.html" title="NMDevicePpp">NMDevicePpp</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceTeam.html" title="NMDeviceTeam">NMDeviceTeam</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceTun.html" title="NMDeviceTun">NMDeviceTun</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan">NMDeviceVlan</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceVrf.html" title="NMDeviceVrf">NMDeviceVrf</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceVxlan.html" title="NMDeviceVxlan">NMDeviceVxlan</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi">NMDeviceWifi</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceWifiP2P.html" title="NMDeviceWifiP2P">NMDeviceWifiP2P</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax">NMDeviceWimax</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceWireGuard.html" title="NMDeviceWireGuard">NMDeviceWireGuard</a>
+            <span class="lineart">╰──</span> <a class="link" href="NMDeviceWpan.html" title="NMDeviceWpan">NMDeviceWpan</a>
 </pre>
 </div>
 <div class="refsect1">
@@ -1546,7 +1794,7 @@ nm_device_is_real (<em class="parameter"><code><a class="link" href="NMDevice.ht
 <a name="nm-device-is-real.returns"></a><h4>Returns</h4>
 <p> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the device exists, or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it is a placeholder device
 that could be automatically created by NetworkManager if one of its
-<a href="/usr/share/gtk-doc/html/libnm-glib/NMDevice.html#NMDevice--available-connections"><span class="type">“available-connections”</span></a> was activated.</p>
+<a class="link" href="NMDevice.html#NMDevice--available-connections" title="The “available-connections” property"><span class="type">“available-connections”</span></a> was activated.</p>
 </div>
 <p class="since">Since: 1.2</p>
 </div>
@@ -2425,7 +2673,7 @@ incompatible with the device. To get the full list of connections see
 </tr>
 <tr>
 <td class="parameter_name"><p>connections</p></td>
-<td class="parameter_description"><p>an array of <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct"><span class="type">NMConnections</span></a> to filter. </p></td>
+<td class="parameter_description"><p>an array of <span class="type">NMConnections</span> to filter. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span></td>
 </tr>
 </tbody>
@@ -2434,7 +2682,7 @@ incompatible with the device. To get the full list of connections see
 <div class="refsect3">
 <a name="nm-device-filter-connections.returns"></a><h4>Returns</h4>
 <p>an array of
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct"><span class="type">NMConnections</span></a> that could be activated with the given <em class="parameter"><code>device</code></em>
+<span class="type">NMConnections</span> that could be activated with the given <em class="parameter"><code>device</code></em>
 .  The array
 should be freed with <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#g-ptr-array-unref"><code class="function">g_ptr_array_unref()</code></a> when it is no longer required.</p>
 <p>WARNING: the transfer annotation for this function may not work correctly
@@ -3034,6 +3282,11 @@ nm_lldp_neighbor_get_attr_type (<em class="parameter"><code><a class="link" href
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMDevice-struct"></a><h3>NMDevice</h3>
+<pre class="programlisting">typedef struct _NMDevice NMDevice;</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NMLldpNeighbor-struct"></a><h3>NMLldpNeighbor</h3>
 <pre class="programlisting">typedef struct _NMLldpNeighbor NMLldpNeighbor;</pre>
 <p>Supported attributes are:</p>
@@ -3108,6 +3361,373 @@ all the VLANs.</p></li>
 <li class="listitem"><p><a class="link" href="libnm-nm-dbus-interface.html#NM-LLDP-ATTR-SYSTEM-DESCRIPTION:CAPS" title="NM_LLDP_ATTR_SYSTEM_DESCRIPTION"><span class="type">NM_LLDP_ATTR_SYSTEM_DESCRIPTION</span></a> (type: 's')</p></li>
 <li class="listitem"><p><a class="link" href="libnm-nm-dbus-interface.html#NM-LLDP-ATTR-SYSTEM-NAME:CAPS" title="NM_LLDP_ATTR_SYSTEM_NAME"><span class="type">NM_LLDP_ATTR_SYSTEM_NAME</span></a> (type: 's')</p></li>
 </ul></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="NMDevice.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="NMDevice--active-connection"></a><h3>The <code class="literal">“active-connection”</code> property</h3>
+<pre class="programlisting">  “active-connection”        <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *</pre>
+<p>The <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object that "owns" this device during activation.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--autoconnect"></a><h3>The <code class="literal">“autoconnect”</code> property</h3>
+<pre class="programlisting">  “autoconnect”              <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the device can auto-activate a connection.</p>
+<p>The property setter is a synchronous D-Bus call. This is deprecated since 1.22.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read / Write</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--available-connections"></a><h3>The <code class="literal">“available-connections”</code> property</h3>
+<pre class="programlisting">  “available-connections”    <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
+<p>The available connections of the device</p>
+<p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> GPtrArray(NMRemoteConnection)]</span></p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--capabilities"></a><h3>The <code class="literal">“capabilities”</code> property</h3>
+<pre class="programlisting">  “capabilities”             <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceCapabilities" title="enum NMDeviceCapabilities"><span class="type">NMDeviceCapabilities</span></a></pre>
+<p>The capabilities of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--device-type"></a><h3>The <code class="literal">“device-type”</code> property</h3>
+<pre class="programlisting">  “device-type”              <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceType" title="enum NMDeviceType"><span class="type">NMDeviceType</span></a></pre>
+<p>The numeric type of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NM_DEVICE_TYPE_UNKNOWN</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--dhcp4-config"></a><h3>The <code class="literal">“dhcp4-config”</code> property</h3>
+<pre class="programlisting">  “dhcp4-config”             <a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a> *</pre>
+<p>The IPv4 <a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a> of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--dhcp6-config"></a><h3>The <code class="literal">“dhcp6-config”</code> property</h3>
+<pre class="programlisting">  “dhcp6-config”             <a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a> *</pre>
+<p>The IPv6 <a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a> of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--driver"></a><h3>The <code class="literal">“driver”</code> property</h3>
+<pre class="programlisting">  “driver”                   <span class="type">char</span> *</pre>
+<p>The driver of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--driver-version"></a><h3>The <code class="literal">“driver-version”</code> property</h3>
+<pre class="programlisting">  “driver-version”           <span class="type">char</span> *</pre>
+<p>The version of the device driver.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--firmware-missing"></a><h3>The <code class="literal">“firmware-missing”</code> property</h3>
+<pre class="programlisting">  “firmware-missing”         <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>When <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> indicates the device is likely missing firmware required
+for its operation.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--firmware-version"></a><h3>The <code class="literal">“firmware-version”</code> property</h3>
+<pre class="programlisting">  “firmware-version”         <span class="type">char</span> *</pre>
+<p>The firmware version of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--hw-address"></a><h3>The <code class="literal">“hw-address”</code> property</h3>
+<pre class="programlisting">  “hw-address”               <span class="type">char</span> *</pre>
+<p>The hardware address of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+<p class="since">Since: 1.24</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--interface"></a><h3>The <code class="literal">“interface”</code> property</h3>
+<pre class="programlisting">  “interface”                <span class="type">char</span> *</pre>
+<p>The interface of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--interface-flags"></a><h3>The <code class="literal">“interface-flags”</code> property</h3>
+<pre class="programlisting">  “interface-flags”          <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The interface flags.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: 0</p>
+<p class="since">Since: 1.22</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--ip-interface"></a><h3>The <code class="literal">“ip-interface”</code> property</h3>
+<pre class="programlisting">  “ip-interface”             <span class="type">char</span> *</pre>
+<p>The IP interface of the device which should be used for all IP-related
+operations like addressing and routing.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--ip4-config"></a><h3>The <code class="literal">“ip4-config”</code> property</h3>
+<pre class="programlisting">  “ip4-config”               <a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *</pre>
+<p>The <span class="type">NMIP4Config</span> of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--ip4-connectivity"></a><h3>The <code class="literal">“ip4-connectivity”</code> property</h3>
+<pre class="programlisting">  “ip4-connectivity”         <a class="link" href="libnm-nm-dbus-interface.html#NMConnectivityState" title="enum NMConnectivityState"><span class="type">NMConnectivityState</span></a></pre>
+<p>The IPv4 connectivity state of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NM_CONNECTIVITY_UNKNOWN</p>
+<p class="since">Since: 1.16</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--ip6-config"></a><h3>The <code class="literal">“ip6-config”</code> property</h3>
+<pre class="programlisting">  “ip6-config”               <a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *</pre>
+<p>The IPv6 <a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--ip6-connectivity"></a><h3>The <code class="literal">“ip6-connectivity”</code> property</h3>
+<pre class="programlisting">  “ip6-connectivity”         <a class="link" href="libnm-nm-dbus-interface.html#NMConnectivityState" title="enum NMConnectivityState"><span class="type">NMConnectivityState</span></a></pre>
+<p>The IPv6 connectivity state of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NM_CONNECTIVITY_UNKNOWN</p>
+<p class="since">Since: 1.16</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--lldp-neighbors"></a><h3>The <code class="literal">“lldp-neighbors”</code> property</h3>
+<pre class="programlisting">  “lldp-neighbors”           <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
+<p>The LLDP neighbors.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--managed"></a><h3>The <code class="literal">“managed”</code> property</h3>
+<pre class="programlisting">  “managed”                  <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the device is managed by NetworkManager.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--metered"></a><h3>The <code class="literal">“metered”</code> property</h3>
+<pre class="programlisting">  “metered”                  <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>Whether the device is metered.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: 0</p>
+<p class="since">Since: 1.2</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--mtu"></a><h3>The <code class="literal">“mtu”</code> property</h3>
+<pre class="programlisting">  “mtu”                      <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The MTU of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--nm-plugin-missing"></a><h3>The <code class="literal">“nm-plugin-missing”</code> property</h3>
+<pre class="programlisting">  “nm-plugin-missing”        <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>When <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> indicates that the NetworkManager plugin for the device
+is not installed.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: 1.2</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--path"></a><h3>The <code class="literal">“path”</code> property</h3>
+<pre class="programlisting">  “path”                     <span class="type">char</span> *</pre>
+<p>The device path as exposed by the udev property ID_PATH.</p>
+<p>The string is backslash escaped (C escaping) for invalid
+characters. The escaping can be reverted with <a href="https://developer.gnome.org/glib/unstable/glib-String-Utility-Functions.html#g-strcompress"><code class="function">g_strcompress()</code></a>,
+however the result may not be valid UTF-8.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+<p class="since">Since: 1.26</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--physical-port-id"></a><h3>The <code class="literal">“physical-port-id”</code> property</h3>
+<pre class="programlisting">  “physical-port-id”         <span class="type">char</span> *</pre>
+<p>The physical port ID of the device. (See
+<a class="link" href="NMDevice.html#nm-device-get-physical-port-id" title="nm_device_get_physical_port_id ()"><code class="function">nm_device_get_physical_port_id()</code></a>.)</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--ports"></a><h3>The <code class="literal">“ports”</code> property</h3>
+<pre class="programlisting">  “ports”                    <a href="https://developer.gnome.org/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *</pre>
+<p>The port devices of the controller device. For devices that cannot be
+controllers this is likely to be always empty.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p class="since">Since: 1.34</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--product"></a><h3>The <code class="literal">“product”</code> property</h3>
+<pre class="programlisting">  “product”                  <span class="type">char</span> *</pre>
+<p>The product string of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--real"></a><h3>The <code class="literal">“real”</code> property</h3>
+<pre class="programlisting">  “real”                     <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
+<p>Whether the device is real or is a placeholder device that could
+be created automatically by NetworkManager if one of its
+<a class="link" href="NMDevice.html#NMDevice--available-connections" title="The “available-connections” property"><span class="type">“available-connections”</span></a> was activated.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: FALSE</p>
+<p class="since">Since: 1.2</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--state"></a><h3>The <code class="literal">“state”</code> property</h3>
+<pre class="programlisting">  “state”                    <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceState" title="enum NMDeviceState"><span class="type">NMDeviceState</span></a></pre>
+<p>The state of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NM_DEVICE_STATE_UNKNOWN</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--state-reason"></a><h3>The <code class="literal">“state-reason”</code> property</h3>
+<pre class="programlisting">  “state-reason”             <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a></pre>
+<p>The reason for the device state.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--udi"></a><h3>The <code class="literal">“udi”</code> property</h3>
+<pre class="programlisting">  “udi”                      <span class="type">char</span> *</pre>
+<p>An operating-system specific device hardware identifier; this is not
+unique to a specific hardware device across reboots or hotplugs.  It
+is an opaque string which for some device types (Bluetooth, Modem)
+contains an identifier provided by the underlying hardware service daemon
+such as Bluez or ModemManager, and clients can use this property to
+request more information about the device from those services.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--vendor"></a><h3>The <code class="literal">“vendor”</code> property</h3>
+<pre class="programlisting">  “vendor”                   <span class="type">char</span> *</pre>
+<p>The vendor string of the device.</p>
+<p>Owner: NMDevice</p>
+<p>Flags: Read</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="NMDevice.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="NMDevice-state-changed"></a><h3>The <code class="literal">“state-changed”</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+user_function (<a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device,
+               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     new_state,
+               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     old_state,
+               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     reason,
+               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>  user_data)</pre>
+<p>Notifies the state change of a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
+<div class="refsect3">
+<a name="NMDevice-state-changed.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>device</p></td>
+<td class="parameter_description"><p>the device object that received the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>new_state</p></td>
+<td class="parameter_description"><p>the new state of the device</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>old_state</p></td>
+<td class="parameter_description"><p>the previous state of the device</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>reason</p></td>
+<td class="parameter_description"><p>the reason describing the state change</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Flags: <a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
 </div>
 </div>
 </div>

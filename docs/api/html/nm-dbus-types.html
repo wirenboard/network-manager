@@ -3070,7 +3070,7 @@
 <hr>
 <div class="refsect2">
 <a name="NMMetered"></a><h3>enum NMMetered</h3>
-<p>The NMMetered enum has two different purposes: one is to configure "connection.metered" setting of a connection profile in NMSettingConnection, and the other is to express the actual metered state of the <a href="/usr/share/gtk-doc/html/libnm/NMDevice.html#NMDevice-struct">NMDevice</a> at a given moment.</p>
+<p>The NMMetered enum has two different purposes: one is to configure "connection.metered" setting of a connection profile in NMSettingConnection, and the other is to express the actual metered state of the NMDevice at a given moment.</p>
 <p>For the connection profile only NM_METERED_UNKNOWN, NM_METERED_NO and NM_METERED_YES are allowed.</p>
 <p>The device's metered state at runtime is determined by the profile which is currently active. If the profile explicitly specifies NM_METERED_NO or NM_METERED_YES, then the device's metered state is as such. If the connection profile leaves it undecided at NM_METERED_UNKNOWN (the default), then NetworkManager tries to guess the metered state, for example based on the device type or on DHCP options (like Android devices exposing a "ANDROID_METERED" DHCP vendor option). This then leads to either NM_METERED_GUESS_NO or NM_METERED_GUESS_YES.</p>
 <p>Most applications probably should treat the runtime state NM_METERED_GUESS_YES like NM_METERED_YES, and all other states as not metered.</p>
@@ -5311,6 +5311,145 @@
 </td>
 <td class="enum_member_description">
 <p>A Wireless WAN device or rfkill switch is detected in the system.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMMptcpFlags"></a><h3>enum NMMptcpFlags</h3>
+<p>Since: 1.40</p>
+<p></p>
+<div class="refsect3">
+<a name="id-1.4.17.2.36.4"></a><h4>Values</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col width="100px" class="enum_members_value">
+<col class="enum_members_description">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_NONE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>The default, meaning that no MPTCP flags are set.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_DISABLED</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x1</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>don't configure MPTCP endpoints on the device.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_ENABLED_ON_GLOBAL_IFACE</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x2</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>MPTCP handling is enabled or disabled depending on whether a /0 default route (either IPv4 or IPv6) is configured in the main routing table.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_ENABLED</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x4</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>MPTCP is enabled and endpoints will be configured. This flag is implied if any of the other flags indicate that MPTCP is enabled and therefore in most cases unnecessary.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_SIGNAL</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x10</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>Flag for the MPTCP endpoint. The endpoint will be announced/signaled to each peer via an MPTCP ADD_ADDR sub-option.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_SUBFLOW</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x20</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>Flag for the MPTCP endpoint. If additional subflow creation is allowed by the MPTCP limits, the MPTCP path manager will try to create an additional subflow using this endpoint as the source address after the MPTCP connection is established.</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_BACKUP</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x40</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>Flag for the MPTCP endpoint. If this is a subflow endpoint, the subflows created using this endpoint will have the backup flag set during the connection process. This flag instructs the peer to only send data on a given subflow when all non-backup subflows are unavailable. This does not affect outgoing data, where subflow priority is determined by the backup/non-backup flag received from the peer</p>
+<p></p>
+</td>
+<td class="auto-generated"> </td>
+</tr>
+<tr>
+<td class="enum_member_name">
+<p>NM_MPTCP_FLAGS_FULLMESH</p>
+<p></p>
+</td>
+<td class="enum_member_value">
+<p>= <code class="literal">0x80</code></p>
+<p></p>
+</td>
+<td class="enum_member_description">
+<p>Flag for the MPTCP endpoint. If this is a subflow endpoint and additional subflow creation is allowed by the MPTCP limits, the MPTCP path manager will try to create an additional subflow for each known peer address, using this endpoint as the source address. This will occur after the MPTCP connection is established. If the peer did not announce any additional addresses using the MPTCP ADD_ADDR sub-option, this will behave the same as a plain subflow endpoint. When the peer does announce addresses, each received ADD_ADDR sub-option will trigger creation of an additional subflow to generate a full mesh topology.</p>
 <p></p>
 </td>
 <td class="auto-generated"> </td>
