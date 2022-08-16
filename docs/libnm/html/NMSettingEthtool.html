@@ -141,6 +141,9 @@ nm_ethtool_optname_is_feature (<em class="parameter"><code>const <span class="ty
  is a valid option name for an offload feature.</p>
 <p><code class="literal">Returns</code>: <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, if <em class="parameter"><code>optname</code></em>
  is valid</p>
+<p>Note that <a class="link" href="NMSettingEthtool.html#nm-ethtool-optname-is-feature" title="nm_ethtool_optname_is_feature ()"><code class="function">nm_ethtool_optname_is_feature()</code></a> was first added to the libnm header files
+in 1.14.0 but forgot to actually add to the library. This happened belatedly in 1.20.0 and
+the stable versions 1.18.2, 1.16.4 and 1.14.8 (with linker version "libnm_1_14_8").</p>
 <div class="refsect3">
 <a name="nm-ethtool-optname-is-feature.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">

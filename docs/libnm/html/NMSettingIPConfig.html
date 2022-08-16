@@ -1198,6 +1198,10 @@ addressing, routing, and name service properties</p>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-ADVMSS:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_ADVMSS">NM_IP_ROUTE_ATTRIBUTE_ADVMSS</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-CWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_CWND">NM_IP_ROUTE_ATTRIBUTE_CWND</a></td>
 </tr>
 <tr>
@@ -1211,6 +1215,10 @@ addressing, routing, and name service properties</p>
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-INITRWND:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_INITRWND">NM_IP_ROUTE_ATTRIBUTE_INITRWND</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-LOCK-ADVMSS:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_LOCK_ADVMSS">NM_IP_ROUTE_ATTRIBUTE_LOCK_ADVMSS</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -1239,6 +1247,14 @@ addressing, routing, and name service properties</p>
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-ONLINK:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_ONLINK">NM_IP_ROUTE_ATTRIBUTE_ONLINK</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-QUICKACK:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_QUICKACK">NM_IP_ROUTE_ATTRIBUTE_QUICKACK</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingIPConfig.html#NM-IP-ROUTE-ATTRIBUTE-RTO-MIN:CAPS" title="NM_IP_ROUTE_ATTRIBUTE_RTO_MIN">NM_IP_ROUTE_ATTRIBUTE_RTO_MIN</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -4116,6 +4132,8 @@ or 0 if the range is not set. </p></td>
 <div class="refsect3">
 <a name="nm-ip-routing-rule-get-uid-range.returns"></a><h4>Returns</h4>
 <p> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if a uid range is set.</p>
+<p>This API was wrongly introduced in the header files for 1.32, but the
+symbols were not exported. The API only works since 1.34 and newer.</p>
 </div>
 <p class="since">Since: 1.34</p>
 </div>
@@ -4128,6 +4146,8 @@ nm_ip_routing_rule_set_uid_range (<em class="parameter"><code><a class="link" hr
                                   <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> uid_range_end</code></em>);</pre>
 <p>For a valid range, start must be less or equal to end.
 If set to an invalid range, the range gets unset.</p>
+<p>This API was wrongly introduced in the header files for 1.32, but the
+symbols were not exported. The API only works since 1.34 and newer.</p>
 <div class="refsect3">
 <a name="nm-ip-routing-rule-set-uid-range.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -6077,6 +6097,12 @@ the return value merely indicates equality (zero) or inequality.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-IP-ROUTE-ATTRIBUTE-ADVMSS:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_ADVMSS</h3>
+<pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_ADVMSS        "advmss"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-IP-ROUTE-ATTRIBUTE-CWND:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_CWND</h3>
 <pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_CWND          "cwnd"
 </pre>
@@ -6097,6 +6123,12 @@ the return value merely indicates equality (zero) or inequality.</p>
 <div class="refsect2">
 <a name="NM-IP-ROUTE-ATTRIBUTE-INITRWND:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_INITRWND</h3>
 <pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_INITRWND      "initrwnd"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-IP-ROUTE-ATTRIBUTE-LOCK-ADVMSS:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_LOCK_ADVMSS</h3>
+<pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_LOCK_ADVMSS   "lock-advmss"
 </pre>
 </div>
 <hr>
@@ -6139,6 +6171,18 @@ the return value merely indicates equality (zero) or inequality.</p>
 <div class="refsect2">
 <a name="NM-IP-ROUTE-ATTRIBUTE-ONLINK:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_ONLINK</h3>
 <pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_ONLINK        "onlink"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-IP-ROUTE-ATTRIBUTE-QUICKACK:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_QUICKACK</h3>
+<pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_QUICKACK      "quickack"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-IP-ROUTE-ATTRIBUTE-RTO-MIN:CAPS"></a><h3>NM_IP_ROUTE_ATTRIBUTE_RTO_MIN</h3>
+<pre class="programlisting">#define NM_IP_ROUTE_ATTRIBUTE_RTO_MIN       "rto_min"
 </pre>
 </div>
 <hr>
