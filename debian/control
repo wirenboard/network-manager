@@ -37,6 +37,7 @@ Build-Depends: debhelper-compat (= 13),
                policykit-1,
                dbus <!nocheck>,
                python3-dbus <!nocheck>,
+               python3-pexpect <!nocheck>,
                iproute2 <!nocheck>,
 Standards-Version: 4.6.1
 Rules-Requires-Root: no
