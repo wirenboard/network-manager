@@ -1,3 +1,12 @@
+network-manager (1.39.90-2) experimental; urgency=medium
+
+  * Release version 1.39.90-1 to experimental
+  * Explicitly disable LTO via dpkg-buildflags.
+    NetworkManager requires additional build flags like -flto-partition=none
+    to build properly with LTO enabled. (Closes: #1015556)
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 25 Aug 2022 12:48:00 +0200
+
 network-manager (1.39.90-1) experimental; urgency=medium
 
   * New upstream version 1.39.90 (1.40 rc1)
