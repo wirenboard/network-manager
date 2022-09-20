@@ -2,6 +2,8 @@
 
 include /usr/share/dpkg/architecture.mk
 
+# Disable lto here regardless of whether we enable the configure flag
+# https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/issues/1070
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all optimize=-lto
 
 export PYTHON=/usr/bin/python3
