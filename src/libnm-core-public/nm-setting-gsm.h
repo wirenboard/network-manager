@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 #define NM_SETTING_GSM_HOME_ONLY       "home-only"
 #define NM_SETTING_GSM_DEVICE_ID       "device-id"
 #define NM_SETTING_GSM_SIM_ID          "sim-id"
+#define NM_SETTING_GSM_SIM_SLOT        "sim-slot"
 #define NM_SETTING_GSM_SIM_OPERATOR_ID "sim-operator-id"
 #define NM_SETTING_GSM_MTU             "mtu"
 
@@ -63,6 +64,8 @@ NM_AVAILABLE_IN_1_2
 const char *nm_setting_gsm_get_device_id(NMSettingGsm *setting);
 NM_AVAILABLE_IN_1_2
 const char *nm_setting_gsm_get_sim_id(NMSettingGsm *setting);
+NM_AVAILABLE_IN_1_38
+int nm_setting_gsm_get_sim_slot(NMSettingGsm *setting);
 NM_AVAILABLE_IN_1_2
 const char *nm_setting_gsm_get_sim_operator_id(NMSettingGsm *setting);
 NM_AVAILABLE_IN_1_8

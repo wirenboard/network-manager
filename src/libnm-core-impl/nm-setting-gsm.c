@@ -35,6 +35,7 @@ NM_GOBJECT_PROPERTIES_DEFINE_BASE(PROP_AUTO_CONFIG,
                                   PROP_HOME_ONLY,
                                   PROP_DEVICE_ID,
                                   PROP_SIM_ID,
+                                  PROP_SIM_SLOT,
                                   PROP_SIM_OPERATOR_ID,
                                   PROP_MTU, );
 
@@ -44,6 +45,7 @@ typedef struct {
     char   *password;
     char   *device_id;
     char   *sim_id;
+    gint32  sim_slot;
     char   *sim_operator_id;
     char   *apn;
     char   *network_id;
@@ -252,6 +254,22 @@ nm_setting_gsm_get_sim_id(NMSettingGsm *setting)
     g_return_val_if_fail(NM_IS_SETTING_GSM(setting), NULL);
 
     return NM_SETTING_GSM_GET_PRIVATE(setting)->sim_id;
+}
+
+/**
+ * nm_setting_gsm_get_sim_slot:
+ * @setting: the #NMSettingGsm
+ *
+ * Returns: the #NMSettingGsm:sim-slot property of the setting
+ *
+ * Since: 1.38
+ **/
+int
+nm_setting_gsm_get_sim_slot(NMSettingGsm *setting)
+{
+    g_return_val_if_fail(NM_IS_SETTING_GSM(setting), NULL);
+
+    return NM_SETTING_GSM_GET_PRIVATE(setting)->sim_slot;
 }
 
 /**
@@ -702,6 +720,27 @@ nm_setting_gsm_class_init(NMSettingGsmClass *klass)
                                               NM_SETTING_PARAM_NONE,
                                               NMSettingGsmPrivate,
                                               sim_id);
+
+    /**
+     * NMSettingGsm:sim-slot:
+     *
+     * The SIM slot index (as given by the WWAN management service)
+     * which this connection applies to.  If given, the connection will apply
+     * to any device also allowed by #NMSettingGsm:device-id which has an active 
+     * SIM slot matching the given index.
+     *
+     * Since: 1.38
+     **/
+    _nm_setting_property_define_direct_int32(properties_override,
+                                             obj_properties,
+                                             NM_SETTING_GSM_SIM_SLOT,
+                                             PROP_SIM_SLOT,
+                                             1,
+                                             G_MAXINT32,
+                                             1,
+                                             NM_SETTING_PARAM_NONE,
+                                             NMSettingGsmPrivate,
+                                             sim_slot);
 
     /**
      * NMSettingGsm:sim-operator-id:

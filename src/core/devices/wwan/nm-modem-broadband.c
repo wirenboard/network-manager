@@ -1404,6 +1404,11 @@ sim_changed(MMModem *modem, GParamSpec *pspec, gpointer user_data)
 
     g_return_if_fail(modem == self->_priv.modem_iface);
 
+    g_object_set(G_OBJECT(self),
+                 NM_MODEM_SIM_SLOT,
+                 mm_modem_get_primary_sim_slot(modem),
+                 NULL);
+
     if (mm_modem_get_sim_path(self->_priv.modem_iface)) {
         mm_modem_get_sim(self->_priv.modem_iface,
                          NULL, /* cancellable */
@@ -1544,6 +1549,8 @@ nm_modem_broadband_new(GObject *object, GError **error)
                         driver,
                         NM_MODEM_OPERATOR_CODE,
                         operator_code,
+                        NM_MODEM_SIM_SLOT,
+                        mm_modem_get_primary_sim_slot(modem_iface),
                         NULL);
 }
 

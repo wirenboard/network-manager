@@ -5827,6 +5827,9 @@ static const NMMetaPropertyInfo *const property_infos_GSM[] = {
     PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_SIM_ID,
         .property_type =                &_pt_gobject_string,
     ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_SIM_SLOT,
+        .property_type =                &_pt_gobject_int,
+    ),
     PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_SIM_OPERATOR_ID,
         .property_type = DEFINE_PROPERTY_TYPE (
             .get_fcn =                  _get_fcn_gobject,
