@@ -1315,4 +1315,64 @@ typedef enum /*< flags >*/ {
     NM_RADIO_FLAG_WWAN_AVAILABLE = 0x2,
 } NMRadioFlags;
 
+/**
+ * NMMptcpFlags:
+ * @NM_MPTCP_FLAGS_NONE: The default, meaning that no MPTCP flags are set.
+ * @NM_MPTCP_FLAGS_DISABLED: don't configure MPTCP endpoints on the device.
+ * @NM_MPTCP_FLAGS_ENABLED: MPTCP is enabled and endpoints will be configured.
+ *   This flag is implied if any of the other flags indicate that
+ *   MPTCP is enabled and therefore in most cases unnecessary.
+ *   Note that if "/proc/sys/net/mptcp/enabled" sysctl is disabled, MPTCP
+ *   handling is disabled despite this flag. This can be overruled with the
+ *   "also-without-sysctl" flag.
+ *   Note that by default interfaces that don't have a default route are
+ *   excluded from having MPTCP endpoints configured. This can be overruled
+ *   with the "also-without-default-route" and this affects endpoints
+ *   per address family.
+ * @NM_MPTCP_FLAGS_ALSO_WITHOUT_SYSCTL: even if MPTCP handling is enabled
+ *   via the "enabled" flag, it is ignored unless "/proc/sys/net/mptcp/enabled"
+ *   is on. With this flag, MPTCP endpoints will be configured regardless
+ *   of the sysctl setting.
+ * @NM_MPTCP_FLAGS_ALSO_WITHOUT_DEFAULT_ROUTE: even if MPTCP handling is enabled
+ *   via the "enabled" flag, it is ignored per-address family unless NetworkManager
+ *   configures a default route. With this flag, NetworkManager will also configure
+ *   MPTCP endpoints if there is no default route. This takes effect per-address
+ *   family.
+ * @NM_MPTCP_FLAGS_SIGNAL: Flag for the MPTCP endpoint. The endpoint will be
+ *   announced/signaled to each peer via an MPTCP ADD_ADDR sub-option.
+ * @NM_MPTCP_FLAGS_SUBFLOW: Flag for the MPTCP endpoint. If additional subflow creation
+ *   is allowed by the MPTCP limits, the MPTCP path manager will try to create an
+ *   additional subflow using this endpoint as the source address after the MPTCP connection
+ *   is established.
+ * @NM_MPTCP_FLAGS_BACKUP: Flag for the MPTCP endpoint. If this is a subflow endpoint, the
+ *   subflows created using this endpoint will have the backup flag set during the connection
+ *   process. This flag instructs the peer to only send data on a given subflow when all
+ *   non-backup subflows are unavailable. This does not affect outgoing data,
+ *   where subflow priority is determined by the backup/non-backup flag received
+ *   from the peer
+ * @NM_MPTCP_FLAGS_FULLMESH: Flag for the MPTCP endpoint. If this is a subflow endpoint and additional
+ *   subflow creation is allowed by the MPTCP limits, the MPTCP path manager will try to create an
+ *   additional subflow for each known peer address, using this endpoint as the source address.
+ *   This will occur after the MPTCP connection is established. If the peer did not announce
+ *   any additional addresses using the MPTCP ADD_ADDR sub-option, this will behave the same
+ *   as a plain subflow endpoint. When the peer does announce addresses, each received ADD_ADDR
+ *   sub-option will trigger creation of an additional subflow to generate a full mesh topology.
+ *
+ * Since: 1.40
+ */
+typedef enum /*< flags >*/ {
+    NM_MPTCP_FLAGS_NONE = 0,
+
+    NM_MPTCP_FLAGS_DISABLED = 0x1,
+    NM_MPTCP_FLAGS_ENABLED  = 0x2,
+
+    NM_MPTCP_FLAGS_ALSO_WITHOUT_SYSCTL        = 0x4,
+    NM_MPTCP_FLAGS_ALSO_WITHOUT_DEFAULT_ROUTE = 0x8,
+
+    NM_MPTCP_FLAGS_SIGNAL   = 0x10,
+    NM_MPTCP_FLAGS_SUBFLOW  = 0x20,
+    NM_MPTCP_FLAGS_BACKUP   = 0x40,
+    NM_MPTCP_FLAGS_FULLMESH = 0x80,
+} NMMptcpFlags;
+
 #endif /* __NM_DBUS_INTERFACE_H__ */

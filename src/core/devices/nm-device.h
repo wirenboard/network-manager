@@ -163,6 +163,7 @@ typedef enum {
 } NMDeviceCheckDevAvailableFlags;
 
 typedef void (*NMDeviceDeactivateCallback)(NMDevice *self, GError *error, gpointer user_data);
+typedef void (*NMDeviceAttachPortCallback)(NMDevice *self, GError *error, gpointer user_data);
 
 typedef struct _NMDeviceClass {
     NMDBusObjectClass parent;
@@ -373,12 +374,18 @@ typedef struct _NMDeviceClass {
                                                NMConnection *connection,
                                                GError      **error);
 
-    gboolean (*enslave_slave)(NMDevice     *self,
-                              NMDevice     *slave,
-                              NMConnection *connection,
-                              gboolean      configure);
-
-    void (*release_slave)(NMDevice *self, NMDevice *slave, gboolean configure);
+    /* Attachs a port asynchronously. Returns TRUE/FALSE on immediate
+     * success/error; in such cases, the callback is not invoked. If the
+     * action couldn't be completed immediately, DEFAULT is returned and
+     * the callback will always be invoked asynchronously. */
+    NMTernary (*attach_port)(NMDevice                  *self,
+                             NMDevice                  *port,
+                             NMConnection              *connection,
+                             gboolean                   configure,
+                             GCancellable              *cancellable,
+                             NMDeviceAttachPortCallback callback,
+                             gpointer                   user_data);
+    void (*detach_port)(NMDevice *self, NMDevice *port, gboolean configure);
 
     void (*parent_changed_notify)(NMDevice *self,
                                   int       old_ifindex,
@@ -757,7 +764,7 @@ void nm_device_update_metered(NMDevice *self);
 gboolean nm_device_update_hw_address(NMDevice *self);
 void     nm_device_update_initial_hw_address(NMDevice *self);
 void     nm_device_update_permanent_hw_address(NMDevice *self, gboolean force_freeze);
-void     nm_device_update_dynamic_ip_setup(NMDevice *self);
+void     nm_device_update_dynamic_ip_setup(NMDevice *self, const char *reason);
 guint    nm_device_get_supplicant_timeout(NMDevice *self);
 
 gboolean nm_device_auth_retries_try_next(NMDevice *self);

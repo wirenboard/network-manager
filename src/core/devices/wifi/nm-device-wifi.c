@@ -2520,7 +2520,7 @@ supplicant_iface_state(NMDeviceWifi              *self,
                 _LOGD(LOGD_WIFI,
                       "supplicant state settled after roaming, renew dynamic IP configuration");
                 nm_clear_g_source_inst(&priv->roam_supplicant_wait_source);
-                nm_device_update_dynamic_ip_setup(device);
+                nm_device_update_dynamic_ip_setup(device, "roamed to a different AP");
             }
         }
         break;
@@ -2663,7 +2663,7 @@ supplicant_iface_notify_current_bss(NMSupplicantInterface *iface,
 
             if (nm_supplicant_interface_get_state(priv->sup_iface)
                 == NM_SUPPLICANT_INTERFACE_STATE_COMPLETED) {
-                nm_device_update_dynamic_ip_setup(NM_DEVICE(self));
+                nm_device_update_dynamic_ip_setup(NM_DEVICE(self), "roamed to a different AP");
             } else {
                 /* Wait that the authentication to new the AP completes before
                  * trying to renew, otherwise the DHCP REQUEST could be lost
@@ -3180,21 +3180,21 @@ ensure_hotspot_frequency(NMDeviceWifi *self, NMSettingWireless *s_wifi, NMWifiAP
         gsize         ssid_len;
         const guint8 *ssid_data;
         const guint8  random_seed[16] = {0x9a,
-                                        0xdc,
-                                        0x86,
-                                        0x9a,
-                                        0xa8,
-                                        0xa2,
-                                        0x07,
-                                        0x97,
-                                        0xbe,
-                                        0x6d,
-                                        0xe6,
-                                        0x99,
-                                        0x9f,
-                                        0xa8,
-                                        0x09,
-                                        0x2b};
+                                         0xdc,
+                                         0x86,
+                                         0x9a,
+                                         0xa8,
+                                         0xa2,
+                                         0x07,
+                                         0x97,
+                                         0xbe,
+                                         0x6d,
+                                         0xe6,
+                                         0x99,
+                                         0x9f,
+                                         0xa8,
+                                         0x09,
+                                         0x2b};
 
         /* Calculate a stable "random" number based on the SSID. */
         ssid      = nm_setting_wireless_get_ssid(s_wifi);
