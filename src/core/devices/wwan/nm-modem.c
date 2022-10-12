@@ -1074,6 +1074,7 @@ nm_modem_check_connection_compatible(NMModem *self, NMConnection *connection, GE
     if (nm_streq0(nm_connection_get_connection_type(connection), NM_SETTING_GSM_SETTING_NAME)) {
         NMSettingGsm *s_gsm;
         const char   *str;
+        int sim_slot;
 
         s_gsm = _nm_connection_check_main_setting(connection, NM_SETTING_GSM_SETTING_NAME, error);
         if (!s_gsm)
@@ -1118,7 +1119,8 @@ nm_modem_check_connection_compatible(NMModem *self, NMConnection *connection, GE
             }
         }
 
-        if (priv->sim_slot != nm_setting_gsm_get_sim_slot(s_gsm)) {
+        sim_slot = nm_setting_gsm_get_sim_slot(s_gsm);
+        if ((NM_SETTING_GSM_SIM_SLOT_ANY != sim_slot) && (priv->sim_slot != sim_slot)) {
             nm_utils_error_set_literal(error,
                                         NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
                                         "device has differing sim-slot than GSM profile");
@@ -1828,9 +1830,9 @@ nm_modem_class_init(NMModemClass *klass)
         g_param_spec_int(NM_MODEM_SIM_SLOT,
                          "",
                          "",
-                         1,
+                         NM_SETTING_GSM_SIM_SLOT_MIN,
                          G_MAXINT32,
-                         1,
+                         NM_SETTING_GSM_SIM_SLOT_ANY,
                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
     obj_properties[PROP_IP_TYPES] =

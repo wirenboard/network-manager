@@ -41,6 +41,9 @@ G_BEGIN_DECLS
 #define NM_SETTING_GSM_SIM_OPERATOR_ID "sim-operator-id"
 #define NM_SETTING_GSM_MTU             "mtu"
 
+#define NM_SETTING_GSM_SIM_SLOT_ANY    -1
+#define NM_SETTING_GSM_SIM_SLOT_MIN    -1
+
 /* Deprecated */
 #define NM_SETTING_GSM_NUMBER "number"
 

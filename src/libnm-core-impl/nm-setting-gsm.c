@@ -267,7 +267,7 @@ nm_setting_gsm_get_sim_id(NMSettingGsm *setting)
 int
 nm_setting_gsm_get_sim_slot(NMSettingGsm *setting)
 {
-    g_return_val_if_fail(NM_IS_SETTING_GSM(setting), NULL);
+    g_return_val_if_fail(NM_IS_SETTING_GSM(setting), NM_SETTING_GSM_SIM_SLOT_ANY);
 
     return NM_SETTING_GSM_GET_PRIVATE(setting)->sim_slot;
 }
@@ -735,9 +735,9 @@ nm_setting_gsm_class_init(NMSettingGsmClass *klass)
                                              obj_properties,
                                              NM_SETTING_GSM_SIM_SLOT,
                                              PROP_SIM_SLOT,
-                                             1,
+                                             NM_SETTING_GSM_SIM_SLOT_MIN,
                                              G_MAXINT32,
-                                             1,
+                                             NM_SETTING_GSM_SIM_SLOT_ANY,
                                              NM_SETTING_PARAM_NONE,
                                              NMSettingGsmPrivate,
                                              sim_slot);
