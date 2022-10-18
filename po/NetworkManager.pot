@@ -6,10 +6,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: NetworkManager 1.40.0\n"
+"Project-Id-Version: NetworkManager 1.40.2\n"
 "Report-Msgid-Bugs-To: https://gitlab.freedesktop.org/NetworkManager/"
 "NetworkManager/issues\n"
-"POT-Creation-Date: 2022-08-26 16:42+0200\n"
+"POT-Creation-Date: 2022-10-18 10:10+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -608,25 +608,25 @@ msgstr ""
 msgid "VPN connection"
 msgstr ""
 
-#: src/core/settings/plugins/ifcfg-rh/nms-ifcfg-rh-reader.c:5612
+#: src/core/settings/plugins/ifcfg-rh/nms-ifcfg-rh-reader.c:5594
 #: src/libnm-client-impl/nm-device.c:1779
 #: src/libnm-core-impl/nm-connection.c:3172 src/nmtui/nm-editor-utils.c:196
 msgid "Bond"
 msgstr ""
 
-#: src/core/settings/plugins/ifcfg-rh/nms-ifcfg-rh-reader.c:5683
+#: src/core/settings/plugins/ifcfg-rh/nms-ifcfg-rh-reader.c:5665
 #: src/libnm-client-impl/nm-device.c:1781
 #: src/libnm-core-impl/nm-connection.c:3174 src/nmtui/nm-editor-utils.c:214
 msgid "Team"
 msgstr ""
 
-#: src/core/settings/plugins/ifcfg-rh/nms-ifcfg-rh-reader.c:6020
+#: src/core/settings/plugins/ifcfg-rh/nms-ifcfg-rh-reader.c:6002
 #: src/libnm-client-impl/nm-device.c:1783
 #: src/libnm-core-impl/nm-connection.c:3176 src/nmtui/nm-editor-utils.c:205
 msgid "Bridge"
 msgstr ""
 
-#: src/core/settings/plugins/ifcfg-rh/tests/test-ifcfg-rh.c:8755
+#: src/core/settings/plugins/ifcfg-rh/tests/test-ifcfg-rh.c:8801
 #: src/libnm-core-impl/nm-team-utils.c:2391
 msgid "invalid json"
 msgstr ""
@@ -1573,8 +1573,14 @@ msgid "missing setting"
 msgstr ""
 
 #: src/libnm-core-impl/nm-setting-bond-port.c:92
+#: src/libnm-core-impl/nm-setting-bridge-port.c:338
+#: src/libnm-core-impl/nm-setting-ovs-interface.c:312
+#: src/libnm-core-impl/nm-setting-ovs-port.c:193
+#: src/libnm-core-impl/nm-setting-team-port.c:333
 #, c-format
-msgid "A connection with a '%s' setting must have the slave-type set to '%s'"
+msgid ""
+"A connection with a '%s' setting must have the slave-type set to '%s'. "
+"Instead it is '%s'"
 msgstr ""
 
 #: src/libnm-core-impl/nm-setting-bond.c:504
@@ -1601,82 +1607,72 @@ msgstr ""
 msgid "invalid value '%s' for option '%s'"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:861
+#: src/libnm-core-impl/nm-setting-bond.c:888
 #, c-format
 msgid "mandatory option '%s' is missing"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:871
+#: src/libnm-core-impl/nm-setting-bond.c:898
 #, c-format
 msgid "'%s' is not a valid value for '%s'"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:884
+#: src/libnm-core-impl/nm-setting-bond.c:911
 #, c-format
 msgid "'%s=%s' is incompatible with '%s > 0'"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:901
+#: src/libnm-core-impl/nm-setting-bond.c:928
 #, c-format
 msgid "'%s' is not valid for the '%s' option: %s"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:913
+#: src/libnm-core-impl/nm-setting-bond.c:940
 #, c-format
 msgid "'%s' option is only valid for '%s=%s'"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:926
+#: src/libnm-core-impl/nm-setting-bond.c:953
 #, c-format
 msgid "'%s=%s' is not a valid configuration for '%s'"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:941
-#: src/libnm-core-impl/nm-setting-bond.c:952
-#: src/libnm-core-impl/nm-setting-bond.c:965
+#: src/libnm-core-impl/nm-setting-bond.c:968
+#: src/libnm-core-impl/nm-setting-bond.c:979
+#: src/libnm-core-impl/nm-setting-bond.c:992
 #, c-format
 msgid "'%s' option requires '%s' option to be enabled"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:982
+#: src/libnm-core-impl/nm-setting-bond.c:1009
 #, c-format
 msgid "'%s' option needs to be a value multiple of '%s' value"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:999
-#: src/libnm-core-impl/nm-setting-bond.c:1010
+#: src/libnm-core-impl/nm-setting-bond.c:1026
+#: src/libnm-core-impl/nm-setting-bond.c:1037
 #, c-format
 msgid "'%s' option requires '%s' option to be set"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:1023
+#: src/libnm-core-impl/nm-setting-bond.c:1050
 #, c-format
 msgid "'%s' option is only valid with mode '%s'"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:1036
+#: src/libnm-core-impl/nm-setting-bond.c:1063
 #, c-format
 msgid "'%s' and '%s' cannot have different values"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:1059
+#: src/libnm-core-impl/nm-setting-bond.c:1086
 #, c-format
 msgid "'%s' option should be string"
 msgstr ""
 
-#: src/libnm-core-impl/nm-setting-bond.c:1072
+#: src/libnm-core-impl/nm-setting-bond.c:1099
 #, c-format
 msgid "'%s' option is not valid with mode '%s'"
-msgstr ""
-
-#: src/libnm-core-impl/nm-setting-bridge-port.c:338
-#: src/libnm-core-impl/nm-setting-ovs-interface.c:312
-#: src/libnm-core-impl/nm-setting-ovs-port.c:193
-#: src/libnm-core-impl/nm-setting-team-port.c:333
-#, c-format
-msgid ""
-"A connection with a '%s' setting must have the slave-type set to '%s'. "
-"Instead it is '%s'"
 msgstr ""
 
 #: src/libnm-core-impl/nm-setting-bridge.c:1175

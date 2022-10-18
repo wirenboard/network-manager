@@ -4262,9 +4262,9 @@ CLEANFILES = $(introspection_sources) $(DBUS_INTERFACE_DOCS) \
 	cscope.po.out $(NULL) $(am__append_93)
 
 ###############################################################################
-DISTCLEANFILES = config-extra.h $(polkit_policy_DATA) \
-	src/libnm-client-impl/libnm.pc $(am__append_16) \
-	$(am__append_17) $(am__append_53)
+DISTCLEANFILES = config-extra.h po/.Makefile.patched \
+	$(polkit_policy_DATA) src/libnm-client-impl/libnm.pc \
+	$(am__append_16) $(am__append_17) $(am__append_53)
 
 ###############################################################################
 
@@ -4667,6 +4667,7 @@ EXTRA_DIST = src/c-stdaux/src/c-stdaux.h $(NULL) \
 	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ibft \
 	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-infiniband \
 	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ip6-disabled.cexpected \
+	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-ipoib \
 	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-link_local \
 	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-minimal \
 	src/core/settings/plugins/ifcfg-rh/tests/network-scripts/ifcfg-test-misc-variables \
@@ -21042,6 +21043,20 @@ src/libnm-udev-aux/.dirstamp:                       config-extra.h
 dist-configure-check:
 	@echo "*** 'make dist' requires '--enable-gtk-doc --enable-introspection'. ***"
 	@false
+
+# Gettext's Makefile has a race with parallel builds during dist.
+# Hack around that.
+# See also:
+#   https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/merge_requests/1094#note_1435313
+#   https://lists.gnu.org/archive/html/bug-gettext/2022-06/msg00022.html
+#   https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/merge_requests/1405
+po/.Makefile.patched:
+	sed -i \
+	    's#^dist2: \$$(srcdir)/stamp-po \$$(DISTFILES)#dist2: \$$(srcdir)/stamp-po\n\t\$$(MAKE) \$$(DISTFILES)#' \
+	    "$(builddir)/po/Makefile" && \
+	touch "$(builddir)/po/.Makefile.patched"
+
+dist: po/.Makefile.patched
 
 dist: $(dist_configure_check) $(dist_dependencies)
 
