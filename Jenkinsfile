@@ -1,1 +1,4 @@
-buildDebSbuild defaultTargets: 'bullseye-armhf'
+buildDebChroot defaultTargets: 'bullseye-armhf',
+               defaultWbdevImage: 'contactless/devenv_lp',
+               defaultWbdevInstallDeps: 'yes',
+               defaultDebBuildOptions: 'nocheck'
