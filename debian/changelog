@@ -1,3 +1,9 @@
+network-manager (1.38.4-1~bpo11+1-wb100) bullseye-backports; urgency=medium
+
+  * gsm.sim-slot support
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 03 Oct 2022 11:34:28 +0500
+
 network-manager (1.38.4-1~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports
