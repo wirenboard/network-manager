@@ -1,3 +1,9 @@
+network-manager (1.40.0-1~bpo11+1-wb100) bullseye-backports; urgency=medium
+
+  * gsm.sim-slot support
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Wed, 26 Oct 2022 18:35:13 +0500
+
 network-manager (1.40.0-1~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports
@@ -41,6 +47,12 @@ network-manager (1.39.90-1) experimental; urgency=medium
   * Update symbols file for libnm0
 
  -- Michael Biebl <biebl@debian.org>  Wed, 17 Aug 2022 11:35:39 +0200
+
+network-manager (1.38.4-1~bpo11+1-wb100) bullseye-backports; urgency=medium
+
+  * gsm.sim-slot support
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Mon, 03 Oct 2022 11:34:28 +0500
 
 network-manager (1.38.4-1~bpo11+1) bullseye-backports; urgency=medium
 
