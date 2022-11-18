@@ -51,7 +51,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libnm0 (= ${binary:Version}),
-         dbus,
+         default-dbus-system-bus | dbus-system-bus,
          udev,
          adduser,
          policykit-1
