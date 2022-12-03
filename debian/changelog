@@ -1,3 +1,9 @@
+network-manager (1.40.6-1~bpo11+1) bullseye-backports; urgency=medium
+
+  * Rebuild for bullseye-backports
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 03 Dec 2022 23:00:28 +0100
+
 network-manager (1.40.6-1) unstable; urgency=medium
 
   * New upstream version 1.40.6
