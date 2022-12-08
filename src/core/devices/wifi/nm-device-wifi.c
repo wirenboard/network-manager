@@ -1734,8 +1734,8 @@ _scan_kickoff(NMDeviceWifi *self)
     gint64                       now_msec;
     gint64                       ratelimit_duration_msec;
 
-    # dirty hack attempt by lostpoint
-    # disable scan completely
+    /* dirty hack attempt by lostpoint */
+    /* disable scan completely */
     return;
 
     if (!priv->sup_iface) {
