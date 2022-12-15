@@ -1769,7 +1769,11 @@ nm_supplicant_config_add_setting_8021x(NMSupplicantConfig *self,
 gboolean
 nm_supplicant_config_add_no_security(NMSupplicantConfig *self, GError **error)
 {
-    return nm_supplicant_config_add_option(self, "key_mgmt", "NONE", -1, NULL, error);
+    if (!nm_supplicant_config_add_option(self, "key_mgmt", "NONE", -1, NULL, error))
+        return FALSE;
+    if (!nm_supplicant_config_add_option(self, "wps_disabled", "1", 1, NULL, error))
+        return FALSE;
+    return TRUE;
 }
 
 gboolean
