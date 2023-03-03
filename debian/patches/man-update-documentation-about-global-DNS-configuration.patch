@@ -1,0 +1,51 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Thu, 2 Mar 2023 22:15:46 +0100
+Subject: man: update documentation about global DNS configuration
+
+Now the settings in the [global-dns] section are used *in addition* to
+connection-specific ones. Only the global domains sections, when
+valid, override connection settings. Update the man page to clarify
+that.
+
+Fixes: 1f0d1d78d2a2 ('dns-manager: always apply options from [global-dns]')
+(cherry picked from commit f57a848da5aa1a18cdcec22e9564462dea68a53f)
+(cherry picked from commit 82134e4f832ff68e5fd8f9968cae32c6aed82ea6)
+---
+ man/NetworkManager.conf.xml | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/man/NetworkManager.conf.xml b/man/NetworkManager.conf.xml
+index 2c1fc85..0dcf805 100644
+--- a/man/NetworkManager.conf.xml
++++ b/man/NetworkManager.conf.xml
+@@ -1453,8 +1453,8 @@ managed=1
+ 
+   <refsect1>
+     <title><literal>global-dns</literal> section</title>
+-    <para>This section specifies global DNS settings that override
+-    connection-specific configuration.</para>
++    <para>This section specifies DNS settings that are applied
++    globally, in addition to connection-specific ones.</para>
+     <para>
+       <variablelist>
+         <varlistentry>
+@@ -1482,10 +1482,15 @@ managed=1
+     <para>Sections with a name starting with the "global-dns-domain-"
+     prefix allow to define global DNS configuration for specific
+     domains.  The part of section name after "global-dns-domain-"
+-    specifies the domain name a section applies to.  More specific
+-    domains have the precedence over less specific ones and the
+-    default domain is represented by the wildcard "*".  A default
+-    domain section is mandatory.
++    specifies the domain name a section applies to (for example, a
++    section could be named "global-dns-domain-foobar.com").  More
++    specific domains have the precedence over less specific ones and
++    the default domain is represented by the wildcard "*".
++
++    To be valid, global DNS domains must include a section for the
++    default domain "*". When the global DNS domains are valid, the
++    name servers and domains defined globally override the ones from
++    active connections.
+     </para>
+     <para>
+       <variablelist>
