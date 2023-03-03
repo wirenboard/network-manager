@@ -1,3 +1,12 @@
+network-manager (1.42.2-2) unstable; urgency=medium
+
+  * dnsmasq: process both global and per-device configuration.
+    Cherry-pick upstream patch to fix a regression introduced in 1.42 when
+    using the dnsmasq DNS backend and a global DNS configuration.
+    (Closes: #1031891)
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 03 Mar 2023 17:57:30 +0100
+
 network-manager (1.42.2-1) unstable; urgency=medium
 
   * New upstream version 1.42.2
