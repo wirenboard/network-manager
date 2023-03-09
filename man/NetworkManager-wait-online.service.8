@@ -2,9 +2,9 @@
 .\"     Title: NetworkManager-wait-online.service
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 02/23/2023
+.\"      Date: 03/09/2023
 .\"    Manual: Network management daemons
-.\"    Source: NetworkManager-wait-online.service 1.42.2
+.\"    Source: NetworkManager-wait-online.service 1.42.4
 .\"  Language: English
 .\"
 .TH "NETWORKMANAGER\-WAIT\-ONLINE\&" "8" "" "NetworkManager\-wait\-online\&" "Network management daemons"
@@ -173,7 +173,7 @@ With Wi\-Fi devices, NetworkManager needs to wait for the first scan result to k
 .IP \(bu 2.3
 .\}
 With Ethernet devices, NetworkManager waits for the carrier until the value in
-[device*]\&.carrier\-timeout
+[device*]\&.carrier\-wait\-timeout
 is reached\&. This is because some devices take a long time to detect the carrier\&. Consequently, booting with cable unplugged, unnecessarily delays
 NetworkManager\-wait\-online\&.service\&.
 .RE
