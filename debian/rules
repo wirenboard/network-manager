@@ -57,9 +57,8 @@ override_dh_auto_configure:
 		--disable-modify-system \
 		--disable-ovs
 
-override_dh_install:
+execute_before_dh_install:
 	find debian/tmp -name '*.la' -print -delete
-	dh_install
 
 override_dh_makeshlibs:
 	dh_makeshlibs -X/usr/lib/$(DEB_HOST_MULTIARCH)/NetworkManager/ -X/usr/lib/pppd/
