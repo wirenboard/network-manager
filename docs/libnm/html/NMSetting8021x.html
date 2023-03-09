@@ -2398,7 +2398,7 @@ nm_setting_802_1x_get_phase2_ca_cert_uri
 <p>Returns the "phase 2" CA certificate URI analogously to
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-blob" title="nm_setting_802_1x_get_phase2_ca_cert_blob ()"><code class="function">nm_setting_802_1x_get_phase2_ca_cert_blob()</code></a> and
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-path" title="nm_setting_802_1x_get_phase2_ca_cert_path ()"><code class="function">nm_setting_802_1x_get_phase2_ca_cert_path()</code></a>.</p>
-<p>Currently, it's limited to PKCS<span class="type">11</span> URIs ('pkcs11' scheme as defined by RFC
+<p>Currently, it's limited to PKCS#11 URIs ('pkcs11' scheme as defined by RFC
 7512), but may be extended to other schemes in future (such as 'file' URIs
 for local files and 'data' URIs for inline certificate data).</p>
 <div class="refsect3">
@@ -2918,7 +2918,7 @@ nm_setting_802_1x_get_phase2_client_cert_uri
 <p>Returns the "phase 2" client certificate URI analogously to
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-blob" title="nm_setting_802_1x_get_phase2_ca_cert_blob ()"><code class="function">nm_setting_802_1x_get_phase2_ca_cert_blob()</code></a> and
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-path" title="nm_setting_802_1x_get_phase2_ca_cert_path ()"><code class="function">nm_setting_802_1x_get_phase2_ca_cert_path()</code></a>.</p>
-<p>Currently, it's limited to PKCS<span class="type">11</span> URIs ('pkcs11' scheme as defined by RFC
+<p>Currently, it's limited to PKCS#11 URIs ('pkcs11' scheme as defined by RFC
 7512), but may be extended to other schemes in future (such as 'file' URIs
 for local files and 'data' URIs for inline certificate data).</p>
 <div class="refsect3">
@@ -3325,7 +3325,7 @@ nm_setting_802_1x_get_private_key_uri (<em class="parameter"><code><a class="lin
 <p>Returns the private key URI analogously to
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-private-key-blob" title="nm_setting_802_1x_get_private_key_blob ()"><code class="function">nm_setting_802_1x_get_private_key_blob()</code></a> and
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-private-key-path" title="nm_setting_802_1x_get_private_key_path ()"><code class="function">nm_setting_802_1x_get_private_key_path()</code></a>.</p>
-<p>Currently, it's limited to PKCS<span class="type">11</span> URIs ('pkcs11' scheme as defined by RFC
+<p>Currently, it's limited to PKCS#11 URIs ('pkcs11' scheme as defined by RFC
 7512), but may be extended to other schemes in future (such as 'file' URIs
 for local files and 'data' URIs for inline certificate data).</p>
 <div class="refsect3">
@@ -3622,7 +3622,7 @@ nm_setting_802_1x_get_phase2_private_key_uri
 <p>Returns the "phase 2" private key URI analogously to
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-blob" title="nm_setting_802_1x_get_phase2_private_key_blob ()"><code class="function">nm_setting_802_1x_get_phase2_private_key_blob()</code></a> and
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-path" title="nm_setting_802_1x_get_phase2_private_key_path ()"><code class="function">nm_setting_802_1x_get_phase2_private_key_path()</code></a>.</p>
-<p>Currently, it's limited to PKCS<span class="type">11</span> URIs ('pkcs11' scheme as defined by RFC
+<p>Currently, it's limited to PKCS#11 URIs ('pkcs11' scheme as defined by RFC
 7512), but may be extended to other schemes in future (such as 'file' URIs
 for local files and 'data' URIs for inline certificate data).</p>
 <div class="refsect3">
@@ -4054,6 +4054,48 @@ type.</p>
 <td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-1-2-DISABLE:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_2_DISABLE</p></td>
 <td class="enum_member_description">
 <p>Disable TLSv1.2</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-DISABLE-TIME-CHECKS:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_DISABLE_TIME_CHECKS</p></td>
+<td class="enum_member_description">
+<p>Disable TLS time checks. Since 1.42.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-1-3-DISABLE:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_3_DISABLE</p></td>
+<td class="enum_member_description">
+<p>Disable TLSv1.3. Since 1.42.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-1-0-ENABLE:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_0_ENABLE</p></td>
+<td class="enum_member_description">
+<p>Enable TLSv1.0. Since 1.42.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-1-1-ENABLE:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_1_ENABLE</p></td>
+<td class="enum_member_description">
+<p>Enable TLSv1.1. Since 1.42.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-1-2-ENABLE:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_2_ENABLE</p></td>
+<td class="enum_member_description">
+<p>Enable TLSv1.2. Since 1.42.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-802-1X-AUTH-FLAGS-TLS-1-3-ENABLE:CAPS"></a>NM_SETTING_802_1X_AUTH_FLAGS_TLS_1_3_ENABLE</p></td>
+<td class="enum_member_description">
+<p>Enable TLSv1.3. Since 1.42.</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>

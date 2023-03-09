@@ -12,7 +12,7 @@
 
 #define NM_TYPE_ACTIVE_CONNECTION (nm_active_connection_get_type())
 #define NM_ACTIVE_CONNECTION(obj) \
-    (G_TYPE_CHECK_INSTANCE_CAST((obj), NM_TYPE_ACTIVE_CONNECTION, NMActiveConnection))
+    (_NM_G_TYPE_CHECK_INSTANCE_CAST((obj), NM_TYPE_ACTIVE_CONNECTION, NMActiveConnection))
 #define NM_ACTIVE_CONNECTION_CLASS(klass) \
     (G_TYPE_CHECK_CLASS_CAST((klass), NM_TYPE_ACTIVE_CONNECTION, NMActiveConnectionClass))
 #define NM_IS_ACTIVE_CONNECTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), NM_TYPE_ACTIVE_CONNECTION))
@@ -38,6 +38,7 @@
 #define NM_ACTIVE_CONNECTION_DHCP6_CONFIG    "dhcp6-config"
 #define NM_ACTIVE_CONNECTION_VPN             "vpn"
 #define NM_ACTIVE_CONNECTION_MASTER          "master"
+#define NM_ACTIVE_CONNECTION_CONTROLLER      "controller"
 
 /* Internal non-exported properties */
 #define NM_ACTIVE_CONNECTION_INT_SETTINGS_CONNECTION "int-settings-connection"

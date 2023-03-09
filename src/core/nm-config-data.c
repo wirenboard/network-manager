@@ -1125,10 +1125,13 @@ load_global_dns(GKeyFile *keyfile, gboolean internal)
     gboolean           default_found = FALSE;
     char             **strv;
 
-    group =
-        internal ? NM_CONFIG_KEYFILE_GROUP_INTERN_GLOBAL_DNS : NM_CONFIG_KEYFILE_GROUP_GLOBAL_DNS;
-    domain_prefix     = internal ? NM_CONFIG_KEYFILE_GROUPPREFIX_INTERN_GLOBAL_DNS_DOMAIN
-                                 : NM_CONFIG_KEYFILE_GROUPPREFIX_GLOBAL_DNS_DOMAIN;
+    if (internal) {
+        group         = NM_CONFIG_KEYFILE_GROUP_INTERN_GLOBAL_DNS;
+        domain_prefix = NM_CONFIG_KEYFILE_GROUPPREFIX_INTERN_GLOBAL_DNS_DOMAIN;
+    } else {
+        group         = NM_CONFIG_KEYFILE_GROUP_GLOBAL_DNS;
+        domain_prefix = NM_CONFIG_KEYFILE_GROUPPREFIX_GLOBAL_DNS_DOMAIN;
+    }
     domain_prefix_len = strlen(domain_prefix);
 
     if (!nm_config_keyfile_has_global_dns_config(keyfile, internal))
@@ -1191,8 +1194,7 @@ load_global_dns(GKeyFile *keyfile, gboolean internal)
         if (strv) {
             nm_strv_cleanup(strv, TRUE, TRUE, TRUE);
             for (i = 0, j = 0; strv[i]; i++) {
-                if (nm_utils_ipaddr_is_valid(AF_INET, strv[i])
-                    || nm_utils_ipaddr_is_valid(AF_INET6, strv[i]))
+                if (nm_inet_is_valid(AF_INET, strv[i]) || nm_inet_is_valid(AF_INET6, strv[i]))
                     strv[j++] = strv[i];
                 else
                     g_free(strv[i]);
@@ -1231,7 +1233,7 @@ load_global_dns(GKeyFile *keyfile, gboolean internal)
             default_found = TRUE;
     }
 
-    if (!default_found) {
+    if (!default_found && g_hash_table_size(dns_config->domains)) {
         nm_log_dbg(LOGD_CORE,
                    "%s global DNS configuration is missing default domain, ignore it",
                    internal ? "internal" : "user");
@@ -1328,8 +1330,7 @@ global_dns_domain_from_dbus(char *name, GVariant *variant)
             strv = g_variant_dup_strv(val, NULL);
             nm_strv_cleanup(strv, TRUE, TRUE, TRUE);
             for (i = 0, j = 0; strv && strv[i]; i++) {
-                if (nm_utils_ipaddr_is_valid(AF_INET, strv[i])
-                    || nm_utils_ipaddr_is_valid(AF_INET6, strv[i]))
+                if (nm_inet_is_valid(AF_INET, strv[i]) || nm_inet_is_valid(AF_INET6, strv[i]))
                     strv[j++] = strv[i];
                 else
                     g_free(strv[i]);
@@ -1462,21 +1463,23 @@ global_dns_equal(NMGlobalDnsConfig *old, NMGlobalDnsConfig *new)
     if ((!old->domains || !new->domains) && old->domains != new->domains)
         return FALSE;
 
-    if (g_hash_table_size(old->domains) != g_hash_table_size(new->domains))
+    if (nm_g_hash_table_size(old->domains) != nm_g_hash_table_size(new->domains))
         return FALSE;
 
-    g_hash_table_iter_init(&iter, old->domains);
-    while (g_hash_table_iter_next(&iter, &key, &value_old)) {
-        value_new = g_hash_table_lookup(new->domains, key);
-        if (!value_new)
-            return FALSE;
+    if (old->domains) {
+        g_hash_table_iter_init(&iter, old->domains);
+        while (g_hash_table_iter_next(&iter, &key, &value_old)) {
+            value_new = g_hash_table_lookup(new->domains, key);
+            if (!value_new)
+                return FALSE;
 
-        domain_old = value_old;
-        domain_new = value_new;
+            domain_old = value_old;
+            domain_new = value_new;
 
-        if (!nm_strv_equal(domain_old->options, domain_new->options)
-            || !nm_strv_equal(domain_old->servers, domain_new->servers))
-            return FALSE;
+            if (!nm_strv_equal(domain_old->options, domain_new->options)
+                || !nm_strv_equal(domain_old->servers, domain_new->servers))
+                return FALSE;
+        }
     }
 
     return TRUE;

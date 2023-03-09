@@ -221,10 +221,66 @@
 <a class="link" href="NMSetting.html#nm-setting-get-dbus-property-type" title="nm_setting_get_dbus_property_type ()">nm_setting_get_dbus_property_type</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
+<tr>
+<td class="function_type">
+<a class="link" href="NMSetting.html#NMRange"><span class="returnvalue">NMRange</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-new" title="nm_range_new ()">nm_range_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="NMSetting.html#NMRange"><span class="returnvalue">NMRange</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-ref" title="nm_range_ref ()">nm_range_ref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">void</span>
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-unref" title="nm_range_unref ()">nm_range_unref</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">int</span>
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-cmp" title="nm_range_cmp ()">nm_range_cmp</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-get-range" title="nm_range_get_range ()">nm_range_get_range</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-to-str" title="nm_range_to_str ()">nm_range_to_str</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a class="link" href="NMSetting.html#NMRange"><span class="returnvalue">NMRange</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSetting.html#nm-range-from-str" title="nm_range_from_str ()">nm_range_from_str</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
 </tbody>
 </table></div>
 </div>
-<div class="refsect1">
+<a name="NMRange"></a><div class="refsect1">
 <a name="NMSetting.other"></a><h2>Types and Values</h2>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
 <colgroup>
@@ -269,7 +325,9 @@
 </div>
 <div class="refsect1">
 <a name="NMSetting.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+    <span class="lineart">╰──</span> NMRange
+    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
     <span class="lineart">├──</span> NMSettingCompareFlags
     <span class="lineart">├──</span> NMSettingDiffResult
     <span class="lineart">╰──</span> NMSettingMacRandomization
@@ -1172,6 +1230,245 @@ to get the type of</p></td>
 on <em class="parameter"><code>setting</code></em>
 .</p>
 </div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-new"></a><h3>nm_range_new ()</h3>
+<pre class="programlisting"><a class="link" href="NMSetting.html#NMRange"><span class="returnvalue">NMRange</span></a> *
+nm_range_new (<em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> start</code></em>,
+              <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> end</code></em>);</pre>
+<p>Creates a new <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> object for the given range. Setting <em class="parameter"><code>end</code></em>
+
+equal to <em class="parameter"><code>start</code></em>
+ creates a single-element range.</p>
+<div class="refsect3">
+<a name="nm-range-new.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>start</p></td>
+<td class="parameter_description"><p>the first element of the range</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>end</p></td>
+<td class="parameter_description"><p>the last element of the range, must be greater than or equal
+to <em class="parameter"><code>start</code></em>
+.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-range-new.returns"></a><h4>Returns</h4>
+<p>the new <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> object. </p>
+<p><span class="annotation">[<acronym title="The caller owns the data, and is responsible for free it."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 1.42</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-ref"></a><h3>nm_range_ref ()</h3>
+<pre class="programlisting"><a class="link" href="NMSetting.html#NMRange"><span class="returnvalue">NMRange</span></a> *
+nm_range_ref (<em class="parameter"><code>const <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> *range</code></em>);</pre>
+<p>Increases the reference count of the object.
+This is thread-safe.</p>
+<div class="refsect3">
+<a name="nm-range-ref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>range</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-range-ref.returns"></a><h4>Returns</h4>
+<p> the input argument <em class="parameter"><code>range</code></em>
+object.</p>
+</div>
+<p class="since">Since: 1.42</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-unref"></a><h3>nm_range_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>
+nm_range_unref (<em class="parameter"><code>const <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> *range</code></em>);</pre>
+<p>Decreases the reference count of the object.  If the reference count
+reaches zero the object will be destroyed.
+This is thread-safe.</p>
+<div class="refsect3">
+<a name="nm-range-unref.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>range</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.42</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-cmp"></a><h3>nm_range_cmp ()</h3>
+<pre class="programlisting"><span class="returnvalue">int</span>
+nm_range_cmp (<em class="parameter"><code>const <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> *a</code></em>,
+              <em class="parameter"><code>const <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> *b</code></em>);</pre>
+<p>Compare two ranges.</p>
+<div class="refsect3">
+<a name="nm-range-cmp.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>a</p></td>
+<td class="parameter_description"><p>a <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>b</p></td>
+<td class="parameter_description"><p>another <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-range-cmp.returns"></a><h4>Returns</h4>
+<p> zero if the two instances are equivalent or
+a non-zero integer otherwise. This defines a total ordering
+over the ranges.</p>
+</div>
+<p class="since">Since: 1.42</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-get-range"></a><h3>nm_range_get_range ()</h3>
+<pre class="programlisting"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+nm_range_get_range (<em class="parameter"><code>const <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> *range</code></em>,
+                    <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> *start</code></em>,
+                    <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#guint64"><span class="type">guint64</span></a> *end</code></em>);</pre>
+<p>Gets the start and end values for the range.</p>
+<div class="refsect3">
+<a name="nm-range-get-range.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>range</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>start</p></td>
+<td class="parameter_description"><p>location to store the start value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+<tr>
+<td class="parameter_name"><p>end</p></td>
+<td class="parameter_description"><p>location to store the end value. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-range-get-range.returns"></a><h4>Returns</h4>
+<p> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the range contains more than one
+element, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> otherwise.</p>
+</div>
+<p class="since">Since: 1.42</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-to-str"></a><h3>nm_range_to_str ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+nm_range_to_str (<em class="parameter"><code>const <a class="link" href="NMSetting.html#NMRange"><span class="type">NMRange</span></a> *range</code></em>);</pre>
+<p>Convert a <a class="link" href="NMSetting.html#NMRange"><code class="literal">NMRange</code></a> to a string.</p>
+<div class="refsect3">
+<a name="nm-range-to-str.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>range</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSetting.html#NMRange"><code class="literal">NMRange</code></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-range-to-str.returns"></a><h4>Returns</h4>
+<p>a string representing the range. </p>
+<p><span class="annotation">[<acronym title="The caller owns the data, and is responsible for free it."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 1.42</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-range-from-str"></a><h3>nm_range_from_str ()</h3>
+<pre class="programlisting"><a class="link" href="NMSetting.html#NMRange"><span class="returnvalue">NMRange</span></a> *
+nm_range_from_str (<em class="parameter"><code>const <span class="type">char</span> *str</code></em>,
+                   <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>Parses the string representation of the range to create a <a class="link" href="NMSetting.html#NMRange"><code class="literal">NMRange</code></a>
+instance.</p>
+<div class="refsect3">
+<a name="nm-range-from-str.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table class="informaltable" width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>the string representation of a range</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>location to store the error on failure. </p></td>
+<td class="parameter_annotations"><span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is OK, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-range-from-str.returns"></a><h4>Returns</h4>
+<p>the <a class="link" href="NMSetting.html#NMRange"><code class="literal">NMRange</code></a> or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p>
+<p><span class="annotation">[<acronym title="The caller owns the data, and is responsible for free it."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+<p class="since">Since: 1.42</p>
 </div>
 </div>
 <div class="refsect1">

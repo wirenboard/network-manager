@@ -1060,6 +1060,7 @@ Setting <em class="parameter"><code>vid_end</code></em>
  to 0 is equivalent to setting it to <em class="parameter"><code>vid_start</code></em>
 
 and creates a single-id VLAN.</p>
+<p>Since 1.42, ref-counting of <a class="link" href="NMSettingBridge.html#NMBridgeVlan"><span class="type">NMBridgeVlan</span></a> is thread-safe.</p>
 <div class="refsect3">
 <a name="nm-bridge-vlan-new.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">
@@ -1115,6 +1116,7 @@ nm_bridge_vlan_ref (<em class="parameter"><code><a class="link" href="NMSettingB
 <a name="nm-bridge-vlan-ref.returns"></a><h4>Returns</h4>
 <p> the input argument <em class="parameter"><code>vlan</code></em>
 object.</p>
+<p>Since 1.42, ref-counting of <a class="link" href="NMSettingBridge.html#NMBridgeVlan"><span class="type">NMBridgeVlan</span></a> is thread-safe.</p>
 </div>
 <p class="since">Since: 1.18</p>
 </div>
@@ -1125,6 +1127,7 @@ object.</p>
 nm_bridge_vlan_unref (<em class="parameter"><code><a class="link" href="NMSettingBridge.html#NMBridgeVlan"><span class="type">NMBridgeVlan</span></a> *vlan</code></em>);</pre>
 <p>Decreases the reference count of the object.  If the reference count
 reaches zero the object will be destroyed.</p>
+<p>Since 1.42, ref-counting of <a class="link" href="NMSettingBridge.html#NMBridgeVlan"><span class="type">NMBridgeVlan</span></a> is thread-safe.</p>
 <div class="refsect3">
 <a name="nm-bridge-vlan-unref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table class="informaltable" width="100%" border="0">

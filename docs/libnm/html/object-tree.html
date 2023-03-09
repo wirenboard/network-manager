@@ -41,6 +41,7 @@
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceGeneric.html" title="NMDeviceGeneric">NMDeviceGeneric</a>
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceInfiniband.html" title="NMDeviceInfiniband">NMDeviceInfiniband</a>
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
+    <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceLoopback.html" title="NMDeviceLoopback">NMDeviceLoopback</a>
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceMacvlan.html" title="NMDeviceMacvlan">NMDeviceMacvlan</a>
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMDeviceModem.html" title="NMDeviceModem">NMDeviceModem</a>
@@ -88,6 +89,7 @@
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config">NMSettingIP4Config</a>
     <span class="lineart">│</span>   <span class="lineart">│</span>   <span class="lineart">╰──</span> <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config">NMSettingIP6Config</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">NMSettingIPTunnel</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingLoopback.html" title="NMSettingLoopback">NMSettingLoopback</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingMacsec.html" title="NMSettingMacsec">NMSettingMacsec</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingMacvlan.html" title="NMSettingMacvlan">NMSettingMacvlan</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingMatch.html" title="NMSettingMatch">NMSettingMatch</a>
@@ -96,6 +98,7 @@
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingOvsDpdk.html" title="NMSettingOvsDpdk">NMSettingOvsDpdk</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingOvsExternalIDs.html" title="NMSettingOvsExternalIDs">NMSettingOvsExternalIDs</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingOvsInterface.html" title="NMSettingOvsInterface">NMSettingOvsInterface</a>
+    <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingOvsOtherConfig.html" title="NMSettingOvsOtherConfig">NMSettingOvsOtherConfig</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingOvsPatch.html" title="NMSettingOvsPatch">NMSettingOvsPatch</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingOvsPort.html" title="NMSettingOvsPort">NMSettingOvsPort</a>
     <span class="lineart">│</span>   <span class="lineart">├──</span> <a class="link" href="NMSettingPpp.html" title="NMSettingPpp">NMSettingPpp</a>
@@ -139,6 +142,7 @@
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceCapabilities" title="enum NMDeviceCapabilities">NMDeviceCapabilities</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceInterfaceFlags" title="enum NMDeviceInterfaceFlags">NMDeviceInterfaceFlags</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceModemCapabilities" title="enum NMDeviceModemCapabilities">NMDeviceModemCapabilities</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceReapplyFlags" title="enum NMDeviceReapplyFlags">NMDeviceReapplyFlags</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceWifiCapabilities" title="enum NMDeviceWifiCapabilities">NMDeviceWifiCapabilities</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingIPConfig.html#NMDhcpHostnameFlags" title="enum NMDhcpHostnameFlags">NMDhcpHostnameFlags</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingIPConfig.html#NMIPAddressCmpFlags" title="enum NMIPAddressCmpFlags">NMIPAddressCmpFlags</a>
@@ -213,11 +217,12 @@
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMState" title="enum NMState">NMState</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMTernary" title="enum NMTernary">NMTernary</a>
     <span class="lineart">├──</span> <a class="link" href="libnm-nm-utils.html#NMUtilsSecurityType" title="enum NMUtilsSecurityType">NMUtilsSecurityType</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMVersionInfoCapability" title="enum NMVersionInfoCapability">NMVersionInfoCapability</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingVlan.html#NMVlanPriorityMap" title="enum NMVlanPriorityMap">NMVlanPriorityMap</a>
-    <span class="lineart">├──</span> <a href="/usr/share/gtk-doc/html/NetworkManager/nm-vpn-dbus-types.html#NMVpnConnectionState">NMVpnConnectionState</a>
-    <span class="lineart">├──</span> <a href="/usr/share/gtk-doc/html/NetworkManager/nm-vpn-dbus-types.html#NMVpnConnectionStateReason">NMVpnConnectionStateReason</a>
-    <span class="lineart">├──</span> <a href="/usr/share/gtk-doc/html/NetworkManager/nm-vpn-dbus-types.html#NMVpnPluginFailure">NMVpnPluginFailure</a>
-    <span class="lineart">├──</span> <a href="/usr/share/gtk-doc/html/NetworkManager/nm-vpn-dbus-types.html#NMVpnServiceState">NMVpnServiceState</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionState" title="enum NMVpnConnectionState">NMVpnConnectionState</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnConnectionStateReason" title="enum NMVpnConnectionStateReason">NMVpnConnectionStateReason</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnPluginFailure" title="enum NMVpnPluginFailure">NMVpnPluginFailure</a>
+    <span class="lineart">├──</span> <a class="link" href="libnm-nm-vpn-dbus-interface.html#NMVpnServiceState" title="enum NMVpnServiceState">NMVpnServiceState</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType">NMWepKeyType</a>
     <span class="lineart">╰──</span> <a class="link" href="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType">NMWimaxNspNetworkType</a>
     <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
@@ -227,6 +232,7 @@
     <span class="lineart">├──</span> <a class="link" href="NMSettingIPConfig.html#NMIPRoute">NMIPRoute</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingIPConfig.html#NMIPRoutingRule">NMIPRoutingRule</a>
     <span class="lineart">├──</span> <a class="link" href="NMDevice.html#NMLldpNeighbor">NMLldpNeighbor</a>
+    <span class="lineart">├──</span> <a class="link" href="NMSetting.html#NMRange">NMRange</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingSriov.html#NMSriovVF">NMSriovVF</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingTCConfig.html#NMTCAction">NMTCAction</a>
     <span class="lineart">├──</span> <a class="link" href="NMSettingTCConfig.html#NMTCQdisc">NMTCQdisc</a>

@@ -904,6 +904,7 @@
             <span class="lineart">├──</span> <a class="link" href="NMDeviceGeneric.html" title="NMDeviceGeneric">NMDeviceGeneric</a>
             <span class="lineart">├──</span> <a class="link" href="NMDeviceInfiniband.html" title="NMDeviceInfiniband">NMDeviceInfiniband</a>
             <span class="lineart">├──</span> <a class="link" href="NMDeviceIPTunnel.html" title="NMDeviceIPTunnel">NMDeviceIPTunnel</a>
+            <span class="lineart">├──</span> <a class="link" href="NMDeviceLoopback.html" title="NMDeviceLoopback">NMDeviceLoopback</a>
             <span class="lineart">├──</span> <a class="link" href="NMDeviceMacsec.html" title="NMDeviceMacsec">NMDeviceMacsec</a>
             <span class="lineart">├──</span> <a class="link" href="NMDeviceMacvlan.html" title="NMDeviceMacvlan">NMDeviceMacvlan</a>
             <span class="lineart">├──</span> <a class="link" href="NMDeviceModem.html" title="NMDeviceModem">NMDeviceModem</a>
@@ -2943,8 +2944,8 @@ nm_lldp_neighbor_new (<em class="parameter"><code><span class="type">void</span>
 <p>Creates a new <a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a> object.</p>
 <p>Note that <a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a> has no public API for mutating
 an instance. Also, libnm will not internally mutate a
-once exposed object. They are guaranteed to be immutable.
-Since 1.32, ref-counting is thread-safe.</p>
+once exposed object. They are guaranteed to be immutable.</p>
+<p>Since 1.32, ref-counting of <a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a> is thread-safe.</p>
 <p>This function is not useful, as there is no public API to
 actually modify the (empty) instance.</p>
 <div class="refsect3">
