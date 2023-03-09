@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 02/23/2023
+.\"      Date: 03/09/2023
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.42.2
+.\"    Source: NetworkManager 1.42.4
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.42\&.2" "Configuration"
+.TH "NETWORKMANAGER\&.CONF" "5" "" "NetworkManager 1\&.42\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1282,7 +1282,7 @@ If set, controls what body content NetworkManager checks for when requesting the
 .RE
 .SH "GLOBAL\-DNS SECTION"
 .PP
-This section specifies global DNS settings that override connection\-specific configuration\&.
+This section specifies DNS settings that are applied globally, in addition to connection\-specific ones\&.
 .PP
 .PP
 \fIsearches\fR
@@ -1296,7 +1296,7 @@ A list of options to be passed to the hostname resolver\&.
 .RE
 .SH "GLOBAL\-DNS\-DOMAIN SECTIONS"
 .PP
-Sections with a name starting with the "global\-dns\-domain\-" prefix allow to define global DNS configuration for specific domains\&. The part of section name after "global\-dns\-domain\-" specifies the domain name a section applies to\&. More specific domains have the precedence over less specific ones and the default domain is represented by the wildcard "*"\&. A default domain section is mandatory\&.
+Sections with a name starting with the "global\-dns\-domain\-" prefix allow to define global DNS configuration for specific domains\&. The part of section name after "global\-dns\-domain\-" specifies the domain name a section applies to (for example, a section could be named "global\-dns\-domain\-foobar\&.com")\&. More specific domains have the precedence over less specific ones and the default domain is represented by the wildcard "*"\&. To be valid, global DNS domains must include a section for the default domain "*"\&. When the global DNS domains are valid, the name servers and domains defined globally override the ones from active connections\&.
 .PP
 .PP
 \fIservers\fR

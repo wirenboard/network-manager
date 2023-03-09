@@ -2315,7 +2315,7 @@
 <li class="listitem"><p><code class="literal">"table"</code> - an unsigned 32 bit integer. The default depends on ipv4.route-table.</p></li>
 <li class="listitem"><p><code class="literal">"tos"</code> - an unsigned 8 bit integer. IPv4 only.</p></li>
 <li class="listitem"><p><code class="literal">"type"</code> - one of <code class="literal">unicast</code>, <code class="literal">local</code>, <code class="literal">blackhole</code>,
-       <code class="literal">unavailable</code>, <code class="literal">prohibit</code>, <code class="literal">throw</code>.
+       <code class="literal">unreachable</code>, <code class="literal">prohibit</code>, <code class="literal">throw</code>.
        The default is <code class="literal">unicast</code>.</p></li>
 <li class="listitem">
 <p><code class="literal">"weight"</code> - an unsigned 32 bit integer
@@ -2661,7 +2661,7 @@ Example: <code class="literal">priority 5 from 192.167.4.0/24 table 45</code>
 <li class="listitem"><p><code class="literal">"src"</code> - an IPv6 address.</p></li>
 <li class="listitem"><p><code class="literal">"table"</code> - an unsigned 32 bit integer. The default depends on ipv6.route-table.</p></li>
 <li class="listitem"><p><code class="literal">"type"</code> - one of <code class="literal">unicast</code>, <code class="literal">local</code>, <code class="literal">blackhole</code>,
-       <code class="literal">unavailable</code>, <code class="literal">prohibit</code>, <code class="literal">throw</code>.
+       <code class="literal">unreachable</code>, <code class="literal">prohibit</code>, <code class="literal">throw</code>.
        The default is <code class="literal">unicast</code>.</p></li>
 <li class="listitem"><p><code class="literal">"window"</code> - an unsigned 32 bit integer.</p></li>
 </ul></div>
