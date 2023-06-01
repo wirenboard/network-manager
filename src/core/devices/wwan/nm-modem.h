@@ -26,6 +26,7 @@
 #define NM_MODEM_STATE           "state"
 #define NM_MODEM_DEVICE_ID       "device-id"
 #define NM_MODEM_SIM_ID          "sim-id"
+#define NM_MODEM_SIM_SLOT        "sim-slot"
 #define NM_MODEM_IP_TYPES        "ip-types" /* Supported IP types */
 #define NM_MODEM_SIM_OPERATOR_ID "sim-operator-id"
 #define NM_MODEM_OPERATOR_CODE   "operator-code"
@@ -151,6 +152,7 @@ int         nm_modem_get_ip_ifindex(NMModem *modem);
 const char *nm_modem_get_driver(NMModem *modem);
 const char *nm_modem_get_device_id(NMModem *modem);
 const char *nm_modem_get_sim_id(NMModem *modem);
+int         nm_modem_get_sim_slot(NMModem *modem);
 const char *nm_modem_get_sim_operator_id(NMModem *modem);
 const char *nm_modem_get_operator_code(NMModem *modem);
 const char *nm_modem_get_apn(NMModem *modem);
