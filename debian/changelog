@@ -1,3 +1,9 @@
+network-manager (1.42.4-1~bpo11+1-wb101) bullseye-backports; urgency=medium
+
+  * Disable WPS for open Wi-Fi access points
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.com>  Thu, 01 Jun 2023 12:37:46 +0500
+
 network-manager (1.42.4-1~bpo11+1-wb100) bullseye-backports; urgency=medium
 
   * gsm.sim-slot support
