@@ -36,6 +36,7 @@ NM_GOBJECT_PROPERTIES_DEFINE(NMModem,
                              PROP_STATE,
                              PROP_DEVICE_ID,
                              PROP_SIM_ID,
+                             PROP_SIM_SLOT,
                              PROP_IP_TYPES,
                              PROP_SIM_OPERATOR_ID,
                              PROP_OPERATOR_CODE,
@@ -74,6 +75,7 @@ typedef struct _NMModemPrivate {
     NMModemState    prev_state; /* revert to this state if enable/disable fails */
     char           *device_id;
     char           *sim_id;
+    int             sim_slot;
     NMModemIPType   ip_types;
     char           *sim_operator_id;
     char           *operator_code;
@@ -568,6 +570,12 @@ const char *
 nm_modem_get_sim_id(NMModem *self)
 {
     return NM_MODEM_GET_PRIVATE(self)->sim_id;
+}
+
+int
+nm_modem_get_sim_slot(NMModem *self)
+{
+    return NM_MODEM_GET_PRIVATE(self)->sim_slot;
 }
 
 const char *
@@ -1070,6 +1078,7 @@ nm_modem_check_connection_compatible(NMModem *self, NMConnection *connection, GE
     if (nm_streq0(nm_connection_get_connection_type(connection), NM_SETTING_GSM_SETTING_NAME)) {
         NMSettingGsm *s_gsm;
         const char   *str;
+        int sim_slot;
 
         s_gsm = _nm_connection_check_main_setting(connection, NM_SETTING_GSM_SETTING_NAME, error);
         if (!s_gsm)
@@ -1112,6 +1121,14 @@ nm_modem_check_connection_compatible(NMModem *self, NMConnection *connection, GE
                                            "device has differing sim-operator-id than GSM profile");
                 return FALSE;
             }
+        }
+
+        sim_slot = nm_setting_gsm_get_sim_slot(s_gsm);
+        if ((NM_SETTING_GSM_SIM_SLOT_ANY != sim_slot) && (priv->sim_slot != sim_slot)) {
+            nm_utils_error_set_literal(error,
+                                        NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
+                                        "device has differing sim-slot than GSM profile");
+            return FALSE;
         }
     }
 
@@ -1602,6 +1619,9 @@ get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
     case PROP_SIM_ID:
         g_value_set_string(value, priv->sim_id);
         break;
+    case PROP_SIM_SLOT:
+        g_value_set_int(value, priv->sim_slot);
+        break;
     case PROP_IP_TYPES:
         g_value_set_uint(value, priv->ip_types);
         break;
@@ -1655,6 +1675,9 @@ set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *ps
     case PROP_SIM_ID:
         g_free(priv->sim_id);
         priv->sim_id = g_value_dup_string(value);
+        break;
+    case PROP_SIM_SLOT:
+        priv->sim_slot = g_value_get_int(value);
         break;
     case PROP_IP_TYPES:
         priv->ip_types = g_value_get_uint(value);
@@ -1806,6 +1829,15 @@ nm_modem_class_init(NMModemClass *klass)
                             "",
                             NULL,
                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
+
+    obj_properties[PROP_SIM_SLOT] = 
+        g_param_spec_int(NM_MODEM_SIM_SLOT,
+                         "",
+                         "",
+                         NM_SETTING_GSM_SIM_SLOT_MIN,
+                         G_MAXINT32,
+                         NM_SETTING_GSM_SIM_SLOT_ANY,
+                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
     obj_properties[PROP_IP_TYPES] =
         g_param_spec_uint(NM_MODEM_IP_TYPES,
