@@ -140,6 +140,8 @@ create_dm_cmd_line(const char           *iface,
     nm_strv_ptrarray_add_string_dup(cmd, "--except-interface=lo");
     nm_strv_ptrarray_add_string_dup(cmd, "--clear-on-reload");
 
+    nm_strv_ptrarray_add_string_printf(cmd, "--interface=%s", iface);
+
     /* Use strict order since in the case of VPN connections, the VPN's
      * nameservers will be first in resolv.conf, and those need to be tried
      * first by dnsmasq to successfully resolve names from the VPN.
@@ -148,7 +150,7 @@ create_dm_cmd_line(const char           *iface,
 
     nm_inet4_ntop(listen_address->address, listen_address_s);
 
-    nm_strv_ptrarray_add_string_concat(cmd, "--listen-address=", listen_address_s);
+    // nm_strv_ptrarray_add_string_concat(cmd, "--listen-address=", listen_address_s);
 
     if (!nm_dnsmasq_utils_get_range(listen_address, first, last, &error_desc)) {
         g_set_error_literal(error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED, error_desc);
