@@ -1,3 +1,9 @@
+network-manager (1.42.4-1~bpo11+1-wb102) bullseye-backports; urgency=medium
+
+  * Add arm64 build, no functional changes
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 15 Nov 2023 13:01:00 +0400
+
 network-manager (1.42.4-1~bpo11+1-wb101) bullseye-backports; urgency=medium
 
   * Disable WPS for open Wi-Fi access points
