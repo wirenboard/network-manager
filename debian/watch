@@ -1,2 +1,4 @@
 version=4
-https://download.gnome.org/sources/NetworkManager/([\d\.]+[02468])/NetworkManager-@ANY_VERSION@\.tar\.xz
+opts="searchmode=plain" \
+ https://gitlab.freedesktop.org/NetworkManager/NetworkManager/tags?sort=updated_desc \
+ -/archive/v?\d[\d.]+/NetworkManager-@ANY_VERSION@@ARCHIVE_EXT@
