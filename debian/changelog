@@ -1,8 +1,16 @@
-network-manager (1.50.1-1) UNRELEASED; urgency=medium
+network-manager (1.50.1-1) unstable; urgency=medium
 
   * New upstream version 1.50.1
+  * Update debian/watch.
+    Switch to new download location at gitlab.freedesktop.org.
+    Use tarballs without pre-generated documentation. We rebuild them
+    anyway. (Closes: #1091414)
+  * Rebase patches
+  * Drop now unused lintian override for source-is-missing.
+    As we no longer use a tarball with pre-generated documentation, this
+    (false) lintian warning no longer triggers.
 
- -- Michael Biebl <biebl@debian.org>  Wed, 25 Dec 2024 20:36:49 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 25 Dec 2024 21:01:45 +0100
 
 network-manager (1.50.0-1) unstable; urgency=medium
 
