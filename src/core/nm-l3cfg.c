@@ -3143,6 +3143,15 @@ handle_start_defending:
              * warning and start a timer to retry. This way (of having a timer pending)
              * we also back off and are rate limited from retrying too frequently. */
             _LOGT_acd(acd_data, "start announcing failed to create probe (%s)", failure_reason);
+
+            if (!nm_platform_link_uses_arp(self->priv.platform, self->priv.ifindex)) {
+                _LOGT_acd(
+                    acd_data,
+                    "give up on ACD and never retry since interface '%s' is configured with NOARP",
+                    nmp_object_link_get_ifname(self->priv.plobj));
+                return;
+            }
+
             _l3_acd_data_timeout_schedule(acd_data, ACD_WAIT_TIME_ANNOUNCE_RESTART_MSEC);
             return;
         }
@@ -4999,7 +5008,7 @@ _l3_commit_one(NML3Cfg              *self,
     }
 
     if (route_table_sync == NM_IP_ROUTE_TABLE_SYNC_MODE_NONE)
-        route_table_sync = NM_IP_ROUTE_TABLE_SYNC_MODE_MAIN;
+        route_table_sync = NM_IP_ROUTE_TABLE_SYNC_MODE_MAIN_AND_NM_ROUTES;
 
     if (any_dirty)
         _obj_states_track_prune_dirty(self, TRUE);
@@ -5028,6 +5037,8 @@ _l3_commit_one(NML3Cfg              *self,
         }
 
         if (c_list_is_empty(&self->priv.p->blocked_lst_head_x[IS_IPv4])) {
+            gs_unref_ptrarray GPtrArray *routes_old = NULL;
+
             addresses_prune =
                 nm_platform_ip_address_get_prune_list(self->priv.platform,
                                                       addr_family,
@@ -5035,10 +5046,28 @@ _l3_commit_one(NML3Cfg              *self,
                                                       nm_g_array_data(ipv6_temp_addrs_keep),
                                                       nm_g_array_len(ipv6_temp_addrs_keep));
 
+            if (route_table_sync == NM_IP_ROUTE_TABLE_SYNC_MODE_MAIN_AND_NM_ROUTES) {
+                GHashTableIter h_iter;
+                ObjStateData  *obj_state;
+
+                /* Get list of all the routes that were configured by us */
+                routes_old = g_ptr_array_new_with_free_func((GDestroyNotify) nmp_object_unref);
+                g_hash_table_iter_init(&h_iter, self->priv.p->obj_state_hash);
+                while (g_hash_table_iter_next(&h_iter, (gpointer *) &obj_state, NULL)) {
+                    if (NMP_OBJECT_GET_TYPE(obj_state->obj) == NMP_OBJECT_TYPE_IP_ROUTE(IS_IPv4)
+                        && obj_state->os_nm_configured)
+                        g_ptr_array_add(routes_old, (gpointer) nmp_object_ref(obj_state->obj));
+                }
+
+                nm_platform_route_objs_sort(routes_old, NM_PLATFORM_IP_ROUTE_CMP_TYPE_SEMANTICALLY);
+            }
+
             routes_prune = nm_platform_ip_route_get_prune_list(self->priv.platform,
                                                                addr_family,
                                                                self->priv.ifindex,
-                                                               route_table_sync);
+                                                               route_table_sync,
+                                                               routes_old);
+
             _obj_state_zombie_lst_prune_all(self, addr_family);
         }
     } else {
@@ -5388,6 +5417,30 @@ nm_l3cfg_get_best_default_route(NML3Cfg *self, int addr_family, gboolean get_com
         return NULL;
 
     return nm_l3_config_data_get_best_default_route(l3cd, addr_family);
+}
+
+in_addr_t *
+nm_l3cfg_get_configured_ip4_addresses(NML3Cfg *self, gsize *out_len)
+{
+    GArray               *array = NULL;
+    NMDedupMultiIter      iter;
+    const NMPObject      *obj;
+    const NML3ConfigData *l3cd;
+
+    l3cd = nm_l3cfg_get_combined_l3cd(self, FALSE);
+
+    if (!l3cd)
+        return NULL;
+
+    array = g_array_new(FALSE, FALSE, sizeof(in_addr_t));
+
+    nm_l3_config_data_iter_obj_for_each (&iter, l3cd, &obj, NMP_OBJECT_TYPE_IP4_ADDRESS) {
+        in_addr_t tmp = NMP_OBJECT_CAST_IP4_ADDRESS(obj)->address;
+        nm_g_array_append_simple(array, tmp);
+    }
+
+    *out_len = array->len;
+    return NM_CAST_ALIGN(in_addr_t, g_array_free(array, FALSE));
 }
 
 /*****************************************************************************/
