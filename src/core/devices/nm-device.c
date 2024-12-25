@@ -78,6 +78,7 @@
 #include "nm-hostname-manager.h"
 
 #include "nm-device-generic.h"
+#include "nm-device-bond.h"
 #include "nm-device-bridge.h"
 #include "nm-device-loopback.h"
 #include "nm-device-vlan.h"
@@ -5403,6 +5404,7 @@ get_ip_iface_identifier(NMDevice *self, NMUtilsIPv6IfaceId *out_iid)
     NMDevicePrivate      *priv     = NM_DEVICE_GET_PRIVATE(self);
     NMPlatform           *platform = nm_device_get_platform(self);
     const NMPlatformLink *pllink;
+    NMPLinkAddress        permanent_hwaddr;
     NMLinkType            link_type;
     const guint8         *hwaddr;
     guint8                pseudo_hwaddr[ETH_ALEN];
@@ -5446,6 +5448,21 @@ get_ip_iface_identifier(NMDevice *self, NMUtilsIPv6IfaceId *out_iid)
             hwaddr_len = G_N_ELEMENTS(pseudo_hwaddr);
             link_type  = NM_LINK_TYPE_ETHERNET;
         }
+    } else if (NM_IN_SET(pllink->type,
+                         NM_LINK_TYPE_VTI6,
+                         NM_LINK_TYPE_IP6TNL,
+                         NM_LINK_TYPE_IP6GRE)) {
+        /* Use the "permanent" 48-bit address to construct a EUI64
+         * according to RFC 4291 Appendix A. */
+        if (!nm_platform_link_get_permanent_address(platform, pllink, &permanent_hwaddr))
+            return FALSE;
+        if (permanent_hwaddr.len < ETH_ALEN)
+            return FALSE;
+
+        memcpy(pseudo_hwaddr, permanent_hwaddr.data, ETH_ALEN);
+        hwaddr     = pseudo_hwaddr;
+        hwaddr_len = ETH_ALEN;
+        link_type  = NM_LINK_TYPE_ETHERNET;
     }
 
     success = nm_utils_get_ipv6_interface_identifier(link_type,
@@ -7339,10 +7356,12 @@ device_link_changed(gpointer user_data)
     NMDevicePrivate                *priv              = NM_DEVICE_GET_PRIVATE(self);
     gboolean                        ip_ifname_changed = FALSE;
     nm_auto_nmpobj const NMPObject *pllink_keep_alive = NULL;
+    NMDevice                       *controller;
     const NMPlatformLink           *pllink;
     const char                     *str;
     int                             ifindex;
     gboolean                        was_up;
+    gboolean                        carrier_was_up;
     gboolean                        update_unmanaged_specs = FALSE;
     gboolean                        got_hw_addr            = FALSE, had_hw_addr;
     gboolean                        seen_down              = priv->device_link_changed_down;
@@ -7425,6 +7444,8 @@ device_link_changed(gpointer user_data)
             _LOGD(LOGD_DEVICE, "IPv6 tokenized identifier present on device %s", priv->iface);
     }
 
+    carrier_was_up = priv->carrier;
+
     /* Update carrier from link event if applicable. */
     if (nm_device_has_capability(self, NM_DEVICE_CAP_CARRIER_DETECT)
         && !nm_device_has_capability(self, NM_DEVICE_CAP_NONSTANDARD_CARRIER))
@@ -7440,6 +7461,35 @@ device_link_changed(gpointer user_data)
 
     was_up   = priv->up;
     priv->up = NM_FLAGS_HAS(pllink->n_ifi_flags, IFF_UP);
+
+    if ((was_up && !priv->up) || (carrier_was_up && !priv->carrier)) {
+        /* the link was up and now is down, or the carrier was up and now is down. We must
+         * check if this is a port of a bond and if that bond is in balance-slb mode to perform
+         * gARP on the controller's port.
+         */
+        controller = nm_device_get_controller(self);
+        if (controller && nm_device_get_device_type(controller) == NM_DEVICE_TYPE_BOND
+            && nm_device_bond_is_slb(controller)) {
+            NMDevicePrivate *controller_priv = NM_DEVICE_GET_PRIVATE(controller);
+            PortInfo        *info;
+
+            _LOGT(
+                LOGD_CORE,
+                "controller %s is a bond in bonding-slb mode, redirecting traffic to another port",
+                nm_device_get_iface(controller));
+
+            c_list_for_each_entry (info, &controller_priv->ports, lst_port) {
+                if (info->port != self && NM_DEVICE_GET_PRIVATE(info->port)->carrier) {
+                    _LOGT(LOGD_CORE,
+                          "sending gARP on port %s (ifindex %d)",
+                          nm_device_get_iface(info->port),
+                          nm_device_get_ifindex(info->port));
+                    if (nm_device_bond_announce_ports_on_slb(controller, info->port))
+                        break;
+                }
+            }
+        }
+    }
 
     if (pllink->initialized && nm_device_get_unmanaged_flags(self, NM_UNMANAGED_PLATFORM_INIT)) {
         nm_device_set_unmanaged_by_user_udev(self);
@@ -9485,6 +9535,7 @@ check_connection_compatible(NMDevice     *self,
     NMSettingMatch       *s_match;
     const GSList         *specs;
     gboolean              has_match = FALSE;
+    NMSettingSriov       *s_sriov   = NULL;
 
     klass = NM_DEVICE_GET_CLASS(self);
     if (klass->connection_type_check_compatible) {
@@ -9502,12 +9553,14 @@ check_connection_compatible(NMDevice     *self,
         return FALSE;
     }
 
-    if (!nm_device_has_capability(self, NM_DEVICE_CAP_SRIOV)
-        && nm_connection_get_setting(connection, NM_TYPE_SETTING_SRIOV)) {
-        nm_utils_error_set_literal(error,
-                                   NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
-                                   "device does not support SR-IOV");
-        return FALSE;
+    if (!nm_device_has_capability(self, NM_DEVICE_CAP_SRIOV)) {
+        s_sriov = (NMSettingSriov *) nm_connection_get_setting(connection, NM_TYPE_SETTING_SRIOV);
+        if (s_sriov && nm_setting_sriov_get_total_vfs(s_sriov)) {
+            nm_utils_error_set_literal(error,
+                                       NM_UTILS_ERROR_CONNECTION_AVAILABLE_TEMPORARY,
+                                       "device does not support SR-IOV");
+            return FALSE;
+        }
     }
 
     conn_iface = nm_manager_get_connection_iface(NM_MANAGER_GET, connection, NULL, NULL, &local);
@@ -10118,15 +10171,13 @@ activate_stage1_device_prepare(NMDevice *self)
             s_sriov = nm_device_get_applied_setting(self, NM_TYPE_SETTING_SRIOV);
         }
 
-        if (s_sriov) {
+        if (s_sriov && nm_device_has_capability(self, NM_DEVICE_CAP_SRIOV)) {
             nm_auto_freev NMPlatformVF **plat_vfs = NULL;
             gs_free_error GError        *error    = NULL;
             NMSriovVF                   *vf;
             NMTernary                    autoprobe;
             guint                        num;
             guint                        i;
-
-            nm_assert(nm_device_has_capability(self, NM_DEVICE_CAP_SRIOV));
 
             autoprobe = nm_setting_sriov_get_autoprobe_drivers(s_sriov);
             if (autoprobe == NM_TERNARY_DEFAULT) {
