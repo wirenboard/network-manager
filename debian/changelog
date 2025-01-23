@@ -1,3 +1,9 @@
+network-manager (1.42.4-1~bpo11+1-wb103) bullseye-backports; urgency=medium
+
+  * Increase timeout for nft command call
+
+ -- Nikolay Korotkiy <nikolay.korotkiy@wirenboard.com>  Wed, 22 Jan 2025 17:00:00 +0400
+
 network-manager (1.42.4-1~bpo11+1-wb102) bullseye-backports; urgency=medium
 
   * Add arm64 build, no functional changes
