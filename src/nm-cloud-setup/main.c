@@ -11,6 +11,7 @@
 #include "nmcs-provider-gcp.h"
 #include "nmcs-provider-azure.h"
 #include "nmcs-provider-aliyun.h"
+#include "nmcs-provider-oci.h"
 #include "libnm-core-aux-intern/nm-libnm-core-utils.h"
 
 /*****************************************************************************/
@@ -104,6 +105,7 @@ _provider_detect(SigTermData *sigterm_data)
         NMCS_TYPE_PROVIDER_GCP,
         NMCS_TYPE_PROVIDER_AZURE,
         NMCS_TYPE_PROVIDER_ALIYUN,
+        NMCS_TYPE_PROVIDER_OCI,
     };
     int    i;
     gulong cancellable_signal_id;
@@ -178,7 +180,7 @@ _map_interfaces_parse(void)
         nm_assert(j < alloc_len);
         m = &map_interfaces[j++];
 
-        *m = (NMUtilsNamedValue){
+        *m = (NMUtilsNamedValue) {
             .name      = g_strndup(str, s - str),
             .value_str = hwaddr,
         };
@@ -187,7 +189,7 @@ _map_interfaces_parse(void)
     }
 
     nm_assert(j < alloc_len);
-    map_interfaces[j++] = (NMUtilsNamedValue){
+    map_interfaces[j++] = (NMUtilsNamedValue) {
         .name      = NULL,
         .value_str = NULL,
     };
@@ -196,13 +198,14 @@ _map_interfaces_parse(void)
 }
 
 static const char *
-_device_get_hwaddr(NMDeviceEthernet *device)
+_device_get_hwaddr(NMDevice *device)
 {
     static const NMUtilsNamedValue *gl_map_interfaces_map = NULL;
     static gsize                    gl_initialized        = 0;
     const NMUtilsNamedValue        *map                   = NULL;
 
-    nm_assert(NM_IS_DEVICE_ETHERNET(device));
+    nm_assert(NM_IS_DEVICE_ETHERNET(device) || NM_IS_DEVICE_MACVLAN(device)
+              || NM_IS_DEVICE_VLAN(device));
 
     /* Network interfaces in cloud environments are identified by their permanent
      * MAC address.
@@ -236,11 +239,15 @@ _device_get_hwaddr(NMDeviceEthernet *device)
         return NULL;
     }
 
-    return nm_device_ethernet_get_permanent_hw_address(device);
+    if (NM_IS_DEVICE_ETHERNET(device)) {
+        return nm_device_ethernet_get_permanent_hw_address(NM_DEVICE_ETHERNET(device));
+    } else {
+        return nm_device_get_hw_address(device);
+    }
 }
 
 static char **
-_nmc_get_hwaddrs(NMClient *nmc)
+_nmc_get_ethernet_hwaddrs(NMClient *nmc)
 {
     gs_unref_ptrarray GPtrArray *hwaddrs = NULL;
     const GPtrArray             *devices;
@@ -261,7 +268,7 @@ _nmc_get_hwaddrs(NMClient *nmc)
         if (nm_device_get_state(device) < NM_DEVICE_STATE_UNAVAILABLE)
             continue;
 
-        hwaddr = _device_get_hwaddr(NM_DEVICE_ETHERNET(device));
+        hwaddr = _device_get_hwaddr(device);
         if (!hwaddr)
             continue;
 
@@ -303,7 +310,7 @@ _nmc_get_device_by_hwaddr(NMClient *nmc, const char *hwaddr)
         if (!NM_IS_DEVICE_ETHERNET(device))
             continue;
 
-        hwaddr_dev = _device_get_hwaddr(NM_DEVICE_ETHERNET(device));
+        hwaddr_dev = _device_get_hwaddr(device);
         if (!hwaddr_dev)
             continue;
 
@@ -350,7 +357,7 @@ _get_config(GCancellable *sigterm_cancellable, NMCSProvider *provider, NMClient 
     };
     gs_strfreev char **hwaddrs = NULL;
 
-    hwaddrs = _nmc_get_hwaddrs(nmc);
+    hwaddrs = _nmc_get_ethernet_hwaddrs(nmc);
 
     nmcs_provider_get_config(provider,
                              TRUE,
@@ -387,11 +394,10 @@ _nmc_skip_connection_by_user_data(NMConnection *connection)
 }
 
 static gboolean
-_nmc_skip_connection_by_type(NMConnection *connection)
+_nmc_skip_connection_by_type(NMConnection *connection, const char *connection_type)
 {
-    if (!nm_streq0(nm_connection_get_connection_type(connection), NM_SETTING_WIRED_SETTING_NAME))
+    if (!nm_streq0(nm_connection_get_connection_type(connection), connection_type))
         return TRUE;
-
     if (!nm_connection_get_setting_ip4_config(connection))
         return TRUE;
 
@@ -632,7 +638,7 @@ try_again:
         return any_changes;
     }
 
-    if (_nmc_skip_connection_by_type(applied_connection)) {
+    if (_nmc_skip_connection_by_type(applied_connection, NM_SETTING_WIRED_SETTING_NAME)) {
         _LOGD("config device %s: device has no suitable applied connection. Skip", hwaddr);
         return any_changes;
     }
@@ -766,7 +772,7 @@ main(int argc, const char *const *argv)
 
     sigterm_cancellable = g_cancellable_new();
 
-    sigterm_data = (SigTermData){
+    sigterm_data = (SigTermData) {
         .cancellable     = sigterm_cancellable,
         .enabled         = TRUE,
         .signal_received = FALSE,

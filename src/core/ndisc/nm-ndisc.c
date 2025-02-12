@@ -130,7 +130,7 @@ nm_ndisc_data_to_l3cd(NMDedupMultiIndex        *multi_idx,
         const NMNDiscAddress *ndisc_addr = &rdata->addresses[i];
         NMPlatformIP6Address  a;
 
-        a = (NMPlatformIP6Address){
+        a = (NMPlatformIP6Address) {
             .ifindex   = ifindex,
             .address   = ndisc_addr->address,
             .plen      = 64,
@@ -151,7 +151,7 @@ nm_ndisc_data_to_l3cd(NMDedupMultiIndex        *multi_idx,
         const NMNDiscRoute *ndisc_route = &rdata->routes[i];
         NMPlatformIP6Route  r;
 
-        r = (NMPlatformIP6Route){
+        r = (NMPlatformIP6Route) {
             .ifindex       = ifindex,
             .network       = ndisc_route->network,
             .plen          = ndisc_route->plen,
@@ -205,10 +205,7 @@ nm_ndisc_data_to_l3cd(NMDedupMultiIndex        *multi_idx,
     }
 
     for (i = 0; i < rdata->dns_servers_n; i++) {
-        nm_l3_config_data_add_nameserver_detail(l3cd,
-                                                AF_INET6,
-                                                &rdata->dns_servers[i].address,
-                                                NULL);
+        nm_l3_config_data_add_nameserver_addr(l3cd, AF_INET6, &rdata->dns_servers[i].address);
     }
 
     for (i = 0; i < rdata->dns_domains_n; i++)
@@ -836,7 +833,7 @@ nm_ndisc_add_dns_domain(NMNDisc *ndisc, const NMNDiscDNSDomain *new_item, gint64
         return FALSE;
 
     item  = nm_g_array_append_new(rdata->dns_domains, NMNDiscDNSDomain);
-    *item = (NMNDiscDNSDomain){
+    *item = (NMNDiscDNSDomain) {
         .domain      = g_strdup(new_item->domain),
         .expiry_msec = new_item->expiry_msec,
     };
@@ -991,9 +988,8 @@ announce_router(NMNDisc *ndisc)
 
         /* Schedule next initial announcement retransmit. */
         priv->send_ra_id =
-            g_timeout_add_seconds(nm_random_u64_range_full(NM_NDISC_ROUTER_ADVERT_DELAY,
-                                                           NM_NDISC_ROUTER_ADVERT_INITIAL_INTERVAL,
-                                                           FALSE),
+            g_timeout_add_seconds(nm_random_u64_range(NM_NDISC_ROUTER_ADVERT_DELAY,
+                                                      NM_NDISC_ROUTER_ADVERT_INITIAL_INTERVAL),
                                   (GSourceFunc) announce_router,
                                   ndisc);
     } else {
@@ -1027,9 +1023,10 @@ announce_router_initial(NMNDisc *ndisc)
     /* Schedule the initial send rather early. Clamp the delay by minimal
      * delay and not the initial advert internal so that we start fast. */
     if (G_LIKELY(!priv->send_ra_id)) {
-        priv->send_ra_id = g_timeout_add_seconds(nm_random_u64_range(NM_NDISC_ROUTER_ADVERT_DELAY),
-                                                 (GSourceFunc) announce_router,
-                                                 ndisc);
+        priv->send_ra_id =
+            g_timeout_add_seconds(nm_random_u64_range(0, NM_NDISC_ROUTER_ADVERT_DELAY),
+                                  (GSourceFunc) announce_router,
+                                  ndisc);
     }
 }
 
@@ -1045,7 +1042,7 @@ announce_router_solicited(NMNDisc *ndisc)
         nm_clear_g_source(&priv->send_ra_id);
 
     if (!priv->send_ra_id) {
-        priv->send_ra_id = g_timeout_add(nm_random_u64_range(NM_NDISC_ROUTER_ADVERT_DELAY_MS),
+        priv->send_ra_id = g_timeout_add(nm_random_u64_range(0, NM_NDISC_ROUTER_ADVERT_DELAY_MS),
                                          (GSourceFunc) announce_router,
                                          ndisc);
     }
@@ -1090,7 +1087,7 @@ nm_ndisc_set_config(NMNDisc *ndisc, const NML3ConfigData *l3cd)
         if (!lifetime)
             continue;
 
-        a = (NMNDiscAddress){
+        a = (NMNDiscAddress) {
             .address     = addr->address,
             .expiry_msec = _nm_ndisc_lifetime_to_expiry(NM_NDISC_EXPIRY_BASE_TIMESTAMP, lifetime),
             .expiry_preferred_msec =
@@ -1106,14 +1103,14 @@ nm_ndisc_set_config(NMNDisc *ndisc, const NML3ConfigData *l3cd)
     if (l3cd)
         strvarr = nm_l3_config_data_get_nameservers(l3cd, AF_INET6, &len);
     for (i = 0; i < len; i++) {
-        struct in6_addr  a;
+        NMIPAddr         a;
         NMNDiscDNSServer n;
 
-        if (!nm_utils_dnsname_parse_assert(AF_INET6, strvarr[i], NULL, &a, NULL))
+        if (!nm_dns_uri_parse_plain(AF_INET6, strvarr[i], NULL, &a))
             continue;
 
-        n = (NMNDiscDNSServer){
-            .address     = a,
+        n = (NMNDiscDNSServer) {
+            .address     = a.addr6,
             .expiry_msec = _nm_ndisc_lifetime_to_expiry(NM_NDISC_EXPIRY_BASE_TIMESTAMP,
                                                         NM_NDISC_ROUTER_LIFETIME),
         };
@@ -1128,7 +1125,7 @@ nm_ndisc_set_config(NMNDisc *ndisc, const NML3ConfigData *l3cd)
     for (i = 0; i < len; i++) {
         NMNDiscDNSDomain n;
 
-        n = (NMNDiscDNSDomain){
+        n = (NMNDiscDNSDomain) {
             .domain      = (char *) strvarr[i],
             .expiry_msec = _nm_ndisc_lifetime_to_expiry(NM_NDISC_EXPIRY_BASE_TIMESTAMP,
                                                         NM_NDISC_ROUTER_LIFETIME),

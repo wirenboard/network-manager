@@ -142,9 +142,9 @@ static void
 _l3cfg_notify_cb(NML3Cfg *l3cfg, const NML3ConfigNotifyData *notify_data, NMIPConfig *self)
 {
     switch (notify_data->notify_type) {
-    case NM_L3_CONFIG_NOTIFY_TYPE_L3CD_CHANGED:
-        if (notify_data->l3cd_changed.commited)
-            _handle_l3cd_changed(self, notify_data->l3cd_changed.l3cd_new);
+    case NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT:
+        if (notify_data->commit.l3cd_changed)
+            _handle_l3cd_changed(self, notify_data->commit.l3cd_new);
         break;
     case NM_L3_CONFIG_NOTIFY_TYPE_PLATFORM_CHANGE_ON_IDLE:
         _notify_platform(self, notify_data->platform_change_on_idle.obj_type_flags);
@@ -162,6 +162,7 @@ get_property_ip(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec
     NMIPConfig        *self        = NM_IP_CONFIG(object);
     NMIPConfigPrivate *priv        = NM_IP_CONFIG_GET_PRIVATE(self);
     const int          addr_family = nm_ip_config_get_addr_family(self);
+    char             **to_free     = NULL;
     char               sbuf_addr[NM_INET_ADDRSTRLEN];
     const char *const *strv;
     guint              len;
@@ -193,7 +194,20 @@ get_property_ip(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec
         break;
     case PROP_IP_SEARCHES:
         strv = nm_l3_config_data_get_searches(priv->l3cd, addr_family, &len);
+        if (strv) {
+            strv = nm_utils_buf_utf8safe_escape_strv(
+                strv,
+                len,
+                NM_UTILS_STR_UTF8_SAFE_FLAG_ESCAPE_CTRL
+                    | NM_UTILS_STR_UTF8_SAFE_FLAG_ESCAPE_NON_ASCII,
+                &to_free);
+        }
+
         _value_set_variant_as(value, strv, len);
+
+        if (to_free) {
+            g_strfreev(to_free);
+        }
         break;
     case PROP_IP_DNS_PRIORITY:
         v_i = nm_l3_config_data_get_dns_priority_or_default(priv->l3cd, addr_family);
@@ -435,22 +449,27 @@ get_property_ip4(GObject *object, guint prop_id, GValue *value, GParamSpec *pspe
             else
                 g_variant_builder_init(&builder, G_VARIANT_TYPE("aa{sv}"));
             for (i = 0; i < len; i++) {
-                in_addr_t a;
+                NMIPAddr a;
 
-                if (!nm_utils_dnsname_parse_assert(AF_INET, strarr[i], NULL, &a, NULL))
-                    continue;
-
-                if (prop_id == PROP_IP4_NAMESERVERS)
+                if (prop_id == PROP_IP4_NAMESERVERS) {
+                    if (!nm_dns_uri_parse_plain(AF_INET, strarr[i], NULL, &a))
+                        continue;
                     g_variant_builder_add(&builder, "u", a);
-                else {
+                } else {
                     GVariantBuilder nested_builder;
+                    char            addrstr[NM_INET_ADDRSTRLEN];
 
-                    nm_inet4_ntop(a, addr_str);
                     g_variant_builder_init(&nested_builder, G_VARIANT_TYPE("a{sv}"));
+                    if (nm_dns_uri_parse_plain(AF_INET, strarr[i], addrstr, NULL)) {
+                        g_variant_builder_add(&nested_builder,
+                                              "{sv}",
+                                              "address",
+                                              g_variant_new_string(addrstr));
+                    }
                     g_variant_builder_add(&nested_builder,
                                           "{sv}",
-                                          "address",
-                                          g_variant_new_string(addr_str));
+                                          "uri",
+                                          g_variant_new_string(strarr[i]));
                     g_variant_builder_add(&builder, "a{sv}", &nested_builder);
                 }
             }
@@ -678,12 +697,13 @@ get_property_ip6(GObject *object, guint prop_id, GValue *value, GParamSpec *pspe
         else {
             g_variant_builder_init(&builder, G_VARIANT_TYPE("aay"));
             for (i = 0; i < len; i++) {
-                struct in6_addr a;
+                NMIPAddr a;
 
-                if (!nm_utils_dnsname_parse_assert(AF_INET6, strarr[i], NULL, &a, NULL))
+                /* TODO: expose the full URI as well */
+                if (!nm_dns_uri_parse_plain(AF_INET6, strarr[i], NULL, &a))
                     continue;
 
-                g_variant_builder_add(&builder, "@ay", nm_g_variant_new_ay_in6addr(&a));
+                g_variant_builder_add(&builder, "@ay", nm_g_variant_new_ay_in6addr(&a.addr6));
             }
             g_value_take_variant(value, g_variant_builder_end(&builder));
         }

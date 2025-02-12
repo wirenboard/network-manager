@@ -799,29 +799,29 @@ static void
 test_bond_compare(void)
 {
     test_bond_compare_options(TRUE,
-                              ((const char *[]){"mode", "balance-rr", "miimon", "1", NULL}),
-                              ((const char *[]){"mode", "balance-rr", "miimon", "1", NULL}));
+                              ((const char *[]) {"mode", "balance-rr", "miimon", "1", NULL}),
+                              ((const char *[]) {"mode", "balance-rr", "miimon", "1", NULL}));
     test_bond_compare_options(FALSE,
-                              ((const char *[]){"mode", "balance-rr", "miimon", "1", NULL}),
-                              ((const char *[]){"mode", "balance-rr", "miimon", "2", NULL}));
+                              ((const char *[]) {"mode", "balance-rr", "miimon", "1", NULL}),
+                              ((const char *[]) {"mode", "balance-rr", "miimon", "2", NULL}));
 
     test_bond_compare_options(FALSE,
-                              ((const char *[]){"miimon", "1", NULL}),
-                              ((const char *[]){"miimon", "1", "updelay", "0", NULL}));
+                              ((const char *[]) {"miimon", "1", NULL}),
+                              ((const char *[]) {"miimon", "1", "updelay", "0", NULL}));
 
     test_bond_compare_options(FALSE,
-                              ((const char *[]){"num_grat_arp", "2", NULL}),
-                              ((const char *[]){"num_grat_arp", "1", NULL}));
+                              ((const char *[]) {"num_grat_arp", "2", NULL}),
+                              ((const char *[]) {"num_grat_arp", "1", NULL}));
     test_bond_compare_options(FALSE,
-                              ((const char *[]){"num_grat_arp", "3", NULL}),
-                              ((const char *[]){"num_unsol_na", "3", NULL}));
+                              ((const char *[]) {"num_grat_arp", "3", NULL}),
+                              ((const char *[]) {"num_unsol_na", "3", NULL}));
     test_bond_compare_options(FALSE,
-                              ((const char *[]){"num_grat_arp", "4", NULL}),
-                              ((const char *[]){"num_unsol_na", "4", "num_grat_arp", "4", NULL}));
+                              ((const char *[]) {"num_grat_arp", "4", NULL}),
+                              ((const char *[]) {"num_unsol_na", "4", "num_grat_arp", "4", NULL}));
 
     test_bond_compare_options(FALSE,
-                              ((const char *[]){"mode", "balance-rr", "miimon", "100", NULL}),
-                              ((const char *[]){"mode", "balance-rr", NULL}));
+                              ((const char *[]) {"mode", "balance-rr", "miimon", "100", NULL}),
+                              ((const char *[]) {"mode", "balance-rr", NULL}));
 }
 
 static void
@@ -856,20 +856,25 @@ static void
 test_bond_normalize(void)
 {
     test_bond_normalize_options(
-        ((const char *[]){"mode", "802.3ad", "ad_actor_system", "00:02:03:04:05:06", NULL}),
-        ((const char *[]){"mode", "802.3ad", "ad_actor_system", "00:02:03:04:05:06", NULL}));
-    test_bond_normalize_options(((const char *[]){"mode", "1", "miimon", "1", NULL}),
-                                ((const char *[]){"mode", "active-backup", "miimon", "1", NULL}));
+        ((const char *[]) {"mode", "802.3ad", "ad_actor_system", "00:02:03:04:05:06", NULL}),
+        ((const char *[]) {"mode", "802.3ad", "ad_actor_system", "00:02:03:04:05:06", NULL}));
+    test_bond_normalize_options(((const char *[]) {"mode", "1", "miimon", "1", NULL}),
+                                ((const char *[]) {"mode", "active-backup", "miimon", "1", NULL}));
     test_bond_normalize_options(
-        ((const char *[]){"mode", "balance-alb", "tlb_dynamic_lb", "1", NULL}),
-        ((const char *[]){"mode", "balance-alb", "tlb_dynamic_lb", "1", NULL}));
+        ((const char *[]) {"mode", "balance-alb", "tlb_dynamic_lb", "1", NULL}),
+        ((const char *[]) {"mode", "balance-alb", "tlb_dynamic_lb", "1", NULL}));
     test_bond_normalize_options(
-        ((const char *[]){"mode", "balance-tlb", "tlb_dynamic_lb", "1", NULL}),
-        ((const char *[]){"mode", "balance-tlb", "tlb_dynamic_lb", "1", NULL}));
+        ((const char *[]) {"mode", "balance-tlb", "tlb_dynamic_lb", "1", NULL}),
+        ((const char *[]) {"mode", "balance-tlb", "tlb_dynamic_lb", "1", NULL}));
     test_bond_normalize_options(
-        ((const char
-              *[]){"mode", "balance-rr", "ad_actor_sys_prio", "4", "packets_per_slave", "3", NULL}),
-        ((const char *[]){"mode", "balance-rr", "packets_per_slave", "3", NULL}));
+        ((const char *[]) {"mode",
+                           "balance-rr",
+                           "ad_actor_sys_prio",
+                           "4",
+                           "packets_per_slave",
+                           "3",
+                           NULL}),
+        ((const char *[]) {"mode", "balance-rr", "packets_per_slave", "3", NULL}));
 }
 
 /*****************************************************************************/
@@ -2375,6 +2380,85 @@ test_ethtool_eee(void)
                                                 NM_ETHTOOL_OPTNAME_EEE_ENABLED,
                                                 &out_value));
     g_assert_true(!out_value);
+}
+/*****************************************************************************/
+
+static void
+test_ethtool_fec(void)
+{
+    gs_unref_object NMConnection   *con     = NULL;
+    gs_unref_object NMConnection   *con2    = NULL;
+    gs_unref_object NMConnection   *con3    = NULL;
+    gs_unref_variant GVariant      *variant = NULL;
+    gs_free_error GError           *error   = NULL;
+    nm_auto_unref_keyfile GKeyFile *keyfile = NULL;
+    NMSettingConnection            *s_con;
+    NMSettingEthtool               *s_ethtool;
+    NMSettingEthtool               *s_ethtool2;
+    NMSettingEthtool               *s_ethtool3;
+    guint32                         out_value;
+    guint32                         expected_fec_mode =
+        NM_SETTING_ETHTOOL_FEC_MODE_AUTO | NM_SETTING_ETHTOOL_FEC_MODE_BASER;
+
+    con =
+        nmtst_create_minimal_connection("ethtool-fec", NULL, NM_SETTING_WIRED_SETTING_NAME, &s_con);
+    s_ethtool = NM_SETTING_ETHTOOL(nm_setting_ethtool_new());
+    nm_connection_add_setting(con, NM_SETTING(s_ethtool));
+
+    nm_setting_option_set_uint32(NM_SETTING(s_ethtool),
+                                 NM_ETHTOOL_OPTNAME_FEC_MODE,
+                                 expected_fec_mode);
+
+    g_assert_true(nm_setting_option_get_uint32(NM_SETTING(s_ethtool),
+                                               NM_ETHTOOL_OPTNAME_FEC_MODE,
+                                               &out_value));
+    g_assert_true(out_value == expected_fec_mode);
+
+    nmtst_connection_normalize(con);
+
+    variant = nm_connection_to_dbus(con, NM_CONNECTION_SERIALIZE_ALL);
+
+    con2 = nm_simple_connection_new_from_dbus(variant, &error);
+    nmtst_assert_success(con2, error);
+
+    s_ethtool2 = NM_SETTING_ETHTOOL(nm_connection_get_setting(con2, NM_TYPE_SETTING_ETHTOOL));
+
+    g_assert_true(nm_setting_option_get_uint32(NM_SETTING(s_ethtool2),
+                                               NM_ETHTOOL_OPTNAME_FEC_MODE,
+                                               &out_value));
+    g_assert_true(out_value == expected_fec_mode);
+
+    nmtst_assert_connection_verifies_without_normalization(con2);
+
+    nmtst_assert_connection_equals(con, FALSE, con2, FALSE);
+
+    con2 = nm_simple_connection_new_from_dbus(variant, &error);
+    nmtst_assert_success(con2, error);
+
+    keyfile = nm_keyfile_write(con, NM_KEYFILE_HANDLER_FLAGS_NONE, NULL, NULL, &error);
+    nmtst_assert_success(keyfile, error);
+
+    con3 = nm_keyfile_read(keyfile,
+                           "/ignored/current/working/directory/for/loading/relative/paths",
+                           NM_KEYFILE_HANDLER_FLAGS_NONE,
+                           NULL,
+                           NULL,
+                           &error);
+    nmtst_assert_success(con3, error);
+
+    nm_keyfile_read_ensure_id(con3, "unused-because-already-has-id");
+    nm_keyfile_read_ensure_uuid(con3, "unused-because-already-has-uuid");
+
+    nmtst_connection_normalize(con3);
+
+    nmtst_assert_connection_equals(con, FALSE, con3, FALSE);
+
+    s_ethtool3 = NM_SETTING_ETHTOOL(nm_connection_get_setting(con3, NM_TYPE_SETTING_ETHTOOL));
+
+    g_assert_true(nm_setting_option_get_uint32(NM_SETTING(s_ethtool3),
+                                               NM_ETHTOOL_OPTNAME_FEC_MODE,
+                                               &out_value));
+    g_assert_true(out_value == expected_fec_mode);
 }
 /*****************************************************************************/
 
@@ -5481,6 +5565,7 @@ main(int argc, char **argv)
     g_test_add_func("/libnm/settings/ethtool/ring", test_ethtool_ring);
     g_test_add_func("/libnm/settings/ethtool/pause", test_ethtool_pause);
     g_test_add_func("/libnm/settings/ethtool/eee", test_ethtool_eee);
+    g_test_add_func("/libnm/settings/ethtool/fec", test_ethtool_fec);
 
     g_test_add_func("/libnm/settings/6lowpan/1", test_6lowpan_1);
 

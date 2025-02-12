@@ -28,6 +28,7 @@ typedef enum {
     ((is_ipv4) ? NM_L3_CONFIG_DAT_FLAGS_HAS_DNS_PRIORITY_4 \
                : NM_L3_CONFIG_DAT_FLAGS_HAS_DNS_PRIORITY_6)
 
+    NM_L3_CONFIG_DAT_FLAGS_HAS_IPV4_NON_LL = (1ull << 3),
 } NML3ConfigDatFlags;
 
 typedef enum {
@@ -499,10 +500,9 @@ nm_l3_config_data_get_nameservers(const NML3ConfigData *self, int addr_family, g
 gboolean
 nm_l3_config_data_add_nameserver(NML3ConfigData *self, int addr_family, const char *nameserver);
 
-gboolean nm_l3_config_data_add_nameserver_detail(NML3ConfigData *self,
-                                                 int             addr_family,
-                                                 gconstpointer   addr_bin,
-                                                 const char     *server_name);
+gboolean nm_l3_config_data_add_nameserver_addr(NML3ConfigData *self,
+                                               int             addr_family,
+                                               gconstpointer   addr_bin);
 
 gboolean nm_l3_config_data_clear_nameservers(NML3ConfigData *self, int addr_family);
 
@@ -560,6 +560,9 @@ gboolean nm_l3_config_data_get_allow_routes_without_address(const NML3ConfigData
 void nm_l3_config_data_set_allow_routes_without_address(NML3ConfigData *self,
                                                         int             addr_family,
                                                         gboolean        value);
+
+gboolean nm_l3_config_data_get_routed_dns(const NML3ConfigData *self, int addr_family);
+void     nm_l3_config_data_set_routed_dns(NML3ConfigData *self, int addr_family, gboolean value);
 
 NMProxyConfigMethod nm_l3_config_data_get_proxy_method(const NML3ConfigData *self);
 

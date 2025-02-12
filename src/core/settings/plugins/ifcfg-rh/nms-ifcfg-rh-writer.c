@@ -1454,6 +1454,15 @@ write_ethtool_setting(NMConnection *connection, shvarFile *ifcfg, GError **error
                 return FALSE;
             }
         }
+        if (ethtool_id == NM_ETHTOOL_ID_FEC_MODE) {
+            if (nm_setting_option_get_uint32(NM_SETTING(s_ethtool),
+                                             nm_ethtool_data[ethtool_id]->optname,
+                                             &u32)) {
+                nm_sprintf_buf(prop_name, "ethtool.%s", nm_ethtool_data[ethtool_id]->optname);
+                set_error_unsupported(error, connection, prop_name, FALSE);
+                return FALSE;
+            }
+        }
 
         if (!any_option) {
             /* Write an empty dummy "-A" option without arguments. This is to
@@ -3588,13 +3597,24 @@ do_write_construct(NMConnection                   *connection,
     } else
         route_ignore = FALSE;
 
-    if ((s_ip4 = nm_connection_get_setting_ip4_config(connection))
-        && nm_setting_ip_config_get_dhcp_dscp(s_ip4)) {
-        set_error_unsupported(error,
-                              connection,
-                              NM_SETTING_IP4_CONFIG_SETTING_NAME "." NM_SETTING_IP_CONFIG_DHCP_DSCP,
-                              FALSE);
-        return FALSE;
+    if ((s_ip4 = nm_connection_get_setting_ip4_config(connection))) {
+        if (nm_setting_ip_config_get_dhcp_dscp(s_ip4)) {
+            set_error_unsupported(error,
+                                  connection,
+                                  NM_SETTING_IP4_CONFIG_SETTING_NAME
+                                  "." NM_SETTING_IP_CONFIG_DHCP_DSCP,
+                                  FALSE);
+            return FALSE;
+        }
+        if (nm_setting_ip4_config_get_dhcp_ipv6_only_preferred(NM_SETTING_IP4_CONFIG(s_ip4))
+            != NM_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED_DEFAULT) {
+            set_error_unsupported(error,
+                                  connection,
+                                  NM_SETTING_IP4_CONFIG_SETTING_NAME
+                                  "." NM_SETTING_IP4_CONFIG_DHCP_IPV6_ONLY_PREFERRED,
+                                  FALSE);
+            return FALSE;
+        }
     }
 
     write_ip4_setting(connection,

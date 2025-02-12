@@ -92,6 +92,8 @@ static GPtrArray *
 create_dm_cmd_line(const char           *iface,
                    const NML3ConfigData *l3cd,
                    const char           *pidfile,
+                   const char           *shared_dhcp_range,
+                   int                   shared_dhcp_lease_time,
                    gboolean              announce_android_metered,
                    GError              **error)
 {
@@ -100,13 +102,16 @@ create_dm_cmd_line(const char           *iface,
     char                          first[INET_ADDRSTRLEN];
     char                          last[INET_ADDRSTRLEN];
     char                          listen_address_s[INET_ADDRSTRLEN];
-    char                          sbuf_addr[INET_ADDRSTRLEN];
     gs_free char                 *error_desc = NULL;
     const char                   *dm_binary;
     const NMPlatformIP4Address   *listen_address;
     const char *const            *strarr;
     guint                         n;
     guint                         i;
+
+    nm_assert((shared_dhcp_lease_time == 0) || (shared_dhcp_lease_time == G_MAXINT32)
+              || ((NM_MIN_FINITE_LEASE_TIME <= shared_dhcp_lease_time)
+                  && (shared_dhcp_lease_time <= NM_MAX_FINITE_LEASE_TIME)));
 
     listen_address = NMP_OBJECT_CAST_IP4_ADDRESS(
         nm_l3_config_data_get_first_obj(l3cd, NMP_OBJECT_TYPE_IP4_ADDRESS, NULL));
@@ -150,13 +155,31 @@ create_dm_cmd_line(const char           *iface,
 
     nm_strv_ptrarray_add_string_concat(cmd, "--listen-address=", listen_address_s);
 
-    if (!nm_dnsmasq_utils_get_range(listen_address, first, last, &error_desc)) {
+    shared_dhcp_lease_time = (shared_dhcp_lease_time != 0) ? shared_dhcp_lease_time : 3600;
+    if (shared_dhcp_range && *shared_dhcp_range) {
+        if (shared_dhcp_lease_time < G_MAXINT32) {
+            nm_strv_ptrarray_add_string_printf(cmd,
+                                               "--dhcp-range=%s,%d",
+                                               shared_dhcp_range,
+                                               shared_dhcp_lease_time);
+        } else {
+            nm_strv_ptrarray_add_string_printf(cmd, "--dhcp-range=%s,infinite", shared_dhcp_range);
+        }
+    } else if (nm_dnsmasq_utils_get_range(listen_address, first, last, &error_desc)) {
+        if (shared_dhcp_lease_time < G_MAXINT32) {
+            nm_strv_ptrarray_add_string_printf(cmd,
+                                               "--dhcp-range=%s,%s,%d",
+                                               first,
+                                               last,
+                                               shared_dhcp_lease_time);
+        } else {
+            nm_strv_ptrarray_add_string_printf(cmd, "--dhcp-range=%s,%s,infinite", first, last);
+        }
+    } else {
         g_set_error_literal(error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED, error_desc);
         _LOGW("failed to find DHCP address ranges: %s", error_desc);
         return NULL;
     }
-
-    nm_strv_ptrarray_add_string_printf(cmd, "--dhcp-range=%s,%s,60m", first, last);
 
     if (nm_l3_config_data_get_best_default_route(l3cd, AF_INET)) {
         nm_strv_ptrarray_add_string_concat(cmd, "--dhcp-option=option:router,", listen_address_s);
@@ -167,13 +190,13 @@ create_dm_cmd_line(const char           *iface,
         nm_gstring_prepare(&s);
         g_string_append(s, "--dhcp-option=option:dns-server");
         for (i = 0; i < n; i++) {
-            in_addr_t a;
+            char addrstr[NM_INET_ADDRSTRLEN];
 
-            if (!nm_utils_dnsname_parse_assert(AF_INET, strarr[i], NULL, &a, NULL))
+            if (!nm_dns_uri_parse_plain(AF_INET, strarr[i], addrstr, NULL))
                 continue;
 
             g_string_append_c(s, ',');
-            g_string_append(s, nm_inet4_ntop(a, sbuf_addr));
+            g_string_append(s, addrstr);
         }
         nm_strv_ptrarray_take_gstring(cmd, &s);
     }
@@ -249,6 +272,8 @@ out:
 gboolean
 nm_dnsmasq_manager_start(NMDnsMasqManager     *manager,
                          const NML3ConfigData *l3cd,
+                         const char           *shared_dhcp_range,
+                         int                   shared_dhcp_lease_time,
                          gboolean              announce_android_metered,
                          GError              **error)
 {
@@ -265,7 +290,13 @@ nm_dnsmasq_manager_start(NMDnsMasqManager     *manager,
 
     kill_existing_by_pidfile(priv->pidfile);
 
-    dm_cmd = create_dm_cmd_line(priv->iface, l3cd, priv->pidfile, announce_android_metered, error);
+    dm_cmd = create_dm_cmd_line(priv->iface,
+                                l3cd,
+                                priv->pidfile,
+                                shared_dhcp_range,
+                                shared_dhcp_lease_time,
+                                announce_android_metered,
+                                error);
     if (!dm_cmd)
         return FALSE;
 

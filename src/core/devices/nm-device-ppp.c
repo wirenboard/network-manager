@@ -188,7 +188,7 @@ act_stage2_config(NMDevice *device, NMDeviceStateReason *out_failure_reason)
         s_pppoe = nm_device_get_applied_setting(device, NM_TYPE_SETTING_PPPOE);
         g_return_val_if_fail(s_pppoe, NM_ACT_STAGE_RETURN_FAILURE);
 
-        priv->ppp_mgr = nm_ppp_mgr_start(&((const NMPppMgrConfig){
+        priv->ppp_mgr = nm_ppp_mgr_start(&((const NMPppMgrConfig) {
                                              .netns        = nm_device_get_netns(device),
                                              .parent_iface = nm_setting_pppoe_get_parent(s_pppoe),
                                              .callback     = _ppp_mgr_callback,
@@ -380,20 +380,10 @@ get_connection_parent(NMDeviceFactory *factory, NMConnection *connection)
     nm_assert(nm_connection_is_type(connection, NM_SETTING_PPPOE_SETTING_NAME));
 
     s_pppoe = nm_connection_get_setting_pppoe(connection);
-    nm_assert(s_pppoe);
-
-    return nm_setting_pppoe_get_parent(s_pppoe);
-}
-
-static char *
-get_connection_iface(NMDeviceFactory *factory, NMConnection *connection, const char *parent_iface)
-{
-    nm_assert(nm_connection_is_type(connection, NM_SETTING_PPPOE_SETTING_NAME));
-
-    if (!parent_iface)
+    if (s_pppoe)
+        return nm_setting_pppoe_get_parent(s_pppoe);
+    else
         return NULL;
-
-    return g_strdup(nm_connection_get_interface_name(connection));
 }
 
 NM_DEVICE_FACTORY_DEFINE_INTERNAL(
@@ -403,6 +393,5 @@ NM_DEVICE_FACTORY_DEFINE_INTERNAL(
     NM_DEVICE_FACTORY_DECLARE_LINK_TYPES(NM_LINK_TYPE_PPP)
         NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES(NM_SETTING_PPPOE_SETTING_NAME),
     factory_class->get_connection_parent = get_connection_parent;
-    factory_class->get_connection_iface  = get_connection_iface;
     factory_class->create_device         = create_device;
     factory_class->match_connection      = match_connection;);

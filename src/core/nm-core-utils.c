@@ -1434,7 +1434,7 @@ nm_match_spec_device(const GSList *specs, const NMMatchSpecDeviceData *data)
     if (!specs)
         return NM_MATCH_SPEC_NO_MATCH;
 
-    match_data = (MatchSpecDeviceData){
+    match_data = (MatchSpecDeviceData) {
         .data           = data,
         .device_type    = nm_str_not_empty(data->device_type),
         .driver         = nm_str_not_empty(data->driver),
@@ -2834,10 +2834,7 @@ _host_id_read(guint8 **out_host_id, gsize *out_host_id_len)
         int    base64_save  = 0;
         gsize  len;
 
-        if (nm_random_get_crypto_bytes(rnd_buf, sizeof(rnd_buf)) < 0)
-            nm_random_get_bytes_full(rnd_buf, sizeof(rnd_buf), &success);
-        else
-            success = TRUE;
+        nm_random_get_bytes(rnd_buf, sizeof(rnd_buf));
 
         /* Our key is really binary data. But since we anyway generate a random seed
          * (with 32 random bytes), don't write it in binary, but instead create
@@ -2858,12 +2855,9 @@ _host_id_read(guint8 **out_host_id, gsize *out_host_id_len)
 
         secret_arr = _host_id_hash_v2(new_content, len, sha256_digest);
         secret_len = NM_UTILS_CHECKSUM_LENGTH_SHA256;
+        success    = TRUE;
 
-        if (!success)
-            nm_log_warn(LOGD_CORE,
-                        "secret-key: failure to generate good random data for secret-key (use "
-                        "non-persistent key)");
-        else if (nm_utils_get_testing()) {
+        if (nm_utils_get_testing()) {
             /* for test code, we don't write the generated secret-key to disk. */
         } else if (!nm_utils_file_set_contents(SECRET_KEY_FILE,
                                                (const char *) new_content,
@@ -3011,7 +3005,7 @@ nmtst_utils_host_id_push(const guint8 *host_id,
 
     h = nm_g_array_append_new(nmtst_host_id_stack, HostIdData);
 
-    *h = (HostIdData){
+    *h = (HostIdData) {
         .host_id           = nm_memdup(host_id, host_id_len),
         .host_id_len       = host_id_len,
         .timestamp_nsec    = p_timestamp_nsec ? *p_timestamp_nsec : 0,
@@ -3585,11 +3579,11 @@ _is_reserved_ipv6_iid(const guint8 *iid)
     /* 0200:5EFF:FE00:0000 - 0200:5EFF:FE00:5212 (Reserved IPv6 Interface Identifiers corresponding to the IANA Ethernet Block [RFC4291])
      * 0200:5EFF:FE00:5213                       (Proxy Mobile IPv6 [RFC6543])
      * 0200:5EFF:FE00:5214 - 0200:5EFF:FEFF:FFFF (Reserved IPv6 Interface Identifiers corresponding to the IANA Ethernet Block [RFC4291]) */
-    if (memcmp(iid, (const guint8[]){0x02, 0x00, 0x5E, 0xFF, 0xFE}, 5) == 0)
+    if (memcmp(iid, (const guint8[]) {0x02, 0x00, 0x5E, 0xFF, 0xFE}, 5) == 0)
         return TRUE;
 
     /* FDFF:FFFF:FFFF:FF80 - FDFF:FFFF:FFFF:FFFF (Reserved Subnet Anycast Addresses [RFC2526]) */
-    if (memcmp(iid, (const guint8[]){0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, 7) == 0) {
+    if (memcmp(iid, (const guint8[]) {0xFD, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, 7) == 0) {
         if (iid[7] & 0x80)
             return TRUE;
     }
@@ -3738,7 +3732,7 @@ _hw_addr_eth_complete(struct ether_addr *addr,
 
     nm_assert((ouis == NULL) ^ (ouis_len != 0));
     if (ouis) {
-        oui = ouis[nm_random_u64_range(ouis_len)];
+        oui = ouis[nm_random_u64_range(0, ouis_len)];
         g_free(ouis);
     } else {
         if (!nm_utils_hwaddr_aton(current_mac_address, &oui, ETH_ALEN))
@@ -5255,7 +5249,7 @@ nm_utils_spawn_helper(const char *const  *args,
     nm_assert(args && args[0]);
 
     info  = g_new(HelperInfo, 1);
-    *info = (HelperInfo){
+    *info = (HelperInfo) {
         .task = nm_g_task_new(NULL, cancellable, nm_utils_spawn_helper, callback, cb_data),
     };
 

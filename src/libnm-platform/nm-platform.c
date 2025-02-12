@@ -1420,6 +1420,12 @@ nm_platform_link_add(NMPlatform            *self,
                                                   buf_p,
                                                   buf_len);
                    break;
+               case NM_LINK_TYPE_IPVLAN:
+                   nm_strbuf_append_str(&buf_p, &buf_len, ", ");
+                   nm_platform_lnk_ipvlan_to_string((const NMPlatformLnkIpvlan *) extra_data,
+                                                    buf_p,
+                                                    buf_len);
+                   break;
                case NM_LINK_TYPE_MACSEC:
                    nm_strbuf_append_str(&buf_p, &buf_len, ", ");
                    nm_platform_lnk_macsec_to_string((const NMPlatformLnkMacsec *) extra_data,
@@ -2606,6 +2612,12 @@ nm_platform_link_get_lnk_ipip(NMPlatform *self, int ifindex, const NMPlatformLin
     return _link_get_lnk(self, ifindex, NM_LINK_TYPE_IPIP, out_link);
 }
 
+const NMPlatformLnkIpvlan *
+nm_platform_link_get_lnk_ipvlan(NMPlatform *self, int ifindex, const NMPlatformLink **out_link)
+{
+    return _link_get_lnk(self, ifindex, NM_LINK_TYPE_IPVLAN, out_link);
+}
+
 const NMPlatformLnkMacsec *
 nm_platform_link_get_lnk_macsec(NMPlatform *self, int ifindex, const NMPlatformLink **out_link)
 {
@@ -3608,6 +3620,26 @@ nm_platform_ethtool_set_features(
 }
 
 gboolean
+nm_platform_ethtool_get_fec_mode(NMPlatform *self, int ifindex, uint32_t *fec_mode)
+{
+    _CHECK_SELF_NETNS(self, klass, netns, FALSE);
+
+    g_return_val_if_fail(ifindex > 0, FALSE);
+
+    return nmp_utils_ethtool_get_fec_mode(ifindex, fec_mode);
+}
+
+gboolean
+nm_platform_ethtool_set_fec_mode(NMPlatform *self, int ifindex, uint32_t fec_mode)
+{
+    _CHECK_SELF_NETNS(self, klass, netns, FALSE);
+
+    g_return_val_if_fail(ifindex > 0, FALSE);
+
+    return nmp_utils_ethtool_set_fec_mode(ifindex, fec_mode);
+}
+
+gboolean
 nm_platform_ethtool_get_link_coalesce(NMPlatform             *self,
                                       int                     ifindex,
                                       NMEthtoolCoalesceState *coalesce)
@@ -3814,7 +3846,7 @@ nm_platform_ip4_address_add(NMPlatform *self,
         char                 sbuf[NM_UTILS_TO_STRING_BUFFER_SIZE];
         NMPlatformIP4Address addr;
 
-        addr = (NMPlatformIP4Address){
+        addr = (NMPlatformIP4Address) {
             .ifindex           = ifindex,
             .address           = address,
             .peer_address      = peer_address,
@@ -4813,7 +4845,7 @@ nm_platform_ip_address_get_prune_list(NMPlatform            *self,
             const NMPlatformIP4Address *a4 = NMP_OBJECT_CAST_IP4_ADDRESS(obj);
 
             if (a4->address == NM_IPV4LO_ADDR1 && a4->plen == NM_IPV4LO_PREFIXLEN) {
-                const NMPlatformIP4Address addr = (NMPlatformIP4Address){
+                const NMPlatformIP4Address addr = (NMPlatformIP4Address) {
                     .ifindex                   = NM_LOOPBACK_IFINDEX,
                     .address                   = NM_IPV4LO_ADDR1,
                     .peer_address              = NM_IPV4LO_ADDR1,
@@ -4963,7 +4995,7 @@ nm_platform_ip_route_get_prune_list(NMPlatform            *self,
                     NMPlatformIP4Route r;
 
                     if (rt->r4.network == NM_IPV4LO_ADDR1) {
-                        r = (NMPlatformIP4Route){
+                        r = (NMPlatformIP4Route) {
                             .ifindex       = NM_LOOPBACK_IFINDEX,
                             .type_coerced  = nm_platform_route_type_coerce(RTN_LOCAL),
                             .table_coerced = nm_platform_route_table_coerce(local_table),
@@ -4975,7 +5007,7 @@ nm_platform_ip_route_get_prune_list(NMPlatform            *self,
                             .pref_src      = NM_IPV4LO_ADDR1,
                         };
                     } else {
-                        r = (NMPlatformIP4Route){
+                        r = (NMPlatformIP4Route) {
                             .ifindex       = NM_LOOPBACK_IFINDEX,
                             .type_coerced  = nm_platform_route_type_coerce(RTN_LOCAL),
                             .table_coerced = nm_platform_route_table_coerce(local_table),
@@ -5624,6 +5656,7 @@ int
 nm_platform_ip_route_get(NMPlatform   *self,
                          int           addr_family,
                          gconstpointer address /* in_addr_t or struct in6_addr */,
+                         guint32       fwmark,
                          int           oif_ifindex,
                          NMPObject   **out_route)
 {
@@ -5632,21 +5665,23 @@ nm_platform_ip_route_get(NMPlatform   *self,
     int                       result;
     char                      buf[NM_INET_ADDRSTRLEN];
     char                      buf_oif[64];
+    char                      buf_fwmark[64];
 
     _CHECK_SELF(self, klass, FALSE);
 
     g_return_val_if_fail(address, -NME_BUG);
     g_return_val_if_fail(NM_IN_SET(addr_family, AF_INET, AF_INET6), -NME_BUG);
 
-    _LOGT("route: get IPv%c route for: %s%s",
+    _LOGT("route: get IPv%c route for: %s%s%s",
           nm_utils_addr_family_to_char(addr_family),
           inet_ntop(addr_family, address, buf, sizeof(buf)),
-          oif_ifindex > 0 ? nm_sprintf_buf(buf_oif, " oif %d", oif_ifindex) : "");
+          oif_ifindex > 0 ? nm_sprintf_buf(buf_oif, " oif %d", oif_ifindex) : "",
+          fwmark > 0 ? nm_sprintf_buf(buf_fwmark, " fwmark %u", fwmark) : "");
 
     if (!klass->ip_route_get)
         result = -NME_PL_OPNOTSUPP;
     else {
-        result = klass->ip_route_get(self, addr_family, address, oif_ifindex, &route);
+        result = klass->ip_route_get(self, addr_family, address, fwmark, oif_ifindex, &route);
     }
 
     if (result < 0) {
@@ -6700,6 +6735,21 @@ nm_platform_lnk_macvlan_to_string(const NMPlatformLnkMacvlan *lnk, char *buf, gs
                lnk->tap ? "macvtap" : "macvlan",
                lnk->mode,
                lnk->no_promisc ? "not-promisc" : "promisc");
+    return buf;
+}
+
+const char *
+nm_platform_lnk_ipvlan_to_string(const NMPlatformLnkIpvlan *lnk, char *buf, gsize len)
+{
+    if (!nm_utils_to_string_buffer_init_null(lnk, &buf, &len))
+        return buf;
+
+    g_snprintf(buf,
+               len,
+               "mode %u%s%s",
+               lnk->mode,
+               lnk->private_flag ? " private" : "",
+               lnk->vepa ? " vepa" : "");
     return buf;
 }
 
@@ -8591,6 +8641,22 @@ nm_platform_lnk_macvlan_cmp(const NMPlatformLnkMacvlan *a, const NMPlatformLnkMa
 }
 
 void
+nm_platform_lnk_ipvlan_hash_update(const NMPlatformLnkIpvlan *obj, NMHashState *h)
+{
+    nm_hash_update_vals(h, obj->mode, NM_HASH_COMBINE_BOOLS(guint8, obj->private_flag, obj->vepa));
+}
+
+int
+nm_platform_lnk_ipvlan_cmp(const NMPlatformLnkIpvlan *a, const NMPlatformLnkIpvlan *b)
+{
+    NM_CMP_SELF(a, b);
+    NM_CMP_FIELD(a, b, mode);
+    NM_CMP_FIELD_UNSAFE(a, b, private_flag);
+    NM_CMP_FIELD_UNSAFE(a, b, vepa);
+    return 0;
+}
+
+void
 nm_platform_lnk_sit_hash_update(const NMPlatformLnkSit *obj, NMHashState *h)
 {
     nm_hash_update_vals(h,
@@ -9652,7 +9718,7 @@ nm_platform_ip4_address_generate_device_route(const NMPlatformIP4Address *addr,
         return NULL;
     }
 
-    *dst = (NMPlatformIP4Route){
+    *dst = (NMPlatformIP4Route) {
         .ifindex       = ifindex,
         .rt_source     = NM_IP_CONFIG_SOURCE_KERNEL,
         .network       = network_4,
@@ -9999,7 +10065,7 @@ nm_platform_ip6_dadfailed_set(NMPlatform            *self,
 
     if (failed) {
         addr  = g_slice_new(IP6DadFailedAddr);
-        *addr = (IP6DadFailedAddr){
+        *addr = (IP6DadFailedAddr) {
             .address        = *ip6,
             .ifindex        = ifindex,
             .timestamp_nsec = now_nsec,

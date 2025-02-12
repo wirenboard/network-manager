@@ -92,7 +92,7 @@ ip4_process_dhcpcd_rfc3442_routes(const char     *iface,
 
             nm_l3_config_data_add_route_4(
                 l3cd,
-                &((const NMPlatformIP4Route){
+                &((const NMPlatformIP4Route) {
                     .rt_source  = NM_IP_CONFIG_SOURCE_DHCP,
                     .network    = nm_ip4_addr_clear_host_address(rt_addr, rt_cidr),
                     .plen       = rt_cidr,
@@ -147,7 +147,7 @@ process_dhclient_rfc3442_route(const char *const **p_octets, NMPlatformIP4Route 
     if (inet_pton(AF_INET, next_hop, &tmp_addr) <= 0)
         return FALSE;
 
-    *route = (NMPlatformIP4Route){
+    *route = (NMPlatformIP4Route) {
         .network = v_network,
         .plen    = v_plen,
         .gateway = tmp_addr,
@@ -316,7 +316,7 @@ process_classful_routes(const char     *iface,
 
         // FIXME: ensure the IP address and route are sane
 
-        route = (NMPlatformIP4Route){
+        route = (NMPlatformIP4Route) {
             .network = rt_addr,
         };
 
@@ -409,7 +409,7 @@ nm_dhcp_utils_ip4_config_from_options(NMDedupMultiIndex *multi_idx,
 
     now = nm_utils_get_monotonic_timestamp_sec();
 
-    address = (NMPlatformIP4Address){
+    address = (NMPlatformIP4Address) {
         .timestamp = now,
     };
 
@@ -499,7 +499,7 @@ nm_dhcp_utils_ip4_config_from_options(NMDedupMultiIndex *multi_idx,
         for (s = dns; dns && *s; s++) {
             if (inet_pton(AF_INET, *s, &tmp_addr) > 0) {
                 if (tmp_addr) {
-                    nm_l3_config_data_add_nameserver_detail(l3cd, AF_INET, &tmp_addr, NULL);
+                    nm_l3_config_data_add_nameserver_addr(l3cd, AF_INET, &tmp_addr);
                     _LOG2I(LOGD_DHCP4, iface, "  nameserver '%s'", *s);
                 }
             } else
@@ -655,7 +655,7 @@ nm_dhcp_utils_ip6_config_from_options(NMDedupMultiIndex *multi_idx,
 
     now = nm_utils_get_monotonic_timestamp_sec();
 
-    address = (NMPlatformIP6Address){
+    address = (NMPlatformIP6Address) {
         .plen      = 128,
         .timestamp = now,
     };
@@ -704,7 +704,7 @@ nm_dhcp_utils_ip6_config_from_options(NMDedupMultiIndex *multi_idx,
         for (s = dns; dns && *s; s++) {
             if (inet_pton(AF_INET6, *s, &tmp_addr) > 0) {
                 if (!IN6_IS_ADDR_UNSPECIFIED(&tmp_addr)) {
-                    nm_l3_config_data_add_nameserver_detail(l3cd, AF_INET6, &tmp_addr, NULL);
+                    nm_l3_config_data_add_nameserver_addr(l3cd, AF_INET6, &tmp_addr);
                     _LOG2I(LOGD_DHCP6, iface, "  nameserver '%s'", *s);
                 }
             } else
@@ -931,6 +931,27 @@ nm_dhcp_lease_data_parse_u16(const guint8 *data,
     }
 
     *out_val = unaligned_read_be16(data);
+    return TRUE;
+}
+
+gboolean
+nm_dhcp_lease_data_parse_u32(const guint8 *data,
+                             gsize         n_data,
+                             uint32_t     *out_val,
+                             const char   *iface,
+                             int           addr_family,
+                             guint         option)
+{
+    if (n_data != 4) {
+        nm_dhcp_lease_log_invalid_option(iface,
+                                         addr_family,
+                                         option,
+                                         "invalid option length %lu",
+                                         (unsigned long) n_data);
+        return FALSE;
+    }
+
+    *out_val = unaligned_read_be32(data);
     return TRUE;
 }
 

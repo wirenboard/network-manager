@@ -3623,7 +3623,8 @@ test_roundtrip_ethtool(void)
             optname = nm_ethtool_data[ethtool_id]->optname;
             vtype   = nm_ethtool_id_get_variant_type(ethtool_id);
 
-            if (nm_ethtool_optname_is_channels(optname) || nm_ethtool_optname_is_eee(optname)) {
+            if (nm_ethtool_optname_is_channels(optname) || nm_ethtool_optname_is_eee(optname)
+                || nm_ethtool_optname_is_fec(optname)) {
                 /* Not supported */
                 continue;
             }
@@ -9520,18 +9521,24 @@ do_svUnescape_combine_ansi(GString                *str_val,
 static void
 test_svUnescape(void)
 {
-#define V0(v_value, v_expected)                                       \
-    {                                                                 \
-        .val = "" v_value "", .exp = v_expected, .can_concat = FALSE, \
+#define V0(v_value, v_expected)      \
+    {                                \
+        .val        = "" v_value "", \
+        .exp        = v_expected,    \
+        .can_concat = FALSE,         \
     }
-#define V1(v_value, v_expected)                                              \
-    {                                                                        \
-        .val = "" v_value "", .exp = v_expected, .can_concat = !!v_expected, \
+#define V1(v_value, v_expected)      \
+    {                                \
+        .val        = "" v_value "", \
+        .exp        = v_expected,    \
+        .can_concat = !!v_expected,  \
     }
-#define V2(v_value, v_expected)                                      \
-    {                                                                \
-        .val = "" v_value "", .exp = v_expected, .can_concat = TRUE, \
-        .needs_ascii_separator = TRUE,                               \
+#define V2(v_value, v_expected)                 \
+    {                                           \
+        .val                   = "" v_value "", \
+        .exp                   = v_expected,    \
+        .can_concat            = TRUE,          \
+        .needs_ascii_separator = TRUE,          \
     }
     const UnescapeTestData data_full[] = {
         V1("", ""),

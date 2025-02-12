@@ -113,7 +113,7 @@ _add_connection_info_new(NmCli *nmc, NMConnection *orig_connection, NMConnection
     AddConnectionInfo *info;
 
     info  = g_slice_new(AddConnectionInfo);
-    *info = (AddConnectionInfo){
+    *info = (AddConnectionInfo) {
         .nmc       = nmc,
         .orig_id   = orig_connection ? g_strdup(nm_connection_get_id(orig_connection)) : NULL,
         .orig_uuid = orig_connection ? g_strdup(nm_connection_get_uuid(orig_connection)) : NULL,
@@ -1075,7 +1075,7 @@ const NmcMetaGenericInfo
     "," NM_SETTING_PROXY_SETTING_NAME "," NM_SETTING_TC_CONFIG_SETTING_NAME            \
     "," NM_SETTING_SRIOV_SETTING_NAME "," NM_SETTING_ETHTOOL_SETTING_NAME              \
     "," NM_SETTING_OVS_DPDK_SETTING_NAME "," NM_SETTING_HOSTNAME_SETTING_NAME          \
-    "," NM_SETTING_HSR_SETTING_NAME
+    "," NM_SETTING_HSR_SETTING_NAME "," NM_SETTING_IPVLAN_SETTING_NAME
 /* NM_SETTING_DUMMY_SETTING_NAME NM_SETTING_WIMAX_SETTING_NAME */
 
 const NmcMetaGenericInfo *const nmc_fields_con_active_details_groups[] = {
@@ -1763,7 +1763,7 @@ nmc_active_connection_details(NMActiveConnection *acon, NmCli *nmc)
 
             nmc_print_table(
                 &nmc->nmc_config,
-                (gpointer[]){acon, NULL},
+                (gpointer[]) {acon, NULL},
                 NULL,
                 NULL,
                 NMC_META_GENERIC_GROUP("GENERAL", metagen_con_active_general, N_("GROUP")),
@@ -1820,7 +1820,7 @@ nmc_active_connection_details(NMActiveConnection *acon, NmCli *nmc)
         if (nmc_fields_con_active_details_groups[group_idx]->nested == metagen_con_active_vpn) {
             if (NM_IS_VPN_CONNECTION(acon)) {
                 nmc_print_table(&nmc->nmc_config,
-                                (gpointer[]){acon, NULL},
+                                (gpointer[]) {acon, NULL},
                                 NULL,
                                 NULL,
                                 NMC_META_GENERIC_GROUP("VPN", metagen_con_active_vpn, N_("NAME")),
@@ -1883,8 +1883,23 @@ split_required_fields_for_con_show(const char *input,
         for (i = 0; i < _NM_META_SETTING_TYPE_NUM; i++) {
             if (is_all || is_common
                 || !g_ascii_strcasecmp(s_mutable, nm_meta_setting_infos[i].setting_name)) {
-                if (dot)
+                gs_free char *to_free = NULL;
+
+                if (dot) {
+                    /* If there was a dot we have 'setting.property'. Some properties has different
+                     * name for the user than internally in libnm and D-Bus. Make the conversion
+                     * from user names to libnm names.
+                     */
+                    const char *prop_user = dot + 1;
+                    const char *prop_libnm =
+                        nmc_setting_propname_user_to_libnm(s_mutable, prop_user);
+                    if (prop_user != prop_libnm) {
+                        to_free   = g_strdup_printf("%s.%s", s_mutable, prop_libnm);
+                        s_mutable = to_free;
+                    }
                     *dot = '.';
+                }
+
                 g_string_append(str1, s_mutable);
                 g_string_append_c(str1, ',');
                 found = TRUE;
@@ -3143,9 +3158,6 @@ do_connection_up(const NMCCommand *cmd, NmCli *nmc, int argc, const char *const 
     const char           *pwds       = NULL;
     gs_free_error GError *error      = NULL;
     gs_strfreev char    **arg_arr    = NULL;
-    int                   arg_num;
-    const char *const   **argv_ptr;
-    int                  *argc_ptr;
 
     /*
      * Set default timeout for connection activation.
@@ -3155,8 +3167,6 @@ do_connection_up(const NMCCommand *cmd, NmCli *nmc, int argc, const char *const 
         nmc->timeout = 90;
 
     next_arg(nmc, &argc, &argv, NULL);
-    argv_ptr = &argv;
-    argc_ptr = &argc;
 
     if (argc == 0 && nmc->ask) {
         gs_free char *line = NULL;
@@ -3165,13 +3175,12 @@ do_connection_up(const NMCCommand *cmd, NmCli *nmc, int argc, const char *const 
         g_return_if_fail(!nmc->complete);
 
         line = nmc_readline(&nmc->nmc_config, PROMPT_CONNECTION);
-        nmc_string_to_arg_array(line, NULL, TRUE, &arg_arr, &arg_num);
-        argv_ptr = (const char *const **) &arg_arr;
-        argc_ptr = &arg_num;
+        nmc_string_to_arg_array(line, NULL, TRUE, &arg_arr, &argc);
+        argv = (const char *const *) arg_arr;
     }
 
     if (argc > 0 && !nm_streq(*argv, "ifname")) {
-        connection = get_connection(nmc, argc_ptr, argv_ptr, NULL, NULL, NULL, &error);
+        connection = get_connection(nmc, &argc, &argv, NULL, NULL, NULL, &error);
         if (!connection) {
             g_string_printf(nmc->return_text, _("Error: %s."), error->message);
             nmc->return_value = error->code;
@@ -4398,7 +4407,7 @@ set_property(NMClient              *client,
     }
 
     /* Don't ask for this property in interactive mode. */
-    disable_options(setting_name, property_name);
+    disable_options(setting_name, nmc_setting_propname_user_to_libnm(setting_name, property_name));
 
     return TRUE;
 }
@@ -6919,7 +6928,7 @@ nmcli_editor_tab_completion(const char *text, int start, int end)
     return match_array;
 }
 
-#define NMCLI_EDITOR_HISTORY ".nmcli-history"
+#define NMCLI_EDITOR_HISTORY "nmcli-history"
 
 static void
 load_history_cmds(const char *uuid)
@@ -6931,7 +6940,7 @@ load_history_cmds(const char *uuid)
     size_t    i;
     GError   *err = NULL;
 
-    filename = g_build_filename(g_get_home_dir(), NMCLI_EDITOR_HISTORY, NULL);
+    filename = g_build_filename(g_get_user_cache_dir(), NMCLI_EDITOR_HISTORY, NULL);
     kf       = g_key_file_new();
     if (!g_key_file_load_from_file(kf, filename, G_KEY_FILE_KEEP_COMMENTS, &err)) {
         if (g_error_matches(err, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_PARSE))
@@ -6967,7 +6976,7 @@ save_history_cmds(const char *uuid)
     if (!hist)
         return;
 
-    filename = g_build_filename(g_get_home_dir(), NMCLI_EDITOR_HISTORY, NULL);
+    filename = g_build_filename(g_get_user_cache_dir(), NMCLI_EDITOR_HISTORY, NULL);
 
     kf = g_key_file_new();
 

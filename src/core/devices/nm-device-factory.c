@@ -147,7 +147,7 @@ nm_device_factory_get_connection_iface(NMDeviceFactory *factory,
         g_set_error(error,
                     NM_MANAGER_ERROR,
                     NM_MANAGER_ERROR_FAILED,
-                    "failed to determine interface name: error determine name for %s",
+                    "failed to determine interface name for a %s",
                     nm_connection_get_connection_type(connection));
         return NULL;
     }
@@ -415,6 +415,7 @@ nm_device_factory_manager_load_factories(NMDeviceFactoryManagerFactoryFunc callb
     _ADD_INTERNAL(nm_hsr_device_factory_get_type);
     _ADD_INTERNAL(nm_infiniband_device_factory_get_type);
     _ADD_INTERNAL(nm_ip_tunnel_device_factory_get_type);
+    _ADD_INTERNAL(nm_ipvlan_device_factory_get_type);
     _ADD_INTERNAL(nm_loopback_device_factory_get_type);
     _ADD_INTERNAL(nm_macsec_device_factory_get_type);
     _ADD_INTERNAL(nm_macvlan_device_factory_get_type);

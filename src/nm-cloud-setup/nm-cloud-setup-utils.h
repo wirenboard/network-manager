@@ -12,6 +12,7 @@
 #define NMCS_ENV_NM_CLOUD_SETUP_AZURE  "NM_CLOUD_SETUP_AZURE"
 #define NMCS_ENV_NM_CLOUD_SETUP_EC2    "NM_CLOUD_SETUP_EC2"
 #define NMCS_ENV_NM_CLOUD_SETUP_GCP    "NM_CLOUD_SETUP_GCP"
+#define NMCS_ENV_NM_CLOUD_SETUP_OCI    "NM_CLOUD_SETUP_OCI"
 #define NMCS_ENV_NM_CLOUD_SETUP_LOG    "NM_CLOUD_SETUP_LOG"
 
 /* Undocumented/internal environment variables for configuring nm-cloud-setup.
@@ -20,6 +21,7 @@
 #define NMCS_ENV_NM_CLOUD_SETUP_AZURE_HOST     "NM_CLOUD_SETUP_AZURE_HOST"
 #define NMCS_ENV_NM_CLOUD_SETUP_EC2_HOST       "NM_CLOUD_SETUP_EC2_HOST"
 #define NMCS_ENV_NM_CLOUD_SETUP_GCP_HOST       "NM_CLOUD_SETUP_GCP_HOST"
+#define NMCS_ENV_NM_CLOUD_SETUP_OCI_HOST       "NM_CLOUD_SETUP_OCI_HOST"
 #define NMCS_ENV_NM_CLOUD_SETUP_MAP_INTERFACES "NM_CLOUD_SETUP_MAP_INTERFACES"
 
 /*****************************************************************************/
@@ -126,7 +128,7 @@ again:                                                                          
 char *nmcs_utils_uri_build_concat_v(const char *base, const char **components, gsize n_components);
 
 #define nmcs_utils_uri_build_concat(base, ...) \
-    nmcs_utils_uri_build_concat_v(base, ((const char *[]){__VA_ARGS__}), NM_NARG(__VA_ARGS__))
+    nmcs_utils_uri_build_concat_v(base, ((const char *[]) {__VA_ARGS__}), NM_NARG(__VA_ARGS__))
 
 const char *nmcs_utils_uri_complete_interned(const char *uri);
 
@@ -150,6 +152,11 @@ NMConnection *nmcs_device_get_applied_connection(NMDevice     *device,
                                                  GCancellable *cancellable,
                                                  guint64      *version_id,
                                                  GError      **error);
+
+NMActiveConnection *nmcs_add_and_activate(NMClient     *client,
+                                          GCancellable *sigterm_cancellable,
+                                          NMConnection *connection,
+                                          GError      **error);
 
 gboolean nmcs_device_reapply(NMDevice     *device,
                              GCancellable *sigterm_cancellable,

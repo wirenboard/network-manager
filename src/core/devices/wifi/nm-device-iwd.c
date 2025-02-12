@@ -275,7 +275,7 @@ ap_from_network(NMDeviceIwd *self,
 
     ssid = g_bytes_new(name, NM_MIN(32u, strlen(name)));
 
-    bss_info = (NMSupplicantBssInfo){
+    bss_info = (NMSupplicantBssInfo) {
         .bss_path       = bss_path,
         .last_seen_msec = last_seen_msec,
         .bssid_valid    = TRUE,
@@ -1074,8 +1074,7 @@ complete_connection(NMDevice            *device,
                               ssid_utf8,
                               ssid_utf8,
                               NULL,
-                              NULL,
-                              TRUE);
+                              NULL);
 
     if (hidden)
         g_object_set(s_wifi, NM_SETTING_WIRELESS_HIDDEN, TRUE, NULL);
@@ -3602,7 +3601,7 @@ nm_device_iwd_parse_netconfig(NMDeviceIwd *self, int addr_family, GVariantIter *
             preferred_lifetime = valid_lifetime;
 
         if (addr_family == AF_INET) {
-            a.a4 = (NMPlatformIP4Address){
+            a.a4 = (NMPlatformIP4Address) {
                 .address      = addr_bin.addr4,
                 .peer_address = addr_bin.addr4,
                 .plen         = plen,
@@ -3614,7 +3613,7 @@ nm_device_iwd_parse_netconfig(NMDeviceIwd *self, int addr_family, GVariantIter *
                 .broadcast_address         = bcast_bin.addr4,
             };
         } else {
-            a.a6 = (NMPlatformIP6Address){
+            a.a6 = (NMPlatformIP6Address) {
                 .address     = addr_bin.addr6,
                 .plen        = 128,
                 .timestamp   = (valid_lifetime != NM_PLATFORM_LIFETIME_PERMANENT) ? timestamp : 0,
@@ -3703,7 +3702,7 @@ nm_device_iwd_parse_netconfig(NMDeviceIwd *self, int addr_family, GVariantIter *
         }
 
         if (addr_family == AF_INET) {
-            r.r4 = (NMPlatformIP4Route){
+            r.r4 = (NMPlatformIP4Route) {
                 .network  = dst_addr_str ? dst_addr_bin.addr4 : 0,
                 .plen     = dst_addr_str ? dst_plen : 0,
                 .gateway  = router_str ? router_bin.addr4 : 0,
@@ -3712,7 +3711,7 @@ nm_device_iwd_parse_netconfig(NMDeviceIwd *self, int addr_family, GVariantIter *
                     nm_platform_route_scope_inv(router_str ? RT_SCOPE_UNIVERSE : RT_SCOPE_LINK),
             };
         } else {
-            r.r6 = (NMPlatformIP6Route){
+            r.r6 = (NMPlatformIP6Route) {
                 .network     = dst_addr_str ? dst_addr_bin.addr6 : nm_ip_addr_zero.addr6,
                 .plen        = dst_addr_str ? dst_plen : 0,
                 .gateway     = router_str ? router_bin.addr6 : nm_ip_addr_zero.addr6,
@@ -3739,7 +3738,7 @@ nm_device_iwd_parse_netconfig(NMDeviceIwd *self, int addr_family, GVariantIter *
             if (inet_pton(addr_family, str_value, &dns_bin) != 1)
                 goto param_error;
 
-            nm_l3_config_data_add_nameserver_detail(l3cd, addr_family, &dns_bin, NULL);
+            nm_l3_config_data_add_nameserver_addr(l3cd, addr_family, &dns_bin);
             nm_l3_config_data_set_dns_priority(l3cd, addr_family, NM_DNS_PRIORITY_DEFAULT_NORMAL);
         }
     }

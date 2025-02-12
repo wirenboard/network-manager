@@ -905,7 +905,9 @@ static const ConfigGroup config_groups[] = {
     {
         .group = NM_CONFIG_KEYFILE_GROUP_GLOBAL_DNS,
         .keys  = NM_MAKE_STRV(NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_OPTIONS,
-                             NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_SEARCHES, ),
+                             NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_SEARCHES,
+                             NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_CERTIFICATION_AUTHORITY,
+                             NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_RESOLVE_MODE, ),
     },
     {
         .group     = NM_CONFIG_KEYFILE_GROUPPREFIX_GLOBAL_DNS_DOMAIN,
@@ -1284,19 +1286,23 @@ _get_config_dir_files(const char *config_dir)
 static void
 _confs_to_description(GString *str, const GPtrArray *confs, const char *name)
 {
-    guint i;
+    guint    i;
+    gboolean need_braces;
 
     if (!confs->len)
         return;
 
+    need_braces = confs->len > 1;
+
     for (i = 0; i < confs->len; i++) {
         if (i == 0)
-            g_string_append_printf(str, " (%s: ", name);
+            g_string_append_printf(str, ", %s/%s", name, need_braces ? "{" : "");
         else
-            g_string_append(str, ", ");
+            g_string_append(str, ",");
         g_string_append(str, confs->pdata[i]);
     }
-    g_string_append(str, ")");
+    if (need_braces)
+        g_string_append(str, "}");
 }
 
 static GKeyFile *
@@ -1427,9 +1433,9 @@ read_entire_config(const NMConfigCmdLineOptions *cli,
         GString *str;
 
         str = g_string_new(o_config_main_file);
-        _confs_to_description(str, system_confs, "lib");
-        _confs_to_description(str, run_confs, "run");
-        _confs_to_description(str, confs, "etc");
+        _confs_to_description(str, system_confs, system_config_dir);
+        _confs_to_description(str, run_confs, run_config_dir);
+        _confs_to_description(str, confs, config_dir);
         *out_config_description = g_string_free(str, FALSE);
     }
     NM_SET_OUT(out_config_main_file, g_steal_pointer(&o_config_main_file));
@@ -2815,12 +2821,12 @@ nm_config_reload(NMConfig *self, NMConfigChangeFlags reload_flags, gboolean emit
     NMConfigPrivate             *priv;
     GError                      *error = NULL;
     GKeyFile                    *keyfile, *keyfile_intern;
-    NMConfigData                *new_data           = NULL;
-    char                        *config_main_file   = NULL;
-    char                        *config_description = NULL;
-    gs_strfreev char           **no_auto_default    = NULL;
-    gboolean                     intern_config_needs_rewrite;
-    gs_unref_ptrarray GPtrArray *warnings = NULL;
+    NMConfigData                *new_data                    = NULL;
+    char                        *config_main_file            = NULL;
+    char                        *config_description          = NULL;
+    gs_strfreev char           **no_auto_default             = NULL;
+    gboolean                     intern_config_needs_rewrite = FALSE;
+    gs_unref_ptrarray GPtrArray *warnings                    = NULL;
     guint                        i;
 
     g_return_if_fail(NM_IS_CONFIG(self));
@@ -2869,6 +2875,13 @@ nm_config_reload(NMConfig *self, NMConfigChangeFlags reload_flags, gboolean emit
                             keyfile,
                             (const char *const *) priv->atomic_section_prefixes,
                             NULL);
+    }
+
+    if (keyfile_intern) {
+        gs_free char *desc = config_description;
+
+        config_description =
+            g_strdup_printf("%s, %s", config_description, priv->intern_config_file);
     }
 
     new_data = nm_config_data_new(config_main_file,
@@ -3042,16 +3055,16 @@ nm_config_kernel_command_line_nm_debug(void)
 static gboolean
 init_sync(GInitable *initable, GCancellable *cancellable, GError **error)
 {
-    NMConfig                       *self               = NM_CONFIG(initable);
-    NMConfigPrivate                *priv               = NM_CONFIG_GET_PRIVATE(self);
-    nm_auto_unref_keyfile GKeyFile *keyfile            = NULL;
-    nm_auto_unref_keyfile GKeyFile *keyfile_intern     = NULL;
-    gs_free char                   *config_main_file   = NULL;
-    gs_free char                   *config_description = NULL;
-    gs_strfreev char              **no_auto_default    = NULL;
-    gs_unref_ptrarray GPtrArray    *warnings           = NULL;
-    gs_free char                   *configure_and_quit = NULL;
-    gboolean                        intern_config_needs_rewrite;
+    NMConfig                       *self                        = NM_CONFIG(initable);
+    NMConfigPrivate                *priv                        = NM_CONFIG_GET_PRIVATE(self);
+    nm_auto_unref_keyfile GKeyFile *keyfile                     = NULL;
+    nm_auto_unref_keyfile GKeyFile *keyfile_intern              = NULL;
+    gs_free char                   *config_main_file            = NULL;
+    gs_free char                   *config_description          = NULL;
+    gs_strfreev char              **no_auto_default             = NULL;
+    gs_unref_ptrarray GPtrArray    *warnings                    = NULL;
+    gs_free char                   *configure_and_quit          = NULL;
+    gboolean                        intern_config_needs_rewrite = FALSE;
     const char                     *s;
 
     if (priv->config_dir) {
@@ -3124,6 +3137,13 @@ init_sync(GInitable *initable, GCancellable *cancellable, GError **error)
                             keyfile,
                             (const char *const *) priv->atomic_section_prefixes,
                             NULL);
+    }
+
+    if (keyfile_intern) {
+        gs_free char *desc = config_description;
+
+        config_description =
+            g_strdup_printf("%s, %s", config_description, priv->intern_config_file);
     }
 
     priv->config_data_orig = nm_config_data_new(config_main_file,

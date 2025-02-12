@@ -117,8 +117,7 @@ complete_connection(NMDevice            *device,
                               NULL,
                               _("ADSL connection"),
                               NULL,
-                              NULL,
-                              FALSE); /* No IPv6 yet by default */
+                              NULL);
     return TRUE;
 }
 
@@ -494,7 +493,7 @@ act_stage2_config(NMDevice *device, NMDeviceStateReason *out_failure_reason)
             _LOGD(LOGD_ADSL, "starting PPPoA");
         }
 
-        priv->ppp_mgr = nm_ppp_mgr_start(&((const NMPppMgrConfig){
+        priv->ppp_mgr = nm_ppp_mgr_start(&((const NMPppMgrConfig) {
                                              .netns         = nm_device_get_netns(device),
                                              .parent_iface  = ppp_iface,
                                              .callback      = _ppp_mgr_callback,

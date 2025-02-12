@@ -22,10 +22,7 @@ typedef struct _NMIPAddrTyped {
     gint8    addr_family;
 } NMIPAddrTyped;
 
-#define NM_IP_ADDR_INIT   \
-    {                     \
-        .addr_ptr = { 0 } \
-    }
+#define NM_IP_ADDR_INIT {.addr_ptr = {0}}
 
 #define _NM_IN6ADDR_INIT(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, aa, ab, ac, ad, ae, af) \
     {                                                                                    \
@@ -285,6 +282,7 @@ gboolean nm_ip6_addr_is_ula(const struct in6_addr *address);
 
 #define NM_IPV4LL_NETWORK   ((in_addr_t) htonl(0xA9FE0000lu)) /* 169.254.0.0 */
 #define NM_IPV4LL_NETMASK   ((in_addr_t) htonl(0xFFFF0000lu)) /* 255.255.0.0 */
+#define NM_IPV4LL_PREFIXLEN 16
 #define NM_IPV4LO_NETWORK   ((in_addr_t) htonl(0x7F000000lu)) /* 127.0.0.0 */
 #define NM_IPV4LO_NETMASK   ((in_addr_t) htonl(0xFF000000lu)) /* 255.0.0.0 */
 #define NM_IPV4LO_PREFIXLEN 8

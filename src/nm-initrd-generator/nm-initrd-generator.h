@@ -45,6 +45,9 @@ GHashTable *nmi_cmdline_reader_parse(const char        *etc_connections_dir,
                                      const char        *sysfs_dir,
                                      const char *const *argv,
                                      char             **hostname,
-                                     gint64            *carrier_timeout_sec);
+                                     gint64            *carrier_timeout_sec,
+                                     char            ***global_dns_servers,
+                                     char             **dns_backend,
+                                     char             **dns_resolve_mode);
 
 #endif /* __NM_INITRD_GENERATOR_H__ */

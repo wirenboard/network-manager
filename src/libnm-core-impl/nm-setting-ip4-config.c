@@ -39,7 +39,8 @@
 NM_GOBJECT_PROPERTIES_DEFINE_BASE(PROP_DHCP_CLIENT_ID,
                                   PROP_DHCP_FQDN,
                                   PROP_DHCP_VENDOR_CLASS_IDENTIFIER,
-                                  PROP_LINK_LOCAL, );
+                                  PROP_LINK_LOCAL,
+                                  PROP_DHCP_IPV6_ONLY_PREFERRED, );
 
 typedef struct {
     NMSettingIPConfigPrivate parent;
@@ -48,6 +49,7 @@ typedef struct {
     char  *dhcp_fqdn;
     char  *dhcp_vendor_class_identifier;
     gint32 link_local;
+    gint32 dhcp_ipv6_only_preferred;
 } NMSettingIP4ConfigPrivate;
 
 /**
@@ -146,6 +148,26 @@ nm_setting_ip4_config_get_link_local(NMSettingIP4Config *setting)
     return NM_SETTING_IP4_CONFIG_GET_PRIVATE(setting)->link_local;
 }
 
+/**
+ * nm_setting_ip4_config_get_dhcp_ipv6_only_preferred:
+ * @setting: the #NMSettingIP4Config
+ *
+ * Returns the value in the #NMSettingIP4Config:dhcp-ipv6-only-preferred
+ * property.
+ *
+ * Returns: the DHCP IPv6-only preferred property value
+ *
+ * Since: 1.52
+ **/
+NMSettingIP4DhcpIpv6OnlyPreferred
+nm_setting_ip4_config_get_dhcp_ipv6_only_preferred(NMSettingIP4Config *setting)
+{
+    g_return_val_if_fail(NM_IS_SETTING_IP4_CONFIG(setting),
+                         NM_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED_DEFAULT);
+
+    return NM_SETTING_IP4_CONFIG_GET_PRIVATE(setting)->dhcp_ipv6_only_preferred;
+}
+
 static gboolean
 verify(NMSetting *setting, NMConnection *connection, GError **error)
 {
@@ -241,7 +263,8 @@ verify(NMSetting *setting, NMConnection *connection, GError **error)
                    NM_SETTING_IP4_LL_AUTO,
                    NM_SETTING_IP4_LL_DEFAULT,
                    NM_SETTING_IP4_LL_DISABLED,
-                   NM_SETTING_IP4_LL_ENABLED)) {
+                   NM_SETTING_IP4_LL_ENABLED,
+                   NM_SETTING_IP4_LL_FALLBACK)) {
         g_set_error(error,
                     NM_CONNECTION_ERROR,
                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
@@ -252,7 +275,7 @@ verify(NMSetting *setting, NMConnection *connection, GError **error)
                        NM_SETTING_IP4_CONFIG_LINK_LOCAL);
         return FALSE;
     }
-    if (priv->link_local == NM_SETTING_IP4_LL_ENABLED
+    if (NM_IN_SET(priv->link_local, NM_SETTING_IP4_LL_ENABLED, NM_SETTING_IP4_LL_FALLBACK)
         && nm_streq(method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED)) {
         g_set_error_literal(error,
                             NM_CONNECTION_ERROR,
@@ -1028,6 +1051,8 @@ nm_setting_ip4_config_class_init(NMSettingIP4ConfigClass *klass)
      * When set to "default", it honors the global connection default, before
      * falling back to "auto". Note that if "ipv4.method" is "disabled", then
      * link local addressing is always disabled too. The default is "default".
+     * Since 1.52, when set to "fallback", a link-local address is obtained
+     * if no other IPv4 address is set.
      *
      * Since: 1.40
      */
@@ -1324,6 +1349,38 @@ nm_setting_ip4_config_class_init(NMSettingIP4ConfigClass *klass)
      *   </para>
      * ---end---
      */
+
+    /**
+     * NMSettingIP4Config:dhcp-ipv6-only-preferred
+     *
+     * Controls the "IPv6-Only Preferred" DHCPv4 option (RFC 8925).
+     *
+     * When set to %NM_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED_YES, the host adds the
+     * option to the parameter request list; if the DHCP server sends the option back,
+     * the host stops the DHCP client for the time interval specified in the option.
+     *
+     * Enable this feature if the host supports an IPv6-only mode, i.e. either all
+     * applications are IPv6-only capable or there is a form of 464XLAT deployed.
+     *
+     * When set to %NM_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED_DEFAULT, the actual value
+     * is looked up in the global configuration; if not specified, it defaults to
+     * %NM_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED_NO.
+     *
+     * If the connection has IPv6 method set to "disabled", this property does not
+     * have effect and the "IPv6-Only Preferred" option is always disabled.
+     *
+     * Since: 1.52
+     */
+    _nm_setting_property_define_direct_enum(properties_override,
+                                            obj_properties,
+                                            NM_SETTING_IP4_CONFIG_DHCP_IPV6_ONLY_PREFERRED,
+                                            PROP_DHCP_IPV6_ONLY_PREFERRED,
+                                            NM_TYPE_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED,
+                                            NM_SETTING_IP4_DHCP_IPV6_ONLY_PREFERRED_DEFAULT,
+                                            NM_SETTING_PARAM_NONE,
+                                            NULL,
+                                            NMSettingIP4ConfigPrivate,
+                                            dhcp_ipv6_only_preferred);
 
     g_object_class_install_properties(object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 

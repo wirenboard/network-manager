@@ -34,6 +34,9 @@ typedef struct {
     NMConnection *default_connection; /* connection not bound to any ifname */
     char         *hostname;
     GHashTable   *znet_ifnames;
+    GPtrArray    *global_dns;
+    char         *dns_backend;
+    char         *dns_resolve_mode;
 
     /* Parameters to be set for all connections */
     gboolean ignore_auto_dns;
@@ -50,7 +53,7 @@ reader_new(void)
     Reader *reader;
 
     reader  = g_slice_new(Reader);
-    *reader = (Reader){
+    *reader = (Reader) {
         .hash = g_hash_table_new_full(nm_str_hash, g_str_equal, g_free, g_object_unref),
         .explicit_ip_connections =
             g_hash_table_new_full(nm_direct_hash, NULL, g_object_unref, NULL),
@@ -69,12 +72,15 @@ reader_destroy(Reader *reader, gboolean free_hash)
 
     g_ptr_array_unref(reader->array);
     g_ptr_array_unref(reader->vlan_parents);
+    nm_clear_pointer(&reader->global_dns, g_ptr_array_unref);
     g_hash_table_unref(reader->explicit_ip_connections);
     hash = g_steal_pointer(&reader->hash);
     nm_clear_g_free(&reader->hostname);
     g_hash_table_unref(reader->znet_ifnames);
     nm_clear_g_free(&reader->dhcp4_vci);
     nm_clear_g_free(&reader->dhcp_dscp);
+    nm_clear_g_free(&reader->dns_backend);
+    nm_clear_g_free(&reader->dns_resolve_mode);
     nm_g_slice_free(reader);
     if (!free_hash)
         return g_steal_pointer(&hash);
@@ -1220,6 +1226,43 @@ reader_parse_rd_znet(Reader *reader, char *argument, gboolean net_ifnames)
 }
 
 static void
+reader_parse_global_dns(Reader *reader, char *argument)
+{
+    if (!nm_dns_uri_parse(AF_UNSPEC, argument, NULL)) {
+        _LOGW(LOGD_CORE, "rd.net.dns: invalid server '%s'", argument);
+        return;
+    }
+
+    if (!reader->global_dns) {
+        reader->global_dns = g_ptr_array_new_with_free_func(g_free);
+    }
+
+    g_ptr_array_add(reader->global_dns, g_strdup(argument));
+}
+
+static void
+reader_parse_dns_backend(Reader *reader, const char *argument)
+{
+    if (!NM_IN_STRSET(argument, "none", "default", "systemd-resolved", "dnsmasq", "dnsconfd")) {
+        _LOGW(LOGD_CORE, "rd.net.dns-backend: invalid value '%s'", argument);
+        return;
+    }
+
+    reader->dns_backend = g_strdup(argument);
+}
+
+static void
+reader_parse_dns_resolve_mode(Reader *reader, const char *argument)
+{
+    if (!NM_IN_STRSET(argument, "backup", "prefer", "exclusive")) {
+        _LOGW(LOGD_CORE, "rd.net.dns-resolve-mode: invalid value '%s'", argument);
+        return;
+    }
+
+    reader->dns_resolve_mode = g_strdup(argument);
+}
+
+static void
 reader_parse_ethtool(Reader *reader, char *argument)
 {
     NMConnection   *connection;
@@ -1392,7 +1435,10 @@ nmi_cmdline_reader_parse(const char        *etc_connections_dir,
                          const char        *sysfs_dir,
                          const char *const *argv,
                          char             **hostname,
-                         gint64            *carrier_timeout_sec)
+                         gint64            *carrier_timeout_sec,
+                         char            ***global_dns_servers,
+                         char             **dns_backend,
+                         char             **dns_resolve_mode)
 {
     Reader                      *reader;
     const char                  *tag;
@@ -1509,6 +1555,12 @@ nmi_cmdline_reader_parse(const char        *etc_connections_dir,
             bootif_val = g_strdup(argument);
         } else if (nm_streq(tag, "rd.ethtool")) {
             reader_parse_ethtool(reader, argument);
+        } else if (nm_streq(tag, "rd.net.dns")) {
+            reader_parse_global_dns(reader, argument);
+        } else if (nm_streq(tag, "rd.net.dns-backend")) {
+            reader_parse_dns_backend(reader, argument);
+        } else if (nm_streq(tag, "rd.net.dns-resolve-mode")) {
+            reader_parse_dns_resolve_mode(reader, argument);
         }
     }
 
@@ -1623,8 +1675,19 @@ nmi_cmdline_reader_parse(const char        *etc_connections_dir,
     g_hash_table_foreach(reader->hash, _normalize_conn, NULL);
 
     NM_SET_OUT(hostname, g_steal_pointer(&reader->hostname));
-
     NM_SET_OUT(carrier_timeout_sec, reader->carrier_timeout_sec);
+    NM_SET_OUT(dns_backend, g_steal_pointer(&reader->dns_backend));
+    NM_SET_OUT(dns_resolve_mode, g_steal_pointer(&reader->dns_resolve_mode));
+
+    if (reader->global_dns) {
+        if (global_dns_servers) {
+            g_ptr_array_add(reader->global_dns, NULL);
+            *global_dns_servers = (char **) g_ptr_array_free(reader->global_dns, FALSE);
+            reader->global_dns  = NULL;
+        }
+    } else {
+        NM_SET_OUT(global_dns_servers, NULL);
+    }
 
     return reader_destroy(reader, FALSE);
 }
