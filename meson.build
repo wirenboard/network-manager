@@ -2,11 +2,10 @@
 
 project(
   'NetworkManager', 'c',
-# NOTE: When incrementing version also:
-#  - add corresponding NM_VERSION_x_y_z macros in
-#    "src/libnm-core-public/nm-version-macros.h.in"
-#  - update number in configure.ac
-  version: '1.50.2',
+# NOTE: When incrementing version also add corresponding
+#       NM_VERSION_x_y_z macros in
+#       "src/libnm-core-public/nm-version-macros.h.in"
+  version: '1.51.90',
   license: 'GPL2+',
   default_options: [
     'buildtype=debugoptimized',
@@ -174,11 +173,18 @@ endif
 
 enable_lto = get_option('b_lto')
 if enable_lto
-  # meson already adds '-flto'
-  lto_flag = '-flto-partition=none'
-  assert(cc.has_argument(lto_flag), '-flto-partition=none not supported. Disable link-time optimization with -Db_lto=false.')
-  common_flags += lto_flag
-  common_ldflags += lto_flag
+  if  cc.get_id() == 'clang'
+    clang_version = cc.version()
+    if clang_version <= '18.0.0'
+      error('Clang version should be greater then 18.0.0 got : ' + clang_version)
+    endif
+  else
+    # Meson already adds '-flto'
+    lto_flag = '-flto-partition=none'
+    assert(cc.has_argument(lto_flag), '-flto-partition=none not supported. Disable link-time optimization with -Db_lto=false.')
+    common_flags += lto_flag
+    common_ldflags += lto_flag
+  endif
 endif
 
 common_flags += cc.get_supported_arguments([
@@ -625,8 +631,9 @@ config_h.set10('WITH_OFONO', enable_ofono)
 # DHCP client support
 config_dhcp_default = get_option('config_dhcp_default')
 config_h.set_quoted('NM_CONFIG_DEFAULT_MAIN_DHCP', config_dhcp_default)
+config_dhcp_clients_enabled = [ 'internal' ]
 dhcp_summary = ''
-foreach client : [ 'dhclient', 'dhcpcd', 'dhcpcanon' ]
+foreach client : [ 'dhcpcd', 'dhclient' ]
   client_path = get_option(client)
   client_enable = (client_path != 'no')
   if client_enable
@@ -656,6 +663,7 @@ foreach client : [ 'dhclient', 'dhcpcd', 'dhcpcanon' ]
   dhcp_summary += ('  ' + client + ': ' + client_enable.to_string())
   if (client_enable)
     dhcp_summary += (' ' + client_path)
+    config_dhcp_clients_enabled += client
   endif
   if (client == 'dhclient')
     dhcp_summary += ' (deprecated)'
@@ -801,6 +809,7 @@ endif
 enable_nm_cloud_setup = get_option('nm_cloud_setup')
 if enable_nm_cloud_setup
   assert(libcurl_dep.found(), 'nm-cloud-setup requires libcurl library. Use -Dnm_cloud_setup=false to disable it')
+  assert(jansson_dep.found(), 'nm-cloud-setup requires jansson library. Use -Dnm_cloud_setup=false to disable it')
 endif
 
 enable_docs = get_option('docs')
@@ -928,6 +937,7 @@ data_conf.set('NM_CONFIG_DEFAULT_MAIN_DHCP',             config_dhcp_default)
 data_conf.set('NM_CONFIG_DEFAULT_MAIN_RC_MANAGER',       config_dns_rc_manager_default)
 data_conf.set('NM_CONFIG_DEFAULT_MAIN_MIGRATE_IFCFG_RH_TEXT', config_migrate_ifcfg_rh_default)
 data_conf.set('NM_CONFIG_DEFAULT_WIFI_BACKEND_TEXT',     config_wifi_backend_default)
+data_conf.set('NM_DHCP_CLIENTS_ENABLED',                 ', '.join(config_dhcp_clients_enabled))
 data_conf.set('NM_MAJOR_VERSION',                        nm_major_version)
 data_conf.set('NM_MICRO_VERSION',                        nm_micro_version)
 data_conf.set('NM_MINOR_VERSION',                        nm_minor_version)

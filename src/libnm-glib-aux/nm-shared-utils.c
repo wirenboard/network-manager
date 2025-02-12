@@ -32,8 +32,8 @@ G_STATIC_ASSERT(G_STRUCT_OFFSET(NMUtilsNamedValue, value_ptr) == sizeof(const ch
 
 /*****************************************************************************/
 
-const char _nm_hexchar_table_lower[16] = "0123456789abcdef";
-const char _nm_hexchar_table_upper[16] = "0123456789ABCDEF";
+const char _nm_hexchar_table_lower[] = "0123456789abcdef";
+const char _nm_hexchar_table_upper[] = "0123456789ABCDEF";
 
 const void *const _NM_PTRARRAY_EMPTY[1] = {NULL};
 
@@ -1535,7 +1535,7 @@ _char_lookup_table_set_all(CharLookupTable *lookup, const char *candidates)
 static void
 _char_lookup_table_init(CharLookupTable *lookup, const char *candidates)
 {
-    *lookup = (CharLookupTable){
+    *lookup = (CharLookupTable) {
         .table = {0},
     };
     if (candidates)
@@ -3025,6 +3025,60 @@ nm_utils_buf_utf8safe_escape_cp(gconstpointer buf, gssize buflen, NMUtilsStrUtf8
     return s ?: g_strdup(s_const);
 }
 
+/**
+ * nm_utils_buf_utf8safe_escape_strv:
+ * @strv: an array of strings of length @strv_len
+ * @strv_len: the length of @strv, or -1 for a NULL terminated strv array.
+ * @flags: #NMUtilsStrUtf8SafeFlags flags
+ * @to_free: (out): return the pointer location of the newly created
+ *   strv if copying was necessary.
+ *
+ * Ensures all strings in a strv are valid UTF-8, copying them unless they
+ * need to be escaped, and escaping them using nm_utils_buf_utf8safe_escape().
+ *
+ * Returns: a strv with all its strings escaped, as valid UTF-8. All the strings
+ *   contained within are escaped using nm_utils_buf_utf8safe_escape().
+ *   If no escaping was necessary it returns the input @strv.
+ *   Otherwise, an allocated strv @to_free is returned which must be freed
+ *   by the caller with g_strfreev().
+ **/
+const char *const *
+nm_utils_buf_utf8safe_escape_strv(const char *const      *strv,
+                                  gssize                  strv_len,
+                                  NMUtilsStrUtf8SafeFlags flags,
+                                  char                 ***out_to_free)
+{
+    char **new_strv = NULL;
+    guint  len;
+
+    g_return_val_if_fail(strv, NULL);
+    g_return_val_if_fail(out_to_free, NULL);
+
+    *out_to_free = NULL;
+    len          = strv_len < 0 ? g_strv_length((char **) strv) : strv_len;
+
+    for (guint i = 0; i < len; ++i) {
+        char *to_free_str = NULL;
+
+        nm_utils_buf_utf8safe_escape(strv[i], -1, flags, &to_free_str);
+
+        if (to_free_str) {
+            if (!new_strv) {
+                new_strv = nm_strv_dup(strv, len, TRUE);
+            }
+
+            g_free(new_strv[i]);
+            new_strv[i] = to_free_str;
+        }
+    }
+
+    if (new_strv) {
+        return (const char *const *) (*out_to_free = new_strv);
+    }
+
+    return strv;
+}
+
 /*****************************************************************************/
 
 const char *
@@ -3677,7 +3731,7 @@ nm_utils_hashtable_cmp(const GHashTable *a,
     g_hash_table_iter_init(&h, hash_a);
     while (g_hash_table_iter_next(&h, &i_key, &i_val)) {
         nm_assert(i < size);
-        cmp_array_a[i++] = (HashTableCmpData){
+        cmp_array_a[i++] = (HashTableCmpData) {
             .key = i_key,
             .val = i_val,
         };
@@ -3688,7 +3742,7 @@ nm_utils_hashtable_cmp(const GHashTable *a,
     g_hash_table_iter_init(&h, hash_b);
     while (g_hash_table_iter_next(&h, &i_key, &i_val)) {
         nm_assert(i < size);
-        cmp_array_b[i++] = (HashTableCmpData){
+        cmp_array_b[i++] = (HashTableCmpData) {
             .key = i_key,
             .val = i_val,
         };
@@ -3699,7 +3753,7 @@ nm_utils_hashtable_cmp(const GHashTable *a,
                       size,
                       sizeof(HashTableCmpData),
                       _hashtable_cmp_func,
-                      &((HashTableUserData){
+                      &((HashTableUserData) {
                           .cmp_keys  = cmp_keys,
                           .user_data = user_data,
                       }));
@@ -3708,7 +3762,7 @@ nm_utils_hashtable_cmp(const GHashTable *a,
                       size,
                       sizeof(HashTableCmpData),
                       _hashtable_cmp_func,
-                      &((HashTableUserData){
+                      &((HashTableUserData) {
                           .cmp_keys  = cmp_keys,
                           .user_data = user_data,
                       }));
@@ -4456,7 +4510,7 @@ _nm_utils_invoke_on_idle_start(gboolean                    use_timeout,
     g_return_if_fail(callback);
 
     data  = g_slice_new(InvokeOnIdleData);
-    *data = (InvokeOnIdleData){
+    *data = (InvokeOnIdleData) {
         .callback           = callback,
         .callback_user_data = callback_user_data,
         .cancellable        = nm_g_object_ref(cancellable),
@@ -5244,7 +5298,7 @@ _ctx_integ_source_prepare(GSource *source, int *out_timeout)
 
             if (G_UNLIKELY(!poll_data)) {
                 poll_data  = g_slice_new(PollData);
-                *poll_data = (PollData){
+                *poll_data = (PollData) {
                     .fd                = fd->fd,
                     .idx.one           = i,
                     .has_many_idx      = FALSE,
@@ -7262,7 +7316,7 @@ nm_utils_poll(int                               poll_timeout_ms,
     PollTaskData *poll_task_data;
 
     poll_task_data  = g_slice_new(PollTaskData);
-    *poll_task_data = (PollTaskData){
+    *poll_task_data = (PollTaskData) {
         .task             = nm_g_task_new(NULL, cancellable, nm_utils_poll, callback, user_data),
         .probe_start_fcn  = probe_start_fcn,
         .probe_finish_fcn = probe_finish_fcn,

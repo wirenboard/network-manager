@@ -169,6 +169,27 @@ lease_option_consume_route(const uint8_t **datap,
 /*****************************************************************************/
 
 static gboolean
+lease_get_ipv6_only_wait_time(NDhcp4ClientLease *lease, guint32 *out_val, const char *iface)
+{
+    const uint8_t *data;
+    size_t         len;
+    int            r;
+
+    r = _client_lease_query(lease, NM_DHCP_OPTION_DHCP4_IPV6_ONLY_PREFERRED, &data, &len);
+    if (r == 0
+        && nm_dhcp_lease_data_parse_u32(data,
+                                        len,
+                                        out_val,
+                                        iface,
+                                        AF_INET,
+                                        NM_DHCP_OPTION_DHCP4_IPV6_ONLY_PREFERRED)) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static gboolean
 lease_parse_address(NMDhcpNettools    *self /* for logging context only */,
                     NDhcp4ClientLease *lease,
                     NML3ConfigData    *l3cd,
@@ -305,7 +326,7 @@ lease_parse_address(NMDhcpNettools    *self /* for logging context only */,
     }
 
     nm_l3_config_data_add_address_4(l3cd,
-                                    &((const NMPlatformIP4Address){
+                                    &((const NMPlatformIP4Address) {
                                         .address      = a_address.s_addr,
                                         .peer_address = a_address.s_addr,
                                         .plen         = a_plen,
@@ -366,7 +387,7 @@ lease_parse_address_list(NDhcp4ClientLease       *lease,
                                                  nm_inet4_ntop(addr, addr_str));
                 continue;
             }
-            nm_l3_config_data_add_nameserver_detail(l3cd, AF_INET, &addr, NULL);
+            nm_l3_config_data_add_nameserver_addr(l3cd, AF_INET, &addr);
             break;
         case NM_DHCP_OPTION_DHCP4_NIS_SERVERS:
             nm_l3_config_data_add_nis_server(l3cd, addr);
@@ -445,7 +466,7 @@ lease_parse_routes(NDhcp4ClientLease *lease,
                 m = 0;
 
             nm_l3_config_data_add_route_4(l3cd,
-                                          &((const NMPlatformIP4Route){
+                                          &((const NMPlatformIP4Route) {
                                               .rt_source     = NM_IP_CONFIG_SOURCE_DHCP,
                                               .network       = dest,
                                               .plen          = plen,
@@ -489,7 +510,7 @@ lease_parse_routes(NDhcp4ClientLease *lease,
             }
 
             nm_l3_config_data_add_route_4(l3cd,
-                                          &((const NMPlatformIP4Route){
+                                          &((const NMPlatformIP4Route) {
                                               .rt_source     = NM_IP_CONFIG_SOURCE_DHCP,
                                               .network       = dest,
                                               .plen          = plen,
@@ -533,7 +554,7 @@ lease_parse_routes(NDhcp4ClientLease *lease,
             m = default_route_metric_offset++;
 
             nm_l3_config_data_add_route_4(l3cd,
-                                          &((const NMPlatformIP4Route){
+                                          &((const NMPlatformIP4Route) {
                                               .rt_source     = NM_IP_CONFIG_SOURCE_DHCP,
                                               .gateway       = gateway,
                                               .pref_src      = lease_address,
@@ -929,6 +950,22 @@ bound4_handle(NMDhcpNettools *self, guint event, NDhcp4ClientLease *lease)
                            l3cd);
 }
 
+static gboolean
+dhcp4_handle_ipv6_only(NMDhcpNettools *self, NDhcp4ClientEvent *event)
+{
+    NMDhcpClient *client = NM_DHCP_CLIENT(self);
+    guint32       val;
+
+    if (nm_dhcp_client_get_config(client)->v4.ipv6_only_preferred
+        && lease_get_ipv6_only_wait_time(event->offer.lease,
+                                         &val,
+                                         nm_dhcp_client_get_iface(client))) {
+        nm_dhcp_client_schedule_ipv6_only_restart(client, val);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static void
 dhcp4_event_handle(NMDhcpNettools *self, NDhcp4ClientEvent *event)
 {
@@ -962,15 +999,20 @@ dhcp4_event_handle(NMDhcpNettools *self, NDhcp4ClientEvent *event)
             return;
         }
 
-        n_dhcp4_client_lease_get_yiaddr(event->offer.lease, &yiaddr);
-        if (yiaddr.s_addr == INADDR_ANY) {
-            _LOGD("selecting lease failed: no yiaddr address");
-            return;
-        }
-
         if (nm_dhcp_client_server_id_is_rejected(NM_DHCP_CLIENT(self), &server_id)) {
             _LOGD("server-id %s is in the reject-list, ignoring",
                   nm_inet_ntop(AF_INET, &server_id, addr_str));
+            return;
+        }
+
+        if (dhcp4_handle_ipv6_only(self, event))
+            return;
+
+        /* Check yiaddr only after evaluating the ipv6-only-preferred option, because if
+         * the option is present yiaddr can be zero. */
+        n_dhcp4_client_lease_get_yiaddr(event->offer.lease, &yiaddr);
+        if (yiaddr.s_addr == INADDR_ANY) {
+            _LOGD("selecting lease failed: no yiaddr address");
             return;
         }
 
@@ -1001,6 +1043,17 @@ dhcp4_event_handle(NMDhcpNettools *self, NDhcp4ClientEvent *event)
         _nm_dhcp_client_notify(NM_DHCP_CLIENT(self), NM_DHCP_CLIENT_EVENT_TYPE_FAIL, NULL);
         return;
     case N_DHCP4_CLIENT_EVENT_GRANTED:
+        if (dhcp4_handle_ipv6_only(self, event)) {
+            /* RFC 8925 says that when the client receives a DHCPACK, it should
+             * stop the client; but only in the INIT-REBOOT (actually, REBOOTING)
+             * state, otherwise it should continue to use the address.
+             * The GRANTED event is emitted both in the REBOOTING and REQUESTING
+             * state; however if we got the IPv6-only option in the OFFER we have
+             * already stopped the client. Therefore this point can be reached
+             * only in the REBOOTING state.
+             */
+            return;
+        }
         bound4_handle(self, event->event, event->granted.lease);
         return;
     case N_DHCP4_CLIENT_EVENT_EXTENDED:
@@ -1323,7 +1376,7 @@ ip4_start(NMDhcpClient *client, GError **error)
     g_return_val_if_fail(!priv->probe, FALSE);
     g_return_val_if_fail(client_config, FALSE);
 
-    if (!nettools_create(self, &effective_client_id, error))
+    if (!priv->client && !nettools_create(self, &effective_client_id, error))
         return FALSE;
 
     r = n_dhcp4_client_probe_config_new(&config);
@@ -1375,6 +1428,11 @@ ip4_start(NMDhcpClient *client, GError **error)
             n_dhcp4_client_probe_config_request_option(config,
                                                        _nm_dhcp_option_dhcp4_options[i].option_num);
         }
+    }
+
+    if (client_config->v4.ipv6_only_preferred) {
+        n_dhcp4_client_probe_config_request_option(config,
+                                                   NM_DHCP_OPTION_DHCP4_IPV6_ONLY_PREFERRED);
     }
 
     if (client_config->mud_url) {

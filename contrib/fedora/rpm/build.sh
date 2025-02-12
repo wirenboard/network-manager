@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #set -vx
+set -e
+set -o pipefail
 
 # Set arguments via environment variables.
 # Argument can be omitted and defaults will be detected.
@@ -76,14 +78,7 @@ abs_path() {
 }
 
 get_version() {
-    local major minor micro
-    local F="${1:-"$GITDIR/configure.ac"}"
-
-    vars="$(sed -n 's/^m4_define(\[nm_\(major\|minor\|micro\)_version\], *\[\([0-9]\+\)\]) *$/local \1='\''\2'\''/p' "$F" 2>/dev/null)"
-    eval "$vars"
-
-    [[ -n "$major" && -n "$minor" && "$micro" ]] || return 1
-    echo "$major.$minor.$micro"
+    grep -E -m1 '^\s+version:' "$GITDIR/meson.build" | cut -d"'" -f2
 }
 
 write_changelog() {
@@ -122,7 +117,7 @@ COMMIT="${COMMIT:-$(printf '%s' "$COMMIT_FULL" | sed 's/^\(.\{10\}\).*/\1/' || d
 BCOND_DEFAULT_DEBUG="${BCOND_DEFAULT_DEBUG:-0}"
 BCOND_DEFAULT_TEST="${BCOND_DEFAULT_TEST:-0}"
 BCOND_DEFAULT_LTO="${BCOND_DEFAULT_LTO}"
-USERNAME="${USERNAME:-"$(git config user.name) <$(git config user.email)>"}"
+USERNAME="${USERNAME:-"$(git config user.name || :) <$(git config user.email || :)>"}"
 SPECFILE="$(abs_path "$SPECFILE" "$SCRIPTDIR/NetworkManager.spec")" || die "invalid \$SPECFILE argument"
 SOURCE_FROM_GIT="$(coerce_bool "$SOURCE_FROM_GIT" "")"
 SOURCE="$(abs_path "$SOURCE")" || die "invalid \$SOURCE argument"
@@ -269,7 +264,7 @@ ls -dla \
     "$TEMP_LATEST"/RPMS/*/*.rpm \
     "$TEMP_LATEST"/SRPMS/ \
     "$TEMP_LATEST"/SRPMS/*.rpm \
-    2>/dev/null | sed 's/^/    /'
+    2>/dev/null | sed 's/^/    /' || :
 LOG
 if [[ "$BUILDTYPE" == "SRPM" ]]; then
     LOG sudo $(command -v dnf &>/dev/null && echo dnf builddep || echo yum-builddep) $TEMP_LATEST/SRPMS/*.src.rpm

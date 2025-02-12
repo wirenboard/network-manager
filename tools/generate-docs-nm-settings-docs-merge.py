@@ -41,6 +41,7 @@ _setting_name_order = [
     "ipv4",
     "ipv6",
     "ip-tunnel",
+    "ipvlan",
     "macsec",
     "macvlan",
     "match",
@@ -299,6 +300,7 @@ for setting_name in iter_keys_of_dicts(settings_roots, key_fcn_setting_name):
         node_set_attr(property_node, "special-values", properties_attrs)
         node_set_attr(property_node, "default", properties_attrs)
         node_set_attr(property_node, "alias", properties_attrs)
+        node_set_attr(property_node, "rename", properties_attrs)
 
         if description_docbook is not None:
             property_node.insert(0, description_docbook)

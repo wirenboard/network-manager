@@ -186,10 +186,14 @@ typedef struct {
     char       *dhcp_hostname;
     char       *dhcp_iaid;
     char       *dhcp_dscp;
+    char       *shared_dhcp_range;
+    int         shared_dhcp_lease_time;
     gint64      route_metric;
     int         auto_route_ext_gw;
     int         replace_local_rule;
     int         dhcp_send_release;
+    int         routed_dns;
+    int         dhcp_send_hostname_v2;
     gint32      required_timeout;
     gint32      dad_timeout;
     gint32      dhcp_timeout;
@@ -482,7 +486,7 @@ void _nm_setting_class_commit(NMSettingClass             *setting_class,
         &_g;                                                   \
     })
 
-#define NM_SETT_INFO_SETT_DETAIL(...) (&((const NMSettInfoSettDetail){__VA_ARGS__}))
+#define NM_SETT_INFO_SETT_DETAIL(...) (&((const NMSettInfoSettDetail) {__VA_ARGS__}))
 
 #define NM_SETT_INFO_PROPERT_TYPE_DBUS_INIT(_dbus_type, ...) {.dbus_type = _dbus_type, __VA_ARGS__}
 
@@ -504,7 +508,7 @@ void _nm_setting_class_commit(NMSettingClass             *setting_class,
 #define NM_SETT_INFO_PROPERT_TYPE_GPROP(_dbus_type, ...) \
     NM_SETT_INFO_PROPERT_TYPE(NM_SETT_INFO_PROPERT_TYPE_GPROP_INIT(_dbus_type, __VA_ARGS__))
 
-#define NM_SETT_INFO_PROPERTY(...) (&((const NMSettInfoProperty){__VA_ARGS__}))
+#define NM_SETT_INFO_PROPERTY(...) (&((const NMSettInfoProperty) {__VA_ARGS__}))
 
 gboolean _nm_properties_override_assert(const NMSettInfoProperty *prop_info);
 

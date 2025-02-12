@@ -124,6 +124,8 @@ get_ethtool_format(const NMMetaPropertyInfo *prop_info)
     case NM_ETHTOOL_TYPE_PAUSE:
     case NM_ETHTOOL_TYPE_EEE:
         return g_strdup("ternary");
+    case NM_ETHTOOL_TYPE_FEC:
+        return g_strdup("flags (NMSettingEthtoolFecMode)");
     case NM_ETHTOOL_TYPE_UNKNOWN:
         nm_assert_not_reached();
     };
@@ -158,6 +160,8 @@ get_multilist_format(const NMMetaPropertyInfo *prop_info)
             return g_strdup("list of IPv4 addresses");
         case NM_META_PROPERTY_TYPE_FORMAT_IPV6:
             return g_strdup("list of IPv6 addresses");
+        case NM_META_PROPERTY_TYPE_FORMAT_IPV4_IPV6:
+            return g_strdup("list of IPv4 or IPv6 addresses");
         default:
             prop_abort(prop_info, "unsupported item format (%d)", item_fmt);
             break;
@@ -198,6 +202,8 @@ get_property_format(const NMMetaPropertyInfo *prop_info)
         return g_strdup("IPv4 address");
     case NM_META_PROPERTY_TYPE_FORMAT_IPV6:
         return g_strdup("IPv6 address");
+    case NM_META_PROPERTY_TYPE_FORMAT_IPV4_IPV6:
+        return g_strdup("IPv4 or IPv6 address");
     case NM_META_PROPERTY_TYPE_FORMAT_BYTES:
         return g_strdup("bytes");
     case NM_META_PROPERTY_TYPE_FORMAT_PATH:
@@ -329,6 +335,13 @@ append_ethtool_valid_values(const NMMetaPropertyInfo *prop_info, GPtrArray *vali
     case NM_ETHTOOL_TYPE_PAUSE:
     case NM_ETHTOOL_TYPE_EEE:
         append_vals(valid_values, "on", "off", "ignore");
+        break;
+    case NM_ETHTOOL_TYPE_FEC:
+        _append_enum_valid_values(NM_TYPE_SETTING_ETHTOOL_FEC_MODE,
+                                  0,
+                                  G_MAXUINT,
+                                  NULL,
+                                  valid_values);
         break;
     case NM_ETHTOOL_TYPE_UNKNOWN:
         nm_assert_not_reached();

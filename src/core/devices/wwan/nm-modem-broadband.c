@@ -668,6 +668,8 @@ connect_context_step(NMModemBroadband *self)
             NMSettingGsm *s_gsm     = nm_connection_get_setting_gsm(ctx->connection);
             const char   *apn       = nm_setting_gsm_get_initial_eps_apn(s_gsm);
             gboolean      do_config = nm_setting_gsm_get_initial_eps_config(s_gsm);
+            const char   *username  = nm_setting_gsm_get_initial_eps_username(s_gsm);
+            const char   *password  = nm_setting_gsm_get_initial_eps_password(s_gsm);
 
             /* assume do_config is true if an APN is set */
             if (apn || do_config) {
@@ -690,9 +692,28 @@ connect_context_step(NMModemBroadband *self)
                     /* do nothing */
                     break;
                 }
-                if (apn)
-                    mm_bearer_properties_set_apn(config, apn);
+                if (apn) {
+                    MMBearerAllowedAuth allowed_auth = MM_BEARER_ALLOWED_AUTH_UNKNOWN;
 
+                    mm_bearer_properties_set_apn(config, apn);
+                    mm_bearer_properties_set_user(config, username);
+                    mm_bearer_properties_set_password(config, password);
+
+                    if (nm_setting_gsm_get_initial_eps_noauth(s_gsm))
+                        allowed_auth |= MM_BEARER_ALLOWED_AUTH_NONE;
+                    if (!nm_setting_gsm_get_initial_eps_refuse_pap(s_gsm))
+                        allowed_auth |= MM_BEARER_ALLOWED_AUTH_PAP;
+                    if (!nm_setting_gsm_get_initial_eps_refuse_chap(s_gsm))
+                        allowed_auth |= MM_BEARER_ALLOWED_AUTH_CHAP;
+                    if (!nm_setting_gsm_get_initial_eps_refuse_mschap(s_gsm))
+                        allowed_auth |= MM_BEARER_ALLOWED_AUTH_MSCHAP;
+                    if (!nm_setting_gsm_get_initial_eps_refuse_mschapv2(s_gsm))
+                        allowed_auth |= MM_BEARER_ALLOWED_AUTH_MSCHAPV2;
+                    if (!nm_setting_gsm_get_initial_eps_refuse_eap(s_gsm))
+                        allowed_auth |= MM_BEARER_ALLOWED_AUTH_EAP;
+
+                    mm_bearer_properties_set_allowed_auth(config, allowed_auth);
+                }
                 /*
                  * Setting the initial EPS bearer settings is a no-op in
                  * ModemManager if the desired configuration is already active.
@@ -896,8 +917,7 @@ complete_connection(NMModem             *modem,
                                   NULL,
                                   _("GSM connection"),
                                   NULL,
-                                  NULL,
-                                  FALSE); /* No IPv6 yet by default */
+                                  NULL);
 
         return TRUE;
     }
@@ -917,8 +937,7 @@ complete_connection(NMModem             *modem,
                                   NULL,
                                   _("CDMA connection"),
                                   NULL,
-                                  iface,
-                                  FALSE); /* No IPv6 yet by default */
+                                  iface);
 
         return TRUE;
     }
@@ -1116,7 +1135,7 @@ stage3_ip_config_start(NMModem *modem, int addr_family, NMModemIPMethod ip_metho
                                      ifindex,
                                      NM_IP_CONFIG_SOURCE_WWAN);
 
-        address = (NMPlatformIP4Address){
+        address = (NMPlatformIP4Address) {
             .address      = address_network,
             .peer_address = address_network,
             .plen         = mm_bearer_ip_config_get_prefix(self->_priv.ipv4_config),
@@ -1127,7 +1146,7 @@ stage3_ip_config_start(NMModem *modem, int addr_family, NMModemIPMethod ip_metho
 
         _LOGI("  address %s", nm_platform_ip4_address_to_string(&address, sbuf, sizeof(sbuf)));
 
-        route = (NMPlatformIP4Route){
+        route = (NMPlatformIP4Route) {
             .rt_source     = NM_IP_CONFIG_SOURCE_WWAN,
             .gateway       = gw,
             .table_any     = TRUE,
@@ -1141,7 +1160,7 @@ stage3_ip_config_start(NMModem *modem, int addr_family, NMModemIPMethod ip_metho
         dns = mm_bearer_ip_config_get_dns(self->_priv.ipv4_config);
         for (i = 0; dns && dns[i]; i++) {
             if (nm_inet_parse_bin(AF_INET, dns[i], NULL, &address_network) && address_network > 0) {
-                nm_l3_config_data_add_nameserver_detail(l3cd, AF_INET, &address_network, NULL);
+                nm_l3_config_data_add_nameserver_addr(l3cd, AF_INET, &address_network);
                 _LOGI("  DNS %s", dns[i]);
             }
         }
@@ -1193,7 +1212,7 @@ stage3_ip_config_start(NMModem *modem, int addr_family, NMModemIPMethod ip_metho
         do_auto = TRUE;
 
         if (address_string) {
-            address = (NMPlatformIP6Address){};
+            address = (NMPlatformIP6Address) {};
 
             if (!inet_pton(AF_INET6, address_string, &address.address)) {
                 g_set_error(&error,
@@ -1260,7 +1279,7 @@ stage3_ip_config_start(NMModem *modem, int addr_family, NMModemIPMethod ip_metho
             struct in6_addr addr;
 
             if (inet_pton(AF_INET6, dns[i], &addr)) {
-                nm_l3_config_data_add_nameserver_detail(l3cd, AF_INET6, &addr, NULL);
+                nm_l3_config_data_add_nameserver_addr(l3cd, AF_INET6, &addr);
                 _LOGI("  DNS %s", dns[i]);
             }
         }

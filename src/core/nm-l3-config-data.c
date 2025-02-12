@@ -163,6 +163,9 @@ struct _NML3ConfigData {
     bool ndisc_hop_limit_set : 1;
     bool ndisc_reachable_time_msec_set : 1;
     bool ndisc_retrans_timer_msec_set : 1;
+
+    bool routed_dns_4 : 1;
+    bool routed_dns_6 : 1;
 };
 
 /*****************************************************************************/
@@ -370,7 +373,8 @@ nm_l3_config_data_log(const NML3ConfigData *self,
     nm_assert(!NM_FLAGS_ANY(self->flags,
                             ~(NM_L3_CONFIG_DAT_FLAGS_IGNORE_MERGE_NO_DEFAULT_ROUTES
                               | NM_L3_CONFIG_DAT_FLAGS_HAS_DNS_PRIORITY_4
-                              | NM_L3_CONFIG_DAT_FLAGS_HAS_DNS_PRIORITY_6)));
+                              | NM_L3_CONFIG_DAT_FLAGS_HAS_DNS_PRIORITY_6
+                              | NM_L3_CONFIG_DAT_FLAGS_HAS_IPV4_NON_LL)));
 
     _L("l3cd %s%s%s(" NM_HASH_OBFUSCATE_PTR_FMT ", ifindex=%d%s%s%s%s)",
        NM_PRINT_FMT_QUOTED(title, "\"", title, "\" ", ""),
@@ -602,6 +606,12 @@ nm_l3_config_data_log(const NML3ConfigData *self,
 
     if (self->proxy_pac_script)
         _L("proxy-pac-script: %s", self->proxy_pac_script->str);
+
+    if (self->routed_dns_4)
+        _L("routed-dns4: yes");
+    if (self->routed_dns_6)
+        _L("routed-dns6: yes");
+
 #undef _L
 }
 
@@ -677,7 +687,7 @@ nm_l3_config_data_new(NMDedupMultiIndex *multi_idx, int ifindex, NMIPConfigSourc
               || (source >= NM_IP_CONFIG_SOURCE_KERNEL && source <= NM_IP_CONFIG_SOURCE_USER));
 
     self  = g_slice_new(NML3ConfigData);
-    *self = (NML3ConfigData){
+    *self = (NML3ConfigData) {
         .ref_count                      = 1,
         .ifindex                        = ifindex,
         .multi_idx                      = nm_dedup_multi_index_ref(multi_idx),
@@ -1287,15 +1297,26 @@ nm_l3_config_data_add_address_full(NML3ConfigData            *self,
                                    const NMPObject          **out_obj_new)
 {
     const NMPObject *new;
-    gboolean changed;
+    gboolean  changed;
+    const int IS_IPv4 = NM_IS_IPv4(addr_family);
 
     nm_assert(_NM_IS_L3_CONFIG_DATA(self, FALSE));
     nm_assert_addr_family(addr_family);
     nm_assert((!pl_new) != (!obj_new));
     nm_assert(!obj_new || NMP_OBJECT_GET_ADDR_FAMILY(obj_new) == addr_family);
 
+    if (IS_IPv4 && !NM_FLAGS_HAS(self->flags, NM_L3_CONFIG_DAT_FLAGS_HAS_IPV4_NON_LL)) {
+        const NMPlatformIP4Address *addr;
+        addr = obj_new ? NMP_OBJECT_CAST_IP4_ADDRESS(obj_new)
+                       : (const NMPlatformIP4Address *) (pl_new);
+
+        if (!nm_platform_ip4_address_is_link_local(addr)) {
+            self->flags |= NM_L3_CONFIG_DAT_FLAGS_HAS_IPV4_NON_LL;
+        }
+    }
+
     changed = _l3_config_data_add_obj(self->multi_idx,
-                                      &self->idx_addresses_x[NM_IS_IPv4(addr_family)],
+                                      &self->idx_addresses_x[IS_IPv4],
                                       self->ifindex,
                                       obj_new,
                                       (const NMPlatformObject *) pl_new,
@@ -1439,8 +1460,7 @@ nm_l3_config_data_add_nameserver(NML3ConfigData *self, int addr_family, const ch
     if (NM_MORE_ASSERTS > 5) {
         gs_free char *s_free = NULL;
 
-        nm_assert(
-            nm_streq0(nm_utils_dnsname_normalize(addr_family, nameserver, &s_free), nameserver));
+        nm_assert(nm_streq0(nm_dns_uri_normalize(addr_family, nameserver, &s_free), nameserver));
     }
 
     p_arr = &self->nameservers_x[NM_IS_IPv4(addr_family)];
@@ -1453,27 +1473,16 @@ nm_l3_config_data_add_nameserver(NML3ConfigData *self, int addr_family, const ch
 }
 
 gboolean
-nm_l3_config_data_add_nameserver_detail(NML3ConfigData *self,
-                                        int             addr_family,
-                                        gconstpointer   addr_bin,
-                                        const char     *server_name)
+nm_l3_config_data_add_nameserver_addr(NML3ConfigData *self, int addr_family, gconstpointer addr_bin)
 {
-    gs_free char *s_free = NULL;
-    char         *s;
-    gsize         l;
+    char addrstr[NM_INET_ADDRSTRLEN];
 
     nm_assert(_NM_IS_L3_CONFIG_DATA(self, FALSE));
     nm_assert_addr_family(addr_family);
     nm_assert(addr_bin);
 
-    l = (NM_INET_ADDRSTRLEN + 2u) + (server_name ? strlen(server_name) : 0u);
-
-    s = nm_malloc_maybe_a(300, l, &s_free);
-
-    if (!nm_utils_dnsname_construct(addr_family, addr_bin, server_name, s, l))
-        nm_assert_not_reached();
-
-    return nm_l3_config_data_add_nameserver(self, addr_family, s);
+    nm_inet_ntop(addr_family, addr_bin, addrstr);
+    return nm_l3_config_data_add_nameserver(self, addr_family, addrstr);
 }
 
 gboolean
@@ -1965,6 +1974,32 @@ nm_l3_config_data_set_allow_routes_without_address(NML3ConfigData *self,
     }
 }
 
+gboolean
+nm_l3_config_data_get_routed_dns(const NML3ConfigData *self, int addr_family)
+{
+    const int IS_IPv4 = NM_IS_IPv4(addr_family);
+
+    nm_assert(_NM_IS_L3_CONFIG_DATA(self, TRUE));
+    if (IS_IPv4) {
+        return self->routed_dns_4;
+    } else {
+        return self->routed_dns_6;
+    }
+}
+
+void
+nm_l3_config_data_set_routed_dns(NML3ConfigData *self, int addr_family, gboolean value)
+{
+    const int IS_IPv4 = NM_IS_IPv4(addr_family);
+
+    nm_assert(_NM_IS_L3_CONFIG_DATA(self, FALSE));
+    if (IS_IPv4) {
+        self->routed_dns_4 = value;
+    } else {
+        self->routed_dns_6 = value;
+    }
+}
+
 NMProxyConfigMethod
 nm_l3_config_data_get_proxy_method(const NML3ConfigData *self)
 {
@@ -2435,6 +2470,9 @@ nm_l3_config_data_cmp_full(const NML3ConfigData *a,
         if (a->ndisc_retrans_timer_msec_set)
             NM_CMP_DIRECT(a->ndisc_retrans_timer_msec_val, b->ndisc_retrans_timer_msec_val);
 
+        NM_CMP_DIRECT_UNSAFE(a->routed_dns_4, b->routed_dns_4);
+        NM_CMP_DIRECT_UNSAFE(a->routed_dns_6, b->routed_dns_6);
+
         NM_CMP_FIELD(a, b, source);
     }
 
@@ -2543,7 +2581,7 @@ nm_l3_config_data_get_blacklisted_ip4_routes(const NML3ConfigData *self, gboolea
             continue;
         }
 
-        rx.r4 = (NMPlatformIP4Route){
+        rx.r4 = (NMPlatformIP4Route) {
             .ifindex       = self->ifindex,
             .rt_source     = NM_IP_CONFIG_SOURCE_KERNEL,
             .network       = network_4,
@@ -2725,7 +2763,7 @@ nm_l3_config_data_add_dependent_device_routes(NML3ConfigData       *self,
                     plen = addr_src->a6.plen;
                 }
 
-                rx.r6 = (NMPlatformIP6Route){
+                rx.r6 = (NMPlatformIP6Route) {
                     .ifindex       = self->ifindex,
                     .rt_source     = NM_IP_CONFIG_SOURCE_KERNEL,
                     .table_coerced = nm_platform_route_table_coerce(route_table),
@@ -2798,14 +2836,14 @@ _init_from_connection_ip(NML3ConfigData *self, int addr_family, NMConnection *co
         NMPlatformIPXRoute r;
 
         if (IS_IPv4) {
-            r.r4 = (NMPlatformIP4Route){
+            r.r4 = (NMPlatformIP4Route) {
                 .rt_source  = NM_IP_CONFIG_SOURCE_USER,
                 .gateway    = gateway_bin.addr4,
                 .table_any  = TRUE,
                 .metric_any = TRUE,
             };
         } else {
-            r.r6 = (NMPlatformIP6Route){
+            r.r6 = (NMPlatformIP6Route) {
                 .rt_source  = NM_IP_CONFIG_SOURCE_USER,
                 .gateway    = gateway_bin.addr6,
                 .table_any  = TRUE,
@@ -2828,7 +2866,7 @@ _init_from_connection_ip(NML3ConfigData *self, int addr_family, NMConnection *co
         nm_ip_address_get_address_binary(s_addr, &addr_bin);
 
         if (IS_IPv4) {
-            a.a4 = (NMPlatformIP4Address){
+            a.a4 = (NMPlatformIP4Address) {
                 .address      = addr_bin.addr4,
                 .peer_address = addr_bin.addr4,
                 .plen         = nm_ip_address_get_prefix(s_addr),
@@ -2842,7 +2880,7 @@ _init_from_connection_ip(NML3ConfigData *self, int addr_family, NMConnection *co
 
             nm_assert(a.a4.plen <= 32);
         } else {
-            a.a6 = (NMPlatformIP6Address){
+            a.a6 = (NMPlatformIP6Address) {
                 .address     = addr_bin.addr6,
                 .plen        = nm_ip_address_get_prefix(s_addr),
                 .lifetime    = NM_PLATFORM_LIFETIME_PERMANENT,
@@ -2887,7 +2925,7 @@ _init_from_connection_ip(NML3ConfigData *self, int addr_family, NMConnection *co
         nm_ip_addr_clear_host_address(addr_family, &network_bin, &network_bin, plen);
 
         if (IS_IPv4) {
-            r.r4 = (NMPlatformIP4Route){
+            r.r4 = (NMPlatformIP4Route) {
                 .network    = network_bin.addr4,
                 .plen       = plen,
                 .gateway    = next_hop_bin.addr4,
@@ -2897,7 +2935,7 @@ _init_from_connection_ip(NML3ConfigData *self, int addr_family, NMConnection *co
             };
             nm_assert(r.r4.plen <= 32);
         } else {
-            r.r6 = (NMPlatformIP6Route){
+            r.r6 = (NMPlatformIP6Route) {
                 .network    = network_bin.addr6,
                 .plen       = plen,
                 .gateway    = next_hop_bin.addr6,
@@ -3045,14 +3083,12 @@ _init_from_platform(NML3ConfigData           *self,
         else
             self->has_routes_with_type_local_6_set = FALSE;
         nmp_cache_iter_for_each (&iter, head_entry, &plobj) {
-            if (!_l3_config_data_add_obj(self->multi_idx,
-                                         &self->idx_addresses_x[IS_IPv4],
-                                         self->ifindex,
-                                         plobj,
-                                         NULL,
-                                         NM_L3_CONFIG_ADD_FLAGS_APPEND_FORCE,
-                                         NULL,
-                                         NULL))
+            if (!nm_l3_config_data_add_address_full(self,
+                                                    addr_family,
+                                                    plobj,
+                                                    NULL,
+                                                    NM_L3_CONFIG_ADD_FLAGS_APPEND_FORCE,
+                                                    NULL))
                 nm_assert_not_reached();
         }
         head_entry = nm_l3_config_data_lookup_addresses(self, addr_family);
@@ -3478,6 +3514,11 @@ nm_l3_config_data_merge(NML3ConfigData       *self,
 
     if (!src->allow_routes_without_address_6)
         self->allow_routes_without_address_6 = FALSE;
+
+    if (src->routed_dns_4)
+        self->routed_dns_4 = TRUE;
+    if (src->routed_dns_6)
+        self->routed_dns_6 = TRUE;
 }
 
 NML3ConfigData *

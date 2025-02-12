@@ -340,7 +340,7 @@ _scan_request_ssids_track(NMDeviceWifiPrivate *priv, const GPtrArray *ssids)
         d = g_hash_table_lookup(priv->scan_request_ssids_hash, &ssid);
         if (!d) {
             d  = g_slice_new(ScanRequestSsidData);
-            *d = (ScanRequestSsidData){
+            *d = (ScanRequestSsidData) {
                 .lst            = C_LIST_INIT(d->lst),
                 .timestamp_msec = now_msec,
                 .ssid           = g_bytes_ref(ssid),
@@ -1296,8 +1296,7 @@ complete_connection(NMDevice            *device,
         ssid_utf8,
         ssid_utf8,
         NULL,
-        nm_setting_wireless_get_mac_address(s_wifi) ? NULL : nm_device_get_iface(device),
-        TRUE);
+        nm_setting_wireless_get_mac_address(s_wifi) ? NULL : nm_device_get_iface(device));
 
     if (hidden)
         g_object_set(s_wifi, NM_SETTING_WIRELESS_HIDDEN, TRUE, NULL);

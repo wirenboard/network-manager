@@ -44,6 +44,7 @@
 #include "nm-setting-ip-tunnel.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-ip6-config.h"
+#include "nm-setting-ipvlan.h"
 #include "nm-setting-link.h"
 #include "nm-setting-loopback.h"
 #include "nm-setting-macsec.h"
@@ -546,6 +547,8 @@ GPtrArray *_nm_setting_bridge_port_get_vlans(NMSettingBridgePort *setting);
 /*****************************************************************************/
 
 GArray *_nm_setting_connection_get_secondaries(NMSettingConnection *setting);
+
+GArray *_nm_setting_connection_get_ip_ping_addresses(NMSettingConnection *setting);
 
 gboolean nm_setting_connection_permissions_user_allowed_by_uid(NMSettingConnection *setting,
                                                                gulong               uid);

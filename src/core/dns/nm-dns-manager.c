@@ -32,6 +32,7 @@
 #include "nm-config.h"
 #include "nm-dbus-object.h"
 #include "nm-dns-dnsmasq.h"
+#include "nm-dns-dnsconfd.h"
 #include "nm-dns-plugin.h"
 #include "nm-dns-systemd-resolved.h"
 #include "nm-ip-config.h"
@@ -401,7 +402,7 @@ _dns_config_ip_data_new(NMDnsConfigData      *data,
     nm_assert(ip_config_type != NM_DNS_IP_CONFIG_TYPE_REMOVED);
 
     ip_data  = g_slice_new(NMDnsConfigIPData);
-    *ip_data = (NMDnsConfigIPData){
+    *ip_data = (NMDnsConfigIPData) {
         .data           = data,
         .source_tag     = source_tag,
         .l3cd           = nm_l3_config_data_ref_and_seal(l3cd),
@@ -600,7 +601,7 @@ merge_one_l3cd(NMResolvConfData *rc, int addr_family, int ifindex, const NML3Con
     for (i = 0; i < num_nameservers; i++) {
         NMIPAddr a;
 
-        if (!nm_utils_dnsname_parse_assert(addr_family, strarr[i], NULL, &a, NULL))
+        if (!nm_dns_uri_parse_plain(addr_family, strarr[i], NULL, &a))
             continue;
 
         if (addr_family == AF_INET)
@@ -1291,8 +1292,15 @@ merge_global_dns_config(NMResolvConfData *rc, NMGlobalDnsConfig *global_conf)
     if (!servers)
         return TRUE;
 
-    for (i = 0; servers[i]; i++)
-        add_string_item(rc->nameservers, servers[i], TRUE);
+    for (i = 0; servers[i]; i++) {
+        char addrstr[NM_INET_ADDRSTRLEN];
+
+        /* TODO: support IPv6 link-local addresses with scope id */
+        if (!nm_dns_uri_parse_plain(AF_UNSPEC, servers[i], addrstr, NULL))
+            continue;
+
+        add_string_item(rc->nameservers, addrstr, TRUE);
+    }
 
     return TRUE;
 }
@@ -1300,7 +1308,6 @@ merge_global_dns_config(NMResolvConfData *rc, NMGlobalDnsConfig *global_conf)
 static const char *
 get_nameserver_list(int addr_family, const NML3ConfigData *l3cd, NMStrBuf *tmp_strbuf)
 {
-    char               buf[NM_INET_ADDRSTRLEN];
     guint              num;
     guint              i;
     const char *const *strarr;
@@ -1309,15 +1316,9 @@ get_nameserver_list(int addr_family, const NML3ConfigData *l3cd, NMStrBuf *tmp_s
 
     strarr = nm_l3_config_data_get_nameservers(l3cd, addr_family, &num);
     for (i = 0; i < num; i++) {
-        NMIPAddr a;
-
-        if (!nm_utils_dnsname_parse_assert(addr_family, strarr[i], NULL, &a, NULL))
-            continue;
-
-        nm_inet_ntop(addr_family, &a, buf);
         if (i > 0)
             nm_str_buf_append_c(tmp_strbuf, ' ');
-        nm_str_buf_append(tmp_strbuf, buf);
+        nm_str_buf_append(tmp_strbuf, strarr[i]);
     }
 
     nm_str_buf_maybe_expand(tmp_strbuf, 1, FALSE);
@@ -2108,7 +2109,7 @@ nm_dns_manager_set_ip_config(NMDnsManager         *self,
 
     if (!data) {
         data  = g_slice_new(NMDnsConfigData);
-        *data = (NMDnsConfigData){
+        *data = (NMDnsConfigData) {
             .ifindex       = ifindex,
             .self          = self,
             .data_lst_head = C_LIST_INIT(data->data_lst_head),
@@ -2525,6 +2526,12 @@ again:
             priv->plugin   = nm_dns_dnsmasq_new();
             plugin_changed = TRUE;
         }
+    } else if (nm_streq0(mode, "dnsconfd")) {
+        if (force_reload_plugin || !NM_IS_DNS_DNSCONFD(priv->plugin)) {
+            _clear_plugin(self);
+            priv->plugin   = nm_dns_dnsconfd_new();
+            plugin_changed = TRUE;
+        }
     } else {
         if (!NM_IN_STRSET(mode, "none", "default")) {
             if (mode) {
@@ -2541,7 +2548,7 @@ again:
 
     if (rc_manager == NM_DNS_MANAGER_RESOLV_CONF_MAN_AUTO) {
         rc_manager_was_auto = TRUE;
-        if (nm_streq(mode, "systemd-resolved"))
+        if (nm_streq(mode, "systemd-resolved") || nm_streq(mode, "dnsconfd"))
             rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_UNMANAGED;
         else if (HAS_RESOLVCONF && g_file_test(RESOLVCONF_PATH, G_FILE_TEST_IS_EXECUTABLE)) {
             /* We detect /sbin/resolvconf only at this stage. That means, if you install
@@ -2730,7 +2737,6 @@ _get_config_variant(NMDnsManager *self)
         guint              num_domains;
         guint              num_searches;
         guint              i;
-        char               buf[NM_INET_ADDRSTRLEN];
         const char        *ifname;
         const char *const *strarr;
 
@@ -2742,12 +2748,7 @@ _get_config_variant(NMDnsManager *self)
 
         g_variant_builder_init(&strv_builder, G_VARIANT_TYPE("as"));
         for (i = 0; i < num; i++) {
-            NMIPAddr a;
-
-            if (!nm_utils_dnsname_parse_assert(ip_data->addr_family, strarr[i], NULL, &a, NULL))
-                continue;
-
-            g_variant_builder_add(&strv_builder, "s", nm_inet_ntop(ip_data->addr_family, &a, buf));
+            g_variant_builder_add(&strv_builder, "s", strarr[i]);
         }
         g_variant_builder_add(&entry_builder,
                               "{sv}",

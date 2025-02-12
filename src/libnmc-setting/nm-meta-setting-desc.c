@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include <linux/if_ether.h>
 #include <linux/if_infiniband.h>
+#include <linux/ethtool.h>
 
 #include "libnm-core-aux-intern/nm-common-macros.h"
 #include "libnm-glib-aux/nm-enum-utils.h"
@@ -4459,6 +4460,21 @@ _get_fcn_ethtool(ARGS_GET_FCN)
         if (get_type == NM_META_ACCESSOR_GET_TYPE_PRETTY)
             s = gettext(s);
         return s;
+    case NM_ETHTOOL_TYPE_FEC:
+        if (!nm_setting_option_get_uint32(setting, nm_ethtool_data[ethtool_id]->optname, &u32)) {
+            NM_SET_OUT(out_is_default, TRUE);
+            return NULL;
+        }
+        s = _nm_utils_enum_to_str_full(nm_setting_ethtool_fec_mode_get_type(),
+                                       (int) (u32 & INT_MAX),
+                                       ", ",
+                                       NULL);
+        if (s == NULL) {
+            NM_SET_OUT(out_is_default, TRUE);
+        }
+        if (get_type == NM_META_ACCESSOR_GET_TYPE_PRETTY)
+            s = gettext(s);
+        return s;
     case NM_ETHTOOL_TYPE_UNKNOWN:
         nm_assert_not_reached();
     }
@@ -4469,9 +4485,11 @@ _get_fcn_ethtool(ARGS_GET_FCN)
 static gboolean
 _set_fcn_ethtool(ARGS_SET_FCN)
 {
-    NMEthtoolID ethtool_id = property_info->property_typ_data->subtype.ethtool.ethtool_id;
-    gint64      i64;
-    NMTernary   t;
+    NMEthtoolID   ethtool_id = property_info->property_typ_data->subtype.ethtool.ethtool_id;
+    gint64        i64;
+    NMTernary     t;
+    int           fec_mode         = 0;
+    gs_free char *invalid_fec_mode = NULL;
 
     if (_SET_FCN_DO_RESET_DEFAULT(property_info, modifier, value))
         goto do_unset;
@@ -4512,6 +4530,30 @@ _set_fcn_ethtool(ARGS_SET_FCN)
 
         nm_setting_option_set_boolean(setting, nm_ethtool_data[ethtool_id]->optname, !!t);
         return TRUE;
+    case NM_ETHTOOL_TYPE_FEC:
+        if (_nm_utils_enum_from_str_full(nm_setting_ethtool_fec_mode_get_type(),
+                                         value,
+                                         &fec_mode,
+                                         &invalid_fec_mode,
+                                         NULL)) {
+            nm_setting_option_set_uint32(setting,
+                                         NM_ETHTOOL_OPTNAME_FEC_MODE,
+                                         (uint32_t) (fec_mode & UINT32_MAX));
+            return TRUE;
+        } else {
+            gs_free const char **valid_all = NULL;
+            gs_free const char  *valid_str = NULL;
+
+            valid_all =
+                nm_utils_enum_get_values(nm_setting_ethtool_fec_mode_get_type(), 0, G_MAXUINT);
+            valid_str = g_strjoinv(",", (char **) valid_all);
+            nm_utils_error_set(error,
+                               NM_UTILS_ERROR_INVALID_ARGUMENT,
+                               _("'%s' is not valid FEC modes, valid modes are combinations of %s"),
+                               invalid_fec_mode,
+                               valid_str);
+            return FALSE;
+        }
     case NM_ETHTOOL_TYPE_UNKNOWN:
         nm_assert_not_reached();
     }
@@ -5661,6 +5703,39 @@ static const NMMetaPropertyInfo *const property_infos_CONNECTION[] = {
     PROPERTY_INFO_WITH_DESC (NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT,
         .property_type =                &_pt_gobject_int,
     ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_CONNECTION_IP_PING_TIMEOUT,
+        .property_type =                &_pt_gobject_int,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_CONNECTION_IP_PING_ADDRESSES,
+        .property_type =                &_pt_multilist,
+        .property_typ_data = DEFINE_PROPERTY_TYP_DATA (
+            PROPERTY_TYP_DATA_SUBTYPE (multilist,
+                .add_fcn =              MULTILIST_ADD_FCN             (NMSettingConnection, nm_setting_connection_add_ip_ping_address),
+                .remove_by_idx_fcn_u32 = MULTILIST_REMOVE_BY_IDX_FCN_U32 (NMSettingConnection, nm_setting_connection_remove_ip_ping_address),
+                .remove_by_value_fcn =  MULTILIST_REMOVE_BY_VALUE_FCN (NMSettingConnection, nm_setting_connection_remove_ip_ping_address_by_value),
+                .clear_all_fcn =        OBJLIST_CLEAR_ALL_FCN       (NMSettingConnection, nm_setting_connection_clear_ip_ping_addresses),
+                .strsplit_with_spaces = TRUE,
+            ),
+            .list_items_doc_format =    NM_META_PROPERTY_TYPE_FORMAT_IPV4_IPV6,
+        ),
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_CONNECTION_IP_PING_ADDRESSES_REQUIRE_ALL,
+        .property_type =                &_pt_gobject_enum,
+        .property_typ_data = DEFINE_PROPERTY_TYP_DATA (
+            PROPERTY_TYP_DATA_SUBTYPE (gobject_enum,
+                .value_infos =              ENUM_VALUE_INFOS(
+                    {
+                        .value = 0,
+                        .nick = "no",
+                    },
+                    {
+                        .value = 1,
+                        .nick = "yes",
+                    },
+                ),
+            ),
+        ),
+    ),
     PROPERTY_INFO_WITH_DESC (NM_SETTING_CONNECTION_METERED,
         .describe_message =
             N_("Enter a value which indicates whether the connection is subject to a data\n"
@@ -5956,6 +6031,15 @@ static const NMMetaPropertyInfo *const property_infos_ETHTOOL[] = {
     PROPERTY_INFO_ETHTOOL (CHANNELS_TX),
     PROPERTY_INFO_ETHTOOL (CHANNELS_OTHER),
     PROPERTY_INFO_ETHTOOL (CHANNELS_COMBINED),
+    PROPERTY_INFO (NM_ETHTOOL_OPTNAME_FEC_MODE,
+                   "The Forward Error Correction(FEC) encoding modes to set. "
+                   "Not all devices support all options. "
+                   "May be any combination of auto, off, rs, baser, llrs.",
+                   .property_type = &_pt_ethtool,
+                   .property_typ_data =
+                   DEFINE_PROPERTY_TYP_DATA_SUBTYPE
+                      (ethtool, .ethtool_id = NM_ETHTOOL_ID_FEC_MODE)
+                   ),
     NULL,
 };
 
@@ -6045,6 +6129,34 @@ static const NMMetaPropertyInfo *const property_infos_GSM[] = {
     PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_APN,
         .property_type =                &_pt_gobject_string,
     ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_USERNAME,
+        .property_type =                &_pt_gobject_string,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_PASSWORD,
+        .is_secret =                    TRUE,
+        .property_type =                &_pt_gobject_string,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_PASSWORD_FLAGS,
+        .property_type =                &_pt_gobject_secret_flags,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_NOAUTH,
+        .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_REFUSE_EAP,
+        .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_REFUSE_PAP,
+        .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_REFUSE_CHAP,
+        .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_REFUSE_MSCHAP,
+        .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_GSM_INITIAL_EPS_BEARER_REFUSE_MSCHAPV2,
+        .property_type =                &_pt_gobject_bool,
+    ),
     NULL
 };
 
@@ -6076,7 +6188,6 @@ static const NMMetaPropertyInfo *const property_infos_HSR[] = {
     ),
     NULL
 };
-
 
 #undef  _CURRENT_NM_META_SETTING_TYPE
 #define _CURRENT_NM_META_SETTING_TYPE NM_META_SETTING_TYPE_HOSTNAME
@@ -6317,6 +6428,9 @@ static const NMMetaPropertyInfo *const property_infos_IP4_CONFIG[] = {
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_SEND_RELEASE, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_DHCP_SEND_RELEASE,
         .property_type =                &_pt_gobject_ternary,
     ),
+    PROPERTY_INFO (NM_SETTING_IP_CONFIG_ROUTED_DNS, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_ROUTED_DNS,
+                   .property_type =                &_pt_gobject_enum,
+    ),
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES,
         .property_type =                &_pt_gobject_bool,
     ),
@@ -6341,6 +6455,23 @@ static const NMMetaPropertyInfo *const property_infos_IP4_CONFIG[] = {
     ),
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_DHCP_SEND_HOSTNAME,
         .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME_V2, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_DHCP_SEND_HOSTNAME_V2,
+        .property_type =                &_pt_gobject_enum,
+        .property_typ_data = DEFINE_PROPERTY_TYP_DATA (
+            PROPERTY_TYP_DATA_SUBTYPE (gobject_enum,
+                .value_infos =              ENUM_VALUE_INFOS(
+                    {
+                        .value = 0,
+                        .nick = "no",
+                    },
+                    {
+                        .value = 1,
+                        .nick = "yes",
+                    },
+                ),
+            ),
+        ),
     ),
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_HOSTNAME, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_DHCP_HOSTNAME,
         .property_type =                &_pt_gobject_string,
@@ -6395,6 +6526,9 @@ static const NMMetaPropertyInfo *const property_infos_IP4_CONFIG[] = {
     PROPERTY_INFO_WITH_DESC (NM_SETTING_IP4_CONFIG_DHCP_VENDOR_CLASS_IDENTIFIER,
         .property_type =                &_pt_gobject_string,
     ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_IP4_CONFIG_DHCP_IPV6_ONLY_PREFERRED,
+        .property_type =                &_pt_gobject_enum,
+    ),
     PROPERTY_INFO_WITH_DESC (NM_SETTING_IP4_CONFIG_LINK_LOCAL,
         .property_type =                &_pt_gobject_enum,
         .property_typ_data = DEFINE_PROPERTY_TYP_DATA (
@@ -6419,6 +6553,24 @@ static const NMMetaPropertyInfo *const property_infos_IP4_CONFIG[] = {
     ),
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_AUTO_ROUTE_EXT_GW, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_AUTO_ROUTE_EXT_GW,
         .property_type =                &_pt_gobject_ternary,
+    ),
+    PROPERTY_INFO (NM_SETTING_IP_CONFIG_SHARED_DHCP_RANGE, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_SHARED_DHCP_RANGE,
+        .property_type =                &_pt_gobject_string,
+    ),
+    PROPERTY_INFO (NM_SETTING_IP_CONFIG_SHARED_DHCP_LEASE_TIME, DESCRIBE_DOC_NM_SETTING_IP4_CONFIG_SHARED_DHCP_LEASE_TIME,
+        .property_type =                &_pt_gobject_int,
+        .property_typ_data = DEFINE_PROPERTY_TYP_DATA_SUBTYPE (gobject_int,
+            .value_infos =              INT_VALUE_INFOS (
+                {
+                    .value.i64 = 0,
+                    .nick = "default",
+                },
+                {
+                    .value.i64 = G_MAXINT32,
+                    .nick = "infinity",
+                },
+            ),
+        ),
     ),
     NULL
 };
@@ -6590,6 +6742,9 @@ static const NMMetaPropertyInfo *const property_infos_IP6_CONFIG[] = {
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_SEND_RELEASE, DESCRIBE_DOC_NM_SETTING_IP6_CONFIG_DHCP_SEND_RELEASE,
         .property_type =                &_pt_gobject_ternary,
     ),
+    PROPERTY_INFO (NM_SETTING_IP_CONFIG_ROUTED_DNS, DESCRIBE_DOC_NM_SETTING_IP6_CONFIG_ROUTED_DNS,
+                   .property_type =                &_pt_gobject_enum,
+    ),
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES, DESCRIBE_DOC_NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES,
         .property_type =                &_pt_gobject_bool,
     ),
@@ -6700,6 +6855,23 @@ static const NMMetaPropertyInfo *const property_infos_IP6_CONFIG[] = {
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME, DESCRIBE_DOC_NM_SETTING_IP6_CONFIG_DHCP_SEND_HOSTNAME,
         .property_type =                &_pt_gobject_bool,
     ),
+    PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME_V2, DESCRIBE_DOC_NM_SETTING_IP6_CONFIG_DHCP_SEND_HOSTNAME_V2,
+        .property_type =                &_pt_gobject_enum,
+        .property_typ_data = DEFINE_PROPERTY_TYP_DATA (
+            PROPERTY_TYP_DATA_SUBTYPE (gobject_enum,
+                .value_infos =              ENUM_VALUE_INFOS(
+                    {
+                        .value = 0,
+                        .nick = "no",
+                    },
+                    {
+                        .value = 1,
+                        .nick = "yes",
+                    },
+                ),
+            ),
+        ),
+    ),
     PROPERTY_INFO (NM_SETTING_IP_CONFIG_DHCP_HOSTNAME, DESCRIBE_DOC_NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME,
         .property_type =                &_pt_gobject_string,
     ),
@@ -6795,6 +6967,37 @@ static const NMMetaPropertyInfo *const property_infos_IP_TUNNEL[] = {
                 .get_gtype =            nm_ip_tunnel_flags_get_type,
             ),
         ),
+    ),
+    NULL
+};
+
+#undef  _CURRENT_NM_META_SETTING_TYPE
+#define _CURRENT_NM_META_SETTING_TYPE NM_META_SETTING_TYPE_IPVLAN
+static const NMMetaPropertyInfo *const property_infos_IPVLAN[] = {
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_IPVLAN_PARENT,
+        .is_cli_option =                TRUE,
+        .property_alias =               "dev",
+        .inf_flags =                    NM_META_PROPERTY_INF_FLAG_REQD,
+        .prompt =                       N_("IPVLAN parent device or connection UUID"),
+        .property_type =                &_pt_gobject_devices,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_IPVLAN_MODE,
+        .is_cli_option =                TRUE,
+        .property_alias =               "mode",
+        .inf_flags =                    NM_META_PROPERTY_INF_FLAG_REQD,
+        .prompt =                       NM_META_TEXT_PROMPT_IPVLAN_MODE,
+        .property_type =                &_pt_gobject_enum,
+        .property_typ_data = DEFINE_PROPERTY_TYP_DATA_SUBTYPE (gobject_enum,
+            .get_gtype =                nm_setting_ipvlan_mode_get_type,
+            .min =                      NM_SETTING_IPVLAN_MODE_UNKNOWN + 1,
+            .max =                      G_MAXINT,
+        ),
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_IPVLAN_PRIVATE,
+        .property_type =                &_pt_gobject_bool,
+    ),
+    PROPERTY_INFO_WITH_DESC (NM_SETTING_IPVLAN_VEPA,
+        .property_type =                &_pt_gobject_bool,
     ),
     NULL
 };
@@ -8713,6 +8916,7 @@ _setting_init_fcn_wireless (ARGS_SETTING_INIT_FCN)
 #define SETTING_PRETTY_NAME_IP4_CONFIG          N_("IPv4 protocol")
 #define SETTING_PRETTY_NAME_IP6_CONFIG          N_("IPv6 protocol")
 #define SETTING_PRETTY_NAME_IP_TUNNEL           N_("IP-tunnel settings")
+#define SETTING_PRETTY_NAME_IPVLAN              N_("IPVLAN settings")
 #define SETTING_PRETTY_NAME_LINK                N_("Link settings")
 #define SETTING_PRETTY_NAME_LOOPBACK            N_("Loopback settings")
 #define SETTING_PRETTY_NAME_MACSEC              N_("MACsec connection")
@@ -8877,6 +9081,14 @@ const NMMetaSettingInfoEditor nm_meta_setting_infos_editor[] = {
         .valid_parts = NM_META_SETTING_VALID_PARTS (
             NM_META_SETTING_VALID_PART_ITEM (CONNECTION,            TRUE),
             NM_META_SETTING_VALID_PART_ITEM (IP_TUNNEL,             TRUE),
+            NM_META_SETTING_VALID_PART_ITEM (WIRED,                 FALSE),
+            NM_META_SETTING_VALID_PART_ITEM (ETHTOOL,               FALSE),
+        ),
+    ),
+    SETTING_INFO (IPVLAN,
+        .valid_parts = NM_META_SETTING_VALID_PARTS (
+            NM_META_SETTING_VALID_PART_ITEM (CONNECTION,            TRUE),
+            NM_META_SETTING_VALID_PART_ITEM (IPVLAN,                TRUE),
             NM_META_SETTING_VALID_PART_ITEM (WIRED,                 FALSE),
             NM_META_SETTING_VALID_PART_ITEM (ETHTOOL,               FALSE),
         ),

@@ -27,6 +27,8 @@
 
 #define NM_DHCP_CLIENT_NOTIFY "dhcp-notify"
 
+#define NM_DHCP_MIN_V6ONLY_WAIT_DEFAULT 300u /* (seconds). RFC 8925, section 3.4 */
+
 typedef enum {
     NM_DHCP_CLIENT_EVENT_TYPE_UNSPECIFIED,
 
@@ -172,6 +174,8 @@ typedef struct {
             /* Whether to send or not the client identifier */
             bool send_client_id : 1;
 
+            /* Request and honor the "IPv6-only Preferred" option (RFC 8925).*/
+            bool ipv6_only_preferred : 1;
         } v4;
         struct {
             /* If set, the DUID from the connection is used; otherwise
@@ -246,6 +250,8 @@ const NML3ConfigData *nm_dhcp_client_get_lease(NMDhcpClient *self, gboolean igno
 
 void nm_dhcp_client_stop(NMDhcpClient *self, gboolean release);
 
+void nm_dhcp_client_schedule_ipv6_only_restart(NMDhcpClient *self, guint timeout);
+
 /* Backend helpers for subclasses */
 void nm_dhcp_client_stop_existing(const char *pid_file, const char *binary_name);
 
@@ -305,7 +311,6 @@ typedef struct {
 
 GType nm_dhcp_nettools_get_type(void);
 
-extern const NMDhcpClientFactory _nm_dhcp_client_factory_dhcpcanon;
 extern const NMDhcpClientFactory _nm_dhcp_client_factory_dhclient;
 extern const NMDhcpClientFactory _nm_dhcp_client_factory_dhcpcd;
 extern const NMDhcpClientFactory _nm_dhcp_client_factory_internal;

@@ -89,7 +89,7 @@ _nm_connection_get_private_from_qdata(NMConnection *connection)
     priv = g_object_get_qdata((GObject *) connection, key);
     if (G_UNLIKELY(!priv)) {
         priv  = g_slice_new(NMConnectionPrivate);
-        *priv = (NMConnectionPrivate){
+        *priv = (NMConnectionPrivate) {
             .self = connection,
         };
         g_object_set_qdata_full((GObject *) connection, key, priv, _nm_connection_private_free);
@@ -959,6 +959,40 @@ out:
     return FALSE;
 }
 
+gboolean
+_nm_setting_connection_verify_no_duplicate_addresses(GArray *addresses, GError **error)
+{
+    guint i, j;
+
+    if (addresses->len <= 1) {
+        return TRUE;
+    } else {
+        for (i = 0; i < addresses->len - 1; i++) {
+            for (j = i + 1; j < addresses->len; j++) {
+                if (nm_streq0(nm_g_array_index(addresses, const char *, i),
+                              nm_g_array_index(addresses, const char *, j)))
+                    return FALSE;
+            }
+        }
+    }
+
+    return TRUE;
+}
+
+int
+_get_ip_address_family(const char *ip_address)
+{
+    struct in_addr  ipv4_addr;
+    struct in6_addr ipv6_addr;
+
+    if (inet_pton(AF_INET, ip_address, &ipv4_addr))
+        return AF_INET;
+    else if (inet_pton(AF_INET6, ip_address, &ipv6_addr))
+        return AF_INET6;
+    else
+        return -1;
+}
+
 static gboolean
 _normalize_connection_secondaries(NMConnection *self)
 {
@@ -994,6 +1028,48 @@ _normalize_connection_secondaries(NMConnection *self)
     strv[j] = NULL;
 
     g_object_set(s_con, NM_SETTING_CONNECTION_SECONDARIES, strv, NULL);
+    return TRUE;
+}
+
+static gboolean
+_normalize_connection_ip_ping_addresses(NMConnection *self)
+{
+    NMSettingConnection *s_con = nm_connection_get_setting_connection(self);
+    GArray              *addresses;
+    gs_strfreev char   **strv = NULL;
+    guint                i, j, k;
+
+    nm_assert(s_con);
+
+    addresses = _nm_setting_connection_get_ip_ping_addresses(s_con);
+    if (nm_g_array_len(addresses) == 0)
+        return FALSE;
+
+    if (_nm_setting_connection_verify_no_duplicate_addresses(addresses, NULL))
+        return FALSE;
+
+    strv = nm_strvarray_get_strv_notempty_dup(addresses, NULL);
+
+    for (i = 0, j = 0; strv[i]; i++) {
+        gboolean found = FALSE;
+
+        for (k = 0; k < j; k++) {
+            if (nm_streq0(strv[i], strv[k])) {
+                found = TRUE;
+                break;
+            }
+        }
+
+        if (found) {
+            continue;
+        }
+
+        strv[j++] = strv[i];
+    }
+    strv[j] = NULL;
+
+    g_object_set(s_con, NM_SETTING_CONNECTION_IP_PING_ADDRESSES, strv, NULL);
+
     return TRUE;
 }
 
@@ -1186,6 +1262,7 @@ _normalize_ip_config(NMConnection *self, GHashTable *parameters)
     NMSetting         *setting;
     gboolean           changed = FALSE;
     guint              num, i;
+    int                dhcp_send_hostname_v2;
 
     s_ip4   = nm_connection_get_setting_ip4_config(self);
     s_ip6   = nm_connection_get_setting_ip6_config(self);
@@ -1239,6 +1316,16 @@ _normalize_ip_config(NMConnection *self, GHashTable *parameters)
                              NM_SETTING_IP4_CONFIG_METHOD_SHARED)) {
                 for (i = num - 1; i > 0; i--)
                     nm_setting_ip_config_remove_address(s_ip4, i);
+                changed = TRUE;
+            }
+
+            dhcp_send_hostname_v2 = nm_setting_ip_config_get_dhcp_send_hostname_v2(s_ip4);
+            if (dhcp_send_hostname_v2 != NM_TERNARY_DEFAULT
+                && dhcp_send_hostname_v2 != nm_setting_ip_config_get_dhcp_send_hostname(s_ip4)) {
+                g_object_set(s_ip4,
+                             NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME,
+                             dhcp_send_hostname_v2,
+                             NULL);
                 changed = TRUE;
             }
         }
@@ -1313,6 +1400,16 @@ _normalize_ip_config(NMConnection *self, GHashTable *parameters)
                              NM_SETTING_IP6_CONFIG_METHOD_DISABLED)
                 && !nm_setting_ip_config_get_may_fail(s_ip6)) {
                 g_object_set(s_ip6, NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE, NULL);
+                changed = TRUE;
+            }
+
+            dhcp_send_hostname_v2 = nm_setting_ip_config_get_dhcp_send_hostname_v2(s_ip6);
+            if (dhcp_send_hostname_v2 != NM_TERNARY_DEFAULT
+                && dhcp_send_hostname_v2 != nm_setting_ip_config_get_dhcp_send_hostname(s_ip6)) {
+                g_object_set(s_ip6,
+                             NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME,
+                             dhcp_send_hostname_v2,
+                             NULL);
                 changed = TRUE;
             }
         }
@@ -2028,6 +2125,7 @@ _connection_normalize(NMConnection *connection,
     was_modified |= _normalize_connection_type(connection);
     was_modified |= _normalize_connection_port_type(connection);
     was_modified |= _normalize_connection_secondaries(connection);
+    was_modified |= _normalize_connection_ip_ping_addresses(connection);
     was_modified |= _normalize_connection(connection);
     was_modified |= _normalize_required_settings(connection);
     was_modified |= _normalize_invalid_port_port_settings(connection);
@@ -3176,6 +3274,7 @@ nm_connection_is_virtual(NMConnection *connection)
                      NM_SETTING_DUMMY_SETTING_NAME,
                      NM_SETTING_HSR_SETTING_NAME,
                      NM_SETTING_IP_TUNNEL_SETTING_NAME,
+                     NM_SETTING_IPVLAN_SETTING_NAME,
                      NM_SETTING_MACSEC_SETTING_NAME,
                      NM_SETTING_MACVLAN_SETTING_NAME,
                      NM_SETTING_OVS_BRIDGE_SETTING_NAME,

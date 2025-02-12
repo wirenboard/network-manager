@@ -156,9 +156,9 @@ typedef enum {
                  NMPlatformIP4Address,       \
                  NMPlatformIP6Address)
 
-#define NM_PLATFORM_IP4_ADDRESS_INIT(...) (&((const NMPlatformIP4Address){__VA_ARGS__}))
+#define NM_PLATFORM_IP4_ADDRESS_INIT(...) (&((const NMPlatformIP4Address) {__VA_ARGS__}))
 
-#define NM_PLATFORM_IP6_ADDRESS_INIT(...) (&((const NMPlatformIP6Address){__VA_ARGS__}))
+#define NM_PLATFORM_IP6_ADDRESS_INIT(...) (&((const NMPlatformIP6Address) {__VA_ARGS__}))
 
 /*****************************************************************************/
 
@@ -193,6 +193,15 @@ static inline int
 nm_platform_ip4_address_cmp_full(const NMPlatformIP4Address *a, const NMPlatformIP4Address *b)
 {
     return nm_platform_ip4_address_cmp(a, b, NM_PLATFORM_IP_ADDRESS_CMP_TYPE_FULL);
+}
+
+static inline gboolean
+nm_platform_ip4_address_is_link_local(const NMPlatformIP4Address *a)
+{
+    nm_assert(a);
+
+    return nm_ip4_addr_is_link_local(a->address) && a->plen == NM_IPV4LL_PREFIXLEN
+           && a->address == a->peer_address;
 }
 
 void nm_platform_ip6_address_hash_update(const NMPlatformIP6Address *obj, NMHashState *h);

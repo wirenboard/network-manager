@@ -1206,6 +1206,7 @@ _parent_device_l3cd_add_gateway_route(NML3ConfigData *l3cd,
     r = nm_platform_ip_route_get(platform,
                                  addr_family,
                                  vpn_gw,
+                                 0,
                                  ifindex,
                                  (NMPObject **) &route_resolved);
     if (r >= 0) {
@@ -1238,7 +1239,7 @@ _parent_device_l3cd_add_gateway_route(NML3ConfigData *l3cd,
         return FALSE;
 
     if (IS_IPv4) {
-        route.r4 = (NMPlatformIP4Route){
+        route.r4 = (NMPlatformIP4Route) {
             .ifindex    = ifindex,
             .network    = vpn_gw->addr4,
             .plen       = 32,
@@ -1248,7 +1249,7 @@ _parent_device_l3cd_add_gateway_route(NML3ConfigData *l3cd,
             .table_any  = TRUE,
         };
     } else {
-        route.r6 = (NMPlatformIP6Route){
+        route.r6 = (NMPlatformIP6Route) {
             .ifindex    = ifindex,
             .network    = vpn_gw->addr6,
             .plen       = 128,
@@ -1267,7 +1268,7 @@ _parent_device_l3cd_add_gateway_route(NML3ConfigData *l3cd,
          * the parent device's gateway would get routed through the VPN and fail.
          */
         if (IS_IPv4) {
-            route.r4 = (NMPlatformIP4Route){
+            route.r4 = (NMPlatformIP4Route) {
                 .network    = parent_gw.addr4,
                 .plen       = 32,
                 .rt_source  = NM_IP_CONFIG_SOURCE_VPN,
@@ -1275,7 +1276,7 @@ _parent_device_l3cd_add_gateway_route(NML3ConfigData *l3cd,
                 .table_any  = TRUE,
             };
         } else {
-            route.r6 = (NMPlatformIP6Route){
+            route.r6 = (NMPlatformIP6Route) {
                 .network    = parent_gw.addr6,
                 .plen       = 128,
                 .rt_source  = NM_IP_CONFIG_SOURCE_VPN,
@@ -2006,11 +2007,11 @@ _dbus_signal_ip_config_cb(NMVpnConnection *self, int addr_family, GVariant *dict
                      &priv->ip_data_x[IS_IPv4].gw_internal);
 
     if (IS_IPv4) {
-        address.a4 = (NMPlatformIP4Address){
+        address.a4 = (NMPlatformIP4Address) {
             .plen = 24,
         };
     } else {
-        address.a6 = (NMPlatformIP6Address){
+        address.a6 = (NMPlatformIP6Address) {
             .plen = 128,
         };
     }
@@ -2059,14 +2060,14 @@ _dbus_signal_ip_config_cb(NMVpnConnection *self, int addr_family, GVariant *dict
     if (IS_IPv4) {
         if (g_variant_lookup(dict, NM_VPN_PLUGIN_IP4_CONFIG_DNS, "au", &var_iter)) {
             while (g_variant_iter_next(var_iter, "u", &u32))
-                nm_l3_config_data_add_nameserver_detail(l3cd, addr_family, &u32, NULL);
+                nm_l3_config_data_add_nameserver_addr(l3cd, addr_family, &u32);
             g_variant_iter_free(var_iter);
         }
     } else {
         if (g_variant_lookup(dict, NM_VPN_PLUGIN_IP6_CONFIG_DNS, "aay", &var_iter)) {
             while (g_variant_iter_next(var_iter, "@ay", &v)) {
                 if (nm_ip_addr_set_from_variant(AF_INET6, &v_addr, v, NULL))
-                    nm_l3_config_data_add_nameserver_detail(l3cd, addr_family, &v_addr, NULL);
+                    nm_l3_config_data_add_nameserver_addr(l3cd, addr_family, &v_addr);
                 g_variant_unref(v);
             }
             g_variant_iter_free(var_iter);
@@ -2212,7 +2213,7 @@ _dbus_signal_ip_config_cb(NMVpnConnection *self, int addr_family, GVariant *dict
             if (prefix > 128)
                 continue;
 
-            route.r6 = (NMPlatformIP6Route){
+            route.r6 = (NMPlatformIP6Route) {
                 .plen       = prefix,
                 .table_any  = TRUE,
                 .metric_any = TRUE,
@@ -2258,7 +2259,7 @@ _dbus_signal_ip_config_cb(NMVpnConnection *self, int addr_family, GVariant *dict
         NMPlatformIPXRoute route;
 
         if (IS_IPv4) {
-            route.r4 = (NMPlatformIP4Route){
+            route.r4 = (NMPlatformIP4Route) {
                 .ifindex    = ip_ifindex,
                 .rt_source  = NM_IP_CONFIG_SOURCE_VPN,
                 .gateway    = priv->ip_data_4.gw_internal.addr4,
@@ -2267,7 +2268,7 @@ _dbus_signal_ip_config_cb(NMVpnConnection *self, int addr_family, GVariant *dict
                 .mss        = mss,
             };
         } else {
-            route.r6 = (NMPlatformIP6Route){
+            route.r6 = (NMPlatformIP6Route) {
                 .ifindex    = ip_ifindex,
                 .rt_source  = NM_IP_CONFIG_SOURCE_VPN,
                 .gateway    = priv->ip_data_6.gw_internal.addr6,

@@ -11,6 +11,7 @@
 #include "libnm-core-intern/nm-core-internal.h"
 #include "libnm-core-intern/nm-keyfile-internal.h"
 #include "libnm-glib-aux/nm-io-utils.h"
+#include "libnm-glib-aux/nm-keyfile-aux.h"
 #include "libnm-log-core/nm-logging.h"
 
 /*****************************************************************************/
@@ -154,6 +155,9 @@ main(int argc, char *argv[])
     gint64                                      carrier_timeout_sec = 0;
     gs_unref_array GArray                      *confs               = NULL;
     guint                                       i;
+    gs_strfreev char                          **global_dns_servers = NULL;
+    gs_free char                               *dns_backend        = NULL;
+    gs_free char                               *dns_resolve_mode   = NULL;
 
     option_context = g_option_context_new(
         "-- [ip=...] [rd.route=...] [bridge=...] [bond=...] [team=...] [vlan=...] "
@@ -193,7 +197,10 @@ main(int argc, char *argv[])
                                            sysfs_dir,
                                            (const char *const *) remaining,
                                            &hostname,
-                                           &carrier_timeout_sec);
+                                           &carrier_timeout_sec,
+                                           &global_dns_servers,
+                                           &dns_backend,
+                                           &dns_resolve_mode);
 
     confs = g_array_new(FALSE, FALSE, sizeof(NMUtilsNamedValue));
     g_array_set_clear_func(confs, (GDestroyNotify) nm_utils_named_value_clear_with_g_free);
@@ -226,8 +233,63 @@ main(int argc, char *argv[])
                                                          : "from \"rd.net.timeout.carrier\"");
         }
 
-        v = (NMUtilsNamedValue){
+        v = (NMUtilsNamedValue) {
             .name      = g_strdup_printf("%s/15-carrier-timeout.conf", run_config_dir),
+            .value_str = g_key_file_to_data(keyfile, NULL, NULL),
+        };
+        g_array_append_val(confs, v);
+    }
+
+    if (global_dns_servers || dns_resolve_mode) {
+        nm_auto_unref_keyfile GKeyFile *keyfile = NULL;
+        NMUtilsNamedValue               v;
+        gs_free char                   *dns_list = NULL;
+
+        keyfile = g_key_file_new();
+        g_key_file_set_list_separator(keyfile, NM_CONFIG_KEYFILE_LIST_SEPARATOR);
+        nm_key_file_add_group(keyfile, NM_CONFIG_KEYFILE_GROUP_GLOBAL_DNS);
+
+        if (dns_resolve_mode) {
+            g_key_file_set_value(keyfile,
+                                 NM_CONFIG_KEYFILE_GROUP_GLOBAL_DNS,
+                                 NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_RESOLVE_MODE,
+                                 dns_resolve_mode);
+        }
+
+        if (global_dns_servers) {
+            dns_list = g_strjoinv(",", global_dns_servers);
+            g_key_file_set_value(keyfile,
+                                 NM_CONFIG_KEYFILE_GROUPPREFIX_GLOBAL_DNS_DOMAIN "*",
+                                 NM_CONFIG_KEYFILE_KEY_GLOBAL_DNS_DOMAIN_SERVERS,
+                                 dns_list);
+        }
+
+        if (!dump_to_stdout) {
+            add_keyfile_comment(keyfile, "from \"rd.net.dns\" and \"rd.net.dns-resolv-mode\"");
+        }
+
+        v = (NMUtilsNamedValue) {
+            .name      = g_strdup_printf("%s/16-global-dns.conf", run_config_dir),
+            .value_str = g_key_file_to_data(keyfile, NULL, NULL),
+        };
+        g_array_append_val(confs, v);
+    }
+
+    if (dns_backend) {
+        nm_auto_unref_keyfile GKeyFile *keyfile = NULL;
+        NMUtilsNamedValue               v;
+
+        keyfile = g_key_file_new();
+        g_key_file_set_value(keyfile,
+                             NM_CONFIG_KEYFILE_GROUP_MAIN,
+                             NM_CONFIG_KEYFILE_KEY_MAIN_DNS,
+                             dns_backend);
+        if (!dump_to_stdout) {
+            add_keyfile_comment(keyfile, "from \"rd.net.dns-backend\"");
+        }
+
+        v = (NMUtilsNamedValue) {
+            .name      = g_strdup_printf("%s/16-dns-backend.conf", run_config_dir),
             .value_str = g_key_file_to_data(keyfile, NULL, NULL),
         };
         g_array_append_val(confs, v);

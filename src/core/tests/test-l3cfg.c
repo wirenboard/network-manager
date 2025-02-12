@@ -111,7 +111,7 @@ _test_fixture_1_teardown(TestFixture1 *f)
     g_object_unref(f->platform);
     nm_dedup_multi_index_unref(f->multiidx);
 
-    *f = (TestFixture1){
+    *f = (TestFixture1) {
         .test_idx = 0,
     };
 }
@@ -192,11 +192,13 @@ _test_l3cfg_signal_notify(NML3Cfg                    *l3cfg,
             nm_assert(NM_IS_L3_CONFIG_DATA(ti->l3cd));
             nm_assert(ti->tag);
         }
-    } else if (notify_data->notify_type == NM_L3_CONFIG_NOTIFY_TYPE_L3CD_CHANGED) {
-        g_assert(!notify_data->l3cd_changed.l3cd_old
-                 || NM_IS_L3_CONFIG_DATA(notify_data->l3cd_changed.l3cd_old));
-        g_assert(!notify_data->l3cd_changed.l3cd_new
-                 || NM_IS_L3_CONFIG_DATA(notify_data->l3cd_changed.l3cd_new));
+    } else if (NM_IN_SET(notify_data->notify_type,
+                         NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT,
+                         NM_L3_CONFIG_NOTIFY_TYPE_POST_COMMIT)) {
+        g_assert(!notify_data->commit.l3cd_old
+                 || NM_IS_L3_CONFIG_DATA(notify_data->commit.l3cd_old));
+        g_assert(!notify_data->commit.l3cd_new
+                 || NM_IS_L3_CONFIG_DATA(notify_data->commit.l3cd_new));
         return;
     }
 

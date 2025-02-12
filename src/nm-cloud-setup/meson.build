@@ -9,6 +9,12 @@ if install_systemdunitdir
     configuration: data_conf,
   )
 
+  test(
+    'check-nm-cloud-setup.service',
+    find_program(join_paths(source_root, 'src/tests/check-systemd-unit.sh')),
+    args: [ join_paths(meson.current_build_dir(), 'nm-cloud-setup.service') ],
+  )
+
   install_data(
     'nm-cloud-setup.timer',
     install_dir: systemd_systemdsystemunitdir,
@@ -30,12 +36,14 @@ libnm_cloud_setup_core = static_library(
     'nmcs-provider-gcp.c',
     'nmcs-provider-azure.c',
     'nmcs-provider-aliyun.c',
+    'nmcs-provider-oci.c',
     'nmcs-provider.c',
   ),
   dependencies: [
     libnm_dep,
     glib_dep,
     libcurl_dep,
+    jansson_dep,
   ],
 )
 

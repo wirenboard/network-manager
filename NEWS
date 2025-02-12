@@ -1,30 +1,42 @@
-===============================================
-NetworkManager-1.50.2
-Overview of changes since NetworkManager-1.50.1
-===============================================
+=============================================
+NetworkManager-1.52-rc1
+Overview of changes since NetworkManager-1.50
+=============================================
 
-* Fix potential crash when the property "ipv4.dhcp-send-release" is
-  enabled.
-* Support routing rules for VPN connections.
-* Place the route to the VPN gateway into the table defined by the
-  "ipv{4,6}.route-table" properties.
-* Fix error handling rp_filter when kernel don't support MPTCP.
-* Fix configuration of VLAN QoS mappings.
+This is a NetworkManager release candidate. The API is
+subject to change and not guaranteed to be compatible with
+the later release.
+USE AT YOUR OWN RISK.  NOT RECOMMENDED FOR PRODUCTION USE!
 
-===============================================
-NetworkManager-1.50.1
-Overview of changes since NetworkManager-1.50.0
-===============================================
-
-* nmcli: fix handling of connection.down-on-poweroff property
-* sriov: only validate sriov capacity when enabled
-* wwan: fix crash with IPv4 and method=auto
-* dns: fix deleting internal global DNS configuration
-* wifi: fix list corruption when scanning with explicit SSID
-* bonding: steer IGMP queries to the active bond balance-slb primary port
-* remove routes added by NM on reapply
-* never retry ACD on NOARP interfaces
-* support IPv6 EUI64 link-local address for ipv6 tunnels
+* Store interactive history in `$XDG_CACHE_HOME/nmcli-history` instead of
+  `~/.nmcli-history`
+* Add new ipv4.link-local=fallback to set an IPv4 link-local address
+  when no other IPv4 is set.
+* Remove support for building with Autotools
+* Add IPVLAN interface support
+* Allow to manually configure the authentication of LTE's initial EPS Bearer.
+* Add support for the "IPv6-only preferred" DHCPv4 option (RFC 8925),
+  used to indicate that a host supports an IPv6-only mode and is
+  willing to forgo obtaining an IPv4 address if the network provides
+  IPv6 connectivity.
+* Support automatically adding routes to DNS servers via the
+  ipv4.routed-dns and ipv6.routed-dns properties; when enabled, each
+  name server is reached only via the device that specifies it.
+* Support OCI in nm-cloud-setup
+* Added support for ethtool FEC mode
+* Add new ipv4.shared-dhcp-range and ipv4.shared-dhcp-lease-time,
+  which allows you to customize the DHCP range and lease time offered
+  by DHCP server in `shared` connection method.
+* DNS servers can now be specified with a URI-like syntax which supports
+  DNS over TLS name servers.
+* The initrd-generator understands the "rd.net.dns" option to configure
+  global name servers.
+* Drop support for the "dhcpcanon" DHCP client.
+* global-dns configuration section now has 2 additional keys: "resolve-mode"
+  and "certification-authority".
+* Dnsconfd plugin can now be used for configuration of system-wide DNS
+  caching resolver. If dnsconfd plugin is enabled and ipvX.routed-dns is
+  set to -1 then adding routes is by default enabled.
 
 =============================================
 NetworkManager-1.50

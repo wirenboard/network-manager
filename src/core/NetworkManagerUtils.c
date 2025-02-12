@@ -250,23 +250,19 @@ nm_utils_ppp_ip_methods_enabled(NMConnection *connection,
 /*****************************************************************************/
 
 void
-_nm_utils_complete_generic_with_params(NMPlatform          *platform,
-                                       NMConnection        *connection,
-                                       const char          *ctype,
-                                       NMConnection *const *existing_connections,
-                                       const char          *preferred_id,
-                                       const char          *fallback_id_prefix,
-                                       const char          *ifname_prefix,
-                                       const char          *ifname,
-                                       ...)
+nm_utils_complete_generic(NMPlatform          *platform,
+                          NMConnection        *connection,
+                          const char          *ctype,
+                          NMConnection *const *existing_connections,
+                          const char          *preferred_id,
+                          const char          *fallback_id_prefix,
+                          const char          *ifname_prefix,
+                          const char          *ifname)
 {
     NMSettingConnection           *s_con;
     char                          *id;
     char                          *generated_ifname;
     gs_unref_hashtable GHashTable *parameters = NULL;
-    va_list                        ap;
-    const char                    *p_val;
-    const char                    *p_key;
 
     g_assert(fallback_id_prefix);
     g_return_if_fail(ifname_prefix == NULL || ifname == NULL);
@@ -301,20 +297,22 @@ _nm_utils_complete_generic_with_params(NMPlatform          *platform,
         g_free(generated_ifname);
     }
 
-    /* Normalize */
-    va_start(ap, ifname);
-    while ((p_key = va_arg(ap, const char *))) {
-        p_val = va_arg(ap, const char *);
-        if (!p_val) {
-            if (parameters)
-                g_hash_table_remove(parameters, p_key);
-            continue;
-        }
-        if (!parameters)
-            parameters = g_hash_table_new(nm_str_hash, g_str_equal);
-        g_hash_table_insert(parameters, (char *) p_key, (char *) p_val);
+    if (nm_connection_get_setting_adsl(connection) || nm_connection_get_setting_cdma(connection)
+        || nm_connection_get_setting_olpc_mesh(connection)
+        || nm_connection_get_setting_pppoe(connection)
+        || nm_connection_get_setting_vpn(connection)) {
+        parameters = g_hash_table_new(nm_str_hash, g_str_equal);
+        g_hash_table_insert(parameters,
+                            NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD,
+                            NM_SETTING_IP6_CONFIG_METHOD_IGNORE);
+    } else {
+        parameters = NULL;
     }
-    va_end(ap);
+
+    /* We ignore the result, because the caller validates the connection.
+     * The only reason we do a normalization attempt here is
+     * NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD.
+     * Could we perhaps, one day, get rid of it? */
     nm_connection_normalize(connection, parameters, NULL, NULL);
 }
 
@@ -967,7 +965,7 @@ nm_match_spec_device_data_init_from_device(struct _NMMatchSpecDeviceData *out_da
     nm_assert(out_data);
 
     if (!device) {
-        *out_data = (NMMatchSpecDeviceData){};
+        *out_data = (NMMatchSpecDeviceData) {};
         return out_data;
     }
 
@@ -983,7 +981,7 @@ nm_match_spec_device_data_init_from_device(struct _NMMatchSpecDeviceData *out_da
      *
      * The returned data is only valid, until NMDevice gets modified again. */
 
-    *out_data = (NMMatchSpecDeviceData){
+    *out_data = (NMMatchSpecDeviceData) {
         .interface_name   = nm_device_get_iface(device),
         .device_type      = nm_device_get_type_description(device),
         .driver           = nm_device_get_driver(device),
@@ -1010,7 +1008,7 @@ nm_match_spec_device_data_init_from_platform(NMMatchSpecDeviceData *out_data,
      * It's still useful because of specs like "*" and "except:interface-name:eth0",
      * which match even in that case. */
 
-    *out_data = (NMMatchSpecDeviceData){
+    *out_data = (NMMatchSpecDeviceData) {
         .interface_name   = pllink ? pllink->name : NULL,
         .device_type      = match_device_type,
         .driver           = pllink ? pllink->driver : NULL,
@@ -1057,7 +1055,7 @@ nm_ip_routing_rule_to_platform(const NMIPRoutingRule *rule, NMPlatformRoutingRul
 
     uid_range_has = nm_ip_routing_rule_get_uid_range(rule, &uid_range_start, &uid_range_end);
 
-    *out_pl = (NMPlatformRoutingRule){
+    *out_pl = (NMPlatformRoutingRule) {
         .addr_family = nm_ip_routing_rule_get_addr_family(rule),
         .flags       = (nm_ip_routing_rule_get_invert(rule) ? FIB_RULE_INVERT : 0),
         .priority    = nm_ip_routing_rule_get_priority(rule),
@@ -1200,7 +1198,7 @@ nm_shutdown_wait_obj_register_full(gpointer           watched_obj,
      * make sure to use the default context. */
 
     handle  = g_slice_new(NMShutdownWaitObjHandle);
-    *handle = (NMShutdownWaitObjHandle){
+    *handle = (NMShutdownWaitObjHandle) {
         /* depending on @free_msg_reason, we take ownership of @msg_reason.
          * In either case, we just reference the string without cloning
          * it. */

@@ -305,14 +305,14 @@ nm_sock_addr_endpoint_get_fixed_sockaddr(NMSockAddrEndpoint *self, gpointer sock
 good:
     switch (addr_family) {
     case AF_INET:
-        *((struct sockaddr_in *) sockaddr) = (struct sockaddr_in){
+        *((struct sockaddr_in *) sockaddr) = (struct sockaddr_in) {
             .sin_family = AF_INET,
             .sin_addr   = addrbin.addr4_struct,
             .sin_port   = htons(self->port),
         };
         return TRUE;
     case AF_INET6:
-        *((struct sockaddr_in6 *) sockaddr) = (struct sockaddr_in6){
+        *((struct sockaddr_in6 *) sockaddr) = (struct sockaddr_in6) {
             .sin6_family   = AF_INET6,
             .sin6_addr     = addrbin.addr6,
             .sin6_port     = htons(self->port),
@@ -1309,11 +1309,11 @@ nm_utils_dns_to_variant(int addr_family, const char *const *dns, gssize len)
 
         /* We can only represent the IP address on the legacy property "ipv[46].dns".
          * Expose what we can. */
-        if (!nm_utils_dnsname_parse(addr_family, dns[i], NULL, &ip, NULL))
+        if (!nm_dns_uri_parse_plain(addr_family, dns[i], NULL, &ip))
             continue;
 
         if (IS_IPv4)
-            g_variant_builder_add(&builder, "u", ip);
+            g_variant_builder_add(&builder, "u", ip.addr4);
         else
             g_variant_builder_add(&builder, "@ay", nm_g_variant_new_ay_in6addr(&ip.addr6));
     }
@@ -2358,7 +2358,7 @@ _nm_utils_ip_addresses_from_variant(GVariant *value, int family, bool strict, GE
                 g_set_error(error,
                             NM_CONNECTION_ERROR,
                             NM_CONNECTION_ERROR_INVALID_PROPERTY,
-                            _("IP address requires fields \"dest\" and \"prefix\" (idx=%u)"),
+                            _("IP address requires fields \"address\" and \"prefix\" (idx=%u)"),
                             i);
                 return NULL;
             }
@@ -2719,9 +2719,9 @@ typedef struct {
 } NMQdiscAttributeSpec;
 
 static const NMQdiscAttributeSpec *const tc_qdisc_attribute_spec[] = {
-    &(const NMQdiscAttributeSpec){"fq_codel", tc_qdisc_fq_codel_spec},
-    &(const NMQdiscAttributeSpec){"sfq", tc_qdisc_sfq_spec},
-    &(const NMQdiscAttributeSpec){"tbf", tc_qdisc_tbf_spec},
+    &(const NMQdiscAttributeSpec) {"fq_codel", tc_qdisc_fq_codel_spec},
+    &(const NMQdiscAttributeSpec) {"sfq", tc_qdisc_sfq_spec},
+    &(const NMQdiscAttributeSpec) {"tbf", tc_qdisc_tbf_spec},
     NULL,
 };
 

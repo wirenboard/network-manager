@@ -10,7 +10,9 @@
 #include "nm-compat-headers/linux/if_addr.h"
 #include <linux/if_ether.h>
 #include <linux/rtnetlink.h>
+#include <linux/fib_rules.h>
 
+#include "libnm-core-aux-intern/nm-libnm-core-utils.h"
 #include "libnm-glib-aux/nm-prioq.h"
 #include "libnm-glib-aux/nm-time-utils.h"
 #include "libnm-platform/nm-platform.h"
@@ -436,7 +438,6 @@ static NM_UTILS_ENUM2STR_DEFINE(
     NML3ConfigNotifyType,
     NM_UTILS_ENUM2STR(NM_L3_CONFIG_NOTIFY_TYPE_ACD_EVENT, "acd-event"),
     NM_UTILS_ENUM2STR(NM_L3_CONFIG_NOTIFY_TYPE_IPV4LL_EVENT, "ipv4ll-event"),
-    NM_UTILS_ENUM2STR(NM_L3_CONFIG_NOTIFY_TYPE_L3CD_CHANGED, "l3cd-changed"),
     NM_UTILS_ENUM2STR(NM_L3_CONFIG_NOTIFY_TYPE_PLATFORM_CHANGE, "platform-change"),
     NM_UTILS_ENUM2STR(NM_L3_CONFIG_NOTIFY_TYPE_PLATFORM_CHANGE_ON_IDLE, "platform-change-on-idle"),
     NM_UTILS_ENUM2STR(NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT, "pre-commit"),
@@ -591,16 +592,17 @@ _l3_config_notify_data_to_string(const NML3ConfigNotifyData *notify_data,
     nm_strbuf_seek_end(&s, &l);
 
     switch (notify_data->notify_type) {
-    case NM_L3_CONFIG_NOTIFY_TYPE_L3CD_CHANGED:
+    case NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT:
+    case NM_L3_CONFIG_NOTIFY_TYPE_POST_COMMIT:
         nm_strbuf_append(&s,
                          &l,
                          ", l3cd-old=%s",
-                         NM_HASH_OBFUSCATE_PTR_STR(notify_data->l3cd_changed.l3cd_old, sbufobf));
+                         NM_HASH_OBFUSCATE_PTR_STR(notify_data->commit.l3cd_old, sbufobf));
         nm_strbuf_append(&s,
                          &l,
                          ", l3cd-new=%s",
-                         NM_HASH_OBFUSCATE_PTR_STR(notify_data->l3cd_changed.l3cd_new, sbufobf));
-        nm_strbuf_append(&s, &l, ", commited=%d", notify_data->l3cd_changed.commited);
+                         NM_HASH_OBFUSCATE_PTR_STR(notify_data->commit.l3cd_new, sbufobf));
+        nm_strbuf_append(&s, &l, ", l3cd-changed=%d", notify_data->commit.l3cd_changed);
         break;
     case NM_L3_CONFIG_NOTIFY_TYPE_ACD_EVENT:
         nm_strbuf_append(&s,
@@ -659,27 +661,22 @@ _nm_l3cfg_emit_signal_notify(NML3Cfg *self, const NML3ConfigNotifyData *notify_d
 }
 
 static void
-_nm_l3cfg_emit_signal_notify_simple(NML3Cfg *self, NML3ConfigNotifyType notify_type)
+_nm_l3cfg_emit_signal_notify_commit(NML3Cfg              *self,
+                                    NML3ConfigNotifyType  type,
+                                    const NML3ConfigData *l3cd_old,
+                                    const NML3ConfigData *l3cd_new,
+                                    gboolean              l3cd_changed)
 {
     NML3ConfigNotifyData notify_data;
 
-    notify_data.notify_type = notify_type;
-    _nm_l3cfg_emit_signal_notify(self, &notify_data);
-}
+    nm_assert(
+        NM_IN_SET(type, NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT, NM_L3_CONFIG_NOTIFY_TYPE_POST_COMMIT));
 
-static void
-_nm_l3cfg_emit_signal_notify_l3cd_changed(NML3Cfg              *self,
-                                          const NML3ConfigData *l3cd_old,
-                                          const NML3ConfigData *l3cd_new,
-                                          gboolean              commited)
-{
-    NML3ConfigNotifyData notify_data;
-
-    notify_data.notify_type  = NM_L3_CONFIG_NOTIFY_TYPE_L3CD_CHANGED;
-    notify_data.l3cd_changed = (typeof(notify_data.l3cd_changed)){
-        .l3cd_old = l3cd_old,
-        .l3cd_new = l3cd_new,
-        .commited = commited,
+    notify_data.notify_type = type;
+    notify_data.commit      = (typeof(notify_data.commit)) {
+             .l3cd_old     = l3cd_old,
+             .l3cd_new     = l3cd_new,
+             .l3cd_changed = l3cd_changed,
     };
     _nm_l3cfg_emit_signal_notify(self, &notify_data);
 }
@@ -770,7 +767,7 @@ _nm_n_acd_data_probe_new(NML3Cfg *self, in_addr_t addr, guint32 timeout_msec, gp
     if (r)
         return NULL;
 
-    n_acd_probe_config_set_ip(probe_config, (struct in_addr){addr});
+    n_acd_probe_config_set_ip(probe_config, (struct in_addr) {addr});
     n_acd_probe_config_set_timeout(probe_config, timeout_msec);
 
     r = n_acd_probe(self->priv.p->nacd, &probe, probe_config);
@@ -855,7 +852,7 @@ _obj_state_data_new(const NMPObject *obj, const NMPObject *plobj)
     ObjStateData *obj_state;
 
     obj_state  = g_slice_new(ObjStateData);
-    *obj_state = (ObjStateData){
+    *obj_state = (ObjStateData) {
         .obj                      = nmp_object_ref(obj),
         .os_plobj                 = nmp_object_ref(plobj),
         .os_was_in_platform       = !!plobj,
@@ -1581,7 +1578,7 @@ _nm_l3cfg_notify_platform_change_on_idle(NML3Cfg *self, guint32 obj_type_flags)
         _load_link(self, FALSE);
 
     notify_data.notify_type             = NM_L3_CONFIG_NOTIFY_TYPE_PLATFORM_CHANGE_ON_IDLE;
-    notify_data.platform_change_on_idle = (typeof(notify_data.platform_change_on_idle)){
+    notify_data.platform_change_on_idle = (typeof(notify_data.platform_change_on_idle)) {
         .obj_type_flags = obj_type_flags,
     };
     _nm_l3cfg_emit_signal_notify(self, &notify_data);
@@ -1625,7 +1622,7 @@ _nm_l3cfg_notify_platform_change(NML3Cfg                   *self,
     }
 
     notify_data.notify_type     = NM_L3_CONFIG_NOTIFY_TYPE_PLATFORM_CHANGE;
-    notify_data.platform_change = (typeof(notify_data.platform_change)){
+    notify_data.platform_change = (typeof(notify_data.platform_change)) {
         .obj         = obj,
         .change_type = change_type,
     };
@@ -2161,7 +2158,7 @@ _l3_acd_data_add(NML3Cfg              *self,
         }
 
         acd_data  = g_slice_new(AcdData);
-        *acd_data = (AcdData){
+        *acd_data = (AcdData) {
             .info =
                 {
                     .l3cfg         = self,
@@ -2193,7 +2190,7 @@ _l3_acd_data_add(NML3Cfg              *self,
         }
         acd_track =
             (NML3AcdAddrTrackInfo *) &acd_data->info.track_infos[acd_data->info.n_track_infos++];
-        *acd_track = (NML3AcdAddrTrackInfo){
+        *acd_track = (NML3AcdAddrTrackInfo) {
             .l3cd                         = nm_l3_config_data_ref(l3cd),
             .obj                          = nmp_object_ref(obj),
             .tag                          = tag,
@@ -2348,7 +2345,7 @@ _nm_l3cfg_emit_signal_notify_acd_event(NML3Cfg *self, AcdData *acd_data)
     nm_assert(acd_data->info.n_track_infos > 0);
 
     notify_data.notify_type = NM_L3_CONFIG_NOTIFY_TYPE_ACD_EVENT;
-    notify_data.acd_event   = (typeof(notify_data.acd_event)){
+    notify_data.acd_event   = (typeof(notify_data.acd_event)) {
           .info = acd_data->info,
     };
 
@@ -3610,7 +3607,7 @@ nm_l3cfg_add_config(NML3Cfg              *self,
 
     if (idx < 0) {
         l3_config_data  = nm_g_array_append_new(self->priv.p->l3_config_datas, L3ConfigData);
-        *l3_config_data = (L3ConfigData){
+        *l3_config_data = (L3ConfigData) {
             .tag_confdata              = tag,
             .l3cd                      = nm_l3_config_data_ref_and_seal(l3cd),
             .config_flags              = config_flags,
@@ -3900,6 +3897,215 @@ out_ip4_address:
     }
 }
 
+/*****************************************************************************/
+
+static gboolean
+_l3cfg_routed_dns_equal(GPtrArray *routes_old, GPtrArray *routes_new)
+{
+    guint i;
+
+    if (nm_g_ptr_array_len(routes_old) != nm_g_ptr_array_len(routes_new))
+        return FALSE;
+
+    if (routes_old) {
+        nm_platform_route_objs_sort(routes_old, NM_PLATFORM_IP_ROUTE_CMP_TYPE_SEMANTICALLY);
+    }
+
+    if (routes_new) {
+        nm_platform_route_objs_sort(routes_new, NM_PLATFORM_IP_ROUTE_CMP_TYPE_SEMANTICALLY);
+    }
+
+    for (i = 0; i < nm_g_ptr_array_len(routes_old); i++) {
+        if (nmp_object_cmp(routes_old->pdata[i], routes_new->pdata[i]) != 0)
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+static GPtrArray *
+_l3cfg_routed_dns_get_existing_routes(NML3Cfg *self, int addr_family)
+{
+    GPtrArray                   *routes = NULL;
+    NMPLookup                    lookup;
+    const NMDedupMultiHeadEntry *head_entry;
+    CList                       *iter;
+
+    nmp_lookup_init_object_by_ifindex(&lookup,
+                                      NMP_OBJECT_TYPE_IP_ROUTE(NM_IS_IPv4(addr_family)),
+                                      self->priv.ifindex);
+
+    head_entry = nm_platform_lookup(self->priv.platform, &lookup);
+    if (!head_entry)
+        return NULL;
+
+    c_list_for_each (iter, &head_entry->lst_entries_head) {
+        const NMPObject *obj = c_list_entry(iter, NMDedupMultiEntry, lst_entries)->obj;
+
+        if (nm_platform_route_table_uncoerce(obj->ipx_route.rx.table_coerced, FALSE)
+            != NM_DNS_ROUTES_FWMARK_TABLE_PRIO)
+            continue;
+
+        if (!routes)
+            routes = g_ptr_array_new_with_free_func((GDestroyNotify) nmp_object_unref);
+        g_ptr_array_add(routes, (gpointer) nmp_object_ref(obj));
+    }
+
+    return routes;
+}
+
+static void
+_l3cfg_routed_dns_apply(NML3Cfg *self, const NML3ConfigData *l3cd)
+{
+    if (!l3cd)
+        return;
+
+    for (int IS_IPv4 = 1; IS_IPv4 >= 0; IS_IPv4--) {
+        const char *const                *nameservers;
+        guint                             i;
+        guint                             len;
+        int                               addr_family;
+        nm_auto_unref_ptrarray GPtrArray *old_routes = NULL;
+        nm_auto_unref_ptrarray GPtrArray *new_routes = NULL;
+
+        addr_family = IS_IPv4 ? AF_INET : AF_INET6;
+
+        if (!nm_l3_config_data_get_routed_dns(l3cd, addr_family))
+            goto update_routes;
+
+        _LOGT("configuring IPv%c DNS routes", nm_utils_addr_family_to_char(addr_family));
+
+        new_routes = g_ptr_array_new_with_free_func((GDestroyNotify) nmp_object_unref);
+
+        nameservers = nm_l3_config_data_get_nameservers(l3cd, addr_family, &len);
+        for (i = 0; i < len; i++) {
+            nm_auto_nmpobj NMPObject *obj = NULL;
+            NMPObject                *obj_new;
+            const NMPlatformIPXRoute *route;
+            NMPlatformIPXRoute        route_new;
+            char                      addr_buf[INET6_ADDRSTRLEN];
+            char                      route_buf[128];
+            NMDnsServer               dns;
+            int                       r;
+
+            if (!nm_dns_uri_parse(addr_family, nameservers[i], &dns))
+                continue;
+
+            /* Find the gateway to the DNS over the current interface. When
+             * doing the lookup, we want to ignore existing DNS routes added
+             * before: use policy routing with a special fwmark that skips
+             * the table containing DNS routes. */
+            r = nm_platform_ip_route_get(self->priv.platform,
+                                         addr_family,
+                                         &dns.addr,
+                                         NM_DNS_ROUTES_FWMARK_TABLE_PRIO,
+                                         self->priv.ifindex,
+                                         &obj);
+            if (r < 0) {
+                _LOGD("could not get route to DNS server %s",
+                      nm_inet_ntop(addr_family, dns.addr.addr_ptr, addr_buf));
+                continue;
+            }
+
+            route = NMP_OBJECT_CAST_IPX_ROUTE(obj);
+
+            if (IS_IPv4) {
+                route_new.r4 = (NMPlatformIP4Route) {
+                    .ifindex    = self->priv.ifindex,
+                    .network    = dns.addr.addr4,
+                    .plen       = 32,
+                    .table_any  = FALSE,
+                    .metric_any = TRUE,
+                    .table_coerced =
+                        nm_platform_route_table_coerce(NM_DNS_ROUTES_FWMARK_TABLE_PRIO),
+                    .gateway   = route->r4.gateway,
+                    .rt_source = NM_IP_CONFIG_SOURCE_USER,
+                };
+
+                nm_platform_ip_route_normalize(addr_family, &route_new.rx);
+
+                _LOGT("route to DNS server %s: %s",
+                      nm_inet4_ntop(dns.addr.addr4, addr_buf),
+                      nm_platform_ip4_route_to_string(&route_new.r4, route_buf, sizeof(route_buf)));
+
+                obj_new = nmp_object_new(NMP_OBJECT_TYPE_IP4_ROUTE, &route_new);
+                g_ptr_array_add(new_routes, obj_new);
+            } else {
+                route_new.r6 = (NMPlatformIP6Route) {
+                    .ifindex    = self->priv.ifindex,
+                    .network    = dns.addr.addr6,
+                    .plen       = 128,
+                    .table_any  = FALSE,
+                    .metric_any = TRUE,
+                    .table_coerced =
+                        nm_platform_route_table_coerce(NM_DNS_ROUTES_FWMARK_TABLE_PRIO),
+                    .gateway   = route->r6.gateway,
+                    .rt_source = NM_IP_CONFIG_SOURCE_USER,
+                };
+
+                nm_platform_ip_route_normalize(addr_family, &route_new.rx);
+
+                _LOGT("route to DNS server %s: %s",
+                      nm_inet6_ntop(&dns.addr.addr6, addr_buf),
+                      nm_platform_ip6_route_to_string(&route_new.r6, route_buf, sizeof(route_buf)));
+
+                obj_new = nmp_object_new(NMP_OBJECT_TYPE_IP6_ROUTE, &route_new);
+                g_ptr_array_add(new_routes, obj_new);
+            }
+        }
+
+        if (new_routes->len > 0) {
+            NMPlatformRoutingRule rule;
+            NMPObject             rule_obj;
+
+            /* Add a routing rule that selects the table when not using the
+             * special fwmark. Note that the rule is shared between all
+             * devices that use DNS routes. There is no cleanup mechanism:
+             * once added the rule stays forever. */
+            rule = ((NMPlatformRoutingRule) {
+                .addr_family = addr_family,
+                .flags       = FIB_RULE_INVERT,
+                .priority    = NM_DNS_ROUTES_FWMARK_TABLE_PRIO,
+                .table       = NM_DNS_ROUTES_FWMARK_TABLE_PRIO,
+                .fwmark      = NM_DNS_ROUTES_FWMARK_TABLE_PRIO,
+                .fwmask      = 0xffffffff,
+                .action      = FR_ACT_TO_TBL,
+                .protocol    = RTPROT_STATIC,
+            });
+
+            nmp_object_stackinit(&rule_obj, NMP_OBJECT_TYPE_ROUTING_RULE, &rule);
+
+            if (!nm_platform_lookup_obj(self->priv.platform,
+                                        NMP_CACHE_ID_TYPE_OBJECT_TYPE,
+                                        &rule_obj)) {
+                _LOGT("adding rule to DNS routing table");
+                nm_platform_routing_rule_add(self->priv.platform, NMP_NLM_FLAG_ADD, &rule);
+            }
+        }
+
+update_routes:
+        old_routes = _l3cfg_routed_dns_get_existing_routes(self, addr_family);
+
+        if (!_l3cfg_routed_dns_equal(old_routes, new_routes)) {
+            if (old_routes) {
+                _LOGT("deleting old DNS routes");
+                for (i = 0; i < old_routes->len; i++) {
+                    nm_platform_object_delete(self->priv.platform, old_routes->pdata[i]);
+                }
+            }
+            if (new_routes) {
+                _LOGT("adding new DNS routes");
+                for (i = 0; i < new_routes->len; i++) {
+                    nm_platform_ip_route_add(self->priv.platform,
+                                             NMP_NLM_FLAG_REPLACE,
+                                             new_routes->pdata[i],
+                                             NULL);
+                }
+            }
+        }
+    }
+}
+
 static void
 _l3cfg_update_combined_config(NML3Cfg               *self,
                               gboolean               to_commit,
@@ -4030,7 +4236,7 @@ _l3cfg_update_combined_config(NML3Cfg               *self,
                                                 nm_platform_ip6_address_init_loopback(&ax.a6));
             }
 
-            rx.r4 = (NMPlatformIP4Route){
+            rx.r4 = (NMPlatformIP4Route) {
                 .ifindex       = NM_LOOPBACK_IFINDEX,
                 .rt_source     = NM_IP_CONFIG_SOURCE_KERNEL,
                 .network       = NM_IPV4LO_ADDR1,
@@ -4077,11 +4283,6 @@ _l3cfg_update_combined_config(NML3Cfg               *self,
     self->priv.p->combined_l3cd_merged = nm_l3_config_data_seal(g_steal_pointer(&l3cd));
     merged_changed                     = TRUE;
 
-    _nm_l3cfg_emit_signal_notify_l3cd_changed(self,
-                                              l3cd_old,
-                                              self->priv.p->combined_l3cd_merged,
-                                              FALSE);
-
     if (!to_commit) {
         NM_SET_OUT(out_old, g_steal_pointer(&l3cd_old));
         NM_SET_OUT(out_changed_combined_l3cd, TRUE);
@@ -4095,11 +4296,6 @@ out:
         commited_changed = TRUE;
 
         _obj_states_update_all(self);
-
-        _nm_l3cfg_emit_signal_notify_l3cd_changed(self,
-                                                  l3cd_commited_old,
-                                                  self->priv.p->combined_l3cd_commited,
-                                                  TRUE);
 
         NM_SET_OUT(out_old, g_steal_pointer(&l3cd_commited_old));
         NM_SET_OUT(out_changed_combined_l3cd, TRUE);
@@ -4957,7 +5153,6 @@ static void
 _l3_commit_one(NML3Cfg              *self,
                int                   addr_family,
                NML3CfgCommitType     commit_type,
-               gboolean              changed_combined_l3cd,
                const NML3ConfigData *l3cd_old)
 {
     const int                    IS_IPv4         = NM_IS_IPv4(addr_family);
@@ -5192,10 +5387,16 @@ _l3_commit(NML3Cfg *self, NML3CfgCommitType commit_type, gboolean is_idle)
                                   &l3cd_old,
                                   &changed_combined_l3cd);
 
-    _nm_l3cfg_emit_signal_notify_simple(self, NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT);
+    _nm_l3cfg_emit_signal_notify_commit(self,
+                                        NM_L3_CONFIG_NOTIFY_TYPE_PRE_COMMIT,
+                                        l3cd_old,
+                                        self->priv.p->combined_l3cd_commited,
+                                        changed_combined_l3cd);
 
-    _l3_commit_one(self, AF_INET, commit_type, changed_combined_l3cd, l3cd_old);
-    _l3_commit_one(self, AF_INET6, commit_type, changed_combined_l3cd, l3cd_old);
+    _l3_commit_one(self, AF_INET, commit_type, l3cd_old);
+    _l3_commit_one(self, AF_INET6, commit_type, l3cd_old);
+
+    _l3cfg_routed_dns_apply(self, self->priv.p->combined_l3cd_commited);
 
     _failedobj_reschedule(self, 0);
 
@@ -5206,7 +5407,11 @@ _l3_commit(NML3Cfg *self, NML3CfgCommitType commit_type, gboolean is_idle)
     nm_assert(self->priv.p->commit_reentrant_count == 1);
     self->priv.p->commit_reentrant_count--;
 
-    _nm_l3cfg_emit_signal_notify_simple(self, NM_L3_CONFIG_NOTIFY_TYPE_POST_COMMIT);
+    _nm_l3cfg_emit_signal_notify_commit(self,
+                                        NM_L3_CONFIG_NOTIFY_TYPE_POST_COMMIT,
+                                        l3cd_old,
+                                        self->priv.p->combined_l3cd_commited,
+                                        changed_combined_l3cd);
 }
 
 NML3CfgBlockHandle *
