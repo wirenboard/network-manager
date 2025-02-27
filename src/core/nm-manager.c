@@ -4536,7 +4536,7 @@ nm_manager_get_best_device_for_connection(NMManager            *self,
                                           NMSettingsConnection *sett_conn,
                                           NMConnection         *connection,
                                           gboolean              for_user_request,
-                                          GHashTable           *unavailable_devices,
+                                          GHashTable           *exclude_devices,
                                           GError              **error)
 {
     NMManagerPrivate       *priv = NM_MANAGER_GET_PRIVATE(self);
@@ -4619,7 +4619,7 @@ nm_manager_get_best_device_for_connection(NMManager            *self,
 
         ac_device = nm_active_connection_get_device(ac);
         if (ac_device
-            && ((unavailable_devices && g_hash_table_contains(unavailable_devices, ac_device))
+            && (nm_g_hash_table_contains(exclude_devices, ac_device)
                 || !nm_device_check_connection_available(ac_device, connection, flags, NULL, NULL)))
             ac_device = NULL;
 
@@ -4635,9 +4635,7 @@ nm_manager_get_best_device_for_connection(NMManager            *self,
                 NMDevice               *ac_device2 = nm_active_connection_get_device(ac2);
                 NMActiveConnectionState ac_state2;
 
-                if (!ac_device2
-                    || (unavailable_devices
-                        && g_hash_table_contains(unavailable_devices, ac_device2))
+                if (!ac_device2 || nm_g_hash_table_contains(exclude_devices, ac_device2)
                     || !nm_device_check_connection_available(ac_device2,
                                                              connection,
                                                              flags,
@@ -4698,7 +4696,19 @@ found_better:
         GError              *local = NULL;
         DeviceActivationPrio prio;
 
-        if (unavailable_devices && g_hash_table_contains(unavailable_devices, device))
+        if (nm_g_hash_table_contains(exclude_devices, device))
+            continue;
+
+        /* During startup, NM performs a cleanup of the ovsdb to remove previous entries.
+         * Before the device is suitable for the connection, it must have ovsdb->ready set
+         * to TRUE. Performing this check in all kind of interfaces is too agressive and leads
+         * to race conditions, e.g when a non-virtual bond port gets a carrier, preventing the
+         * device to be a good candidate for the connection. */
+        if (nm_device_get_device_type(device) == NM_DEVICE_TYPE_OVS_INTERFACE
+            && !nm_device_is_available(device,
+                                       for_user_request
+                                           ? NM_DEVICE_CHECK_DEV_AVAILABLE_FOR_USER_REQUEST
+                                           : NM_DEVICE_CHECK_DEV_AVAILABLE_NONE))
             continue;
 
         /* determine the priority of this device. Currently, this priority is independent
