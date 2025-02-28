@@ -1,8 +1,10 @@
-network-manager (1.52.0-1) UNRELEASED; urgency=medium
+network-manager (1.52.0-1) experimental; urgency=medium
 
   * New upstream version 1.52.0
+  * Rebase patches
+  * Bump 1.51.90 symbol versions to 1.52.0 for the final release
 
- -- Michael Biebl <biebl@debian.org>  Fri, 28 Feb 2025 17:43:24 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 28 Feb 2025 18:58:44 +0100
 
 network-manager (1.51.90-1) experimental; urgency=medium
 
