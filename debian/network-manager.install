@@ -12,7 +12,6 @@ usr/lib/pppd/*/*.so
 usr/lib/firewalld/zones/nm-shared.xml
 usr/lib/systemd/system/*.service
 usr/lib/udev/rules.d/*.rules
-usr/share/locale/
 usr/share/man/
 usr/share/dbus-1/system-services/
 usr/share/dbus-1/system.d/org.freedesktop.NetworkManager.conf

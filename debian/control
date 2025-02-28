@@ -65,6 +65,7 @@ Recommends: ppp,
             libpam-systemd,
             polkitd,
             udev,
+            network-manager-l10n,
 Suggests: libteam-utils,
           iptables,
 Breaks: ${misc:Breaks}
@@ -95,6 +96,17 @@ Description: network management framework (development files)
  This package provides documentation of the NetworkManager D-Bus API, the
  configuration formats and command line utilities.
  It also provides D-Bus introspection files.
+
+Package: network-manager-l10n
+Section: localization
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Breaks: network-manager (<< 1.52.0-3~)
+Replaces: network-manager (<< 1.52.0-3~)
+Description: network management framework (translation files)
+ This package provides translations for messages of the programs found in the
+ network-manager package.
 
 Package: libnm0
 Section: libs
