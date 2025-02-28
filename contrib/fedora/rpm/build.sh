@@ -127,7 +127,7 @@ if [ -n "$SOURCE" ]; then
     [[ "$SOURCE_FROM_GIT" == 1 ]] && die "Cannot set both \$SOURCE and \$SOURCE_FROM_GIT=1"
     SOURCE_FROM_GIT=0
 elif [[ "$SOURCE_FROM_GIT" != "1" ]]; then
-    SOURCE="$(ls -1 "$GITDIR/NetworkManager-${VERSION}.tar."* 2>/dev/null | head -n1)"
+    SOURCE="$(ls -1 "$GITDIR/NetworkManager-${VERSION}.tar."* 2>/dev/null | head -n1 || :)"
     if [[ -z "$SOURCE" ]]; then
         [[ "$SOURCE_FROM_GIT" == "0" ]] && die "Either set \$SOURCE or set \$SOURCE_FROM_GIT=1"
         SOURCE_FROM_GIT=1
@@ -237,7 +237,7 @@ rpmbuild --define "_topdir $TEMP" $RPM_BUILD_OPTION "$TEMPSPEC" $NM_RPMBUILD_ARG
 LS_EXTRA=()
 
 if [ "$SIGN_SOURCE" = 1 ]; then
-    SIGNKEY="$(git config --get user.signingkey)"
+    SIGNKEY="$(git config --get user.signingkey || :)"
     if [ "$SIGNKEY" != "" ]; then
         SIGNKEY="--local-user $(printf '%q' "$SIGNKEY")"
     fi
