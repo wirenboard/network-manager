@@ -61,7 +61,7 @@ def set_up_module():
 
 def tear_down_module():
     # Make sure the management network stays up-and-running.
-    if os.path.exists('/etc/systemd/network/20-wired.network'):
+    if os.path.exists('/run/systemd/network/20-wired.network'):
         subprocess.check_call(['systemctl', 'restart', 'systemd-networkd.service'])
     else:
         print("WARNING: mgmt network config (20-wired.network) not found. "
@@ -86,8 +86,8 @@ class NetworkTestBase(unittest.TestCase):
         # Try to keep autopkgtest's management network (eth0/ens3) up and
         # configured. It should be running all the time, independently via
         # systemd-networkd, potentially overriding 10-netplan-*.network config.
-        os.makedirs('/etc/systemd/network', exist_ok=True)
-        with open('/etc/systemd/network/20-wired.network', 'w') as f:
+        os.makedirs('/run/systemd/network', exist_ok=True)
+        with open('/run/systemd/network/20-wired.network', 'w') as f:
             f.write('[Match]\nName=eth0 en*\n\n[Network]\nDHCP=yes\nKeepConfiguration=yes')
         subprocess.check_call(['systemctl', 'restart', 'systemd-networkd.service'])
 
