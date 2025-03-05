@@ -339,6 +339,7 @@ class NetworkTestBase(unittest.TestCase):
             "/etc/NetworkManager",
             "/var/lib/NetworkManager",
             "/run/NetworkManager",
+            "/run/network",
             "/etc/netplan",
         ]:
             if os.path.exists(d):
