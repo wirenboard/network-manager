@@ -43,8 +43,8 @@ def run_in_subprocess(fn):
     return wrapped
 
 def wait_nm_online():
-    tries = 5
-    while tries > 0 and subprocess.call(['nm-online', '-qs']) != 0:
+    tries = 3
+    while tries > 0 and subprocess.call(['nm-online', '-qst', '10']) != 0:
         time.sleep(1)
         tries = tries - 1
 
