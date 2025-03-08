@@ -1,3 +1,9 @@
+network-manager (1.52.0-4) unstable; urgency=medium
+
+  * No change source-only upload
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 08 Mar 2025 21:11:39 +0100
+
 network-manager (1.52.0-3) unstable; urgency=medium
 
   * Split translations into a separate package named network-manager-l10n.
