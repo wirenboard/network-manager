@@ -1,3 +1,15 @@
+network-manager (1.52.0-3) unstable; urgency=medium
+
+  * Split translations into a separate package named network-manager-l10n.
+    The translations make up more than 50% of the disk footprint.
+    To make network-manager more suitable for minimal environments, split
+    the translations into a separate package named network-manager-l10n and
+    make network-manager recommend this new package. This means that
+    translations will still be installed by default but they can be omitted
+    if desired.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 08 Mar 2025 16:51:47 +0100
+
 network-manager (1.52.0-2) unstable; urgency=medium
 
   * Upload to unstable
