@@ -1,3 +1,16 @@
+network-manager (1.52.0-5) unstable; urgency=medium
+
+  [ Sicelo A. Mhlongo ]
+  * Enable support for ofono
+
+  [ Michael Biebl ]
+  * Stop setting the build system explicitly.
+    It is no longer necessary as upstream has removed the build system based
+    on autotools and only supports the Meson based one.
+  * Bump Standards-Version to 4.7.2
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 15 Mar 2025 20:39:47 +0100
+
 network-manager (1.52.0-4) unstable; urgency=medium
 
   * No change source-only upload
