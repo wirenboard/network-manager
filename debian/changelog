@@ -1,3 +1,11 @@
+network-manager (1.52.1-1-wb100) stable; urgency=medium
+
+  * gsm.sim-slot support
+  * Disable WPS for open Wi-Fi access points
+  * Increase timeout for nft command call
+
+ -- Petr Krasnoshchekov <petr.krasnoshchekov@wirenboard.ru>  Thu, 23 Jul 2026 12:36:58 +0500
+
 network-manager (1.52.1-1) unstable; urgency=medium
 
   * New upstream version 1.52.1
