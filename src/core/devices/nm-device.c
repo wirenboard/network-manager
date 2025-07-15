@@ -603,6 +603,7 @@ typedef struct _NMDevicePrivate {
 
     bool is_attached : 1;
 
+    bool device_link_carrier_changed_down : 1;
     bool device_link_changed_down : 1;
 
     bool concheck_rp_filter_checked : 1;
@@ -2759,19 +2760,20 @@ _ethtool_fec_set(NMDevice         *self,
 
     g_hash_table_iter_init(&iter, hash);
     while (g_hash_table_iter_next(&iter, (gpointer *) &name, (gpointer *) &variant)) {
-        NMEthtoolID ethtool_id = nm_ethtool_id_get_by_name(name);
-
-        if (!nm_ethtool_id_is_fec(ethtool_id))
-            continue;
-
-        nm_assert(g_variant_is_of_type(variant, G_VARIANT_TYPE_UINT32));
-        fec_mode = g_variant_get_uint32(variant);
+        if (nm_ethtool_id_is_fec(nm_ethtool_id_get_by_name(name))) {
+            nm_assert(g_variant_is_of_type(variant, G_VARIANT_TYPE_UINT32));
+            fec_mode = g_variant_get_uint32(variant);
+            break;
+        }
     }
-
-    nm_platform_ethtool_get_fec_mode(platform, ethtool_state->ifindex, &old_fec_mode);
 
     /* The NM_SETTING_ETHTOOL_FEC_MODE_NONE is query only value, hence do nothing. */
     if (!fec_mode || fec_mode == NM_SETTING_ETHTOOL_FEC_MODE_NONE) {
+        return;
+    }
+
+    if (!nm_platform_ethtool_get_fec_mode(platform, ethtool_state->ifindex, &old_fec_mode)) {
+        _LOGW(LOGD_DEVICE, "ethtool: failure setting FEC %d: cannot get current value", fec_mode);
         return;
     }
 
@@ -7123,6 +7125,9 @@ nm_device_controller_release_port(NMDevice           *self,
                                      NM_UNMANAGED_IS_PORT,
                                      NM_UNMAN_FLAG_OP_FORGET,
                                      NM_DEVICE_STATE_REASON_REMOVED);
+
+    /* Once the port is detached, unmanaged-external-down might change */
+    _dev_unmanaged_check_external_down(self, FALSE, FALSE);
 }
 
 /*****************************************************************************/
@@ -7558,10 +7563,12 @@ device_link_changed(gpointer user_data)
     gboolean                        carrier_was_up;
     gboolean                        update_unmanaged_specs = FALSE;
     gboolean                        got_hw_addr            = FALSE, had_hw_addr;
+    gboolean                        carrier_seen_down      = priv->device_link_carrier_changed_down;
     gboolean                        seen_down              = priv->device_link_changed_down;
 
-    priv->device_link_changed_id   = 0;
-    priv->device_link_changed_down = FALSE;
+    priv->device_link_changed_id           = 0;
+    priv->device_link_changed_down         = FALSE;
+    priv->device_link_carrier_changed_down = FALSE;
 
     ifindex = nm_device_get_ifindex(self);
     if (ifindex <= 0)
@@ -7712,7 +7719,8 @@ device_link_changed(gpointer user_data)
         if (priv->state >= NM_DEVICE_STATE_IP_CONFIG && priv->state <= NM_DEVICE_STATE_ACTIVATED
             && !nm_device_managed_type_is_external(self))
             nm_device_l3cfg_commit(self, NM_L3_CFG_COMMIT_TYPE_REAPPLY, FALSE);
-
+    }
+    if (priv->carrier && (!carrier_was_up || carrier_seen_down)) {
         /* If the device is active without a carrier (probably because it is
          * tagged for carrier ignore) ensure that when the carrier appears we
          * renew DHCP leases and such.
@@ -7803,6 +7811,8 @@ link_changed_cb(NMPlatform     *platform,
     priv = NM_DEVICE_GET_PRIVATE(self);
 
     if (ifindex == nm_device_get_ifindex(self)) {
+        if (!(pllink->n_ifi_flags & IFF_LOWER_UP))
+            priv->device_link_carrier_changed_down = TRUE;
         if (!(pllink->n_ifi_flags & IFF_UP))
             priv->device_link_changed_down = TRUE;
         if (!priv->device_link_changed_id) {
@@ -8813,6 +8823,9 @@ nm_device_controller_add_port(NMDevice *self, NMDevice *port, gboolean configure
         changed = TRUE;
     } else
         g_return_val_if_fail(port_priv->controller == self, FALSE);
+
+    /* Once the port is attached, unmanaged-external-down might change */
+    _dev_unmanaged_check_external_down(self, TRUE, FALSE);
 
     nm_device_queue_recheck_assume(self);
     nm_device_queue_recheck_assume(port);
@@ -13417,6 +13430,8 @@ _dev_ipsharedx_cleanup(NMDevice *self, int addr_family)
         nm_clear_l3cd(&priv->ipshared_data_4.v4.l3cd);
 
         _dev_l3_register_l3cds_set_one(self, L3_CONFIG_DATA_TYPE_SHARED_4, NULL, FALSE);
+    } else {
+        _dev_l3_register_l3cds_set_one(self, L3_CONFIG_DATA_TYPE_PD_6, NULL, FALSE);
     }
 
     _dev_ipsharedx_set_state(self, addr_family, NM_DEVICE_IP_STATE_NONE);
@@ -15085,8 +15100,8 @@ respawn_ping_cb(gpointer user_data)
     nm_clear_g_source_inst(&ping_op->watch);
 
     if (!spawn_ping_for_operation(self, ping_op)) {
-        cleanup_ping_operation(ping_op);
         priv->ping_operations = g_list_remove(priv->ping_operations, ping_op);
+        cleanup_ping_operation(ping_op);
 
         if (g_list_length(priv->ping_operations) == 0) {
             ip_check_pre_up(self);
@@ -15129,7 +15144,6 @@ ip_check_ping_watch_cb(GPid pid, int status, gpointer user_data)
 
     if (success) {
         if (ping_op->ping_addresses_require_all) {
-            cleanup_ping_operation(ping_op);
             priv->ping_operations = g_list_remove(priv->ping_operations, ping_op);
             if (g_list_length(priv->ping_operations) == 0) {
                 _LOGD(ping_op->log_domain,
@@ -15139,6 +15153,7 @@ ip_check_ping_watch_cb(GPid pid, int status, gpointer user_data)
                     nm_clear_g_source_inst(&priv->ping_timeout);
                 ip_check_pre_up(self);
             }
+            cleanup_ping_operation(ping_op);
         } else {
             nm_assert(priv->ping_operations);
 
