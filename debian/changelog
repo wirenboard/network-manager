@@ -1,3 +1,12 @@
+network-manager (1.42.4-1~bpo11+1-wb104) bullseye-backports; urgency=medium
+
+  * Backport upstream 646e04152366 to clear the previous best DNS
+    configuration when the preferred connection changes (SOFT-7489).
+  * Add regression coverage for DNS failover, IPv4/IPv6 isolation,
+    VPN and explicit priorities, and configuration removal/replacement.
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Tue, 22 Sep 2026 17:16:23 +0000
+
 network-manager (1.42.4-1~bpo11+1-wb103) bullseye-backports; urgency=medium
 
   * Increase timeout for nft command call

@@ -17,7 +17,11 @@
 #include "nm-core-utils.h"
 
 #include "dns/nm-dns-manager.h"
+#include "nm-config.h"
 #include "nm-connectivity.h"
+#include "nm-dbus-object.h"
+#include "nm-l3-config-data.h"
+#include "platform/nm-fake-platform.h"
 
 #include "nm-test-utils-core.h"
 
@@ -2580,6 +2584,208 @@ test_connectivity_state_cmp(void)
 
 /*****************************************************************************/
 
+static NML3ConfigData *
+dns_test_config_new(int ifindex, int priority)
+{
+    NML3ConfigData *l3cd;
+    char            address[NM_INET_ADDRSTRLEN];
+
+    l3cd = nm_l3_config_data_new(nm_platform_get_multi_idx(NM_PLATFORM_GET),
+                                 ifindex,
+                                 NM_IP_CONFIG_SOURCE_USER);
+    nm_l3_config_data_set_dns_priority(l3cd, AF_INET, priority);
+    nm_l3_config_data_set_dns_priority(l3cd, AF_INET6, priority);
+    g_snprintf(address, sizeof(address), "192.0.2.%d", ifindex);
+    nm_l3_config_data_add_nameserver(l3cd, AF_INET, address);
+    g_snprintf(address, sizeof(address), "2001:db8::%d", ifindex);
+    nm_l3_config_data_add_nameserver(l3cd, AF_INET6, address);
+    return l3cd;
+}
+
+static void
+test_dns_best_device(void)
+{
+    gs_unref_object NMConfig *config      = NULL;
+    gs_free_error GError     *error       = NULL;
+    gs_free char             *config_file = NULL;
+    NMConfigCmdLineOptions   *cli;
+    GOptionContext           *context;
+    char                     *args[] = {"test-core",
+                                        "--config",
+                                        NULL,
+                                        "--config-dir",
+                                        "",
+                                        "--system-config-dir",
+                                        "",
+                                        "--intern-config",
+                                        "",
+                                        "--no-auto-default",
+                                        "/dev/null",
+                                        NULL};
+    char                    **argv   = args;
+    int                       argc   = G_N_ELEMENTS(args) - 1;
+    int                       fd;
+    guint                     family;
+    guint                     switches;
+    guint                     with_vpn;
+    guint                     explicit_priority;
+
+    fd = g_file_open_tmp("nm-test-dns-XXXXXX", &config_file, &error);
+    g_assert_no_error(error);
+    g_assert_cmpint(fd, >=, 0);
+    close(fd);
+    /* Keep an unstarted dnsmasq plugin so construction does not try to clean
+     * up an external dnsmasq process. Each manager is stopped before updates. */
+    nmtst_file_set_contents(config_file, "[main]\ndns=dnsmasq\nsystemd-resolved=false\n");
+    args[2] = config_file;
+    cli     = nm_config_cmd_line_options_new(FALSE);
+    context = g_option_context_new(NULL);
+    nm_config_cmd_line_options_add_to_entries(cli, context);
+    g_assert(g_option_context_parse(context, &argc, &argv, &error));
+    g_assert_no_error(error);
+    config = nm_config_setup(cli, NULL, &error);
+    g_assert_no_error(error);
+    g_assert(config);
+    g_option_context_free(context);
+    nm_config_cmd_line_options_free(cli);
+    unlink(config_file);
+    nm_fake_platform_setup();
+
+    for (family = 0; family < 2; family++) {
+        for (switches = 0; switches < 5; switches++) {
+            for (with_vpn = 0; with_vpn < 2; with_vpn++) {
+                for (explicit_priority = 0; explicit_priority < 2; explicit_priority++) {
+                    gs_unref_object NMDnsManager           *manager       = NULL;
+                    nm_auto_unref_l3cd_init NML3ConfigData *first         = NULL;
+                    nm_auto_unref_l3cd_init NML3ConfigData *second        = NULL;
+                    nm_auto_unref_l3cd_init NML3ConfigData *vpn           = NULL;
+                    gs_unref_variant GVariant              *configuration = NULL;
+                    GVariantIter                            iter;
+                    GVariant                               *entry;
+                    guint                                   seen[2] = {0, 0};
+                    guint                                   i;
+                    int addr_family = family ? AF_INET6 : AF_INET;
+
+                    g_test_message("family=%d switches=%u vpn=%u explicit-priority=%u",
+                                   addr_family,
+                                   switches,
+                                   with_vpn,
+                                   explicit_priority);
+                    first   = dns_test_config_new(1, explicit_priority ? 25 : 100);
+                    second  = dns_test_config_new(2, 100);
+                    vpn     = dns_test_config_new(3, 100);
+                    manager = g_object_new(NM_TYPE_DNS_MANAGER, NULL);
+                    nm_dbus_object_unexport(manager);
+                    /* Exercise the real DNS list without writing resolver files or
+                     * starting a DNS plugin. Read Configuration only after all updates. */
+                    nm_dns_manager_stop(manager);
+                    nm_dns_manager_set_ip_config(manager,
+                                                 AF_UNSPEC,
+                                                 first,
+                                                 first,
+                                                 NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE,
+                                                 TRUE);
+                    nm_dns_manager_set_ip_config(manager,
+                                                 AF_UNSPEC,
+                                                 second,
+                                                 second,
+                                                 NM_DNS_IP_CONFIG_TYPE_DEFAULT,
+                                                 TRUE);
+                    if (with_vpn)
+                        nm_dns_manager_set_ip_config(manager,
+                                                     AF_UNSPEC,
+                                                     vpn,
+                                                     vpn,
+                                                     NM_DNS_IP_CONFIG_TYPE_VPN,
+                                                     TRUE);
+                    for (i = 0; i < switches; i++) {
+                        NML3ConfigData *selected = i % 2 ? first : second;
+
+                        if (i == 2) {
+                            /* Removing the previous best must clear its tracked pointer. */
+                            nm_dns_manager_set_ip_config(manager,
+                                                         addr_family,
+                                                         first,
+                                                         first,
+                                                         NM_DNS_IP_CONFIG_TYPE_REMOVED,
+                                                         TRUE);
+                            nm_dns_manager_set_ip_config(manager,
+                                                         addr_family,
+                                                         first,
+                                                         first,
+                                                         NM_DNS_IP_CONFIG_TYPE_DEFAULT,
+                                                         TRUE);
+                        } else if (i == 3) {
+                            nm_auto_unref_l3cd_init NML3ConfigData *replacement = NULL;
+
+                            /* Replacing the best device's L3 data must not leave a
+                             * pointer to the old, freed DNS configuration. */
+                            replacement = dns_test_config_new(2, 100);
+                            nm_dns_manager_set_ip_config(manager,
+                                                         addr_family,
+                                                         second,
+                                                         replacement,
+                                                         NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE,
+                                                         TRUE);
+                        }
+                        g_assert(nm_dns_manager_set_ip_config(manager,
+                                                              addr_family,
+                                                              selected,
+                                                              selected,
+                                                              NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE,
+                                                              TRUE));
+                        /* Selecting the same configuration again is a no-op. */
+                        g_assert(!nm_dns_manager_set_ip_config(manager,
+                                                               addr_family,
+                                                               selected,
+                                                               selected,
+                                                               NM_DNS_IP_CONFIG_TYPE_BEST_DEVICE,
+                                                               TRUE));
+                    }
+                    g_object_get(manager, NM_DNS_MANAGER_CONFIGURATION, &configuration, NULL);
+                    g_assert_cmpuint(g_variant_n_children(configuration), ==, with_vpn ? 6 : 4);
+                    g_variant_iter_init(&iter, configuration);
+                    while ((entry = g_variant_iter_next_value(&iter))) {
+                        gs_unref_variant GVariant *entry_ref   = entry;
+                        gs_unref_variant GVariant *nameservers = NULL;
+                        const char                *address;
+                        guint                      entry_family;
+                        guint                      expected;
+                        char                       expected_address[NM_INET_ADDRSTRLEN];
+
+                        nameservers =
+                            g_variant_lookup_value(entry, "nameservers", G_VARIANT_TYPE("as"));
+                        g_assert(nameservers);
+                        g_assert_cmpuint(g_variant_n_children(nameservers), ==, 1);
+                        g_variant_get_child(nameservers, 0, "&s", &address);
+                        entry_family = strchr(address, ':') ? 1 : 0;
+                        if (explicit_priority) {
+                            expected = seen[entry_family] == 0               ? 1
+                                       : with_vpn && seen[entry_family] == 1 ? 3
+                                                                             : 2;
+                        } else if (with_vpn && seen[entry_family] == 0)
+                            expected = 3;
+                        else {
+                            gboolean prefer_second = entry_family == family && switches % 2;
+                            gboolean is_first      = seen[entry_family] == with_vpn;
+
+                            expected = is_first == prefer_second ? 2 : 1;
+                        }
+                        g_snprintf(expected_address,
+                                   sizeof(expected_address),
+                                   entry_family ? "2001:db8::%u" : "192.0.2.%u",
+                                   expected);
+                        g_assert_cmpstr(address, ==, expected_address);
+                        seen[entry_family]++;
+                    }
+                    g_assert_cmpuint(seen[0], ==, with_vpn ? 3 : 2);
+                    g_assert_cmpuint(seen[1], ==, with_vpn ? 3 : 2);
+                }
+            }
+        }
+    }
+}
+
 NMTST_DEFINE();
 
 int
@@ -2642,6 +2848,7 @@ main(int argc, char **argv)
     g_test_add_func("/general/test_utils_file_is_in_path", test_utils_file_is_in_path);
 
     g_test_add_func("/general/test_dns_create_resolv_conf", test_dns_create_resolv_conf);
+    g_test_add_func("/general/dns/best-device", test_dns_best_device);
 
     g_test_add_data_func("/general/nm_utils_dhcp_client_id_systemd_node_specific/0",
                          GINT_TO_POINTER(0),
