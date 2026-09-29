@@ -1,3 +1,9 @@
+network-manager (1.42.4-1~bpo11+1-wb104) bullseye-backports; urgency=medium
+
+  * Backport upstream fix for tracking of the best DNS configuration
+
+ -- Ekaterina Volkova <ekaterina.volkova@wirenboard.com>  Tue, 29 Sep 2026 06:13:52 +0000
+
 network-manager (1.42.4-1~bpo11+1-wb103) bullseye-backports; urgency=medium
 
   * Increase timeout for nft command call
